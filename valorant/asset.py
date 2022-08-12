@@ -41,28 +41,31 @@ def try_get(enum):
         return wrapper
     return decorator
 
-def try_get_str(try_name, try_key):
+def maybe_uuid(key: str = 'displayName'):
 
     def decorator(function):
 
         @wraps(function)
-        def wrapper(self, maybe_uuid: str = None):
+        def wrapper(self, uuid: str = None):
 
-            if maybe_uuid is None:
+            if uuid is None:
                 raise function(self)
 
-            if not validate_uuid(str(maybe_uuid)):
+            if not validate_uuid(str(uuid)):
 
-                data = self.asset_cache[try_name]
+                get_key = function.__doc__.split(',')[0].strip()
+                data = self.asset_cache[get_key]
 
                 for value in data.values():
-                    display_name = value.get(try_key)
+                    display_name = value.get(key)
                     if display_name is not None:
                         for name in display_name.values():
-                            if name.lower().startswith(maybe_uuid.lower()):
+                            if name.lower().startswith(uuid.lower()) or uuid.lower() == name.lower():
                                 return function(self, value['uuid'])
 
-            return function(self, str(maybe_uuid))
+                raise ValueError('Invalid UUID')
+
+            return function(self, str(uuid))
         return wrapper
     return decorator
 
@@ -75,19 +78,21 @@ class Asset:
         self.locale = str(locale)
         self._reload_assets()
 
-    @try_get_str('agents', 'displayName')
-    @check_validate_uuid
+    @maybe_uuid()
     def get_agent(self, uuid: UUID) -> Any:
+        """ agents, Get an agent by UUID. """
         data = self.asset_cache['agents']
         return data.get(uuid)
 
-    @check_validate_uuid
+    @maybe_uuid()
     def get_buddy(self, uuid: UUID) -> Any:
+        """ buddies, Get a buddy by UUID. """
         data = self.asset_cache['buddies']
         return data.get(uuid)
 
-    @check_validate_uuid
+    @maybe_uuid()
     def get_bundle(self, uuid: UUID) -> Any:
+        """ bundles, Get a bundle by UUID. """
         data = self.asset_cache['bundles']
         return data.get(uuid)
 
@@ -264,6 +269,7 @@ class Asset:
 
             if filename == 'buddies.json':  # TODO: something is wrong with this one
                 uuid = item['levels'][0]['uuid']
+                item['uuid'] = uuid
                 # item['charmLevel'] = item['levels'][0]['charmLevel']
                 # item['assetPath'] = item['levels'][0]['assetPath']
                 # item.pop('levels')
