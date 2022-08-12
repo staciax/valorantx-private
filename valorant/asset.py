@@ -6,8 +6,7 @@ import asyncio
 
 from functools import cache, wraps
 
-from . import enums
-from .enums import Locale, AgentID, try_enum_key
+from .enums import Locale, try_enum_key
 from .utils import validate_uuid
 
 from typing import Any, Union, TYPE_CHECKING
@@ -47,12 +46,12 @@ def try_get_str(try_name, try_key):
     def decorator(function):
 
         @wraps(function)
-        def wrapper(self, uuid: str = None):
+        def wrapper(self, maybe_uuid: str = None):
 
-            if uuid is None:
+            if maybe_uuid is None:
                 raise function(self)
 
-            if not validate_uuid(str(uuid)):
+            if not validate_uuid(str(maybe_uuid)):
 
                 data = self.asset_cache[try_name]
 
@@ -60,10 +59,10 @@ def try_get_str(try_name, try_key):
                     display_name = value.get(try_key)
                     if display_name is not None:
                         for name in display_name.values():
-                            if name.lower() == uuid.lower():
+                            if name.lower().startswith(maybe_uuid.lower()):
                                 return function(self, value['uuid'])
 
-            return function(self, str(uuid))
+            return function(self, str(maybe_uuid))
         return wrapper
     return decorator
 
