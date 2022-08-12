@@ -42,6 +42,31 @@ def try_get(enum):
         return wrapper
     return decorator
 
+def try_get_str(try_name, try_key):
+
+    def decorator(function):
+
+        @wraps(function)
+        def wrapper(self, uuid: str = None):
+
+            if uuid is None:
+                raise function(self)
+
+            if not validate_uuid(str(uuid)):
+
+                data = self.asset_cache[try_name]
+
+                for value in data.values():
+                    display_name = value.get(try_key)
+                    if display_name is not None:
+                        for name in display_name.values():
+                            if name.lower() == uuid.lower():
+                                return function(self, value['uuid'])
+
+            return function(self, str(uuid))
+        return wrapper
+    return decorator
+
 class Asset:
 
     asset_cache = {}
@@ -51,7 +76,7 @@ class Asset:
         self.locale = str(locale)
         self._reload_assets()
 
-    @try_get(AgentID)
+    @try_get_str('agents', 'displayName')
     @check_validate_uuid
     def get_agent(self, uuid: UUID) -> Any:
         data = self.asset_cache['agents']
