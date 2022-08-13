@@ -1,3 +1,4 @@
+from .agent import *
 from .bundle import *
 from .content import *
 from .item import *

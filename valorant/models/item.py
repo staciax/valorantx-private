@@ -21,7 +21,7 @@ __all__ = (
 
 class Buddy(BaseObject):
 
-    def __init__(self, client: Client, data: Optional[Any], bundle: Any = None) -> None:
+    def __init__(self, client: Client, data: Optional[Dict[str, Any]], bundle: Any = None) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 
     def _update(self, data: Optional[Any]) -> None:
@@ -105,7 +105,7 @@ class Buddy(BaseObject):
 
 class Spray(BaseObject):
 
-    def __init__(self, *, client: Client, data: Any, bundle: Any = None) -> None:
+    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]], bundle: Any = None) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 
     def _update(self, data: Any) -> None:
@@ -216,7 +216,7 @@ class Spray(BaseObject):
 
 class PlayerCard(BaseObject):
 
-    def __init__(self, *, client: Client, data: Any, bundle: Any = None) -> None:
+    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]], bundle: Any = None) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 
     def _update(self, data: Any) -> None:
@@ -333,7 +333,7 @@ class PlayerCard(BaseObject):
 
 class PlayerTitle(BaseObject):
 
-    def __init__(self, *, client: Client, data: Any,) -> None:
+    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 
     def __repr__(self) -> str:

@@ -7,13 +7,14 @@ import asyncio
 from functools import cache, wraps
 
 from .models import (
+    Agent,
     Buddy,
     Spray,
     PlayerCard,
     PlayerTitle
 )
 
-from .enums import Locale, try_enum_key
+from .enums import Locale
 from .utils import validate_uuid
 
 from typing import Any, Union, Optional, TYPE_CHECKING
@@ -21,8 +22,6 @@ from typing import Any, Union, Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from .client import Client
     from .enums import Locale
-
-    UUID: Union[str, Any]
 
 def check_validate_uuid(func):
 
@@ -37,15 +36,6 @@ def check_validate_uuid(func):
 
         return func(self, str(uuid))
 
-    return decorator
-
-def try_get(enum):
-    def decorator(function):
-        @wraps(function)
-        def wrapper(uuid):
-            uuid = try_enum_key(enum, str(uuid).lower())
-            return function(uuid)
-        return wrapper
     return decorator
 
 def maybe_uuid(key: str = 'displayName'):
@@ -86,103 +76,104 @@ class Asset:
         self._reload_assets()
 
     @maybe_uuid()
-    def get_agent(self, uuid: UUID) -> Any:
+    def get_agent(self, uuid: str) -> Optional[Agent]:
         """ agents, Get an agent by UUID. """
-        data = self.asset_cache['agents']
-        return data.get(uuid)
+        agents = self.asset_cache['agents']
+        data = agents.get(uuid)
+        return Agent(client=self._client, data=data) if data is not None else None
 
     @maybe_uuid()
-    def get_buddy(self, uuid: UUID) -> Optional[Buddy]:
+    def get_buddy(self, uuid: str) -> Optional[Buddy]:
         """ buddies, Get a buddy by UUID. """
         buddies = self.asset_cache['buddies']
         data = buddies.get(uuid)
         return Buddy(client=self._client, data=data) if data else None
 
     @maybe_uuid()
-    def get_bundle(self, uuid: UUID) -> Any:
+    def get_bundle(self, uuid: str) -> Any:
         """ bundles, Get a bundle by UUID. """
         bundles = self.asset_cache['bundles']
         data = bundles.get(uuid)
         return data.get(uuid)
 
     @check_validate_uuid
-    def get_ceremonie(self, uuid: UUID) -> Any:
+    def get_ceremonie(self, uuid: str) -> Any:
         data = self.asset_cache['ceremonies']
         return data.get(uuid)
 
     @check_validate_uuid
-    def get_competitive_tier(self, uuid: UUID) -> Any:
+    def get_competitive_tier(self, uuid: str) -> Any:
         data = self.asset_cache['competitive_tiers']
         return data.get(uuid)
 
     @check_validate_uuid
-    def get_contract(self, uuid: UUID) -> Any:
+    def get_contract(self, uuid: str) -> Any:
         data = self.asset_cache['contracts']
         return data.get(uuid)
 
     @check_validate_uuid
-    def get_currency(self, uuid: UUID) -> Any:
+    def get_currency(self, uuid: str) -> Any:
         data = self.asset_cache['currencies']
         return data.get(uuid)
 
     @check_validate_uuid
-    def get_game_mode(self, uuid: UUID) -> Any:
+    def get_game_mode(self, uuid: str) -> Any:
         data = self.asset_cache['game_modes']
         return data.get(uuid)
 
     @check_validate_uuid
-    def get_gear(self, uuid: UUID) -> Any:
+    def get_gear(self, uuid: str) -> Any:
         data = self.asset_cache['gears']
         return data.get(uuid)
 
     @check_validate_uuid
-    def get_level_border(self, uuid: UUID) -> Any:
+    def get_level_border(self, uuid: str) -> Any:
         data = self.asset_cache['level_borders']
         return data.get(uuid)
 
     @check_validate_uuid
-    def get_map(self, uuid: UUID) -> Any:
+    def get_map(self, uuid: str) -> Any:
         data = self.asset_cache['maps']
         return data.get(uuid)
 
     @check_validate_uuid
-    def get_mission(self, uuid: UUID) -> Any:
+    def get_mission(self, uuid: str) -> Any:
         data = self.asset_cache['missions']
         return data.get(uuid)
 
     @maybe_uuid()
-    def get_player_card(self, uuid: UUID) -> Optional[PlayerCard]:
+    def get_player_card(self, uuid: str) -> Optional[PlayerCard]:
         """ player_cards, Get a player card by UUID. """
         player_cards = self.asset_cache['player_cards']
         data = player_cards.get(uuid)
         return PlayerCard(client=self._client, data=data) if data else None
 
     @maybe_uuid()
-    def get_player_title(self, uuid: UUID) -> Optional[PlayerTitle]:
+    def get_player_title(self, uuid: str) -> Optional[PlayerTitle]:
         """ player_titles, Get a player title by UUID. """
         player_titles = self.asset_cache['player_titles']
         data = player_titles.get(uuid)
         return PlayerTitle(client=self._client, data=data) if data else None
 
     @check_validate_uuid
-    def get_season(self, uuid: UUID) -> Any:
+    def get_season(self, uuid: str) -> Any:
         data = self.asset_cache['seasons']
         return data.get(uuid)
 
     @maybe_uuid()
-    def get_spray(self, uuid: UUID) -> Optional[Spray]:
+    def get_spray(self, uuid: str) -> Optional[Spray]:
         """ sprays, Get a spray by UUID. """
         sprays = self.asset_cache['sprays']
         data = sprays.get(uuid)
         return Spray(client=self._client, data=data) if data else None
 
     @check_validate_uuid
-    def get_theme(self, uuid: UUID) -> Any:
+    def get_theme(self, uuid: str) -> Any:
         data = self.asset_cache['themes']
         return data.get(uuid)
 
     @check_validate_uuid
-    def get_weapon(self, uuid: UUID) -> Any:
+    def get_weapon(self, uuid: str) -> Any:
         data = self.asset_cache['weapons']
         return data.get(uuid)
 
