@@ -79,3 +79,5 @@ class Client:
     async def fetch_all_assets(self) -> None:
         await self.asset.fetch_all_assets()
 
+
+

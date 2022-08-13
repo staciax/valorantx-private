@@ -6,10 +6,17 @@ import asyncio
 
 from functools import cache, wraps
 
+from .models import (
+    Buddy,
+    Spray,
+    PlayerCard,
+    PlayerTitle
+)
+
 from .enums import Locale, try_enum_key
 from .utils import validate_uuid
 
-from typing import Any, Union, TYPE_CHECKING
+from typing import Any, Union, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .client import Client
@@ -85,15 +92,17 @@ class Asset:
         return data.get(uuid)
 
     @maybe_uuid()
-    def get_buddy(self, uuid: UUID) -> Any:
+    def get_buddy(self, uuid: UUID) -> Optional[Buddy]:
         """ buddies, Get a buddy by UUID. """
-        data = self.asset_cache['buddies']
-        return data.get(uuid)
+        buddies = self.asset_cache['buddies']
+        data = buddies.get(uuid)
+        return Buddy(client=self._client, data=data) if data else None
 
     @maybe_uuid()
     def get_bundle(self, uuid: UUID) -> Any:
         """ bundles, Get a bundle by UUID. """
-        data = self.asset_cache['bundles']
+        bundles = self.asset_cache['bundles']
+        data = bundles.get(uuid)
         return data.get(uuid)
 
     @check_validate_uuid
@@ -141,25 +150,31 @@ class Asset:
         data = self.asset_cache['missions']
         return data.get(uuid)
 
-    @check_validate_uuid
-    def get_player_card(self, uuid: UUID) -> Any:
-        data = self.asset_cache['player_cards']
-        return data.get(uuid)
+    @maybe_uuid()
+    def get_player_card(self, uuid: UUID) -> Optional[PlayerCard]:
+        """ player_cards, Get a player card by UUID. """
+        player_cards = self.asset_cache['player_cards']
+        data = player_cards.get(uuid)
+        return PlayerCard(client=self._client, data=data) if data else None
 
-    @check_validate_uuid
-    def get_player_title(self, uuid: UUID) -> Any:
-        data = self.asset_cache['player_titles']
-        return data.get(uuid)
+    @maybe_uuid()
+    def get_player_title(self, uuid: UUID) -> Optional[PlayerTitle]:
+        """ player_titles, Get a player title by UUID. """
+        player_titles = self.asset_cache['player_titles']
+        data = player_titles.get(uuid)
+        return PlayerTitle(client=self._client, data=data) if data else None
 
     @check_validate_uuid
     def get_season(self, uuid: UUID) -> Any:
         data = self.asset_cache['seasons']
         return data.get(uuid)
 
-    @check_validate_uuid
-    def get_spray(self, uuid: UUID) -> Any:
-        data = self.asset_cache['sprays']
-        return data.get(uuid)
+    @maybe_uuid()
+    def get_spray(self, uuid: UUID) -> Optional[Spray]:
+        """ sprays, Get a spray by UUID. """
+        sprays = self.asset_cache['sprays']
+        data = sprays.get(uuid)
+        return Spray(client=self._client, data=data) if data else None
 
     @check_validate_uuid
     def get_theme(self, uuid: UUID) -> Any:
@@ -270,9 +285,16 @@ class Asset:
             if filename == 'buddies.json':  # TODO: something is wrong with this one
                 uuid = item['levels'][0]['uuid']
                 item['uuid'] = uuid
-                # item['charmLevel'] = item['levels'][0]['charmLevel']
-                # item['assetPath'] = item['levels'][0]['assetPath']
-                # item.pop('levels')
+                item['charmLevel'] = item['levels'][0]['charmLevel']
+                item['assetPath'] = item['levels'][0]['assetPath']
+                item.pop('levels')
+
+            if filename == 'sprays.json':
+                uuid = item['levels'][0]['uuid']
+                item['uuid'] = uuid
+                item['sprayLevel'] = item['levels'][0]['sprayLevel']
+                item['assetPath'] = item['levels'][0]['assetPath']
+                item.pop('levels')
 
             new_dict[uuid] = item
 

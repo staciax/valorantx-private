@@ -48,7 +48,7 @@ class Buddy(BaseObject):
 
     @property
     def name_localizations(self) -> Localization:
-        """:class: `Translator` Returns the buddy's names."""
+        """:class: `Localization` Returns the buddy's names."""
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
