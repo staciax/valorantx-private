@@ -13,6 +13,8 @@ import aiohttp
 if TYPE_CHECKING:
     from client import Client
 
+# by https://github.com/floxay/python-riot-auth
+
 class RiotAuth:
 
     RIOT_CLIENT_USER_AGENT = (
