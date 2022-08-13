@@ -1,6 +1,8 @@
 from setuptools import setup
 import re
 
+# inspired by https://github.com/Rapptz/discord.py/blob/master/setup.py
+
 requirements = []
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
