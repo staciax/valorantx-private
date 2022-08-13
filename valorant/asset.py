@@ -14,7 +14,7 @@ from .models import (
     PlayerTitle
 )
 
-from .enums import Locale
+from .enums import Locale, ItemType
 from .utils import validate_uuid
 
 from typing import Any, Union, Optional, TYPE_CHECKING
@@ -202,6 +202,9 @@ class Asset:
             asyncio.ensure_future(self._client.http.asset_get_spray()),
             asyncio.ensure_future(self._client.http.asset_get_theme()),
             asyncio.ensure_future(self._client.http.asset_get_weapon()),
+
+            # bundle items
+            asyncio.ensure_future(self._client.http.asset_get_bundle_items()),
         ]
         assets = await asyncio.gather(*async_tasks)
         for index, asset in enumerate(assets, start=1):
@@ -241,6 +244,8 @@ class Asset:
                 self.__dump_to(asset, 'themes')
             elif index == 18:
                 self.__dump_to(asset, 'weapons')
+            elif index == 19:
+                self.__dump_to(asset, '_bundle_items')
             else:
                 print(f"Unknown asset type: {index}")
 
@@ -273,19 +278,54 @@ class Asset:
         for item in data['data']:
             uuid = item['uuid']
 
-            if filename == 'buddies.json':  # TODO: something is wrong with this one
+            if filename.startswith('buddies'):
                 uuid = item['levels'][0]['uuid']
                 item['uuid'] = uuid
                 item['charmLevel'] = item['levels'][0]['charmLevel']
                 item['assetPath'] = item['levels'][0]['assetPath']
                 item.pop('levels')
 
-            if filename == 'sprays.json':
+            elif filename.startswith('sprays'):
                 uuid = item['levels'][0]['uuid']
                 item['uuid'] = uuid
                 item['sprayLevel'] = item['levels'][0]['sprayLevel']
                 item['assetPath'] = item['levels'][0]['assetPath']
                 item.pop('levels')
+
+            elif filename.startswith('_bundle_items'):
+                bundle = Asset.asset_cache['bundles'][uuid]
+                bundle['price'] = item['price']
+                bundle_items = []
+                default_payload = dict(amount=1, discount=0)
+                for weapon in item['weapons']:
+                    bundle_items.append(dict(
+                        uuid=weapon['levels'][0]['uuid'],
+                        type=str(ItemType.skin),
+                        price=weapon.get('price', 0),
+                        **default_payload
+                    ))
+                for buddy in item['buddies']:
+                    bundle_items.append(dict(
+                        uuid=buddy['levels'][0]['uuid'],
+                        type=str(ItemType.buddy),
+                        price=buddy.get('price', 0),
+                        **default_payload
+                    ))
+                for card in item['cards']:
+                    bundle_items.append(dict(
+                        uuid=card['uuid'],
+                        type=str(ItemType.player_card),
+                        price=card.get('price', 0),
+                        **default_payload
+                    ))
+                for spray in item['sprays']:
+                    bundle_items.append(dict(
+                        uuid=spray['uuid'],
+                        type=str(ItemType.spray),
+                        price=spray.get('price', 0),
+                        **default_payload
+                    ))
+                bundle['items'] = bundle_items
 
             new_dict[uuid] = item
 

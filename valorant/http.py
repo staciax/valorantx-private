@@ -44,6 +44,7 @@ class Route:
     BASE_SHARD_URL: ClassVar[str] = "https://shared.{shard}.a.pvp.net"
     BASE_PLAY_VALORANT_URL: ClassVar[str] = "https://playvalorant.com"
     BASE_VALORANT_API_URL: ClassVar[str] = "https://valorant-api.com/v1"
+    BASE_VALTRACKER_GG_URL: ClassVar[str] = "https://api.valtracker.gg"  # add-on bundle items
 
     def __init__(
             self,
@@ -71,6 +72,8 @@ class Route:
             url = self.BASE_PLAY_VALORANT_URL + path
         elif endpoint == "valorant_api":
             url = self.BASE_VALORANT_API_URL + path
+        elif endpoint == "valtracker_gg":
+            url = self.BASE_VALTRACKER_GG_URL + path
 
         if parameters:
             url = url + '?' + urlencode(parameters)
@@ -218,6 +221,11 @@ class HTTPClient:
 
     def asset_get_weapon(self) -> Response[Any]:
         return self.request(Route('GET', '/weapons', 'valorant_api', language='all'))
+
+    # valtracker endpoint
+
+    def asset_get_bundle_items(self) -> Response[Any]:
+        return self.request(Route('GET', '/bundles', 'valtracker_gg'))
 
     # utils
 
