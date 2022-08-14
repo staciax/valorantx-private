@@ -17,7 +17,6 @@ with open('README.md') as f:
 
 packages = [
     'valorant',
-    'valorant.data',
     'valorant.models',
     'valorant.types',
 ]
