@@ -7,7 +7,7 @@ import logging
 from .enums import Locale
 
 from .http import HTTPClient
-from .asset import Asset
+from .assets import Asset
 from typing import Any, Coroutine, Generator, Mapping, Optional, Type, Union, TYPE_CHECKING
 
 __all__ = ("Client",)
