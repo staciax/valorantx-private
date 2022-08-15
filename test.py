@@ -5,7 +5,7 @@ client = valorant.Client(locale='en-US')
 
 async def main():
     async with client:
-        # await client.fetch_all_assets()
+        await client.fetch_all_assets()
 
         agent = client.asset.get_agent('killjoy')
         print("Agent:", agent.name)
@@ -22,8 +22,8 @@ async def main():
         spray = client.asset.get_spray('20d547a4-4ec8-c9ef-dd9d-1c8b74d0e6f7')
         print("Spray:", spray.icon)
 
-        # bundle = client.asset.get_bundle('sentinels')
-        # print(bundle['displayName']['en-US'])
+        bundle = client.asset.get_bundle('sentinels')
+        print(bundle['displayName']['en-US'])
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
