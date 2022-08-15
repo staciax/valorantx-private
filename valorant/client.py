@@ -76,5 +76,5 @@ class Client:
 
     # asset
 
-    async def fetch_all_assets(self) -> None:
-        await self.asset.fetch_all_assets()
+    async def fetch_all_assets(self, force: bool = False) -> None:
+        await self.asset.fetch_all_assets(force=force)

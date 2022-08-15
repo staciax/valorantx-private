@@ -4,6 +4,7 @@ import os
 import json
 import asyncio
 
+import shutil
 from pathlib import Path
 from functools import wraps
 
@@ -38,7 +39,6 @@ def check_validate_uuid(func):
         return func(self, str(uuid))
 
     return decorator
-
 
 def maybe_uuid(key: str = 'displayName'):
     def decorator(function):
@@ -104,8 +104,7 @@ class Asset:
     def get_bundle(self, uuid: str) -> Any:
         """ bundles, Get a bundle by UUID. """
         bundles = self.ASSET_CACHE['bundles']
-        data = bundles.get(uuid)
-        return data
+        return bundles.get(uuid)
 
     @check_validate_uuid
     def get_ceremonie(self, uuid: str) -> Any:
@@ -188,7 +187,7 @@ class Asset:
         data = self.ASSET_CACHE['weapons']
         return data.get(uuid)
 
-    async def fetch_all_assets(self) -> None:
+    async def fetch_all_assets(self, *, force: bool = False) -> None:
         """ Fetch all assets. """
 
         get_version = await self._client.http.get_valorant_version()
@@ -199,77 +198,80 @@ class Asset:
         self._mkdir_cache_dir()
         self._mkdir_assets_dir()
 
-        async_tasks = [
-            asyncio.ensure_future(self._client.http.asset_get_agent()),
-            asyncio.ensure_future(self._client.http.asset_get_buddy()),
-            asyncio.ensure_future(self._client.http.asset_get_bundle()),
-            asyncio.ensure_future(self._client.http.asset_get_ceremonie()),
-            asyncio.ensure_future(self._client.http.asset_get_competitive_tier()),
-            asyncio.ensure_future(self._client.http.asset_get_contract()),
-            asyncio.ensure_future(self._client.http.asset_get_currency()),
-            asyncio.ensure_future(self._client.http.asset_get_game_mode()),
-            asyncio.ensure_future(self._client.http.asset_get_gear()),
-            asyncio.ensure_future(self._client.http.asset_get_level_border()),
-            asyncio.ensure_future(self._client.http.asset_get_map()),
-            asyncio.ensure_future(self._client.http.asset_get_mission()),
-            asyncio.ensure_future(self._client.http.asset_get_player_card()),
-            asyncio.ensure_future(self._client.http.asset_get_player_title()),
-            asyncio.ensure_future(self._client.http.asset_get_season()),
-            asyncio.ensure_future(self._client.http.asset_get_spray()),
-            asyncio.ensure_future(self._client.http.asset_get_theme()),
-            asyncio.ensure_future(self._client.http.asset_get_weapon()),
+        if not self._get_asset_dir().endswith(self._client.version) \
+                or len(os.listdir(self._get_asset_dir())) == 0 \
+                or force:
 
-            # bundle items
-            asyncio.ensure_future(self._client.http.asset_get_bundle_items()),
-        ]
-        assets = await asyncio.gather(*async_tasks)
-        for index, asset in enumerate(assets, start=1):
-            if index == 1:
-                self.__dump_to(asset, 'agents')
-            elif index == 2:
-                self.__dump_to(asset, 'buddies')
-            elif index == 3:
-                self.__dump_to(asset, 'bundles')
-            elif index == 4:
-                self.__dump_to(asset, 'ceremonies')
-            elif index == 5:
-                self.__dump_to(asset, 'competitive_tiers')
-            elif index == 6:
-                self.__dump_to(asset, 'contracts')
-            elif index == 7:
-                self.__dump_to(asset, 'currencies')
-            elif index == 8:
-                self.__dump_to(asset, 'game_modes')
-            elif index == 9:
-                self.__dump_to(asset, 'gears')
-            elif index == 10:
-                self.__dump_to(asset, 'level_borders')
-            elif index == 11:
-                self.__dump_to(asset, 'maps')
-            elif index == 12:
-                self.__dump_to(asset, 'missions')
-            elif index == 13:
-                self.__dump_to(asset, 'player_cards')
-            elif index == 14:
-                self.__dump_to(asset, 'player_titles')
-            elif index == 15:
-                self.__dump_to(asset, 'seasons')
-            elif index == 16:
-                self.__dump_to(asset, 'sprays')
-            elif index == 17:
-                self.__dump_to(asset, 'themes')
-            elif index == 18:
-                self.__dump_to(asset, 'weapons')
-            elif index == 19:
-                self.__dump_to(asset, '_bundle_items')
-            else:
-                print(f"Unknown asset type: {index}")
+            async_tasks = [
+                asyncio.ensure_future(self._client.http.asset_get_agent()),
+                asyncio.ensure_future(self._client.http.asset_get_buddy()),
+                asyncio.ensure_future(self._client.http.asset_get_bundle()),
+                asyncio.ensure_future(self._client.http.asset_get_ceremonie()),
+                asyncio.ensure_future(self._client.http.asset_get_competitive_tier()),
+                asyncio.ensure_future(self._client.http.asset_get_contract()),
+                asyncio.ensure_future(self._client.http.asset_get_currency()),
+                asyncio.ensure_future(self._client.http.asset_get_game_mode()),
+                asyncio.ensure_future(self._client.http.asset_get_gear()),
+                asyncio.ensure_future(self._client.http.asset_get_level_border()),
+                asyncio.ensure_future(self._client.http.asset_get_map()),
+                asyncio.ensure_future(self._client.http.asset_get_mission()),
+                asyncio.ensure_future(self._client.http.asset_get_player_card()),
+                asyncio.ensure_future(self._client.http.asset_get_player_title()),
+                asyncio.ensure_future(self._client.http.asset_get_season()),
+                asyncio.ensure_future(self._client.http.asset_get_spray()),
+                asyncio.ensure_future(self._client.http.asset_get_theme()),
+                asyncio.ensure_future(self._client.http.asset_get_weapon()),
 
-        self.reload_assets()
+                # bundle items
+                asyncio.ensure_future(self._client.http.asset_get_bundle_items()),
+            ]
+            assets = await asyncio.gather(*async_tasks)
+            for index, asset in enumerate(assets, start=1):
+                if index == 1:
+                    self.__dump_to(asset, 'agents')
+                elif index == 2:
+                    self.__dump_to(asset, 'buddies')
+                elif index == 3:
+                    self.__dump_to(asset, 'bundles')
+                elif index == 4:
+                    self.__dump_to(asset, 'ceremonies')
+                elif index == 5:
+                    self.__dump_to(asset, 'competitive_tiers')
+                elif index == 6:
+                    self.__dump_to(asset, 'contracts')
+                elif index == 7:
+                    self.__dump_to(asset, 'currencies')
+                elif index == 8:
+                    self.__dump_to(asset, 'game_modes')
+                elif index == 9:
+                    self.__dump_to(asset, 'gears')
+                elif index == 10:
+                    self.__dump_to(asset, 'level_borders')
+                elif index == 11:
+                    self.__dump_to(asset, 'maps')
+                elif index == 12:
+                    self.__dump_to(asset, 'missions')
+                elif index == 13:
+                    self.__dump_to(asset, 'player_cards')
+                elif index == 14:
+                    self.__dump_to(asset, 'player_titles')
+                elif index == 15:
+                    self.__dump_to(asset, 'seasons')
+                elif index == 16:
+                    self.__dump_to(asset, 'sprays')
+                elif index == 17:
+                    self.__dump_to(asset, 'themes')
+                elif index == 18:
+                    self.__dump_to(asset, 'weapons')
+                elif index == 19:
+                    self.__dump_to(asset, '_bundle_items')
+                else:
+                    print(f"Unknown asset type: {index}")
 
-    @staticmethod
-    def _get_asset_dir() -> str:
-        return os.path.join(Asset._cache_dir, 'assets')
+        self.__load_assets()
+
+    def _get_asset_dir(self) -> str:
+        return os.path.join(Asset._cache_dir, self._client.version)
 
     def reload_assets(self) -> None:
         self.ASSET_CACHE.clear()
@@ -277,18 +279,22 @@ class Asset:
 
     def __load_assets(self) -> None:
 
-        try:
-            self._get_asset_dir()
-        except FileNotFoundError:
-            self._mkdir_cache_dir()
-            self._mkdir_assets_dir()
-        finally:
-            cache_asset_dir = self._get_asset_dir()
+        to_remove_dir = False
 
-        for filename in os.listdir(cache_asset_dir):
-            if isinstance(filename, str):
-                if filename.endswith('.json'):
-                    Asset.__to_cache(str(cache_asset_dir), str(filename))
+        for maybe_dir in sorted(
+            os.listdir(self._cache_dir),
+            key=lambda x: os.path.getmtime(os.path.join(self._cache_dir, x)),
+            reverse=True,
+        ):
+            maybe_asset_dir = os.path.join(self._cache_dir, maybe_dir)
+            if not to_remove_dir and os.path.isdir(maybe_asset_dir):
+                for filename in os.listdir(maybe_asset_dir):
+                    if isinstance(filename, str) and filename.endswith('.json'):
+                        Asset.__to_cache(str(maybe_asset_dir), str(filename))
+                to_remove_dir = True
+
+            elif to_remove_dir and os.path.isdir(maybe_asset_dir):
+                shutil.rmtree(maybe_asset_dir)
 
     def _mkdir_cache_dir(self) -> bool:
 
