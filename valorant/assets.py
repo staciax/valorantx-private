@@ -4,7 +4,8 @@ import os
 import json
 import asyncio
 
-from functools import cache, wraps
+from pathlib import Path
+from functools import wraps
 
 from .models import (
     Agent,
@@ -23,8 +24,8 @@ if TYPE_CHECKING:
     from .client import Client
     from .enums import Locale
 
-def check_validate_uuid(func):
 
+def check_validate_uuid(func):
     @wraps(func)
     def decorator(self, uuid: str = None):
 
@@ -38,8 +39,8 @@ def check_validate_uuid(func):
 
     return decorator
 
-def maybe_uuid(key: str = 'displayName'):
 
+def maybe_uuid(key: str = 'displayName'):
     def decorator(function):
 
         @wraps(function)
@@ -63,17 +64,27 @@ def maybe_uuid(key: str = 'displayName'):
                 raise ValueError('Invalid UUID')
 
             return function(self, str(uuid))
+
         return wrapper
+
     return decorator
 
+
 class Asset:
+
+    _cache_dir: Path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        '.cache'
+    )
 
     ASSET_CACHE = {}
 
     def __init__(self, *, client: Client, locale: Union[Locale, str] = Locale.american_english) -> None:
         self._client = client
         self.locale = str(locale)
-        self._reload_assets()
+
+        # load cache
+        self.reload_assets()
 
     @maybe_uuid()
     def get_agent(self, uuid: str) -> Optional[Agent]:
@@ -94,7 +105,7 @@ class Asset:
         """ bundles, Get a bundle by UUID. """
         bundles = self.ASSET_CACHE['bundles']
         data = bundles.get(uuid)
-        return data.get(uuid)
+        return data
 
     @check_validate_uuid
     def get_ceremonie(self, uuid: str) -> Any:
@@ -178,10 +189,15 @@ class Asset:
         return data.get(uuid)
 
     async def fetch_all_assets(self) -> None:
+        """ Fetch all assets. """
 
         get_version = await self._client.http.get_valorant_version()
+
         if get_version != self._client.version:
             self._client.version = get_version
+
+        self._mkdir_cache_dir()
+        self._mkdir_assets_dir()
 
         async_tasks = [
             asyncio.ensure_future(self._client.http.asset_get_agent()),
@@ -249,27 +265,72 @@ class Asset:
             else:
                 print(f"Unknown asset type: {index}")
 
+        self.reload_assets()
+
     @staticmethod
-    @cache
-    def __path() -> str:
-        return os.path.join(os.path.dirname(__file__), 'data')
+    def _get_asset_dir() -> str:
+        return os.path.join(Asset._cache_dir, 'assets')
+
+    def reload_assets(self) -> None:
+        self.ASSET_CACHE.clear()
+        self.__load_assets()
+
+    def __load_assets(self) -> None:
+
+        try:
+            self._get_asset_dir()
+        except FileNotFoundError:
+            self._mkdir_cache_dir()
+            self._mkdir_assets_dir()
+        finally:
+            cache_asset_dir = self._get_asset_dir()
+
+        for filename in os.listdir(cache_asset_dir):
+            if isinstance(filename, str):
+                if filename.endswith('.json'):
+                    Asset.__to_cache(str(cache_asset_dir), str(filename))
+
+    def _mkdir_cache_dir(self) -> bool:
+
+        if not os.path.exists(self._cache_dir):
+            try:
+                os.mkdir(self._cache_dir)
+            except OSError:
+                return False
+            else:
+                self._mkdir_cache_gitignore()
+                return True
+
+    def _mkdir_assets_dir(self) -> bool:
+
+        assets_dir = self._get_asset_dir()
+        if not os.path.exists(os.path.join(assets_dir)):
+            try:
+                os.mkdir(os.path.join(assets_dir))
+            except OSError:
+                return False
+            else:
+                return True
+
+    def _mkdir_cache_gitignore(self) -> None:
+        """ Make a .gitignore file in the cache directory. """
+
+        gitignore_path = os.path.join(self._cache_dir, ".gitignore")
+        msg = "# This directory is used to cache data from the Valorant API.\n*\n"
+        if not os.path.exists(gitignore_path):
+            with open(gitignore_path, "w", encoding='utf-8') as f:
+                f.write(msg)
 
     def __dump_to(self, data: Any, filename: str) -> None:
-        with open(os.path.join(self.__path(), f"{filename}.json"), "w", encoding='utf-8') as f:
+
+        with open(os.path.join(self._get_asset_dir(), f"{filename}.json"), "w", encoding='utf-8') as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
 
-    @classmethod
-    def __load_assets(cls) -> None:
-        path = cls.__path()
-        for filename in os.listdir(path):
-            if filename.endswith('.json'):
-                cls.__to_cache(path, filename)
-
-    @classmethod
-    def __to_cache(cls, path: str, filename: str) -> None:
+    @staticmethod
+    def __to_cache(path: str, filename: str) -> None:
         with open(os.path.join(path, filename), encoding='utf-8') as f:
             to_dict = json.load(f)
-            cls.__customize_asset_cache_format(filename, to_dict)
+            Asset.__customize_asset_cache_format(filename, to_dict)
 
     @staticmethod
     def __customize_asset_cache_format(filename: str, data: Any) -> None:
@@ -330,8 +391,3 @@ class Asset:
             new_dict[uuid] = item
 
         Asset.ASSET_CACHE[filename[:-5]] = new_dict
-
-    @classmethod
-    def _reload_assets(cls) -> None:
-        cls.ASSET_CACHE.clear()
-        cls.__load_assets()

@@ -25,25 +25,25 @@ class Client:
         # http client
         self.http: HTTPClient = HTTPClient()
 
-        # asset
-        self.asset: Asset = Asset(client=self, locale=locale)
+        # config
+        self._closed: bool = False
+        self._ready: bool = False
+        self._version: str = None
 
         # locale
         self._locale: str = str(locale)
 
-        # config
-        self._closed: bool = False
-        self._ready: bool = False
-        self._version: Optional[str] = None
+        # asset
+        self.asset: Asset = Asset(client=self, locale=locale)
 
     async def __aenter__(self) -> Self:
         return self
 
     async def __aexit__(
-            self,
-            exc_type: Optional[Type[BaseException]],
-            exc_value: Optional[BaseException],
-            traceback: Optional[TracebackType],
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
     ) -> None:
         if not self.is_closed():
             await self.close()
@@ -78,6 +78,3 @@ class Client:
 
     async def fetch_all_assets(self) -> None:
         await self.asset.fetch_all_assets()
-
-
-
