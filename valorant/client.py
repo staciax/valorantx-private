@@ -7,7 +7,7 @@ import logging
 from .enums import Locale
 
 from .http import HTTPClient
-from .assets import Asset
+from .assets import Assets
 from typing import Any, Coroutine, Generator, Mapping, Optional, Type, Union, TYPE_CHECKING
 
 __all__ = ("Client",)
@@ -28,13 +28,13 @@ class Client:
         # config
         self._closed: bool = False
         self._ready: bool = False
-        self._version: str = None
+        self._version: Optional[str] = None
 
         # locale
-        self._locale: str = str(locale)
+        self._locale: str = locale
 
-        # asset
-        self.asset: Asset = Asset(client=self, locale=locale)
+        # assets
+        self.assets: Assets = Assets(client=self, locale=locale)
 
     async def __aenter__(self) -> Self:
         return self
@@ -77,4 +77,4 @@ class Client:
     # asset
 
     async def fetch_all_assets(self, force: bool = False) -> None:
-        await self.asset.fetch_all_assets(force=force)
+        await self.assets.fetch_all_assets(force=force)

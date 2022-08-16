@@ -70,7 +70,7 @@ def maybe_uuid(key: str = 'displayName'):
     return decorator
 
 
-class Asset:
+class Assets:
 
     _cache_dir: Path = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
@@ -81,7 +81,7 @@ class Asset:
 
     def __init__(self, *, client: Client, locale: Union[Locale, str] = Locale.american_english) -> None:
         self._client = client
-        self.locale = str(locale)
+        self.locale = locale
 
         # load cache
         self.reload_assets()
@@ -271,7 +271,7 @@ class Asset:
         self.__load_assets()
 
     def _get_asset_dir(self) -> str:
-        return os.path.join(Asset._cache_dir, self._client.version)
+        return os.path.join(Assets._cache_dir, self._client.version)
 
     def reload_assets(self) -> None:
         self.ASSET_CACHE.clear()
@@ -292,7 +292,7 @@ class Asset:
             if not to_remove_dir and os.path.isdir(maybe_asset_dir) and maybe_dir.startswith('0'):
                 for filename in os.listdir(maybe_asset_dir):
                     if isinstance(filename, str) and filename.endswith('.json'):
-                        Asset.__to_cache(str(maybe_asset_dir), str(filename))
+                        Assets.__to_cache(str(maybe_asset_dir), str(filename))
                 to_remove_dir = True
 
             elif to_remove_dir and os.path.isdir(maybe_asset_dir):
@@ -338,7 +338,7 @@ class Asset:
     def __to_cache(path: str, filename: str) -> None:
         with open(os.path.join(path, filename), encoding='utf-8') as f:
             to_dict = json.load(f)
-            Asset.__customize_asset_cache_format(filename, to_dict)
+            Assets.__customize_asset_cache_format(filename, to_dict)
 
     @staticmethod
     def __customize_asset_cache_format(filename: str, data: Any) -> None:
@@ -362,7 +362,7 @@ class Asset:
                 item.pop('levels')
 
             elif filename.startswith('_bundle_items'):
-                bundle = Asset.ASSET_CACHE['bundles'][uuid]
+                bundle = Assets.ASSET_CACHE['bundles'][uuid]
                 bundle['price'] = item['price']
                 bundle_items = []
                 default_payload = dict(amount=1, discount=0)
@@ -398,4 +398,4 @@ class Asset:
 
             new_dict[uuid] = item
 
-        Asset.ASSET_CACHE[filename[:-5]] = new_dict
+        Assets.ASSET_CACHE[filename[:-5]] = new_dict
