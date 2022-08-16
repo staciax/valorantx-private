@@ -442,7 +442,17 @@
           }
         ]
       },
-      "shopData": null,
+      "shopData": {
+        "cost": 0,
+        "category": null,
+        "categoryText": null,
+        "gridPosition": null,
+        "canBeTrashed": true,
+        "image": null,
+        "newImage": null,
+        "newImage2": null,
+        "assetPath": null
+      },
       "skins": []
     },
      {
