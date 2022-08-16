@@ -74,7 +74,7 @@ class Asset:
 
     _cache_dir: Path = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        '.cache'
+        '.lib_cache'
     )
 
     ASSET_CACHE = {}
@@ -279,6 +279,8 @@ class Asset:
 
     def __load_assets(self) -> None:
 
+        self._mkdir_cache_dir()
+
         to_remove_dir = False
 
         for maybe_dir in sorted(
@@ -287,7 +289,7 @@ class Asset:
             reverse=True,
         ):
             maybe_asset_dir = os.path.join(self._cache_dir, maybe_dir)
-            if not to_remove_dir and os.path.isdir(maybe_asset_dir):
+            if not to_remove_dir and os.path.isdir(maybe_asset_dir) and maybe_dir.startswith('0'):
                 for filename in os.listdir(maybe_asset_dir):
                     if isinstance(filename, str) and filename.endswith('.json'):
                         Asset.__to_cache(str(maybe_asset_dir), str(filename))
@@ -304,7 +306,7 @@ class Asset:
             except OSError:
                 return False
             else:
-                self._mkdir_cache_gitignore()
+                # self._mkdir_cache_gitignore()
                 return True
 
     def _mkdir_assets_dir(self) -> bool:
