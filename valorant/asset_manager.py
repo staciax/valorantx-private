@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+# https://github.com/Rapptz/discord.py/blob/master/discord/asset.py
+
 import os
 import io
 import yarl
