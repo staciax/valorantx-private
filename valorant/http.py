@@ -8,8 +8,8 @@ from typing import (
     Any,
     ClassVar,
     Optional,
-    NoReturn,
-    Mapping,
+    # NoReturn,
+    # Mapping,
     TypeVar,
     Coroutine,
     Dict,
@@ -232,3 +232,14 @@ class HTTPClient:
     async def get_valorant_version(self) -> str:
         resp = await self.asset_valorant_version()
         return resp['data']['version']
+
+    async def read_from_url(self, url: str) -> bytes:
+        async with self.__session.get(url) as resp:
+            if resp.status == 200:
+                return await resp.read()
+            elif resp.status == 404:
+                raise NotFound(resp, 'asset not found')
+            elif resp.status == 403:
+                raise Forbidden(resp, 'cannot retrieve asset')
+            else:
+                raise HTTPException(resp, 'failed to get asset')

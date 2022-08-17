@@ -195,7 +195,7 @@ class Assets:
         if get_version != self._client.version:
             self._client.version = get_version
 
-        self._mkdir_cache_dir()
+        # self._mkdir_cache_dir()
         self._mkdir_assets_dir()
 
         if not self._get_asset_dir().endswith(self._client.version) \
@@ -279,7 +279,7 @@ class Assets:
 
     def __load_assets(self) -> None:
 
-        self._mkdir_cache_dir()
+        # self._mkdir_cache_dir()
 
         to_remove_dir = False
 
@@ -289,13 +289,13 @@ class Assets:
             reverse=True,
         ):
             maybe_asset_dir = os.path.join(self._cache_dir, maybe_dir)
-            if not to_remove_dir and os.path.isdir(maybe_asset_dir) and maybe_dir.startswith('0'):
+            if not to_remove_dir and os.path.isdir(maybe_asset_dir) and str(maybe_dir).startswith('0'):
                 for filename in os.listdir(maybe_asset_dir):
                     if isinstance(filename, str) and filename.endswith('.json'):
                         Assets.__to_cache(str(maybe_asset_dir), str(filename))
                 to_remove_dir = True
 
-            elif to_remove_dir and os.path.isdir(maybe_asset_dir):
+            elif to_remove_dir and os.path.isdir(maybe_asset_dir) and str(maybe_dir).startswith('0'):
                 shutil.rmtree(maybe_asset_dir)
 
     def _mkdir_cache_dir(self) -> bool:

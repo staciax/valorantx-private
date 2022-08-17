@@ -9,6 +9,7 @@ class Localization:
 
     def __init__(self, untranslated: Union[str, Dict[str, str]], locale: Union[str, Locale] = None) -> None:
         self.untranslated = untranslated
+        self._locale = locale
 
     def __repr__(self) -> str:
         return f'<Translator untranslated={self.untranslated!r}>'
@@ -134,7 +135,7 @@ class Localization:
     @property
     def locale(self) -> str:
         """ :class:`str`: Returns from your current locale."""
-        return getattr(self, self.untranslated, self.english)
+        return self._locale
 
     def from_str(self, value: str):
         """Constructs a :class:`Translator` from a string."""

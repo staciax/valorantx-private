@@ -57,13 +57,6 @@ class File:
 
             To pass binary data, consider usage of ``io.BytesIO``.
 
-    spoiler: :class:`bool`
-        Whether the attachment is a spoiler. If left unspecified, the :attr:`~File.filename` is used
-        to determine if the file is a spoiler.
-    description: Optional[:class:`str`]
-        The file description to display, currently only supported for images.
-
-        .. versionadded:: 2.0
     """
 
     __slots__ = ('fp', '_filename', '_original_pos', '_owner', '_closer')
@@ -76,7 +69,7 @@ class File:
         if isinstance(fp, io.IOBase):
             if not (fp.seekable() and fp.readable()):
                 raise ValueError(f'File buffer {fp!r} must be seekable and readable')
-            self.fp: io.BufferedIOBase = fp
+            self.fp: io.IOBase = fp
             self._original_pos = fp.tell()
             self._owner = False
         else:
@@ -86,7 +79,7 @@ class File:
 
         # aiohttp only uses two methods from IOBase
         # read and close, since I want to control when the files
-        # close, I need to stub it so it doesn't close unless
+        # close, I need to stub it, so it doesn't close unless
         # I tell it to
         self._closer = self.fp.close
         self.fp.close = lambda: None
