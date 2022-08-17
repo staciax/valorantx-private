@@ -4,11 +4,21 @@ import os
 import json
 import asyncio
 import logging
-from .enums import Locale
 
+from .enums import Locale
 from .http import HTTPClient
 from .assets import Assets
-from typing import Any, Coroutine, Generator, Mapping, Optional, Type, Union, TYPE_CHECKING
+
+from typing import (
+    Any,
+    Coroutine,
+    Generator,
+    Mapping,
+    Optional,
+    Type,
+    Union,
+    TYPE_CHECKING,
+)
 
 __all__ = ("Client",)
 

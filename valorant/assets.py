@@ -78,8 +78,7 @@ def maybe_uuid(key: str = 'displayName'):
 class Assets:
 
     _cache_dir: Path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        '.lib_cache'
+        os.path.dirname(os.path.abspath(__file__)), ".lib_cache"
     )
 
     ASSET_CACHE = {}
@@ -213,9 +212,11 @@ class Assets:
         # self._mkdir_cache_dir()
         self._mkdir_assets_dir()
 
-        if not self._get_asset_dir().endswith(self._client.version) \
-                or len(os.listdir(self._get_asset_dir())) == 0 \
-                or force:
+        if (
+            not self._get_asset_dir().endswith(self._client.version)
+            or len(os.listdir(self._get_asset_dir())) == 0
+            or force
+        ):
 
             async_tasks = [
                 asyncio.ensure_future(self._client.http.asset_get_agent()),
@@ -237,7 +238,6 @@ class Assets:
                 asyncio.ensure_future(self._client.http.asset_get_spray()),
                 asyncio.ensure_future(self._client.http.asset_get_theme()),
                 asyncio.ensure_future(self._client.http.asset_get_weapon()),
-
                 # bundle items
                 asyncio.ensure_future(self._client.http.asset_get_bundle_items()),
             ]
@@ -349,7 +349,11 @@ class Assets:
 
     def __dump_to(self, data: Any, filename: str) -> None:
 
-        with open(os.path.join(self._get_asset_dir(), f"{filename}.json"), "w", encoding='utf-8') as f:
+        with open(
+            file=os.path.join(self._get_asset_dir(), f"{filename}.json"),
+            mode="w",
+            encoding="utf-8",
+        ) as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
 
     @staticmethod
@@ -385,33 +389,41 @@ class Assets:
                 bundle_items = []
                 default_payload = dict(amount=1, discount=0)
                 for weapon in item['weapons']:
-                    bundle_items.append(dict(
-                        uuid=weapon['levels'][0]['uuid'],
-                        type=str(ItemType.skin),
-                        price=weapon.get('price', 0),
-                        **default_payload
-                    ))
+                    bundle_items.append(
+                        dict(
+                            uuid=weapon['levels'][0]['uuid'],
+                            type=str(ItemType.skin),
+                            price=weapon.get('price', 0),
+                            **default_payload,
+                        )
+                    )
                 for buddy in item['buddies']:
-                    bundle_items.append(dict(
-                        uuid=buddy['levels'][0]['uuid'],
-                        type=str(ItemType.buddy),
-                        price=buddy.get('price', 0),
-                        **default_payload
-                    ))
+                    bundle_items.append(
+                        dict(
+                            uuid=buddy['levels'][0]['uuid'],
+                            type=str(ItemType.buddy),
+                            price=buddy.get('price', 0),
+                            **default_payload,
+                        )
+                    )
                 for card in item['cards']:
-                    bundle_items.append(dict(
-                        uuid=card['uuid'],
-                        type=str(ItemType.player_card),
-                        price=card.get('price', 0),
-                        **default_payload
-                    ))
+                    bundle_items.append(
+                        dict(
+                            uuid=card['uuid'],
+                            type=str(ItemType.player_card),
+                            price=card.get('price', 0),
+                            **default_payload,
+                        )
+                    )
                 for spray in item['sprays']:
-                    bundle_items.append(dict(
-                        uuid=spray['uuid'],
-                        type=str(ItemType.spray),
-                        price=spray.get('price', 0),
-                        **default_payload
-                    ))
+                    bundle_items.append(
+                        dict(
+                            uuid=spray['uuid'],
+                            type=str(ItemType.spray),
+                            price=spray.get('price', 0),
+                            **default_payload,
+                        )
+                    )
                 bundle['items'] = bundle_items
 
             new_dict[uuid] = item

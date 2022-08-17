@@ -2,7 +2,18 @@ from __future__ import annotations
 
 import types
 from collections import namedtuple
-from typing import Any, Dict, ClassVar, List, Mapping, Iterator, Type, TypeVar, Tuple, TYPE_CHECKING
+from typing import (
+    Any,
+    Dict,
+    ClassVar,
+    List,
+    Mapping,
+    Iterator,
+    Type,
+    TypeVar,
+    Tuple,
+    TYPE_CHECKING
+)
 
 # -- https://github.com/Rapptz/discord.py/blob/master/discord/enums.py
 
