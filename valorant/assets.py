@@ -113,48 +113,57 @@ class Assets:
 
     @check_validate_uuid
     def get_ceremonie(self, uuid: str) -> Any:
+        """ ceremonies, Get a ceremony by UUID. """
         data = self.ASSET_CACHE['ceremonies']
         return data.get(uuid)
 
     @check_validate_uuid
     def get_competitive_tier(self, uuid: str) -> Any:
+        """ competitiveTiers, Get a competitive tier by UUID. """
         data = self.ASSET_CACHE['competitive_tiers']
         return data.get(uuid)
 
     @check_validate_uuid
     def get_content_tier(self, uuid: str) -> Optional[ContentTier]:
+        """ content_tiers, Get a content tier by UUID. """
         content_tiers = self.ASSET_CACHE['content_tiers']
         data = content_tiers.get(uuid)
         return ContentTier(client=self._client, data=data) if data else None
 
     @check_validate_uuid
     def get_contract(self, uuid: str) -> Optional[Contract]:
+        """ contracts, Get a contract by UUID. """
         contracts = self.ASSET_CACHE['contracts']
         data = contracts.get(uuid)
         return Contract(client=self._client, data=data) if data else None
 
     @check_validate_uuid
     def get_currency(self, uuid: str) -> Any:
+        """ currencies, Get a currency by UUID. """
         data = self.ASSET_CACHE['currencies']
         return data.get(uuid)
 
     @check_validate_uuid
     def get_game_mode(self, uuid: str) -> Any:
+        """ game_modes, Get a game mode by UUID. """
         data = self.ASSET_CACHE['game_modes']
         return data.get(uuid)
 
     @check_validate_uuid
     def get_gear(self, uuid: str) -> Any:
+        """ gears, Get a gear by UUID. """
         data = self.ASSET_CACHE['gears']
         return data.get(uuid)
 
     @check_validate_uuid
     def get_level_border(self, uuid: str) -> Any:
+        """ level_borders, Get a level border by UUID. """
         data = self.ASSET_CACHE['level_borders']
         return data.get(uuid)
 
     @check_validate_uuid
     def get_map(self, uuid: str) -> Any:
+        """ maps, Get a map by UUID. """
         data = self.ASSET_CACHE['maps']
         return data.get(uuid)
 
@@ -181,6 +190,7 @@ class Assets:
 
     @check_validate_uuid
     def get_season(self, uuid: str) -> Any:
+        """ seasons, Get a season by UUID. """
         data = self.ASSET_CACHE['seasons']
         return data.get(uuid)
 
@@ -193,11 +203,13 @@ class Assets:
 
     @check_validate_uuid
     def get_theme(self, uuid: str) -> Any:
+        """ themes, Get a theme by UUID. """
         data = self.ASSET_CACHE['themes']
         return data.get(uuid)
 
     @check_validate_uuid
     def get_weapon(self, uuid: str) -> Any:
+        """ weapons, Get a weapon by UUID. """
         data = self.ASSET_CACHE['weapons']
         return data.get(uuid)
 
@@ -289,13 +301,16 @@ class Assets:
         self.reload_assets()
 
     def _get_asset_dir(self) -> str:
+        """ Get the asset directory. """
         return os.path.join(Assets._cache_dir, self._client.version)
 
     def reload_assets(self) -> None:
+        """ Reload assets. """
         self.ASSET_CACHE.clear()
         self.__load_assets()
 
     def __load_assets(self) -> None:
+        """ Load assets. """
 
         # self._mkdir_cache_dir()
 
@@ -317,7 +332,7 @@ class Assets:
                 shutil.rmtree(maybe_asset_dir)
 
     def _mkdir_cache_dir(self) -> bool:
-
+        """ Make the cache directory. """
         if not os.path.exists(self._cache_dir):
             try:
                 os.mkdir(self._cache_dir)
@@ -328,7 +343,7 @@ class Assets:
                 return True
 
     def _mkdir_assets_dir(self) -> bool:
-
+        """ Make the assets' directory. """
         assets_dir = self._get_asset_dir()
         if not os.path.exists(os.path.join(assets_dir)):
             try:
@@ -348,22 +363,22 @@ class Assets:
                 f.write(msg)
 
     def __dump_to(self, data: Any, filename: str) -> None:
-
-        with open(
-            file=os.path.join(self._get_asset_dir(), f"{filename}.json"),
-            mode="w",
-            encoding="utf-8",
-        ) as f:
+        """ Dump data to a file. """
+        file_path = os.path.join(self._get_asset_dir(), f'{filename}.json')
+        with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
 
     @staticmethod
     def __to_cache(path: str, filename: str) -> None:
-        with open(os.path.join(path, filename), encoding='utf-8') as f:
+        """ Add data to the cache. """
+        file_path = os.path.join(path, filename)
+        with open(file_path, encoding='utf-8') as f:
             to_dict = json.load(f)
             Assets.__customize_asset_cache_format(filename, to_dict)
 
     @staticmethod
     def __customize_asset_cache_format(filename: str, data: Any) -> None:
+        """ Customize the asset cache format. """
 
         new_dict = {}
         for item in data['data']:
