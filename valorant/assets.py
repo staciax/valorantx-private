@@ -11,9 +11,14 @@ from functools import wraps
 from .models import (
     Agent,
     Buddy,
+    Bundle,
     Spray,
     PlayerCard,
-    PlayerTitle
+    PlayerTitle,
+
+    Mission,
+    ContentTier,
+    Contract,
 )
 
 from .enums import Locale, ItemType
@@ -101,10 +106,11 @@ class Assets:
         return Buddy(client=self._client, data=data) if data else None
 
     @maybe_uuid()
-    def get_bundle(self, uuid: str) -> Any:
+    def get_bundle(self, uuid: str) -> Optional[Bundle]:
         """ bundles, Get a bundle by UUID. """
         bundles = self.ASSET_CACHE['bundles']
-        return bundles.get(uuid)
+        data = bundles.get(uuid)
+        return Bundle(client=self._client, data=data) if data else None
 
     @check_validate_uuid
     def get_ceremonie(self, uuid: str) -> Any:
@@ -117,9 +123,16 @@ class Assets:
         return data.get(uuid)
 
     @check_validate_uuid
-    def get_contract(self, uuid: str) -> Any:
-        data = self.ASSET_CACHE['contracts']
-        return data.get(uuid)
+    def get_content_tier(self, uuid: str) -> Optional[ContentTier]:
+        content_tiers = self.ASSET_CACHE['content_tiers']
+        data = content_tiers.get(uuid)
+        return ContentTier(client=self._client, data=data) if data else None
+
+    @check_validate_uuid
+    def get_contract(self, uuid: str) -> Optional[Contract]:
+        contracts = self.ASSET_CACHE['contracts']
+        data = contracts.get(uuid)
+        return Contract(client=self._client, data=data) if data else None
 
     @check_validate_uuid
     def get_currency(self, uuid: str) -> Any:
@@ -147,9 +160,11 @@ class Assets:
         return data.get(uuid)
 
     @check_validate_uuid
-    def get_mission(self, uuid: str) -> Any:
-        data = self.ASSET_CACHE['missions']
-        return data.get(uuid)
+    def get_mission(self, uuid: str) -> Optional[Mission]:
+        """ missions, Get a mission by UUID. """
+        missions = self.ASSET_CACHE['missions']
+        data = missions.get(uuid)
+        return Mission(client=self._client, data=data) if data else None
 
     @maybe_uuid()
     def get_player_card(self, uuid: str) -> Optional[PlayerCard]:
@@ -208,6 +223,7 @@ class Assets:
                 asyncio.ensure_future(self._client.http.asset_get_bundle()),
                 asyncio.ensure_future(self._client.http.asset_get_ceremonie()),
                 asyncio.ensure_future(self._client.http.asset_get_competitive_tier()),
+                asyncio.ensure_future(self._client.http.asset_get_content_tier()),
                 asyncio.ensure_future(self._client.http.asset_get_contract()),
                 asyncio.ensure_future(self._client.http.asset_get_currency()),
                 asyncio.ensure_future(self._client.http.asset_get_game_mode()),
@@ -238,37 +254,39 @@ class Assets:
                 elif index == 5:
                     self.__dump_to(asset, 'competitive_tiers')
                 elif index == 6:
-                    self.__dump_to(asset, 'contracts')
+                    self.__dump_to(asset, 'content_tiers')
                 elif index == 7:
-                    self.__dump_to(asset, 'currencies')
+                    self.__dump_to(asset, 'contracts')
                 elif index == 8:
-                    self.__dump_to(asset, 'game_modes')
+                    self.__dump_to(asset, 'currencies')
                 elif index == 9:
-                    self.__dump_to(asset, 'gears')
+                    self.__dump_to(asset, 'game_modes')
                 elif index == 10:
-                    self.__dump_to(asset, 'level_borders')
+                    self.__dump_to(asset, 'gears')
                 elif index == 11:
-                    self.__dump_to(asset, 'maps')
+                    self.__dump_to(asset, 'level_borders')
                 elif index == 12:
-                    self.__dump_to(asset, 'missions')
+                    self.__dump_to(asset, 'maps')
                 elif index == 13:
-                    self.__dump_to(asset, 'player_cards')
+                    self.__dump_to(asset, 'missions')
                 elif index == 14:
-                    self.__dump_to(asset, 'player_titles')
+                    self.__dump_to(asset, 'player_cards')
                 elif index == 15:
-                    self.__dump_to(asset, 'seasons')
+                    self.__dump_to(asset, 'player_titles')
                 elif index == 16:
-                    self.__dump_to(asset, 'sprays')
+                    self.__dump_to(asset, 'seasons')
                 elif index == 17:
-                    self.__dump_to(asset, 'themes')
+                    self.__dump_to(asset, 'sprays')
                 elif index == 18:
-                    self.__dump_to(asset, 'weapons')
+                    self.__dump_to(asset, 'themes')
                 elif index == 19:
+                    self.__dump_to(asset, 'weapons')
+                elif index == 20:
                     self.__dump_to(asset, '_bundle_items')
                 else:
                     print(f"Unknown asset type: {index}")
 
-        self.__load_assets()
+        self.reload_assets()
 
     def _get_asset_dir(self) -> str:
         return os.path.join(Assets._cache_dir, self._client.version)

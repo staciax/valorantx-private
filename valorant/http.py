@@ -181,7 +181,7 @@ class HTTPClient:
         return self.request(Route('GET', '/competitivetiers', 'valorant_api', language='all'))
 
     def asset_get_content_tier(self) -> Response[Any]:
-        return self.request(Route('GET', '/contenttiers', 'valorant_api'))
+        return self.request(Route('GET', '/contenttiers', 'valorant_api', language='all'))
 
     def asset_get_contract(self) -> Response[Any]:
         return self.request(Route('GET', '/contracts', 'valorant_api', language='all'))
