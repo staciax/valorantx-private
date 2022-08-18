@@ -43,7 +43,10 @@ from .models import (
     Mission,
     ContentTier,
     Contract,
-    Weapon
+    Weapon,
+    Skin,
+    SkinChroma,
+    SkinLevel
 )
 
 from .enums import Locale, ItemType
@@ -249,10 +252,25 @@ class Assets:
         return Weapon(client=self._client, data=data) if data else None
 
     @check_validate_uuid
-    def get_skin(self, uuid: str) -> Any:
+    def get_skin(self, uuid: str) -> Optional[Skin]:
         """weapon_skins, Get a weapon skin by UUID."""
-        data = self.ASSET_CACHE["weapon_skins"]
-        return data.get(uuid)
+        skins = self.ASSET_CACHE["weapon_skins"]
+        data = skins.get(uuid)
+        return Skin(client=self._client, data=data) if data else None
+
+    @check_validate_uuid
+    def get_skin_chroma(self, uuid: str) -> Optional[SkinChroma]:
+        """weapon_skin_chromas, Get a weapon skin chroma by UUID."""
+        skin_chromas = self.ASSET_CACHE["weapon_skin_chromas"]
+        data = skin_chromas.get(uuid)
+        return SkinChroma(client=self._client, data=data) if data else None
+
+    @check_validate_uuid
+    def get_skin_level(self, uuid: str) -> Optional[SkinLevel]:
+        """weapon_skin_levels, Get a weapon skin level by UUID."""
+        skin_levels = self.ASSET_CACHE["weapon_skin_levels"]
+        data = skin_levels.get(uuid)
+        return SkinLevel(client=self._client, data=data) if data else None
 
     async def fetch_all_assets(self, *, force: bool = False) -> None:
         """Fetch all assets."""
