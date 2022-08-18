@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from .base import BaseObject
+from .base import BaseModel
 
-from ..asset_manager import Asset
+from ..asset import Asset
 from ..localization import Localization
 
 from ..utils import iso_to_datetime
@@ -13,13 +13,28 @@ if TYPE_CHECKING:
     import datetime
     from ..client import Client
 
+__all__ = (
+    'Mission',
+    'ContentTier',
+    'Contract'
+)
 
-class Mission(BaseObject):
+class Mission(BaseModel):
 
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 
+    def __str__(self) -> str:
+        return self.title
+
+    def __repr__(self) -> str:
+        return f'<Mission name={self.title!r}>'
+
+    def __int__(self) -> int:
+        return self.xp
+
     def _update(self, data: Optional[Any]) -> None:
+        self._uuid: str = data['uuid']
         self._display_name: Optional[Union[str, Dict[str, str]]] = data.get('displayName')
         self._title: Optional[Union[str, Dict[str, str]]] = data.get('title')
         self._type: Optional[str] = data.get('type')
@@ -30,15 +45,6 @@ class Mission(BaseObject):
         self._tags: Optional[List[str]] = data.get('tags')
         self._objectives: Optional[Dict[str, Any]] = data.get('objectives')
         self._asset_path: str = data.get('assetPath')
-
-    def __repr__(self) -> str:
-        return f'<Mission uuid={self.uuid!r} name={self.title!r}>'
-
-    def __str__(self) -> str:
-        return self.title
-
-    def __int__(self) -> int:
-        return self.xp
 
     @property
     def name_localizations(self) -> Localization:
@@ -100,12 +106,19 @@ class Mission(BaseObject):
         """:class: `str` Returns the mission's asset path."""
         return self._asset_path
 
-class ContentTier(BaseObject):
+class ContentTier(BaseModel):
 
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f'<ContentTier name={self.name!r}>'
+
     def _update(self, data: Optional[Any]) -> None:
+        self._uuid: str = data['uuid']
         self._display_name: Optional[Union[str, Dict[str, str]]] = data.get('displayName')
         self._dev_name: str = data.get('devName')
         self._rank: int = data.get('rank')
@@ -114,12 +127,6 @@ class ContentTier(BaseObject):
         self._highlight_color: str = data.get('highlightColor')
         self._display_icon: str = data.get('displayIcon')
         self._asset_path: str = data.get('assetPath')
-
-    def __repr__(self) -> str:
-        return f'<ContentTier uuid={self.uuid!r} name={self.name!r}>'
-
-    def __str__(self) -> str:
-        return self.name
 
     @property
     def name_localizations(self) -> Localization:
@@ -166,12 +173,19 @@ class ContentTier(BaseObject):
         """:class: `str` Returns the content tier's asset path."""
         return self._asset_path
 
-class Contract(BaseObject):
+class Contract(BaseModel):
 
     def __init__(self, client: Client, data: Optional[Dict[str, Any]], user_contract: Any = None) -> None:
         super().__init__(client=client, data=data, user_contract=user_contract)
 
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f'<Contract name={self.name!r}>'
+
     def _update(self, data: Optional[Any]) -> None:
+        self._uuid: str = data['uuid']
         self._display_name: Optional[Union[str, Dict[str, str]]] = data.get('displayName')
         self._display_icon: Optional[str] = data.get('displayIcon')
         self._ship_it: bool = data.get('shipIt')
@@ -196,12 +210,6 @@ class Contract(BaseObject):
             self._complete = self._user_contract.get('complete')
             self._objectives = self._user_contract.get('contract_objectives')
             self._expiration_time_iso = self._user_contract.get('expiration_time')
-
-    def __repr__(self) -> str:
-        return f'<Contract uuid={self.uuid!r} name={self.name!r}>'
-
-    def __str__(self) -> str:
-        return self.name
 
     @property
     def name_localizations(self) -> Localization:
@@ -239,7 +247,7 @@ class Contract(BaseObject):
         return self._relation_uuid
 
     @property
-    def chapters(self) -> List[Dict[Any, Any]]:
+    def chapters(self) -> List[Dict[Any, Any]]:  # https://dash.valorant-api.com/endpoints/contracts
         """:class: `list` Returns the contract's chapters."""
         return self._chapters
 

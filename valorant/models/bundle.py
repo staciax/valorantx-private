@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from .base import BaseObject
+from .base import BaseModel
 
-from ..asset_manager import Asset
+from ..asset import Asset
 from ..localization import Localization
 from ..enums import ItemType
 
@@ -17,14 +17,25 @@ if TYPE_CHECKING:
         PlayerCard
     )
 
-__all__ = ('Bundle',)
+# fmt: off
+__all__ = (
+    'Bundle',
+)
+# fmt: on
 
-class Bundle(BaseObject):
+class Bundle(BaseModel):
 
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f'<Bundle name={self.name!r}>'
+
     def _update(self, data: Optional[Any]) -> None:
+        self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_name_sub_text: Union[str, Dict[str, str]] = data['displayNameSubText']
         self._description: Union[str, Dict[str, str]] = data['description']
@@ -45,12 +56,6 @@ class Bundle(BaseObject):
             self._whole_sale_only: bool = self._bundle['WholesaleOnly']
             self._items: List[Union[Buddy, Spray, PlayerCard]] = []  # Skin
             self.__bundle_items(self._bundle['Items'])
-
-    def __repr__(self) -> str:
-        return f'<Bundle uuid={self.uuid!r} name={self.name!r}>'
-
-    def __str__(self) -> str:
-        return self.name
 
     def __bundle_items(
             self,

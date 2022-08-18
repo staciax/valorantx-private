@@ -4,26 +4,25 @@ import asyncio
 import logging
 import urllib3
 import aiohttp
+
+from urllib.parse import urlencode
+from . import utils
+from .enums import Region, ItemType, QueueID, try_enum
+from .auth import RiotAuth
+from .errors import HTTPException, Forbidden, NotFound, RiotServerError
+
 from typing import (
     Any,
     ClassVar,
+    List,
     Optional,
     # NoReturn,
-    # Mapping,
+    Mapping,
     TypeVar,
     Coroutine,
     Dict,
     Union,
     TYPE_CHECKING
-)
-from urllib.parse import urlencode
-from . import utils
-from .enums import Region
-from .errors import (
-    HTTPException,
-    Forbidden,
-    NotFound,
-    RiotServerError
 )
 
 MISSING = utils.MISSING
@@ -47,46 +46,52 @@ class Route:
     BASE_VALTRACKER_GG_URL: ClassVar[str] = "https://api.valtracker.gg"  # add-on bundle items
 
     def __init__(
-            self,
-            method: str,
-            path: str,
-            endpoint: Optional[str] = "pd",
-            region: str = "ap",
-            **parameters: Any
-    ):
+        self,
+        method: str,
+        path: str,
+        endpoint: Optional[str] = "pd",
+        region: str = "ap",
+        **parameters: Any,
+    ) -> None:
         self.method = method
         self.path = path
         self.endpoint = endpoint
-
         self.region: Optional[Region] = getattr(Region, region.upper())
+        self.parameters = parameters
+
         self.shard = self.region.shard
 
-        url = ""
-        if endpoint == "pd":
+        url = ''
+
+        if endpoint == 'pd':
             url = self.BASE_URL.format(shard=self.shard) + path
-        elif endpoint == "glz":
+        elif endpoint == 'glz':
             url = self.BASE_GLZ_URL.format(region=self.region, shard=self.region) + path
-        elif endpoint == "shared":
+        elif endpoint == 'shared':
             url = self.BASE_SHARD_URL.format(shard=self.shard) + path
-        elif endpoint == "play_valorant":
+        elif endpoint == 'play_valorant':
             url = self.BASE_PLAY_VALORANT_URL + path
-        elif endpoint == "valorant_api":
+        elif endpoint == 'valorant_api':
             url = self.BASE_VALORANT_API_URL + path
-        elif endpoint == "valtracker_gg":
+        elif endpoint == 'valtracker_gg':
             url = self.BASE_VALTRACKER_GG_URL + path
 
         if parameters:
             url = url + '?' + urlencode(parameters)
         self.url: str = url
 
+
 class HTTPClient:
 
     def __init__(self) -> None:
         # self.user: Optional[ClientPlayer] = None
-        self.__session: aiohttp.ClientSession = MISSING
-        self.__puuid: str = MISSING
-        self.__headers: Dict[str, str] = {}
-        self.__client_platform = "ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9"  # noqa: E501
+        self._session: aiohttp.ClientSession = MISSING
+        self._puuid: str = MISSING
+        self._headers: Dict[str, str] = {}
+        self._client_platform = 'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9'  # noqa: E501 ignore PyPEP8
+        # TODO: to base 64
+
+        self._riot_auth: RiotAuth = RiotAuth()
 
     async def request(self, route: Route, **kwargs: Any) -> Any:
         method = route.method
@@ -94,22 +99,22 @@ class HTTPClient:
 
         # TODO: build headers
 
-        kwargs['headers'] = self.__headers
+        kwargs['headers'] = self._headers
 
         exceptions = kwargs.pop('exceptions', None)
 
         response: Optional[aiohttp.ClientResponse] = None
         data: Optional[Union[Dict[str, Any], str]] = None
 
-        if self.__session is MISSING:
-            self.__session = aiohttp.ClientSession(
+        if self._session is MISSING:
+            self._session = aiohttp.ClientSession(
                 connector=aiohttp.TCPConnector(limit=0),
                 # raise_for_status=True
             )
 
         for tries in range(5):
             try:
-                async with self.__session.request(method, url, **kwargs) as response:
+                async with self._session.request(method, url, **kwargs) as response:
                     _log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), response.status)
                     data = await utils.json_or_text(response)
                     if 300 > response.status >= 200:
@@ -157,8 +162,25 @@ class HTTPClient:
         raise RuntimeError('Unreachable code in HTTP handling')
 
     async def close(self) -> None:
-        if self.__session:
-            await self.__session.close()
+        if self._session:
+            await self._session.close()
+
+    async def static_login(self, username: str, password: str) -> None:
+        """
+        Riot Auth login.
+        """
+        await self._riot_auth.authorize(username, password)
+
+    async def read_from_url(self, url: str) -> bytes:
+        async with self._session.get(url) as resp:
+            if resp.status == 200:
+                return await resp.read()
+            elif resp.status == 404:
+                raise NotFound(resp, 'asset not found')
+            elif resp.status == 403:
+                raise Forbidden(resp, 'cannot retrieve asset')
+            else:
+                raise HTTPException(resp, 'failed to get asset')
 
     # valorant-api.com
 
@@ -227,19 +249,254 @@ class HTTPClient:
     def asset_get_bundle_items(self) -> Response[Any]:
         return self.request(Route('GET', '/bundles', 'valtracker_gg'))
 
+    # PVP endpoints
+
+    def fetch_content(self) -> Response[None]:
+        """
+        Content_FetchContent
+        Get names and ids for game content such as agents, maps, guns, etc.
+        """
+        return self.request(Route('GET', '/content-service/v3/content', 'shared'))
+
+    def fetch_account_xp(self) -> Response[Any]:
+        """
+        AccountXP_GetPlayer
+        Get the account level, XP, and XP history for the active player
+        """
+        return self.request(Route('GET', f'/account-xp/v1/players/{self._puuid}', 'pd'))
+
+    def fetch_player_loadout(self) -> Response[None]:
+        """
+        playerLoadoutUpdate
+        Get the player's current loadout
+        """
+        return self.request(Route('GET', f'/personalization/v2/players/{self._puuid}/playerloadout', 'pd'))
+
+    def put_player_loadout(self, loadout: Mapping) -> Response[None]:
+        """
+        playerLoadoutUpdate
+        Use the values from self._fetch_player_loadout() excluding properties like subject and version.
+        Loadout changes take effect when starting a new game
+        """
+        r = Route(
+            'PUT', f'/personalization/v2/players/{self._puuid}/playerloadout', 'pd'
+        )
+        return self.request(r, json=loadout)
+
+    def fetch_mmr(self, puuid: Optional[str] = None) -> Response[None]:
+        """
+        MMR_FetchPlayer
+        Get the match making rating for a player
+        """
+        puuid = self.__check_puuid(puuid)
+        return self.request(Route('GET', f'/mmr/v1/players/{puuid}', 'pd'))
+
+    def fetch_match_history(
+        self,
+        puuid: Optional[str] = None,
+        start_index: int = 0,
+        end_index: int = 15,
+        queue_id: Union[str, QueueID] = QueueID.competitive,
+    ) -> Response[None]:
+        """
+        MatchHistory_FetchMatchHistory
+        Get recent matches for a player
+        There are 3 optional query parameters: start_index, end_index, and queue_id.queue can be one of null,
+        competitive, custom, deathmatch, ggteam, newmap, onefa, snowball, spikerush, or unrated.
+        """
+
+        puuid = self.__check_puuid(puuid)
+        queue_id = try_enum(QueueID, queue_id, QueueID.competitive)
+        r = Route(
+            'GET',
+            f'/match-history/v1/history/{puuid}',
+            'pd',
+            startIndex=start_index,
+            endIndex=end_index,
+            queue=str(queue_id)
+        )
+        return self.request(r)
+
+    def fetch_match_details(self, match_id: str) -> Response[None]:
+        """
+        Get the full info for a previous match
+        Includes everything that the in-game match details screen shows including damage and kill positions,
+        same as the official API w/ a production key
+        """
+        return self.request(Route("GET", f"/match-details/v1/matches/{match_id}", "pd"))
+
+    def fetch_competitive_updates(
+        self,
+        puuid: Optional[str] = None,
+        start_index: int = 0,
+        end_index: int = 15,
+        queue_id: Union[str, QueueID] = QueueID.competitive,
+    ) -> Response[None]:
+        """
+        MMR_FetchCompetitiveUpdates
+        Get recent games and how they changed ranking
+        There are 3 optional query parameters: start_index, end_index, and queue_id. queue can be one of null,
+        competitive, custom, deathmatch, ggteam, newmap, onefa, snowball, spikerush, or unrated.
+        """
+        queue_id = try_enum(QueueID, queue_id, QueueID.competitive)
+        puuid = self.__check_puuid(puuid)
+        r = Route(
+            "GET",
+            f"/mmr/v1/players/{puuid}/competitiveupdates",
+            "pd",
+            startIndex=start_index,
+            endIndex=end_index,
+            queue=str(queue_id)
+        )
+        return self.request(r)
+
+    def fetch_leaderboard(
+        self,
+        season: str,
+        start_index: int = 0,
+        size: int = 25,
+        region: Union[str, Region] = Region.AP,
+    ) -> Response[None]:
+        """
+        MMR_FetchLeaderboard
+        Get the competitive leaderboard for a given season
+        The query parameter query can be added to search for a username.
+        """
+        if season == '':
+            season = self.__get_live_season()
+
+        region = try_enum(Region, region, Region.AP)
+
+        r = Route(
+            'GET',
+            f'/mmr/v1/leaderboards/affinity/{str(region)}/queue/competitive/season/{season}',
+            'pd',
+            startIndex=start_index,
+            size=size,
+        )
+        return self.request(r)
+
+    def fetch_player_restrictions(self) -> Response[None]:
+        """
+        Restrictions_FetchPlayerRestrictionsV3
+        Checks for any gameplay penalties on the account
+        """
+        return self.request(Route('GET', '/restrictions/v3/penalties', 'pd'))
+
+    def fetch_item_progression_definitions(self) -> Response[None]:
+        """
+        ItemProgressionDefinitionsV2_Fetch
+        Get details for item upgrades
+        """
+        return self.request(Route('GET', '/contract-definitions/v3/item-upgrades', 'pd'))
+
+    def fetch_config(self) -> Response[None]:
+        """
+        Config_FetchConfig
+        Get various internal game configuration settings set by Riot
+        """
+        return self.request(Route('GET', '/v1/config/{region}', 'shared'))
+
+    def fetch_name_by_puuid(self, puuid: Optional[List[str]] = None) -> Response[None]:
+        """
+        Name_service
+        get player name tag by puuid
+        NOTE:
+        format ['PUUID']
+        """
+        if puuid is None:
+            puuid = []
+        return self.request(Route('PUT', '/name-service/v2/players', 'pd'), json=puuid)
+
+    # store endpoints
+
+    def store_fetch_offers(self) -> Response[None]:
+        """
+        Store_GetOffers
+        Get prices for all store items
+        """
+        return self.request(Route('GET', '/store/v1/offers/', 'pd'))
+
+    def store_fetch_storefront(self) -> Response[None]:
+        """
+        Store_GetStorefrontV2
+        Get the currently available items in the store
+        """
+        return self.request(Route('GET', f'/store/v2/storefront/{self._puuid}', 'pd'))
+
+    def store_fetch_wallet(self) -> Response[None]:
+        """
+        Store_GetWallet
+        Get amount of Valorant points and Radianite the player has
+        Valorant points have the id 85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741
+        and Radianite points have the id e59aa87c-4cbf-517a-5983-6e81511be9b7
+        """
+        return self.request(Route('GET', f'/store/v1/wallet/{self._puuid}', 'pd'))
+
+    def store_fetch_order(self, order_id: str) -> Response[None]:
+        """
+        Store_GetOrder
+        {order id}: The ID of the order. Can be obtained when creating an order.
+        """
+        return self.request(Route('GET', f'/store/v1/order/{order_id}', 'pd'))
+
+    def store_fetch_entitlements(self, item_type: Union[str, ItemType] = ItemType.skin) -> Response[None]:
+        """
+        Store_GetEntitlements
+        List what the player owns (agents, skins, buddies, ect.)
+        Correlate with the UUIDs in client.fetch_content() to know what items are owned
+        NOTE: uuid to item type
+        "e7c63390-eda7-46e0-bb7a-a6abdacd2433": "skin_level",
+        "3ad1b2b2-acdb-4524-852f-954a76ddae0a": "skin_chroma",
+        "01bb38e1-da47-4e6a-9b3d-945fe4655707": "agent",
+        "f85cb6f7-33e5-4dc8-b609-ec7212301948": "contract_definition",
+        "dd3bf334-87f3-40bd-b043-682a57a8dc3a": "buddy",
+        "d5f120f8-ff8c-4aac-92ea-f2b5acbe9475": "spray",
+        "3f296c07-64c3-494c-923b-fe692a4fa1bd": "player_card",
+        "de7caa6b-adf7-4588-bbd1-143831e786c6": "player_title",
+        """
+        r = Route('GET', f'/store/v1/entitlements/{self._puuid}/{str(item_type)}', 'pd')
+        return self.request(r)
+
     # utils
+
+    # local utility functions
+
+    # def __get_live_season(self) -> str:
+    #     """Get the UUID of the live competitive season"""
+    # content = self.fetch_content()
+    # season_id = [season["ID"] for season in content["Seasons"] if season["IsActive"] and season["Type"] == "act"]
+    #     if not season_id:
+    #         return self.fetch_player_mmr()["LatestCompetitiveUpdate"]["SeasonID"]
+    #     return season_id[0]
+
+    # def __check_party_id(self, party_id: str) -> str:
+    #     """If party ID passed into method is None make it user's current party"""
+    #     return self.__get_current_party_id() if party_id is None else party_id
+
+    # def __get_current_party_id(self) -> str:
+    #     """Get the user's current party ID"""
+    #     party = self.party_fetch_player()
+    #     return party["CurrentPartyID"]
+
+    # def __coregame_check_match_id(self, match_id: str) -> str:
+    # """Check if a match id was passed into the method"""
+    # return self.coregame_fetch_player()["MatchID"] if match_id is None else match_id
+
+    # def __pregame_check_match_id(self, match_id: str) -> str:
+    #     return self.pregame_fetch_player()["MatchID"] if match_id is None else match_id
+
+    def __check_puuid(self, puuid: str) -> str:
+        """If puuid passed into method is None make it current user's puuid"""
+        return self._puuid if puuid is None else puuid
+
+    async def __build_headers(self, auth: Dict) -> None:
+        self._headers['Authorization'] = f"Bearer {auth.access_token}"
+        self._headers['X-Riot-Entitlements-JWT'] = auth.entitlements_token
+        self._headers['X-Riot-ClientPlatform'] = self._client_platform
+        self._headers['X-Riot-ClientVersion'] = await self._get_current_version()  # TODO: from client
 
     async def get_valorant_version(self) -> str:
         resp = await self.asset_valorant_version()
         return resp['data']['version']
 
-    async def read_from_url(self, url: str) -> bytes:
-        async with self.__session.get(url) as resp:
-            if resp.status == 200:
-                return await resp.read()
-            elif resp.status == 404:
-                raise NotFound(resp, 'asset not found')
-            elif resp.status == 403:
-                raise Forbidden(resp, 'cannot retrieve asset')
-            else:
-                raise HTTPException(resp, 'failed to get asset')

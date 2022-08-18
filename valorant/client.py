@@ -20,7 +20,7 @@ from typing import (
     TYPE_CHECKING,
 )
 
-__all__ = ("Client",)
+__all__ = ('Client',)
 
 _log = logging.getLogger(__name__)
 
@@ -39,6 +39,7 @@ class Client:
         self._closed: bool = False
         self._ready: bool = False
         self._version: Optional[str] = None
+        self._season: Optional[str] = None
 
         # locale
         self._locale: str = locale
@@ -57,6 +58,12 @@ class Client:
     ) -> None:
         if not self.is_closed():
             await self.close()
+
+    def activate(self) -> None:
+        ...
+        # self.version = self.http.get_valorant_version()
+        # self.season = self.http.get_valorant_season()
+        #  TODO: fetch version and season
 
     async def close(self) -> None:
 

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from ..localization import Localization
-from ..asset_manager import Asset
+from ..asset import Asset
 
-from .base import BaseObject
-from typing import Any, Dict, Optional, Union, TYPE_CHECKING
+from .base import BaseModel
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     # from typing_extensions import Self
@@ -14,17 +14,29 @@ __all__ = (
     'Buddy',
     'Spray',
     'PlayerCard',
-    'PlayerTitle'
+    'PlayerTitle',
+    'Weapon',
+    'Skin',
+    'SkinChroma',
+    'SkinLevel',
 )
 
 # TODO: เอาออกบาง property เป็น variable และใส่ docs ของ class เข้าไป
 
-class Buddy(BaseObject):
+
+class Buddy(BaseModel):
 
     def __init__(self, client: Client, data: Optional[Dict[str, Any]], bundle: Any = None) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f'<Buddy name={self.name!r}>'
+
     def _update(self, data: Optional[Any]) -> None:
+        self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
         self._theme_uuid: Optional[str] = data.get('themeUuid')
@@ -39,12 +51,6 @@ class Buddy(BaseObject):
             self._is_promo: bool = self._bundle.get('IsPromoItem')
             self._currency_id: str = self._bundle.get('CurrencyID')
             self._discount_percent: float = self._bundle.get('DiscountPercent')
-
-    def __repr__(self) -> str:
-        return f'<Buddy uuid={self.uuid!r} name={self.name!r} price={self.price!r}>'
-
-    def __str__(self) -> str:
-        return self.name
 
     @property
     def name_localizations(self) -> Localization:
@@ -63,7 +69,7 @@ class Buddy(BaseObject):
 
     @property
     def theme(self) -> str:  # TODO: Theme Object
-        """ :class: `str` Returns the buddy's theme."""
+        """:class: `str` Returns the buddy's theme."""
         return self._theme_uuid
 
     @property
@@ -90,25 +96,33 @@ class Buddy(BaseObject):
 
     @property
     def discounted_price(self) -> int:
-        """ :class: `int` Returns the discounted price."""
+        """:class: `int` Returns the discounted price."""
         return self._discounted_price
 
     @property
     def discount_percent(self) -> float:
-        """ :class: `float` Returns the discount percent."""
+        """:class: `float` Returns the discount percent."""
         return self._discount_percent
 
     @property
     def is_promo(self) -> bool:
-        """ :class: `bool` Returns whether the bundle is a promo."""
+        """:class: `bool` Returns whether the bundle is a promo."""
         return self._is_promo
 
-class Spray(BaseObject):
+
+class Spray(BaseModel):
 
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]], bundle: Any = None) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f"<Spray name={self.name!r}>"
+
     def _update(self, data: Any) -> None:
+        self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
         self._full_icon: Optional[str] = data['fullIcon']
@@ -125,17 +139,6 @@ class Spray(BaseObject):
             self._is_promo: bool = self._bundle.get('IsPromoItem')
             self._currency_id: str = self._bundle.get('CurrencyID')
             self._discount_percent: float = self._bundle.get('DiscountPercent')
-
-    def __repr__(self) -> str:
-        return f"<Spray uuid={self.name!r} name={self.name!r}>"
-
-    def __str__(self) -> str:
-        return self.name
-
-    @property
-    def uuid(self) -> str:
-        """:class: `str` Returns the spray's uuid."""
-        return self._uuid
 
     @property
     def name_localizations(self) -> Localization:
@@ -156,28 +159,28 @@ class Spray(BaseObject):
 
     @property
     def full_icon(self) -> Optional[Asset]:
-        """ :class: `Asset` Returns the skin's full icon."""
+        """:class: `Asset` Returns the skin's full icon."""
         if self._full_icon is None:
             return None
         return Asset._from_url(client=self._client, url=self._full_icon)
 
     @property
     def full_transparent_icon(self) -> Optional[Asset]:
-        """ :class: `Asset` Returns the skin's full transparent icon."""
+        """:class: `Asset` Returns the skin's full transparent icon."""
         if self._full_transparent_icon is None:
             return None
         return Asset._from_url(client=self._client, url=self._full_transparent_icon)
 
     @property
     def animation_png(self) -> Optional[Asset]:
-        """ :class: `Asset` Returns the skin's animation png."""
+        """:class: `Asset` Returns the skin's animation png."""
         if self._animation_png is None:
             return None
         return Asset._from_url(client=self._client, url=self._animation_png)
 
     @property
     def animation_gif(self) -> Optional[Asset]:
-        """ :class: `Asset` Returns the skin's animation gif."""
+        """:class: `Asset` Returns the skin's animation gif."""
         if self._animation_gif is None:
             return None
         return Asset._from_url(client=self._client, url=self._animation_gif)
@@ -194,32 +197,40 @@ class Spray(BaseObject):
 
     @property
     def price(self) -> int:
-        """ :class: `int` Returns the skin's price."""
+        """:class: `int` Returns the skin's price."""
         return self._price
 
     # bundle
 
     @property
     def discounted_price(self) -> int:
-        """ :class: `int` Returns the discounted price."""
+        """:class: `int` Returns the discounted price."""
         return self._discounted_price
 
     @property
     def discount_percent(self) -> float:
-        """ :class: `float` Returns the discount percent."""
+        """:class: `float` Returns the discount percent."""
         return self._discount_percent
 
     @property
     def is_promo(self) -> bool:
-        """ :class: `bool` Returns whether the bundle is a promo."""
+        """:class: `bool` Returns whether the bundle is a promo."""
         return self._is_promo
 
-class PlayerCard(BaseObject):
+
+class PlayerCard(BaseModel):
 
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]], bundle: Any = None) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f"<PlayerCard name={self.name!r}>"
+
     def _update(self, data: Any) -> None:
+        self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
         self._display_icon: Optional[str] = data['displayIcon']
@@ -236,17 +247,6 @@ class PlayerCard(BaseObject):
             self._is_promo: bool = self._bundle.get('IsPromoItem')
             self._currency_id: str = self._bundle.get('CurrencyID')
             self._discount_percent: float = self._bundle.get('DiscountPercent')
-
-    def __repr__(self) -> str:
-        return f"<PlayerCard uuid={self.name!r} name={self.name!r}>"
-
-    def __str__(self) -> str:
-        return self.name
-
-    @property
-    def uuid(self) -> str:
-        """:class: `str` Returns the player card's uuid."""
-        return self._uuid
 
     @property
     def name_localizations(self) -> Localization:
@@ -303,22 +303,22 @@ class PlayerCard(BaseObject):
 
     @property
     def price(self) -> int:
-        """ :class: `int` Returns the buddy's price."""
+        """:class: `int` Returns the buddy's price."""
         return self._price
 
     @property
     def discounted_price(self) -> int:
-        """ :class: `int` Returns the discounted price."""
+        """:class: `int` Returns the discounted price."""
         return self._discounted_price
 
     @property
     def discount_percent(self) -> float:
-        """ :class: `float` Returns the discount percent."""
+        """:class: `float` Returns the discount percent."""
         return self._discount_percent
 
     @property
     def is_promo(self) -> bool:
-        """ :class: `bool` Returns whether the buddy is a promo."""
+        """:class: `bool` Returns whether the buddy is a promo."""
         return self._is_promo
 
     @property
@@ -331,32 +331,28 @@ class PlayerCard(BaseObject):
     #     """:class: `bool` Returns whether the player card is owned."""
     #     return self._client.player_cards.is_owned(self.uuid)
 
-class PlayerTitle(BaseObject):
+
+class PlayerTitle(BaseModel):
 
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 
-    def __repr__(self) -> str:
-        return f"<PlayerTitle uuid={self.name!r} name={self.name!r}>"
-
     def __str__(self) -> str:
-        return self.name
+        return self.text
+
+    def __repr__(self) -> str:
+        return f"<PlayerTitle name={self.name!r} text={self.text!r}>"
 
     def _update(self, data: Any) -> None:
+        self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._title_text: Union[str, Dict[str, str]] = data['titleText']
         self._is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
         self._asset_path: str = data['assetPath']
 
     @property
-    def uuid(self) -> str:
-        """:class: `str` Returns the player title's uuid."""
-        return self._uuid
-
-    @property
     def name_localizations(self) -> Localization:
         """:class: `Translator` Returns the player title's names."""
-
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
@@ -365,15 +361,14 @@ class PlayerTitle(BaseObject):
         return self.name_localizations.american_english
 
     @property
-    def title_text_localizations(self) -> Localization:
+    def text_localizations(self) -> Localization:
         """:class: `Translator` Returns the player title's title text."""
-
         return Localization(self._title_text, locale=self._client.locale)
 
     @property
-    def title_text(self) -> str:
+    def text(self) -> str:
         """:class: `str` Returns the player title's title text."""
-        return self.title_text_localizations.american_english
+        return self.text_localizations.american_english
 
     @property
     def is_hidden_if_not_owned(self) -> bool:
@@ -383,4 +378,329 @@ class PlayerTitle(BaseObject):
     @property
     def asset_path(self) -> str:
         """:class: `str` Returns the player title's asset path."""
+        return self._asset_path
+
+
+class Weapon(BaseModel):
+
+    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
+        super().__init__(client=client, data=data)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f"<Weapon name={self.name!r}>"
+
+    def _update(self, data: Any) -> None:
+        self._uuid: str = data['uuid']
+        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._category: str = data['category']
+        self._default_skin_uuid: str = data['defaultSkinUuid']
+        self._display_icon: str = data['displayIcon']
+        self._kill_stream_icon: str = data['killStreamIcon']
+        self._asset_path: str = data['assetPath']
+        self._stats: Dict[str, Any] = data['weaponStats']
+        self._shop: Dict[str, Any] = data['shopData']
+        self._price: int = self._shop['cost']
+        self._shop_category: str = self._shop['category']
+        self._shop_category_text: Union[str, Dict[str, str]] = self._shop['categoryText']
+        self._grid_position: Dict[str, int] = self._shop['gridPosition']
+        self._can_be_trashed: bool = self._shop['canBeTrashed']
+        self._image: Optional[str] = self._shop.get('image')
+        self._new_image: Optional[str] = self._shop.get('newImage')
+        self._new_image_2: Optional[str] = self._shop.get('newImage2')
+        self._shop_asset_path: str = self._shop['assetPath']
+        self._skins: List[Dict[str, Any]] = data['skins']
+
+    @property
+    def name_localizations(self) -> Localization:
+        """:class: `Translator` Returns the weapon's names."""
+        return Localization(self._display_name, locale=self._client.locale)
+
+    @property
+    def name(self) -> str:
+        """:class: `str` Returns the weapon's name."""
+        return self.name_localizations.american_english
+
+    @property
+    def category(self) -> str:
+        """:class: `str` Returns the weapon's category."""
+        return self._category.removeprefix("EEquippableCategory::")
+
+    @property
+    def default_skin_uuid(self) -> str:
+        """:class: `str` Returns the weapon's default skin uuid."""
+        return self._default_skin_uuid
+
+    @property
+    def icon(self) -> Asset:
+        """:class: `Asset` Returns the weapon's icon."""
+        return Asset._from_url(self._client, self._display_icon)
+
+    @property
+    def kill_stream_icon(self) -> Asset:
+        """:class: `Asset` Returns the weapon's kill stream icon."""
+        return Asset._from_url(self._client, self._kill_stream_icon)
+
+    @property
+    def asset_path(self) -> str:
+        """:class: `str` Returns the weapon's asset path."""
+        return self._asset_path
+
+    @property
+    def stats(self) -> Dict[str, Any]:
+        """:class: `dict` Returns the weapon's stats."""
+        return self._stats
+
+    @property
+    def price(self) -> int:
+        """:class: `int` Returns the weapon's price."""
+        return self._price
+
+    @property
+    def shop_category(self) -> str:
+        """:class: `str` Returns the weapon's shop category."""
+        return self._shop_category
+
+    @property
+    def shop_category_text_localizations(self) -> Localization:
+        """:class: `Translator` Returns the weapon's shop category text."""
+        return Localization(self._shop_category_text, locale=self._client.locale)
+
+    @property
+    def shop_category_text(self) -> str:
+        """:class: `str` Returns the weapon's shop category text."""
+        return self.shop_category_text_localizations.american_english
+
+    @property
+    def grid_position(self) -> Dict[str, int]:
+        """:class: `dict` Returns the weapon's grid position."""
+        return self._grid_position
+
+    @property
+    def can_be_trashed(self) -> bool:
+        """:class: `bool` Returns whether the weapon can be trashed."""
+        return self._can_be_trashed
+
+    @property
+    def image(self) -> Optional[Asset]:
+        """:class: `Asset` Returns the weapon's image."""
+        return (
+            Asset._from_url(client=self._client, url=self._image)
+            if self._image
+            else None
+        )
+
+    @property
+    def new_image(self) -> Optional[Asset]:
+        """:class: `Asset` Returns the weapon's new image."""
+        return (
+            Asset._from_url(client=self._client, url=self._new_image)
+            if self._new_image
+            else None
+        )
+
+    @property
+    def new_image_2(self) -> Optional[Asset]:
+        """:class: `Asset` Returns the weapon's new image 2."""
+        return (
+            Asset._from_url(client=self._client, url=self._new_image_2)
+            if self._new_image_2
+            else None
+        )
+
+    @property
+    def shop_asset_path(self) -> str:
+        """:class: `str` Returns the weapon's shop asset path."""
+        return self._shop_asset_path
+
+    @property
+    def skins(self) -> List[Skin]:
+        """:class: `list` Returns the weapon's skins."""
+        return [Skin(client=self._client, data=skin) for skin in self._skins]
+
+
+class Skin(BaseModel):
+
+    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
+        super().__init__(client=client, data=data)
+
+    def __repr__(self) -> str:
+        return f"<Skin name={self.name!r}>"
+
+    def __str__(self) -> str:
+        return self.name
+
+    def _update(self, data: Any) -> None:
+        self._uuid = data['uuid']
+        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._theme_uuid: str = data['themeUuid']
+        self._content_tier_uuid: str = data['contentTierUuid']
+        self._display_icon: str = data['displayIcon']
+        self._wallpaper: Optional[str] = data.get('wallpaper')
+        self._asset_path: str = data['assetPath']
+        self._chromas: List[Dict[str, Any]] = data['chromas']
+        self._levels: List[Dict[str, Any]] = data['levels']
+
+    @property
+    def name_localizations(self) -> Localization:
+        """:class: `Translator` Returns the skin's names."""
+        return Localization(self._display_name, locale=self._client.locale)
+
+    @property
+    def name(self) -> str:
+        """:class: `str` Returns the skin's name."""
+        return self.name_localizations.american_english
+
+    @property
+    def theme(self) -> str:
+        """:class: `str` Returns the skin's theme uuid."""
+        return self._theme_uuid
+
+    @property
+    def content_tier(self) -> str:
+        """:class: `str` Returns the skin's content tier uuid."""
+        return self._content_tier_uuid
+
+    @property
+    def icon(self) -> Asset:
+        """:class: `Asset` Returns the skin's icon."""
+        return Asset._from_url(client=self._client, url=self._display_icon)
+
+    @property
+    def wallpaper(self) -> Optional[Asset]:
+        """:class: `Asset` Returns the skin's wallpaper."""
+        return (
+            Asset._from_url(client=self._client, url=self._wallpaper)
+            if self._wallpaper
+            else None
+        )
+
+    @property
+    def asset_path(self) -> str:
+        """:class: `str` Returns the skin's asset path."""
+        return self._asset_path
+
+    @property
+    def chromas(self) -> List[SkinChroma]:
+        """:class: `list` Returns the skin's chromas."""
+        return [SkinChroma(client=self._client, data=data) for data in self._chromas]
+
+    @property
+    def levels(self) -> List[SkinLevel]:
+        """:class: `list` Returns the skin's levels."""
+        return [SkinLevel(client=self._client, data=data) for data in self._levels]
+
+
+class SkinChroma(BaseModel):
+
+    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
+        super().__init__(client=client, data=data)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f"<SkinChroma name={self.name!r}>"
+
+    def _update(self, data: Any) -> None:
+        self._uuid: str = data['uuid']
+        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._display_icon: str = data['displayIcon']
+        self._full_render: str = data['fullRender']
+        self._swatch: Optional[str] = data.get('swatch')
+        self._streamed_video: Optional[str] = data.get('streamedVideo')
+        self._asset_path: str = data['assetPath']
+
+    @property
+    def name_localizations(self) -> Localization:
+        """:class: `Translator` Returns the skin's names."""
+        return Localization(self._display_name, locale=self._client.locale)
+
+    @property
+    def name(self) -> str:
+        """:class: `str` Returns the skin's name."""
+        return self.name_localizations.american_english
+
+    @property
+    def icon(self) -> Asset:
+        """:class: `str` Returns the skin's icon."""
+        return Asset._from_url(client=self._client, url=self._display_icon)
+
+    @property
+    def icon_full_render(self) -> Asset:
+        """:class: `str` Returns the skin's icon full render."""
+        return Asset._from_url(client=self._client, url=self._full_render)
+
+    @property
+    def swatch(self) -> Optional[Asset]:
+        """:class: `str` Returns the skin's swatch."""
+        return (
+            Asset._from_url(client=self._client, url=self._swatch)
+            if self._swatch
+            else None
+        )
+
+    @property
+    def video(self) -> Optional[Asset]:
+        """:class: `str` Returns the skin's video."""
+        return (
+            Asset._from_url(client=self._client, url=self._streamed_video)
+            if self._streamed_video
+            else None
+        )
+
+
+class SkinLevel(BaseModel):
+
+    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
+        super().__init__(client=client, data=data)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f"<SkinLevel name={self.name!r} level={self.level!r}>"
+
+    def _update(self, data: Any) -> None:
+        self._uuid: str = data['uuid']
+        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._level: Optional[str] = data.get('levelItem')
+        self._display_icon: str = data['displayIcon']
+        self._streamed_video: Optional[str] = data.get('streamedVideo')
+        self._asset_path: str = data['assetPath']
+
+    @property
+    def name_localizations(self) -> Localization:
+        """:class: `Translator` Returns the skin's names."""
+        return Localization(self._display_name, locale=self._client.locale)
+
+    @property
+    def name(self) -> str:
+        """:class: `str` Returns the skin's name."""
+        return self.name_localizations.american_english
+
+    @property
+    def level(self) -> Optional[str]:
+        """:class: `str` Returns the skin's level."""
+        return self._level.removeprefix('EEquippableSkinLevelItem::') if self._level else None
+
+    @property
+    def icon(self) -> Asset:
+        """:class: `str` Returns the skin's icon."""
+        return Asset._from_url(client=self._client, url=self._display_icon)
+
+    @property
+    def video(self) -> Optional[Asset]:
+        """:class: `str` Returns the skin's video."""
+        return (
+            Asset._from_url(client=self._client, url=self._streamed_video)
+            if self._streamed_video
+            else None
+        )
+
+    @property
+    def asset_path(self) -> str:
+        """:class: `str` Returns the skin's asset path."""
         return self._asset_path

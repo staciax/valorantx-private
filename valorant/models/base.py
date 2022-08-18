@@ -5,11 +5,11 @@ from typing import Any, Union, TYPE_CHECKING
 if TYPE_CHECKING:
     from ..client import Client
 
-class _ObjectTag:
+class _ModelTag:
     __slots__ = ()
     uuid: str
 
-class BaseObject(_ObjectTag):
+class BaseModel(_ModelTag):
     __slots__ = (
         '_uuid',
         '_client',
@@ -22,19 +22,19 @@ class BaseObject(_ObjectTag):
 
     def __init__(self, client: Client, data: Union[Any, Any], **kwargs: Any) -> None:
         self._client = client
-        self._extras: dict[str, Any] = kwargs
+        self._extras = kwargs
         self._update(data)
+
+    def __str__(self) -> str:
+        return self.uuid
 
     def __repr__(self) -> str:
         return (
             f"<BaseObject uuid={self.uuid}>"
         )
 
-    def __str__(self) -> str:
-        return self.uuid
-
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, _ObjectTag) and other.uuid == self.uuid
+        return isinstance(other, _ModelTag) and other.uuid == self.uuid
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)

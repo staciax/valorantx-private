@@ -7,6 +7,7 @@ from typing import (
     Dict,
     ClassVar,
     List,
+    Optional,
     Mapping,
     Iterator,
     Type,
@@ -247,47 +248,51 @@ class QueueID(Enum):
         return [str(x) for x in cls]
 
 class MapID(Enum):
-    ascent = '7eaecc1b-4337-bbf6-6ab9-04b8f06b3319', '/Game/Maps/Ascent/Ascent'
-    bind = '2c9d57ec-4431-9c5e-2939-8f9ef6dd5cba', '/Game/Maps/Duality/Duality'
-    breeze = '2fb9a4fd-47b8-4e7d-a969-74b4046ebd53', '/Game/Maps/Foxtrot/Foxtrot'
-    fracture = 'b529448b-4d60-346e-e89e-00a4c527a405', '/Game/Maps/Canyon/Canyon'
-    haven = '2bee0dc9-4ffe-519b-1cbd-7fbe763a6047', '/Game/Maps/Triad/Triad'
-    icebox = 'e2ad5c54-4114-a870-9641-8ea21279579a', '/Game/Maps/Port/Port'
-    split = 'd960549e-485c-e861-8d71-aa9d1aed12a2', '/Game/Maps/Bonsai/Bonsai'
-    pearl = 'fd267378-4d1d-484f-ff52-77821ed10dc2', '/Game/Maps/Pitt/Pitt'
-    the_range = 'ee613ee9-28b7-4beb-9666-08db13bb2244', '/Game/Maps/Poveglia/Range'
+    ascent = '7eaecc1b-4337-bbf6-6ab9-04b8f06b3319'
+    bind = '2c9d57ec-4431-9c5e-2939-8f9ef6dd5cba'
+    breeze = '2fb9a4fd-47b8-4e7d-a969-74b4046ebd53'
+    fracture = 'b529448b-4d60-346e-e89e-00a4c527a405'
+    haven = '2bee0dc9-4ffe-519b-1cbd-7fbe763a6047'
+    icebox = 'e2ad5c54-4114-a870-9641-8ea21279579a'
+    split = 'd960549e-485c-e861-8d71-aa9d1aed12a2'
+    pearl = 'fd267378-4d1d-484f-ff52-77821ed10dc2'
+    the_range = 'ee613ee9-28b7-4beb-9666-08db13bb2244'
 
-    @property
-    def uuid(self) -> str:
-        return self.value[0]
+    def __str__(self) -> str:
+        return self.value
 
     @property
     def url(self) -> str:
-        return self.value[1]
+        return getattr(MapURL, self.name).value
 
     @classmethod
-    def _from_url(cls, url: str) -> Self:
-        for map_id in cls:
-            if map_id.url == url:
-                return map_id
-        raise ValueError(f'Unknown map url: {url}')
+    def url_to_uuid(cls, url: str) -> str:
+        for x in cls:
+            if x.url == url:
+                return x.value
+        raise ValueError(f'No map found for url {url}')
+
+class MapURL(Enum):
+    ascent = '/Game/Maps/Ascent/Ascent'
+    bind = '/Game/Maps/Duality/Duality'
+    breeze = '/Game/Maps/Foxtrot/Foxtrot'
+    fracture = '/Game/Maps/Canyon/Canyon'
+    haven = '/Game/Maps/Triad/Triad'
+    icebox = '/Game/Maps/Port/Port'
+    split = '/Game/Maps/Bonsai/Bonsai'
+    pearl = '/Game/Maps/Pitt/Pitt'
+    the_range = '/Game/Maps/Poveglia/Range'
+
+    @property
+    def uuid(self) -> str:
+        return getattr(MapID, self.name).value
 
     @classmethod
-    def _from_uuid(cls, uuid: str) -> Self:
-        for map_id in cls:
-            if map_id.uuid == uuid:
-                return map_id
-        raise ValueError(f'Unknown map uuid: {uuid}')
-
-    @classmethod
-    def _url_to_uuid(cls, url: str) -> str:
-        for map_id in cls:
-            if map_id.url == url:
-                return map_id.uuid
-        raise ValueError(f'Unknown map url: {url}')
-
-    def __str__(self) -> str:
-        return self.value[1]
+    def uuid_to_url(cls, uuid: str) -> str:
+        for x in cls:
+            if x.uuid == uuid:
+                return x.value
+        raise ValueError(f'No map found for uuid {uuid}')
 
 class WeaponID(Enum):
 
@@ -380,7 +385,7 @@ def create_unknown_value(cls: Type[E], val: Any) -> E:
     return value_cls(name=name, value=val)
 
 
-def try_enum(cls: Type[E], val: Any) -> E:
+def try_enum(cls: Type[E], val: Any, default: Optional[Any] = None) -> E:
     """A function that tries to turn the value into enum ``cls``.
 
     If it fails it returns a proxy invalid value instead.
@@ -389,6 +394,8 @@ def try_enum(cls: Type[E], val: Any) -> E:
     try:
         return cls._enum_value_map_[val]  # type: ignore # All errors are caught below
     except (KeyError, TypeError, AttributeError):
+        if default is not None:
+            return default
         return create_unknown_value(cls, val)
 
 def try_enum_key(cls: Type[E], val: Any) -> E:

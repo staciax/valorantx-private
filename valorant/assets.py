@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import os
 import json
+import logging
 import asyncio
-
 import shutil
+
 from pathlib import Path
 from functools import wraps
 
@@ -19,6 +20,7 @@ from .models import (
     Mission,
     ContentTier,
     Contract,
+    Weapon
 )
 
 from .enums import Locale, ItemType
@@ -30,6 +32,13 @@ if TYPE_CHECKING:
     from .client import Client
     from .enums import Locale
 
+# fmt: off
+__all__ = (
+    'Assets'
+)
+# fmt: on
+
+_log = logging.getLogger(__name__)
 
 def check_validate_uuid(func):
     @wraps(func)
@@ -47,7 +56,6 @@ def check_validate_uuid(func):
 
 def maybe_uuid(key: str = 'displayName'):
     def decorator(function):
-
         @wraps(function)
         def wrapper(self, uuid: str = None):
 
@@ -63,8 +71,11 @@ def maybe_uuid(key: str = 'displayName'):
                     display_name = value.get(key)
                     if display_name is not None:
                         for name in display_name.values():
-                            if name.lower().startswith(uuid.lower()) or uuid.lower() == name.lower():
-                                return function(self, value['uuid'])
+                            if (
+                                name.lower().startswith(uuid.lower())
+                                or uuid.lower() == name.lower()
+                            ):
+                                return function(self, value["uuid"])
 
                 raise ValueError('Invalid UUID')
 
@@ -92,129 +103,136 @@ class Assets:
 
     @maybe_uuid()
     def get_agent(self, uuid: str) -> Optional[Agent]:
-        """ agents, Get an agent by UUID. """
-        agents = self.ASSET_CACHE['agents']
+        """agents, Get an agent by UUID."""
+        agents = self.ASSET_CACHE["agents"]
         data = agents.get(uuid)
         return Agent(client=self._client, data=data) if data is not None else None
 
     @maybe_uuid()
     def get_buddy(self, uuid: str) -> Optional[Buddy]:
-        """ buddies, Get a buddy by UUID. """
-        buddies = self.ASSET_CACHE['buddies']
+        """buddies, Get a buddy by UUID."""
+        buddies = self.ASSET_CACHE["buddies"]
         data = buddies.get(uuid)
         return Buddy(client=self._client, data=data) if data else None
 
     @maybe_uuid()
     def get_bundle(self, uuid: str) -> Optional[Bundle]:
-        """ bundles, Get a bundle by UUID. """
-        bundles = self.ASSET_CACHE['bundles']
+        """bundles, Get a bundle by UUID."""
+        bundles = self.ASSET_CACHE["bundles"]
         data = bundles.get(uuid)
         return Bundle(client=self._client, data=data) if data else None
 
     @check_validate_uuid
     def get_ceremonie(self, uuid: str) -> Any:
-        """ ceremonies, Get a ceremony by UUID. """
-        data = self.ASSET_CACHE['ceremonies']
+        """ceremonies, Get a ceremony by UUID."""
+        data = self.ASSET_CACHE["ceremonies"]
         return data.get(uuid)
 
     @check_validate_uuid
     def get_competitive_tier(self, uuid: str) -> Any:
-        """ competitiveTiers, Get a competitive tier by UUID. """
-        data = self.ASSET_CACHE['competitive_tiers']
+        """competitiveTiers, Get a competitive tier by UUID."""
+        data = self.ASSET_CACHE["competitive_tiers"]
         return data.get(uuid)
 
     @check_validate_uuid
     def get_content_tier(self, uuid: str) -> Optional[ContentTier]:
-        """ content_tiers, Get a content tier by UUID. """
-        content_tiers = self.ASSET_CACHE['content_tiers']
+        """content_tiers, Get a content tier by UUID."""
+        content_tiers = self.ASSET_CACHE["content_tiers"]
         data = content_tiers.get(uuid)
         return ContentTier(client=self._client, data=data) if data else None
 
     @check_validate_uuid
     def get_contract(self, uuid: str) -> Optional[Contract]:
-        """ contracts, Get a contract by UUID. """
-        contracts = self.ASSET_CACHE['contracts']
+        """contracts, Get a contract by UUID."""
+        contracts = self.ASSET_CACHE["contracts"]
         data = contracts.get(uuid)
         return Contract(client=self._client, data=data) if data else None
 
     @check_validate_uuid
     def get_currency(self, uuid: str) -> Any:
-        """ currencies, Get a currency by UUID. """
-        data = self.ASSET_CACHE['currencies']
+        """currencies, Get a currency by UUID."""
+        data = self.ASSET_CACHE["currencies"]
         return data.get(uuid)
 
     @check_validate_uuid
     def get_game_mode(self, uuid: str) -> Any:
-        """ game_modes, Get a game mode by UUID. """
-        data = self.ASSET_CACHE['game_modes']
+        """game_modes, Get a game mode by UUID."""
+        data = self.ASSET_CACHE["game_modes"]
         return data.get(uuid)
 
     @check_validate_uuid
     def get_gear(self, uuid: str) -> Any:
-        """ gears, Get a gear by UUID. """
-        data = self.ASSET_CACHE['gears']
+        """gears, Get a gear by UUID."""
+        data = self.ASSET_CACHE["gears"]
         return data.get(uuid)
 
     @check_validate_uuid
     def get_level_border(self, uuid: str) -> Any:
-        """ level_borders, Get a level border by UUID. """
-        data = self.ASSET_CACHE['level_borders']
+        """level_borders, Get a level border by UUID."""
+        data = self.ASSET_CACHE["level_borders"]
         return data.get(uuid)
 
     @check_validate_uuid
     def get_map(self, uuid: str) -> Any:
-        """ maps, Get a map by UUID. """
-        data = self.ASSET_CACHE['maps']
+        """maps, Get a map by UUID."""
+        data = self.ASSET_CACHE["maps"]
         return data.get(uuid)
 
     @check_validate_uuid
     def get_mission(self, uuid: str) -> Optional[Mission]:
-        """ missions, Get a mission by UUID. """
-        missions = self.ASSET_CACHE['missions']
+        """missions, Get a mission by UUID."""
+        missions = self.ASSET_CACHE["missions"]
         data = missions.get(uuid)
         return Mission(client=self._client, data=data) if data else None
 
     @maybe_uuid()
     def get_player_card(self, uuid: str) -> Optional[PlayerCard]:
-        """ player_cards, Get a player card by UUID. """
-        player_cards = self.ASSET_CACHE['player_cards']
+        """player_cards, Get a player card by UUID."""
+        player_cards = self.ASSET_CACHE["player_cards"]
         data = player_cards.get(uuid)
         return PlayerCard(client=self._client, data=data) if data else None
 
     @maybe_uuid()
     def get_player_title(self, uuid: str) -> Optional[PlayerTitle]:
-        """ player_titles, Get a player title by UUID. """
-        player_titles = self.ASSET_CACHE['player_titles']
+        """player_titles, Get a player title by UUID."""
+        player_titles = self.ASSET_CACHE["player_titles"]
         data = player_titles.get(uuid)
         return PlayerTitle(client=self._client, data=data) if data else None
 
     @check_validate_uuid
     def get_season(self, uuid: str) -> Any:
-        """ seasons, Get a season by UUID. """
-        data = self.ASSET_CACHE['seasons']
+        """seasons, Get a season by UUID."""
+        data = self.ASSET_CACHE["seasons"]
         return data.get(uuid)
 
     @maybe_uuid()
     def get_spray(self, uuid: str) -> Optional[Spray]:
-        """ sprays, Get a spray by UUID. """
-        sprays = self.ASSET_CACHE['sprays']
+        """sprays, Get a spray by UUID."""
+        sprays = self.ASSET_CACHE["sprays"]
         data = sprays.get(uuid)
         return Spray(client=self._client, data=data) if data else None
 
     @check_validate_uuid
     def get_theme(self, uuid: str) -> Any:
-        """ themes, Get a theme by UUID. """
-        data = self.ASSET_CACHE['themes']
+        """themes, Get a theme by UUID."""
+        data = self.ASSET_CACHE["themes"]
         return data.get(uuid)
 
     @check_validate_uuid
-    def get_weapon(self, uuid: str) -> Any:
-        """ weapons, Get a weapon by UUID. """
-        data = self.ASSET_CACHE['weapons']
+    def get_weapon(self, uuid: str) -> Optional[Weapon]:
+        """weapons, Get a weapon by UUID."""
+        weapons = self.ASSET_CACHE["weapons"]
+        data = weapons.get(uuid)
+        return Weapon(client=self._client, data=data) if data else None
+
+    @check_validate_uuid
+    def get_skin(self, uuid: str) -> Any:
+        """weapon_skins, Get a weapon skin by UUID."""
+        data = self.ASSET_CACHE["weapon_skins"]
         return data.get(uuid)
 
     async def fetch_all_assets(self, *, force: bool = False) -> None:
-        """ Fetch all assets. """
+        """Fetch all assets."""
 
         get_version = await self._client.http.get_valorant_version()
 
@@ -229,6 +247,7 @@ class Assets:
             or len(os.listdir(self._get_asset_dir())) == 0
             or force
         ):
+            _log.info(f"Fetching assets for version {self._client.version!r}")
 
             async_tasks = [
                 asyncio.ensure_future(self._client.http.asset_get_agent()),
@@ -301,16 +320,21 @@ class Assets:
         self.reload_assets()
 
     def _get_asset_dir(self) -> str:
-        """ Get the asset directory. """
+        """Get the asset directory."""
         return os.path.join(Assets._cache_dir, self._client.version)
 
     def reload_assets(self) -> None:
-        """ Reload assets. """
+        """Reload assets."""
+
+        _log.info("Reloading assets")
+
         self.ASSET_CACHE.clear()
         self.__load_assets()
 
+        _log.info("Assets reloaded")
+
     def __load_assets(self) -> None:
-        """ Load assets. """
+        """Load assets."""
 
         # self._mkdir_cache_dir()
 
@@ -322,17 +346,18 @@ class Assets:
             reverse=True,
         ):
             maybe_asset_dir = os.path.join(self._cache_dir, maybe_dir)
-            if not to_remove_dir and os.path.isdir(maybe_asset_dir) and str(maybe_dir).startswith('0'):
-                for filename in os.listdir(maybe_asset_dir):
-                    if isinstance(filename, str) and filename.endswith('.json'):
-                        Assets.__to_cache(str(maybe_asset_dir), str(filename))
-                to_remove_dir = True
-
-            elif to_remove_dir and os.path.isdir(maybe_asset_dir) and str(maybe_dir).startswith('0'):
-                shutil.rmtree(maybe_asset_dir)
+            if os.path.isdir(maybe_asset_dir) and str(maybe_dir).startswith('0'):
+                if not to_remove_dir:
+                    for filename in os.listdir(maybe_asset_dir):
+                        if isinstance(filename, str) and filename.endswith('.json'):
+                            Assets.__to_cache(str(maybe_asset_dir), str(filename))
+                    to_remove_dir = True
+                else:
+                    shutil.rmtree(maybe_asset_dir)
+                    _log.info(f'Removed asset directory {maybe_asset_dir}')
 
     def _mkdir_cache_dir(self) -> bool:
-        """ Make the cache directory. """
+        """Make the cache directory."""
         if not os.path.exists(self._cache_dir):
             try:
                 os.mkdir(self._cache_dir)
@@ -343,23 +368,25 @@ class Assets:
                 return True
 
     def _mkdir_assets_dir(self) -> bool:
-        """ Make the assets' directory. """
+        """Make the assets' directory."""
         assets_dir = self._get_asset_dir()
         if not os.path.exists(os.path.join(assets_dir)):
             try:
                 os.mkdir(os.path.join(assets_dir))
             except OSError:
+                _log.error(f'Failed to create asset directory')
                 return False
             else:
+                _log.info(f'Created asset directory')
                 return True
 
     def _mkdir_cache_gitignore(self) -> None:
-        """ Make a .gitignore file in the cache directory. """
+        """Make a .gitignore file in the cache directory."""
 
         gitignore_path = os.path.join(self._cache_dir, ".gitignore")
         msg = "# This directory is used to cache data from the Valorant API.\n*\n"
         if not os.path.exists(gitignore_path):
-            with open(gitignore_path, "w", encoding='utf-8') as f:
+            with open(gitignore_path, 'w', encoding='utf-8') as f:
                 f.write(msg)
 
     def __dump_to(self, data: Any, filename: str) -> None:
@@ -370,7 +397,7 @@ class Assets:
 
     @staticmethod
     def __to_cache(path: str, filename: str) -> None:
-        """ Add data to the cache. """
+        """Add data to the cache."""
         file_path = os.path.join(path, filename)
         with open(file_path, encoding='utf-8') as f:
             to_dict = json.load(f)
@@ -378,7 +405,7 @@ class Assets:
 
     @staticmethod
     def __customize_asset_cache_format(filename: str, data: Any) -> None:
-        """ Customize the asset cache format. """
+        """Customize the asset cache format."""
 
         new_dict = {}
         for item in data['data']:
