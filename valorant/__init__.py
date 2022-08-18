@@ -1,3 +1,11 @@
+"""
+Valorant API Wrapper
+~~~~~~~~~~~~~~~~~~~
+A basic wrapper for the Valorant API.
+:copyright: (c) 2022-present xStacia
+:license: MIT, see LICENSE for more details.
+"""
+
 __title__ = 'pylorant'
 __author__ = 'xStacia'
 __license__ = 'MIT'
