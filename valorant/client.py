@@ -137,7 +137,7 @@ class Client:
     def put_player_loadout(self, loadout: Mapping) -> Coroutine[Any, Any, None]:
         return self.http.put_player_loadout(loadout)
 
-    def fetch_player_mmr(self, puuid: Optional[str] = None) -> MMR:
+    async def fetch_player_mmr(self, puuid: Optional[str] = None) -> MMR:
         data = await self.http.fetch_mmr(puuid)
         return MMR(client=self, data=data)
 

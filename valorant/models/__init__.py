@@ -8,10 +8,14 @@ Typings for the Valorant API
 
 from .agent import *
 from .bundle import *
+from .buddies import *
 from .content import *
-from .item import *
-from .map import *
-from .match import *
+from .maps import *
 from .party import *
+from .match import *
 from .player import *
+from .player_cards import *
+from .player_title import *
+from .sprays import *
 from .store import *
+from .weapons import *

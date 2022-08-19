@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, List, Mapping, Optional, TYPE_CHECKING
 # from .skin import SkinNightMarket
 
-from .item import Skin
+from .weapons import Skin
 from .bundle import Bundle
 
 from datetime import datetime, timezone, timedelta
@@ -42,10 +42,10 @@ class StoreFront:
         return StoreOffer(client=self._client, data=self.data['SkinsPanelLayout'])
 
     @property
-    def nightmarket(self) -> Optional[NightMarketOffer]:
+    def nightmarket(self) -> Optional[StoreNightMarketOffer]:
         """ alias for offers """
         if 'BonusStore' in self.data:
-            return NightMarketOffer(client=self._client, data=self.data['BonusStore'])
+            return StoreNightMarketOffer(client=self._client, data=self.data['BonusStore'])
         return None
 
     # alias

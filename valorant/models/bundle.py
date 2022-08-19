@@ -35,12 +35,10 @@ from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 if TYPE_CHECKING:
     from ..client import Client
     from typing_extensions import Self
-    from . import (
-        Skin,
-        Buddy,
-        Spray,
-        PlayerCard
-    )
+    from .weapons import Skin
+    from .player_cards import PlayerCard
+    from .sprays import Spray
+    from .buddies import Buddy
 
 # fmt: off
 __all__ = (
@@ -74,7 +72,7 @@ class Bundle(BaseModel):
         self._discount_price: int = 0
         self._items: List[Union[Skin, Buddy, Spray, PlayerCard]] = []
 
-        if self._extras.get('bundle') is None:
+        if self._extras.get('bundle') is None:  # TODO: futured_bundle
             self._items = data.get('items', [])
         else:
             self._bundle: Any = self._extras['bundle']
