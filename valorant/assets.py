@@ -39,7 +39,6 @@ from .models import (
     Spray,
     PlayerCard,
     PlayerTitle,
-
     Mission,
     ContentTier,
     Contract,
@@ -56,7 +55,6 @@ from typing import Any, Union, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .client import Client
-    from .enums import Locale
 
 # fmt: off
 __all__ = (
@@ -280,8 +278,8 @@ class Assets:
         if get_version != self._client.version:
             self._client.version = get_version
 
-        # self._mkdir_cache_dir()
-        self._mkdir_assets_dir()
+        # self.__mkdir_cache_dir()
+        self.__mkdir_assets_dir()
 
         if (
             not self._get_asset_dir().endswith(self._client.version)
@@ -360,10 +358,6 @@ class Assets:
 
         self.reload_assets()
 
-    def _get_asset_dir(self) -> str:
-        """Get the asset directory."""
-        return os.path.join(Assets._cache_dir, self._client.version)
-
     def reload_assets(self) -> None:
         """Reload assets."""
 
@@ -374,10 +368,14 @@ class Assets:
 
         _log.info("Assets reloaded")
 
+    def _get_asset_dir(self) -> str:
+        """Get the asset directory."""
+        return os.path.join(Assets._cache_dir, self._client.version)
+
     def __load_assets(self) -> None:
         """Load assets."""
 
-        # self._mkdir_cache_dir()
+        # self.__mkdir_cache_dir()
 
         to_remove_dir = False
 
@@ -397,7 +395,7 @@ class Assets:
                     shutil.rmtree(maybe_asset_dir)
                     _log.info(f'Removed asset directory {maybe_asset_dir}')
 
-    def _mkdir_cache_dir(self) -> bool:
+    def __mkdir_cache_dir(self) -> bool:
         """Make the cache directory."""
         if not os.path.exists(self._cache_dir):
             try:
@@ -405,10 +403,10 @@ class Assets:
             except OSError:
                 return False
             else:
-                # self._mkdir_cache_gitignore()
+                # self.__mkdir_cache_gitignore()
                 return True
 
-    def _mkdir_assets_dir(self) -> bool:
+    def __mkdir_assets_dir(self) -> bool:
         """Make the assets' directory."""
         assets_dir = self._get_asset_dir()
         if not os.path.exists(os.path.join(assets_dir)):
@@ -421,7 +419,7 @@ class Assets:
                 _log.info(f'Created asset directory')
                 return True
 
-    def _mkdir_cache_gitignore(self) -> None:
+    def __mkdir_cache_gitignore(self) -> None:
         """Make a .gitignore file in the cache directory."""
 
         gitignore_path = os.path.join(self._cache_dir, ".gitignore")
