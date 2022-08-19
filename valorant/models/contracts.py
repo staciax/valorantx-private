@@ -1,0 +1,129 @@
+from __future__ import annotations
+
+import datetime
+
+from .base import BaseModel
+
+from .. import utils
+from ..asset import Asset
+from ..localization import Localization
+
+from typing import Optional, Dict, Any, Union, List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..client import Client
+
+class Contract(BaseModel):
+
+    def __init__(self, client: Client, data: Optional[Dict[str, Any]], user_contract: Any = None) -> None:
+        super().__init__(client=client, data=data, user_contract=user_contract)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f'<Contract name={self.name!r}>'
+
+    def _update(self, data: Optional[Any]) -> None:
+        self._uuid: str = data['uuid']
+        self._display_name: Optional[Union[str, Dict[str, str]]] = data.get('displayName')
+        self._display_icon: Optional[str] = data.get('displayIcon')
+        self._ship_it: bool = data.get('shipIt')
+        self._free_reward_schedule_uuid: str = data.get('freeRewardScheduleUuid')
+
+        # content
+        self._content: Dict[Any, Any] = data.get('content')
+        self._relation_type: Optional[str] = self._content.get('relationType')
+        self._relation_uuid: Optional[str] = self._content.get('relationUuid')
+        self._chapters: List[Dict[Any, Any]] = self._content.get('chapters')
+        self._premium_reward_schedule_uuid: Optional[str] = self._content.get('premiumRewardScheduleUuid')
+        self._premium_vp_cost: int = self._content.get('premiumVPCost')
+
+        self._asset_path: str = data.get('assetPath')
+
+        self._complete: bool = False
+        self._objectives: Dict[str, Any] = {}
+        self._expiration_time: Optional[datetime.datetime] = None
+
+        if self._extras.get('user_contract'):
+            self._user_contract: Dict[Any, Any] = self._extras.get('user_contract')
+            self._complete = self._user_contract.get('complete')
+            self._objectives = self._user_contract.get('contract_objectives')
+            self._expiration_time_iso = self._user_contract.get('expiration_time')
+
+    @property
+    def name_localizations(self) -> Localization:
+        """:class: `Localization` Returns the contract's names."""
+        return Localization(self._display_name, locale=self._client.locale)
+
+    @property
+    def name(self) -> str:
+        """:class: `str` Returns the contract's name."""
+        return self.name_localizations.american_english
+
+    @property
+    def icon(self) -> Asset:
+        """:class: `Asset` Returns the contract's icon."""
+        return Asset._from_url(self._client, self._display_icon)
+
+    @property
+    def ship_it(self) -> bool:
+        """:class: `bool` Returns whether the contract is ship it."""
+        return self._ship_it
+
+    @property
+    def free_reward_schedule_uuid(self) -> str:
+        """:class: `str` Returns the contract's free reward schedule uuid."""
+        return self._free_reward_schedule_uuid
+
+    @property
+    def relation_type(self) -> Optional[str]:
+        """:class: `str` Returns the contract's relation type."""
+        return self._relation_type
+
+    @property
+    def relation_uuid(self) -> Optional[str]:
+        """:class: `str` Returns the contract's relation uuid."""
+        return self._relation_uuid
+
+    @property
+    def chapters(self) -> List[Dict[Any, Any]]:  # https://dash.valorant-api.com/endpoints/contracts
+        """:class: `list` Returns the contract's chapters."""
+        return self._chapters
+
+    @property
+    def premium_reward_schedule_uuid(self) -> Optional[str]:
+        """:class: `str` Returns the contract's premium reward schedule uuid."""
+        return self._premium_reward_schedule_uuid
+
+    @property
+    def premium_vp_cost(self) -> int:
+        """:class: `int` Returns the contract's premium vp cost."""
+        return self._premium_vp_cost
+
+    @property
+    def asset_path(self) -> str:
+        """:class: `str` Returns the contract's asset path."""
+        return self._asset_path
+
+    # user contract
+
+    @property
+    def complete(self) -> bool:
+        """:class: `bool` Returns whether the contract is complete."""
+        return self._complete
+
+    @property
+    def objectives(self) -> Dict[str, Any]:
+        """:class: `dict` Returns the contract's objectives."""
+        return self._objectives
+
+    @property
+    def expiration_time(self) -> Optional[datetime.datetime]:
+        """:class: `datetime.datetime` Returns the contract's expiration time."""
+        return utils.iso_to_datetime(self._expiration_time_iso) if self._expiration_time_iso else None
+
+    # class MissionMeta(NamedTuple):
+    #     NPECompleted: bool
+    #     WeeklyCheckpoint: str
+    #     WeeklyRefillTime: str

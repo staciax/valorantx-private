@@ -33,10 +33,10 @@ from .http import HTTPClient
 from .assets import Assets
 
 from .models import (
-    GameContent,
     MMR,
     Wallet
 )
+from .models.contents import GameContent
 
 from typing import (
     Any,

@@ -36,16 +36,16 @@ from .models import (
     Agent,
     Buddy,
     Bundle,
-    Mission,
-    ContentTier,
     Contract,
+    ContentTier,
     Weapon,
     Skin,
     SkinChroma,
     SkinLevel,
     PlayerCard,
     PlayerTitle,
-    Spray
+    Spray,
+    Mission,
 )
 
 from .enums import Locale, ItemType
