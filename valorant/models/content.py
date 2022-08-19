@@ -28,19 +28,146 @@ from .base import BaseModel
 from ..asset import Asset
 from ..localization import Localization
 
-from ..utils import iso_to_datetime
+from .. import utils
 
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, NamedTuple, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     import datetime
     from ..client import Client
 
 __all__ = (
+    'ContentSeason',
+    'ContentEvent',
+    'GameContent',
     'Mission',
     'ContentTier',
-    'Contract'
+    'Contract',
+    'MMR'
 )
+
+class CompetitiveUpdate(NamedTuple):
+    MatchID: str
+    MapID: str
+    SeasonID: str
+    MatchStartTime: int
+    TierAfterUpdate: int
+    TierBeforeUpdate: int
+    RankedRatingAfterUpdate: int
+    RankedRatingBeforeUpdate: int
+    RankedRatingEarned: int
+    RankedRatingPerformanceBonus: int
+    AFKPenalty: int
+
+class MMR(BaseModel):
+
+    def __init__(self, client: Client, data: Any, **kwargs) -> None:
+        super().__init__(client, data, **kwargs)
+
+    def __repr__(self) -> str:
+        return f'<FetchMMR uuid={self.uuid!r} version={self.version!r} latest_competitive_update={self.latest_competitive_update!r}>'
+
+    def __hash__(self) -> int:
+        return hash(self.uuid)
+
+    def _update(self, data: Any) -> None:
+        self._uuid = data['Subject']
+        self.version = data['Version']
+        self.queue_skills: Dict[str, Any] = data['QueueSkills']  # TODO: Object
+        self.new_player_experience_finished: bool = data['NewPlayerExperienceFinished']
+        self.is_leaderboard_anonymized: bool = data['IsLeaderboardAnonymized']
+        self.is_act_rank_badge_hidden: bool = data['IsActRankBadgeHidden']
+        self._latest_competitive_update: Dict[str, Any] = data['LatestCompetitiveUpdate']
+        # TODO: Object
+        self.latest_competitive_update: CompetitiveUpdate = CompetitiveUpdate(self._latest_competitive_update)
+
+class ContentSeason:
+    def __init__(self, data: Any) -> None:
+        self._update(data)
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('id', self.id),
+            ('name', self.name),
+            ('type', self.type),
+            ('is_active', self.is_active),
+            ('start_time', self.start_time),
+            ('end_time', self.end_time),
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
+    def _update(self, data: Any) -> None:
+        self.id: str = data['ID']
+        self.name: str = data['Name']
+        self.type: str = data['Type']
+        self.is_active: bool = data['IsActive']
+        self._start_time: str = data['StartTime']
+        self._end_time: str = data['EndTime']
+
+    @property
+    def start_time(self) -> datetime:
+        return utils.iso_to_datetime(self._start_time)
+
+    @property
+    def end_time(self) -> datetime:
+        return utils.iso_to_datetime(self._end_time)
+
+class ContentEvent:
+    def __init__(self, data: Any) -> None:
+        self._update(data)
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('id', self.id),
+            ('name', self.name),
+            ('is_active', self.is_active),
+            ('start_time', self.start_time),
+            ('end_time', self.end_time),
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
+    def _update(self, data: Any) -> None:
+        self.id: str = data['ID']
+        self.name: str = data['Name']
+        self.is_active: bool = data['IsActive']
+        self._start_time: str = data['StartTime']
+        self._end_time: str = data['EndTime']
+
+    @property
+    def start_time(self) -> datetime:
+        return utils.iso_to_datetime(self._start_time)
+
+    @property
+    def end_time(self) -> datetime:
+        return utils.iso_to_datetime(self._end_time)
+
+class GameContent:
+
+    def __init__(self, client: Client, data: Any) -> None:
+        self._client = client
+        self._update(data)
+
+    def __repr__(self) -> str:
+        return f"<Content season={self.seasons!r}"
+
+    def _update(self, data: Any) -> None:
+        self._disabled_ids: List[str] = data['DisabledIDs']
+        self._seasons: List[ContentSeason] = data.get('Seasons')
+        self._events: List[str] = data.get('Events')
+
+    @property
+    def disabled_ids(self) -> List[str]:
+        return self._disabled_ids
+
+    @property
+    def seasons(self) -> List[ContentSeason]:
+        return [ContentSeason(season) for season in self._seasons]
+
+    @property
+    def events(self) -> List[ContentEvent]:
+        return [ContentEvent(event) for event in self._events]
 
 class Mission(BaseModel):
 
@@ -107,12 +234,12 @@ class Mission(BaseModel):
     @property
     def activation_date(self) -> datetime.datetime:
         """:class: `datetime.datetime` Returns the mission's activation date."""
-        return iso_to_datetime(self._activation_date_iso)
+        return utils.iso_to_datetime(self._activation_date_iso)
 
     @property
     def expiration_date(self) -> datetime.datetime:
         """:class: `datetime.datetime` Returns the mission's expiration date."""
-        return iso_to_datetime(self._expiration_date_iso)
+        return utils.iso_to_datetime(self._expiration_date_iso)
 
     @property
     def tags(self) -> List[str]:
@@ -304,7 +431,7 @@ class Contract(BaseModel):
     @property
     def expiration_time(self) -> Optional[datetime.datetime]:
         """:class: `datetime.datetime` Returns the contract's expiration time."""
-        return iso_to_datetime(self._expiration_time_iso) if self._expiration_time_iso else None
+        return utils.iso_to_datetime(self._expiration_time_iso) if self._expiration_time_iso else None
 
     # class MissionMeta(NamedTuple):
     #     NPECompleted: bool

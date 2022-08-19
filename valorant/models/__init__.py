@@ -14,3 +14,4 @@ from .map import *
 from .match import *
 from .party import *
 from .player import *
+from .store import *

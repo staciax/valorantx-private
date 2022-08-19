@@ -34,8 +34,9 @@ from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..client import Client
+    from typing_extensions import Self
     from . import (
-        # Skin,
+        Skin,
         Buddy,
         Spray,
         PlayerCard
@@ -49,8 +50,8 @@ __all__ = (
 
 class Bundle(BaseModel):
 
-    def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
-        super().__init__(client=client, data=data)
+    def __init__(self, client: Client, data: Optional[Dict[str, Any]], **kwargs) -> None:
+        super().__init__(client=client, data=data, **kwargs)
 
     def __str__(self) -> str:
         return self.name
@@ -71,14 +72,14 @@ class Bundle(BaseModel):
         self._asset_path: str = data['assetPath']
         self._price: int = 0
         self._discount_price: int = 0
+        self._items: List[Union[Skin, Buddy, Spray, PlayerCard]] = []
 
         if self._extras.get('bundle') is None:
-            self._items: List[Union[Buddy, Spray, PlayerCard]] = data.get('items', [])
+            self._items = data.get('items', [])
         else:
             self._bundle: Any = self._extras['bundle']
             self._duration: int = self._bundle['DurationRemainingInSeconds']
             self._whole_sale_only: bool = self._bundle['WholesaleOnly']
-            self._items: List[Union[Buddy, Spray, PlayerCard]] = []  # Skin
             self.__bundle_items(self._bundle['Items'])
 
     def __bundle_items(
@@ -206,3 +207,10 @@ class Bundle(BaseModel):
     def discount_price(self) -> int:
         """:class: `int` Returns the bundle's discount price."""
         return self._discount_price
+
+    @classmethod
+    def _from_store(cls, client: Client, bundle: Dict[str, Any]) -> Self:
+        """Creates a bundle from a store response."""
+        uuid = bundle['DataAssetID']
+        data = client.assets.get_bundle(uuid)
+        return cls(client=client, data=data, bundle=bundle)

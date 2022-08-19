@@ -51,7 +51,7 @@ from .models import (
 from .enums import Locale, ItemType
 from .utils import validate_uuid
 
-from typing import Any, Union, Optional, TYPE_CHECKING
+from typing import Any, Iterator,  Union, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .client import Client
@@ -269,6 +269,10 @@ class Assets:
         skin_levels = self.ASSET_CACHE["weapon_skin_levels"]
         data = skin_levels.get(uuid)
         return SkinLevel(client=self._client, data=data) if data else None
+
+    def get_all_bundles(self) -> Iterator[Bundle]:
+        for item in self.ASSET_CACHE["bundles"].values():
+            yield Bundle(client=self._client, data=item)
 
     async def fetch_all_assets(self, *, force: bool = False) -> None:
         """Fetch all assets."""

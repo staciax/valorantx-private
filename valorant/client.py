@@ -28,9 +28,15 @@ import json
 import asyncio
 import logging
 
-from .enums import Locale
+from .enums import Locale, QueueID
 from .http import HTTPClient
 from .assets import Assets
+
+from .models import (
+    GameContent,
+    MMR,
+    Wallet
+)
 
 from typing import (
     Any,
@@ -113,6 +119,55 @@ class Client:
     @locale.setter
     def locale(self, locale: str) -> None:
         self._locale = locale
+
+    # PVP endpoints
+
+    def fetch_game_content(self) -> GameContent:
+        return GameContent(client=self, data=self.http.fetch_content())
+
+    def fetch_account_xp(self) -> Coroutine[Any, Any, None]:
+        return self.http.fetch_account_xp()
+
+    # async def fetch_player_loadout(self) -> Collection:
+    #     account_xp = await self.http.fetch_account_xp()
+    #     self.user._account_level = account_xp['Progress']['Level']
+    #     data = await self.http.fetch_player_loadout()
+    #     return Collection(client=self, data=data)
+
+    def put_player_loadout(self, loadout: Mapping) -> Coroutine[Any, Any, None]:
+        return self.http.put_player_loadout(loadout)
+
+    def fetch_player_mmr(self, puuid: Optional[str] = None) -> MMR:
+        data = await self.http.fetch_mmr(puuid)
+        return MMR(client=self, data=data)
+
+    # async def fetch_player_match_history(
+    #     self,
+    #     puuid: Optional[str] = None,
+    #     start_index: int = 0,
+    #     end_index: int = 15,
+    #     queue_id: Optional[str, QueueID] = QueueID.unrated,
+    # ) -> FetchMatchHistory:
+    #     data = await self.http.fetch_match_history(puuid, start_index, end_index, queue_id)
+    #     return FetchMatchHistory(client=self, data=data)
+
+    # async def fetch_match_details(self, match_id: str) -> Any:
+    #     match_details = await self.http.fetch_match_details(match_id)
+    #     return MatchDetail(client=self, data=match_details)
+
+    # # store endpoints
+    #
+    # async def fetch_storefront(self) -> StoreFront:
+    #     data = await self.http.store_fetch_storefront()
+    #     return StoreFront(client=self, data=data)
+
+    async def fetch_wallet(self) -> Wallet:
+        data = await self.http.store_fetch_wallet()
+        return Wallet(client=self, data=data)
+
+    # async def fetch_patch_notes(self, locale: str) -> PatchNotes:
+    #     data = await self.http.fetch_patch_notes(locale)
+    #     return PatchNotes(client=self, data=data, locale=locale)
 
     # asset
 

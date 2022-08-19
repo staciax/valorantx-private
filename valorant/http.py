@@ -30,7 +30,7 @@ import aiohttp
 
 from urllib.parse import urlencode
 from . import utils
-from .enums import Region, ItemType, QueueID, try_enum
+from .enums import Region, ItemType, QueueID, Locale, try_enum
 from .auth import RiotAuth
 from .errors import HTTPException, Forbidden, NotFound, RiotServerError
 
@@ -271,6 +271,16 @@ class HTTPClient:
 
     def asset_get_bundle_items(self) -> Response[Any]:
         return self.request(Route('GET', '/bundles', 'valtracker_gg'))
+
+    # play valorant endpoints
+
+    def fetch_patch_notes(self, locale: Union[str, Locale] = Locale.american_english) -> Response[None]:
+        """
+        FetchPatchNote
+        Get the latest patch note
+        """
+        r = Route("GET", f"/page-data/{str(locale).lower()}/news/tags/patch-notes/page-data.json", "play_valorant")
+        return self.request(r)
 
     # PVP endpoints
 
