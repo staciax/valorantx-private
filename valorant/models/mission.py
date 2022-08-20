@@ -30,10 +30,16 @@ from .base import BaseModel
 from .. import utils
 from ..localization import Localization
 
-from typing import Optional, Dict, Any, Union, List, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..client import Client
+
+# fmt: off
+__all__ = (
+    'Mission',
+)
+# fmt: on
 
 class Mission(BaseModel):
 
@@ -51,16 +57,16 @@ class Mission(BaseModel):
 
     def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
-        self._display_name: Optional[Union[str, Dict[str, str]]] = data.get('displayName')
-        self._title: Optional[Union[str, Dict[str, str]]] = data.get('title')
-        self._type: Optional[str] = data.get('type')
-        self._xp_grant: int = data.get('xpGrant')
-        self._progress_to_complete: int = data.get('progressToComplete')
-        self._activation_date_iso: str = data.get('activationDate')
-        self._expiration_date_iso: str = data.get('expirationDate')
-        self._tags: Optional[List[str]] = data.get('tags')
-        self._objectives: Optional[Dict[str, Any]] = data.get('objectives')
-        self._asset_path: str = data.get('assetPath')
+        self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
+        self._title: Optional[Union[str, Dict[str, str]]] = data['title']
+        self.type: Optional[str] = data['type']
+        self.xp: int = data['xpGrant']
+        self.progress_to_complete: int = data['progressToComplete']
+        self._activation_date_iso: str = data['activationDate']
+        self._expiration_date_iso: str = data['expirationDate']
+        self.tags: Optional[List[str]] = data['tags']
+        self.objectives: Optional[Dict[str, Any]] = data['objectives']
+        self.asset_path: str = data['assetPath']
 
     @property
     def name_localizations(self) -> Localization:
@@ -83,41 +89,11 @@ class Mission(BaseModel):
         return self.title_localizations.american_english
 
     @property
-    def type(self) -> str:
-        """:class: `str` Returns the mission's type."""
-        return self._type
-
-    @property
-    def xp(self) -> int:
-        """:class: `int` Returns the mission's xp grant."""
-        return self._xp_grant
-
-    @property
-    def progress_to_complete(self) -> int:
-        """:class: `int` Returns the mission's progress to complete."""
-        return self._progress_to_complete
-
-    @property
     def activation_date(self) -> datetime.datetime:
         """:class: `datetime.datetime` Returns the mission's activation date."""
-        return utils.iso_to_datetime(self._activation_date_iso)
+        return utils.parse_iso_datetime(self._activation_date_iso)
 
     @property
     def expiration_date(self) -> datetime.datetime:
         """:class: `datetime.datetime` Returns the mission's expiration date."""
-        return utils.iso_to_datetime(self._expiration_date_iso)
-
-    @property
-    def tags(self) -> List[str]:
-        """:class: `list` Returns the mission's tags."""
-        return self._tags
-
-    @property
-    def objectives(self) -> Dict[str, Any]:
-        """:class: `dict` Returns the mission's objectives."""
-        return self._objectives
-
-    @property
-    def asset_path(self) -> str:
-        """:class: `str` Returns the mission's asset path."""
-        return self._asset_path
+        return utils.parse_iso_datetime(self._expiration_date_iso)

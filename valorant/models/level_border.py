@@ -23,48 +23,50 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+from ..asset import Asset
 from .base import BaseModel
-from ..localization import Localization
 
-from typing import Any, Optional, Dict, Union, TYPE_CHECKING
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..client import Client
 
-class PlayerTitle(BaseModel):
+# fmt: off
+__all__ = (
+    'LevelBorder',
+)
+# fmt: on
 
-    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
+class LevelBorder(BaseModel):
+
+    def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 
     def __str__(self) -> str:
-        return self.text
+        return str(self.starting_level)
 
     def __repr__(self) -> str:
-        return f"<PlayerTitle name={self.name!r} text={self.text!r}>"
+        return f'<LevelBorder starting_level={self.starting_level!r}>'
 
-    def _update(self, data: Any) -> None:
+    def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._title_text: Union[str, Dict[str, str]] = data['titleText']
-        self.is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
+        self._starting_level: int = data['startingLevel']
+        self._level_number_appearance: str = data['levelNumberAppearance']
+        self._small_player_card_appearance: str = data['smallPlayerCardAppearance']
         self.asset_path: str = data['assetPath']
 
     @property
-    def name_localizations(self) -> Localization:
-        """:class: `Translator` Returns the player title's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def starting_level(self) -> int:
+        """:class: `int` Returns the starting level of the level border."""
+        return self._starting_level
 
     @property
-    def name(self) -> str:
-        """:class: `str` Returns the player title's name."""
-        return self.name_localizations.american_english
+    def level_number_appearance(self) -> Asset:
+        """:class: `Asset` Returns the level number appearance of the level border."""
+        return Asset._from_url(client=self._client, url=self._level_number_appearance)
 
     @property
-    def text_localizations(self) -> Localization:
-        """:class: `Translator` Returns the player title's title text."""
-        return Localization(self._title_text, locale=self._client.locale)
+    def small_player_card_appearance(self) -> Asset:
+        """:class: `Asset` Returns the small player card appearance of the level border."""
+        return Asset._from_url(client=self._client, url=self._small_player_card_appearance)
 
-    @property
-    def text(self) -> str:
-        """:class: `str` Returns the player title's title text."""
-        return self.text_localizations.american_english

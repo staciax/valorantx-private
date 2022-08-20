@@ -27,7 +27,7 @@ from typing import Any, List, Mapping, Optional, TYPE_CHECKING
 # from .skin import SkinNightMarket
 
 from .weapons import Skin
-from .bundles import Bundle
+from .bundle import Bundle
 
 from datetime import datetime, timezone, timedelta
 

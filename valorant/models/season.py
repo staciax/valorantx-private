@@ -24,47 +24,58 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from .base import BaseModel
+
+from .. import utils
 from ..localization import Localization
 
-from typing import Any, Optional, Dict, Union, TYPE_CHECKING
+from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    import datetime
     from ..client import Client
 
-class PlayerTitle(BaseModel):
+# fmt: off
+__all__ = (
+    'Season',
+)
+# fmt: on
 
-    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
+class Season(BaseModel):
+
+    def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 
     def __str__(self) -> str:
-        return self.text
+        return self.name
 
     def __repr__(self) -> str:
-        return f"<PlayerTitle name={self.name!r} text={self.text!r}>"
+        return f'<Season name={self.name!r}>'
 
-    def _update(self, data: Any) -> None:
+    def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._title_text: Union[str, Dict[str, str]] = data['titleText']
-        self.is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
+        self.type: str = data['type']
+        self._start_time_iso: Union[str, datetime.datetime] = data['startTime']
+        self._end_time_iso: Union[str, datetime.datetime] = data['endTime']
+        self._parent_uuid: str = data['parentUuid']
         self.asset_path: str = data['assetPath']
 
     @property
     def name_localizations(self) -> Localization:
-        """:class: `Translator` Returns the player title's names."""
+        """:class: `Localization` Returns the season's names."""
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
     def name(self) -> str:
-        """:class: `str` Returns the player title's name."""
+        """:class: `str` Returns the season's name."""
         return self.name_localizations.american_english
 
     @property
-    def text_localizations(self) -> Localization:
-        """:class: `Translator` Returns the player title's title text."""
-        return Localization(self._title_text, locale=self._client.locale)
+    def start_time(self) -> datetime.datetime:
+        """:class: `datetime.datetime` Returns the season's start time."""
+        return utils.parse_iso_datetime(self._start_time_iso)
 
     @property
-    def text(self) -> str:
-        """:class: `str` Returns the player title's title text."""
-        return self.text_localizations.american_english
+    def end_time(self) -> datetime.datetime:
+        """:class: `datetime.datetime` Returns the season's end time."""
+        return utils.parse_iso_datetime(self._end_time_iso)

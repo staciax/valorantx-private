@@ -23,48 +23,59 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from .base import BaseModel
+from ..asset import Asset
 from ..localization import Localization
+from .base import BaseModel
 
-from typing import Any, Optional, Dict, Union, TYPE_CHECKING
+from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..client import Client
 
-class PlayerTitle(BaseModel):
+# fmt: off
+__all__ = (
+    'Theme',
+)
+# fmt: on
 
-    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
+class Theme(BaseModel):
+
+    def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 
     def __str__(self) -> str:
-        return self.text
+        return self.name
 
     def __repr__(self) -> str:
-        return f"<PlayerTitle name={self.name!r} text={self.text!r}>"
+        return f'<Theme name={self.name!r}>'
 
-    def _update(self, data: Any) -> None:
+    def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._title_text: Union[str, Dict[str, str]] = data['titleText']
-        self.is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
+        self._display_icon: Optional[str] = data['displayIcon']
+        self._store_featured_image: Optional[str] = data['storeFeaturedImage']
         self.asset_path: str = data['assetPath']
 
     @property
     def name_localizations(self) -> Localization:
-        """:class: `Translator` Returns the player title's names."""
+        """:class: `Localization` Returns the ceremony's names."""
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
     def name(self) -> str:
-        """:class: `str` Returns the player title's name."""
+        """:class: `str` Returns the ceremony's name."""
         return self.name_localizations.american_english
 
     @property
-    def text_localizations(self) -> Localization:
-        """:class: `Translator` Returns the player title's title text."""
-        return Localization(self._title_text, locale=self._client.locale)
+    def display_icon(self) -> Optional[Asset]:
+        """:class: `Asset` Returns the ceremony's display icon."""
+        if self._display_icon is None:
+            return None
+        return Asset._from_url(self._client, self._display_icon)
 
     @property
-    def text(self) -> str:
-        """:class: `str` Returns the player title's title text."""
-        return self.text_localizations.american_english
+    def store_featured_image(self) -> Optional[Asset]:
+        """:class: `Asset` Returns the ceremony's store featured image."""
+        if self._store_featured_image is None:
+            return None
+        return Asset._from_url(self._client, self._store_featured_image)

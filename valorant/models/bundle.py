@@ -36,9 +36,9 @@ if TYPE_CHECKING:
     from ..client import Client
     from typing_extensions import Self
     from .weapons import Skin
-    from .player_cards import PlayerCard
-    from .sprays import Spray
-    from .buddies import Buddy
+    from .player_card import PlayerCard
+    from .spray import Spray
+    from .buddy import Buddy
 
 # fmt: off
 __all__ = (
@@ -67,7 +67,7 @@ class Bundle(BaseModel):
         self._display_icon: str = data['displayIcon']
         self._display_icon_2: str = data['displayIcon2']
         self._vertical_promo_image: str = data['verticalPromoImage']
-        self._asset_path: str = data['assetPath']
+        self.asset_path: str = data['assetPath']
         self._price: int = 0
         self._discount_price: int = 0
         self._items: List[Union[Skin, Buddy, Spray, PlayerCard]] = []
@@ -174,11 +174,6 @@ class Bundle(BaseModel):
     def vertical_promo_image(self) -> Asset:
         """:class: `Asset` Returns the bundle's vertical promo image."""
         return Asset._from_url(client=self._client, url=self._vertical_promo_image)
-
-    @property
-    def asset_path(self) -> str:
-        """:class: `str` Returns the bundle's asset path."""
-        return self._asset_path
 
     @property
     def items(self) -> List[Union[Buddy, Spray, PlayerCard]]:

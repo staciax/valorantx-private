@@ -37,17 +37,28 @@ from .models import (
     Buddy,
     BuddyLevel,
     Bundle,
-    Contract,
+    Ceremony,
+    CompetitiveTier,
     ContentTier,
-    Weapon,
+    Contract,
+    Currency,
+    Event,
+    GameMode,
+    GameModeEquippable,
+    Gear,
+    LevelBorder,
+    Map,
+    Mission,
+    PlayerCard,
+    PlayerTitle,
+    Season,
     Skin,
     SkinChroma,
     SkinLevel,
-    PlayerCard,
-    PlayerTitle,
     Spray,
     SprayLevel,
-    Mission,
+    Theme,
+    Weapon,
 )
 
 from .enums import Locale, ItemType
@@ -65,7 +76,8 @@ __all__ = (
 # fmt: on
 
 # TODO: assert function in get
-
+# TODO: key error handling
+# TODO: str, repr, eq, ne slots, for all classes
 
 _log = logging.getLogger(__name__)
 
@@ -75,8 +87,8 @@ def check_uuid(value: str):
     if not is_uuid(str(value)):
         raise ValueError('Invalid UUID')
 
-def validate_uuid(func):
 
+def validate_uuid(func):
     @wraps(func)
     def decorator(uuid, *args) -> Any:
 
@@ -90,12 +102,14 @@ def validate_uuid(func):
 
     return decorator
 
-def maybe_display_name(key: str = 'displayName'):
 
+def maybe_uuid(key: str = 'displayName'):
     def decorator(function):
 
         @wraps(function)
-        def wrapper(uuid: str, *args) -> Any:
+        def wrapper(uuid: str, *args, **kwargs) -> Any:
+
+            # TODO: kwargs option on or off
 
             if not isinstance(uuid, str):
                 try:
@@ -105,7 +119,7 @@ def maybe_display_name(key: str = 'displayName'):
             else:
                 may_be_uuid = uuid
 
-            if not is_uuid(str(may_be_uuid)):
+            if not is_uuid(str(may_be_uuid)) and not may_be_uuid == '':
 
                 get_key = function.__doc__.split(',')[0].strip()
                 data = Assets.ASSET_CACHE[get_key]
@@ -131,7 +145,6 @@ def maybe_display_name(key: str = 'displayName'):
 
 
 class Assets:
-
     _cache_dir: Path = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), "assets"
     )
@@ -145,89 +158,110 @@ class Assets:
         # load assets
         self.reload_assets()
 
-    @maybe_display_name()
+    @maybe_uuid()
     def get_agent(self, uuid: str) -> Optional[Agent]:
         """agents, Get an agent by UUID."""
         agents = self.ASSET_CACHE["agents"]
         data = agents.get(uuid)
         return Agent(client=self._client, data=data) if data is not None else None
 
-    @maybe_display_name()
+    @maybe_uuid()
     def get_buddy(self, uuid: str) -> Optional[Union[Buddy, BuddyLevel]]:
         """buddies, Get a buddy by UUID."""
         buddies = self.ASSET_CACHE["buddies"]
         data = buddies.get(uuid)
         return Buddy(client=self._client, data=data) if data is not None else self.get_buddy_level(uuid)
 
-    @maybe_display_name()
+    @maybe_uuid()
     def get_buddy_level(self, uuid: str) -> Optional[BuddyLevel]:
         """buddies_levels, Get a buddy level by UUID."""
         buddy_levels = self.ASSET_CACHE["buddies_levels"]
         data = buddy_levels.get(uuid)
         return BuddyLevel(client=self._client, data=data) if data is not None else None
 
-    @maybe_display_name()
+    @maybe_uuid()
     def get_bundle(self, uuid: str) -> Optional[Bundle]:
         """bundles, Get a bundle by UUID."""
         bundles = self.ASSET_CACHE["bundles"]
         data = bundles.get(uuid)
         return Bundle(client=self._client, data=data) if data else None
 
-    @validate_uuid
-    def get_ceremonie(self, uuid: str) -> Any:
+    @maybe_uuid()
+    def get_ceremony(self, uuid: str) -> Optional[Ceremony]:
         """ceremonies, Get a ceremony by UUID."""
-        data = self.ASSET_CACHE["ceremonies"]
-        return data.get(uuid)
+        ceremonies = self.ASSET_CACHE["ceremonies"]
+        data = ceremonies.get(uuid)
+        return Ceremony(client=self._client, data=data) if data else None
 
-    @validate_uuid
-    def get_competitive_tier(self, uuid: str) -> Any:
+    @validate_uuid  # TODO: re format json
+    def get_competitive_tier(self, uuid: str) -> Optional[CompetitiveTier]:
         """competitiveTiers, Get a competitive tier by UUID."""
-        data = self.ASSET_CACHE["competitive_tiers"]
-        return data.get(uuid)
+        competitive_tiers = self.ASSET_CACHE["competitive_tiers"]
+        data = competitive_tiers.get(uuid)
+        return CompetitiveTier(client=self._client, data=data) if data else None
 
-    @validate_uuid
+    @maybe_uuid()
     def get_content_tier(self, uuid: str) -> Optional[ContentTier]:
         """content_tiers, Get a content tier by UUID."""
         content_tiers = self.ASSET_CACHE["content_tiers"]
         data = content_tiers.get(uuid)
         return ContentTier(client=self._client, data=data) if data else None
 
-    @validate_uuid
+    @maybe_uuid()
     def get_contract(self, uuid: str) -> Optional[Contract]:
         """contracts, Get a contract by UUID."""
         contracts = self.ASSET_CACHE["contracts"]
         data = contracts.get(uuid)
         return Contract(client=self._client, data=data) if data else None
 
-    @validate_uuid
-    def get_currency(self, uuid: str) -> Any:
+    @maybe_uuid()
+    def get_currency(self, uuid: str) -> Optional[Currency]:
         """currencies, Get a currency by UUID."""
-        data = self.ASSET_CACHE["currencies"]
-        return data.get(uuid)
+        currencies = self.ASSET_CACHE["currencies"]
+        data = currencies.get(uuid)
+        return Currency(client=self._client, data=data) if data else None
 
-    @validate_uuid
-    def get_game_mode(self, uuid: str) -> Any:
+    @maybe_uuid()
+    def get_event(self, uuid: str) -> Optional[Event]:
+        """events, Get an event by UUID."""
+        events = self.ASSET_CACHE["events"]
+        data = events.get(uuid)
+        return Event(client=self._client, data=data) if data else None
+
+    @maybe_uuid()
+    def get_game_mode(self, uuid: str) -> Optional[GameMode]:
         """game_modes, Get a game mode by UUID."""
-        data = self.ASSET_CACHE["game_modes"]
-        return data.get(uuid)
+        game_modes = self.ASSET_CACHE["game_modes"]
+        data = game_modes.get(uuid)
+        return GameMode(client=self._client, data=data) if data else None
 
-    @validate_uuid
-    def get_gear(self, uuid: str) -> Any:
-        """gears, Get a gear by UUID."""
-        data = self.ASSET_CACHE["gears"]
-        return data.get(uuid)
+    @maybe_uuid()
+    def get_game_mode_equippable(self, uuid: str) -> Optional[GameModeEquippable]:
+        """game_modes_equippables, Get a game mode equippable by UUID."""
+        game_modes_equippables = self.ASSET_CACHE["game_modes_equippables"]
+        data = game_modes_equippables.get(uuid)
+        return GameModeEquippable(client=self._client, data=data) if data else None
 
-    @validate_uuid
-    def get_level_border(self, uuid: str) -> Any:
+    @maybe_uuid()
+    def get_gear(self, uuid: str) -> Optional[Gear]:
+        """gear, Get a gear by UUID."""
+        gear = self.ASSET_CACHE["gear"]
+        data = gear.get(uuid)
+        return Gear(client=self._client, data=data) if data else None
+
+    @validate_uuid  # TODO : get by startingLevel
+    def get_level_border(self, uuid: str) -> Optional[LevelBorder]:
         """level_borders, Get a level border by UUID."""
-        data = self.ASSET_CACHE["level_borders"]
-        return data.get(uuid)
+        level_borders = self.ASSET_CACHE["level_borders"]
+        data = level_borders.get(uuid)
+        return LevelBorder(client=self._client, data=data) if data else None
 
-    @validate_uuid
-    def get_map(self, uuid: str) -> Any:
+    @maybe_uuid()
+    def get_map(self, uuid: str) -> Optional[Map]:
         """maps, Get a map by UUID."""
-        data = self.ASSET_CACHE["maps"]
-        return data.get(uuid)
+        maps = self.ASSET_CACHE["maps"]
+        data = maps.get(uuid)
+        return Map(client=self._client, data=data) if data else None
 
     @validate_uuid
     def get_mission(self, uuid: str) -> Optional[Mission]:
@@ -236,68 +270,70 @@ class Assets:
         data = missions.get(uuid)
         return Mission(client=self._client, data=data) if data else None
 
-    @maybe_display_name()
+    @maybe_uuid()
     def get_player_card(self, uuid: str) -> Optional[PlayerCard]:
         """player_cards, Get a player card by UUID."""
         player_cards = self.ASSET_CACHE["player_cards"]
         data = player_cards.get(uuid)
         return PlayerCard(client=self._client, data=data) if data else None
 
-    @maybe_display_name()
+    @maybe_uuid()
     def get_player_title(self, uuid: str) -> Optional[PlayerTitle]:
         """player_titles, Get a player title by UUID."""
         player_titles = self.ASSET_CACHE["player_titles"]
         data = player_titles.get(uuid)
         return PlayerTitle(client=self._client, data=data) if data else None
 
-    @validate_uuid
-    def get_season(self, uuid: str) -> Any:
+    @maybe_uuid()
+    def get_season(self, uuid: str) -> Optional[Season]:
         """seasons, Get a season by UUID."""
-        data = self.ASSET_CACHE["seasons"]
-        return data.get(uuid)
+        seasons = self.ASSET_CACHE["seasons"]
+        data = seasons.get(uuid)
+        return Season(client=self._client, data=data) if data else None
 
-    @maybe_display_name()
+    @maybe_uuid()
     def get_spray(self, uuid: str) -> Optional[Union[Spray, SprayLevel]]:
         """sprays, Get a spray by UUID."""
         sprays = self.ASSET_CACHE["sprays"]
         data = sprays.get(uuid)
         return Spray(client=self._client, data=data) if data else self.get_spray_level(uuid)
 
-    @maybe_display_name()
+    @maybe_uuid()
     def get_spray_level(self, uuid: str) -> Optional[SprayLevel]:
         """sprays_levels, Get a spray level by UUID."""
         spray_levels = self.ASSET_CACHE["sprays_levels"]
         data = spray_levels.get(uuid)
         return SprayLevel(client=self._client, data=data) if data is not None else None
 
-    @validate_uuid
-    def get_theme(self, uuid: str) -> Any:
+    @maybe_uuid()
+    def get_theme(self, uuid: str) -> Optional[Theme]:
         """themes, Get a theme by UUID."""
-        data = self.ASSET_CACHE["themes"]
-        return data.get(uuid)
+        themes = self.ASSET_CACHE["themes"]
+        data = themes.get(uuid)
+        return Theme(client=self._client, data=data) if data else None
 
-    @maybe_display_name()
+    @maybe_uuid()
     def get_weapon(self, uuid: str) -> Optional[Weapon]:
         """weapons, Get a weapon by UUID."""
         weapons = self.ASSET_CACHE["weapons"]
         data = weapons.get(uuid)
         return Weapon(client=self._client, data=data) if data else None
 
-    @maybe_display_name()
+    @maybe_uuid()
     def get_skin(self, uuid: str) -> Union[Skin, SkinChroma, SkinLevel]:
         """weapon_skins, Get a weapon skin by UUID."""
         skins = self.ASSET_CACHE["weapon_skins"]
         data = skins.get(uuid)
         return Skin(client=self._client, data=data) if data else None
 
-    @maybe_display_name()
+    @maybe_uuid()
     def get_skin_level(self, uuid: str) -> Optional[Union[SkinLevel, SkinChroma]]:
         """weapon_skin_levels, Get a weapon skin level by UUID."""
         skin_levels = self.ASSET_CACHE["weapon_skin_levels"]
         data = skin_levels.get(uuid)
         return SkinLevel(client=self._client, data=data) if data else self.get_skin_chroma(uuid)
 
-    @validate_uuid
+    @maybe_uuid()
     def get_skin_chroma(self, uuid: str) -> Optional[SkinChroma]:
         """weapon_skin_chromas, Get a weapon skin chroma by UUID."""
         skin_chromas = self.ASSET_CACHE["weapon_skin_chromas"]
@@ -311,10 +347,10 @@ class Assets:
     async def fetch_all_assets(self, *, force: bool = False) -> None:
         """Fetch all assets."""
 
-        get_version = await self._client.http.get_valorant_version()
+        get_version = await self._client.get_valorant_version()
 
         if get_version != self._client.version:
-            self._client.version = get_version
+            self._client.version = get_version.version
 
         # self.__mkdir_cache_dir()
         self.__mkdir_assets_dir()
@@ -327,25 +363,27 @@ class Assets:
             _log.info(f"Fetching assets for version {self._client.version!r}")
 
             async_tasks = [
-                asyncio.ensure_future(self._client.http.asset_get_agent()),
-                asyncio.ensure_future(self._client.http.asset_get_buddy()),
-                asyncio.ensure_future(self._client.http.asset_get_bundle()),
-                asyncio.ensure_future(self._client.http.asset_get_ceremonie()),
-                asyncio.ensure_future(self._client.http.asset_get_competitive_tier()),
-                asyncio.ensure_future(self._client.http.asset_get_content_tier()),
-                asyncio.ensure_future(self._client.http.asset_get_contract()),
-                asyncio.ensure_future(self._client.http.asset_get_currency()),
-                asyncio.ensure_future(self._client.http.asset_get_game_mode()),
+                asyncio.ensure_future(self._client.http.asset_get_agents()),
+                asyncio.ensure_future(self._client.http.asset_get_buddies()),
+                asyncio.ensure_future(self._client.http.asset_get_bundles()),
+                asyncio.ensure_future(self._client.http.asset_get_ceremonies()),
+                asyncio.ensure_future(self._client.http.asset_get_competitive_tiers()),
+                asyncio.ensure_future(self._client.http.asset_get_content_tiers()),
+                asyncio.ensure_future(self._client.http.asset_get_contracts()),
+                asyncio.ensure_future(self._client.http.asset_get_currencies()),
+                asyncio.ensure_future(self._client.http.asset_get_events()),
+                asyncio.ensure_future(self._client.http.asset_get_game_modes()),
+                asyncio.ensure_future(self._client.http.asset_get_game_modes_equippables()),
                 asyncio.ensure_future(self._client.http.asset_get_gear()),
-                asyncio.ensure_future(self._client.http.asset_get_level_border()),
-                asyncio.ensure_future(self._client.http.asset_get_map()),
-                asyncio.ensure_future(self._client.http.asset_get_mission()),
-                asyncio.ensure_future(self._client.http.asset_get_player_card()),
-                asyncio.ensure_future(self._client.http.asset_get_player_title()),
-                asyncio.ensure_future(self._client.http.asset_get_season()),
-                asyncio.ensure_future(self._client.http.asset_get_spray()),
-                asyncio.ensure_future(self._client.http.asset_get_theme()),
-                asyncio.ensure_future(self._client.http.asset_get_weapon()),
+                asyncio.ensure_future(self._client.http.asset_get_level_borders()),
+                asyncio.ensure_future(self._client.http.asset_get_maps()),
+                asyncio.ensure_future(self._client.http.asset_get_missions()),
+                asyncio.ensure_future(self._client.http.asset_get_player_cards()),
+                asyncio.ensure_future(self._client.http.asset_get_player_titles()),
+                asyncio.ensure_future(self._client.http.asset_get_seasons()),
+                asyncio.ensure_future(self._client.http.asset_get_sprays()),
+                asyncio.ensure_future(self._client.http.asset_get_themes()),
+                asyncio.ensure_future(self._client.http.asset_get_weapons()),
                 # bundle items
                 asyncio.ensure_future(self._client.http.asset_get_bundle_items()),
             ]
@@ -368,28 +406,32 @@ class Assets:
                 elif index == 8:
                     self.__dump_to(asset, 'currencies')
                 elif index == 9:
-                    self.__dump_to(asset, 'game_modes')
+                    self.__dump_to(asset, 'events')
                 elif index == 10:
-                    self.__dump_to(asset, 'gears')
+                    self.__dump_to(asset, 'game_modes')
                 elif index == 11:
-                    self.__dump_to(asset, 'level_borders')
+                    self.__dump_to(asset, 'game_modes_equippables')
                 elif index == 12:
-                    self.__dump_to(asset, 'maps')
+                    self.__dump_to(asset, 'gear')
                 elif index == 13:
-                    self.__dump_to(asset, 'missions')
+                    self.__dump_to(asset, 'level_borders')
                 elif index == 14:
-                    self.__dump_to(asset, 'player_cards')
+                    self.__dump_to(asset, 'maps')
                 elif index == 15:
-                    self.__dump_to(asset, 'player_titles')
+                    self.__dump_to(asset, 'missions')
                 elif index == 16:
-                    self.__dump_to(asset, 'seasons')
+                    self.__dump_to(asset, 'player_cards')
                 elif index == 17:
-                    self.__dump_to(asset, 'sprays')
+                    self.__dump_to(asset, 'player_titles')
                 elif index == 18:
-                    self.__dump_to(asset, 'themes')
+                    self.__dump_to(asset, 'seasons')
                 elif index == 19:
-                    self.__dump_to(asset, 'weapons')
+                    self.__dump_to(asset, 'sprays')
                 elif index == 20:
+                    self.__dump_to(asset, 'themes')
+                elif index == 21:
+                    self.__dump_to(asset, 'weapons')
+                elif index == 22:
                     self.__dump_to(asset, '_bundle_items')
                 else:
                     print(f"Unknown asset type: {index}")
@@ -434,7 +476,7 @@ class Assets:
                     _log.info(f'Removed asset directory {maybe_asset_dir}')
 
     def __mkdir_cache_dir(self) -> bool:
-        """Make the assets directory."""
+        """Make the assets' directory."""
         if not os.path.exists(self._cache_dir):
             try:
                 os.mkdir(self._cache_dir)
@@ -458,7 +500,7 @@ class Assets:
                 return True
 
     def __mkdir_cache_gitignore(self) -> None:
-        """Make a .gitignore file in the assets directory."""
+        """Make a .gitignore file in the assets' directory."""
 
         gitignore_path = os.path.join(self._cache_dir, ".gitignore")
         msg = "# This directory is used to assets data from the Valorant API.\n*\n"

@@ -47,26 +47,27 @@ class Weapon(BaseModel):
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._category: str = data['category']
-        self._default_skin_uuid: str = data['defaultSkinUuid']
+        self.default_skin_uuid: str = data['defaultSkinUuid']
         self._display_icon: str = data['displayIcon']
         self._kill_stream_icon: str = data['killStreamIcon']
-        self._asset_path: str = data['assetPath']
+        self.asset_path: str = data['assetPath']
         self._stats: Dict[str, Any] = data['weaponStats']
-        self._shop: Dict[str, Any] = data['shopData']
-        self._price: int = self._shop['cost']
-        self._shop_category: str = self._shop['category']
-        self._shop_category_text: Union[str, Dict[str, str]] = self._shop['categoryText']
-        self._grid_position: Dict[str, int] = self._shop['gridPosition']
-        self._can_be_trashed: bool = self._shop['canBeTrashed']
-        self._image: Optional[str] = self._shop.get('image')
-        self._new_image: Optional[str] = self._shop.get('newImage')
-        self._new_image_2: Optional[str] = self._shop.get('newImage2')
-        self._shop_asset_path: str = self._shop['assetPath']
+        self._shop: Dict[str, Any] = data.get('shopData', None)
+        if self._shop is not None:
+            self._price: int = self._shop.get('cost', 0)
+            self._shop_category: str = self._shop['category']
+            self._shop_category_text: Union[str, Dict[str, str]] = self._shop['categoryText']
+            self._grid_position: Dict[str, int] = self._shop['gridPosition']
+            self._can_be_trashed: bool = self._shop['canBeTrashed']
+            self._image: Optional[str] = self._shop['image']
+            self._new_image: Optional[str] = self._shop['newImage']
+            self._new_image_2: Optional[str] = self._shop['newImage2']
+            self._shop_asset_path: str = self._shop['assetPath']
         self._skins: List[Dict[str, Any]] = data['skins']
 
     @property
     def name_localizations(self) -> Localization:
-        """:class: `Translator` Returns the weapon's names."""
+        """:class: `Localization` Returns the weapon's names."""
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
@@ -80,12 +81,7 @@ class Weapon(BaseModel):
         return self._category.removeprefix("EEquippableCategory::")
 
     @property
-    def default_skin_uuid(self) -> str:
-        """:class: `str` Returns the weapon's default skin uuid."""
-        return self._default_skin_uuid
-
-    @property
-    def icon(self) -> Asset:
+    def display_icon(self) -> Asset:
         """:class: `Asset` Returns the weapon's icon."""
         return Asset._from_url(self._client, self._display_icon)
 
@@ -93,11 +89,6 @@ class Weapon(BaseModel):
     def kill_stream_icon(self) -> Asset:
         """:class: `Asset` Returns the weapon's kill stream icon."""
         return Asset._from_url(self._client, self._kill_stream_icon)
-
-    @property
-    def asset_path(self) -> str:
-        """:class: `str` Returns the weapon's asset path."""
-        return self._asset_path
 
     @property
     def stats(self) -> Dict[str, Any]:
@@ -116,7 +107,7 @@ class Weapon(BaseModel):
 
     @property
     def shop_category_text_localizations(self) -> Localization:
-        """:class: `Translator` Returns the weapon's shop category text."""
+        """:class: `Localization` Returns the weapon's shop category text."""
         return Localization(self._shop_category_text, locale=self._client.locale)
 
     @property
@@ -189,14 +180,14 @@ class Skin(BaseModel):
         self._theme_uuid: str = data['themeUuid']
         self._content_tier_uuid: str = data['contentTierUuid']
         self._display_icon: str = data['displayIcon']
-        self._wallpaper: Optional[str] = data.get('wallpaper')
-        self._asset_path: str = data['assetPath']
+        self._wallpaper: Optional[str] = data['wallpaper']
+        self.asset_path: str = data['assetPath']
         self._chromas: List[Dict[str, Any]] = data['chromas']
         self._levels: List[Dict[str, Any]] = data['levels']
 
     @property
     def name_localizations(self) -> Localization:
-        """:class: `Translator` Returns the skin's names."""
+        """:class: `Localization` Returns the skin's names."""
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
@@ -215,7 +206,7 @@ class Skin(BaseModel):
         return self._content_tier_uuid
 
     @property
-    def icon(self) -> Asset:
+    def display_icon(self) -> Asset:
         """:class: `Asset` Returns the skin's icon."""
         return Asset._from_url(client=self._client, url=self._display_icon)
 
@@ -227,11 +218,6 @@ class Skin(BaseModel):
             if self._wallpaper
             else None
         )
-
-    @property
-    def asset_path(self) -> str:
-        """:class: `str` Returns the skin's asset path."""
-        return self._asset_path
 
     @property
     def chromas(self) -> List[SkinChroma]:
@@ -260,13 +246,13 @@ class SkinChroma(BaseModel):
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: str = data['displayIcon']
         self._full_render: str = data['fullRender']
-        self._swatch: Optional[str] = data.get('swatch')
-        self._streamed_video: Optional[str] = data.get('streamedVideo')
-        self._asset_path: str = data['assetPath']
+        self._swatch: Optional[str] = data['swatch']
+        self._streamed_video: Optional[str] = data['streamedVideo']
+        self.asset_path: str = data['assetPath']
 
     @property
     def name_localizations(self) -> Localization:
-        """:class: `Translator` Returns the skin's names."""
+        """:class: `Localization` Returns the skin's names."""
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
@@ -275,18 +261,18 @@ class SkinChroma(BaseModel):
         return self.name_localizations.american_english
 
     @property
-    def icon(self) -> Asset:
-        """:class: `str` Returns the skin's icon."""
+    def display_icon(self) -> Asset:
+        """:class: `Asset` Returns the skin's icon."""
         return Asset._from_url(client=self._client, url=self._display_icon)
 
     @property
-    def icon_full_render(self) -> Asset:
-        """:class: `str` Returns the skin's icon full render."""
+    def display_icon_full_render(self) -> Asset:
+        """:class: `Asset` Returns the skin's icon full render."""
         return Asset._from_url(client=self._client, url=self._full_render)
 
     @property
     def swatch(self) -> Optional[Asset]:
-        """:class: `str` Returns the skin's swatch."""
+        """:class: `Asset` Returns the skin's swatch."""
         return (
             Asset._from_url(client=self._client, url=self._swatch)
             if self._swatch
@@ -295,7 +281,7 @@ class SkinChroma(BaseModel):
 
     @property
     def video(self) -> Optional[Asset]:
-        """:class: `str` Returns the skin's video."""
+        """:class: `Asset` Returns the skin's video."""
         return (
             Asset._from_url(client=self._client, url=self._streamed_video)
             if self._streamed_video
@@ -317,14 +303,14 @@ class SkinLevel(BaseModel):
     def _update(self, data: Any) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._level: Optional[str] = data.get('levelItem')
+        self._level: Optional[str] = data['levelItem']
         self._display_icon: str = data['displayIcon']
-        self._streamed_video: Optional[str] = data.get('streamedVideo')
-        self._asset_path: str = data['assetPath']
+        self._streamed_video: Optional[str] = data['streamedVideo']
+        self.asset_path: str = data['assetPath']
 
     @property
     def name_localizations(self) -> Localization:
-        """:class: `Translator` Returns the skin's names."""
+        """:class: `Localization` Returns the skin's names."""
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
@@ -338,20 +324,15 @@ class SkinLevel(BaseModel):
         return self._level.removeprefix('EEquippableSkinLevelItem::') if self._level else None
 
     @property
-    def icon(self) -> Asset:
-        """:class: `str` Returns the skin's icon."""
+    def display_icon(self) -> Asset:
+        """:class: `Asset` Returns the skin's icon."""
         return Asset._from_url(client=self._client, url=self._display_icon)
 
     @property
     def video(self) -> Optional[Asset]:
-        """:class: `str` Returns the skin's video."""
+        """:class: `Asset` Returns the skin's video."""
         return (
             Asset._from_url(client=self._client, url=self._streamed_video)
             if self._streamed_video
             else None
         )
-
-    @property
-    def asset_path(self) -> str:
-        """:class: `str` Returns the skin's asset path."""
-        return self._asset_path

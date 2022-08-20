@@ -47,8 +47,8 @@ class Content:
 
     def _update(self, data: Any) -> None:
         self._disabled_ids: List[str] = data['DisabledIDs']
-        self._seasons: List[ContentSeason] = data.get('Seasons')
-        self._events: List[str] = data.get('Events')
+        self._seasons: List[ContentSeason] = data['Seasons']
+        self._events: List[str] = data['Events']
 
     @property
     def disabled_ids(self) -> List[str]:
@@ -88,11 +88,11 @@ class ContentSeason:
 
     @property
     def start_time(self) -> datetime:
-        return utils.iso_to_datetime(self._start_time)
+        return utils.parse_iso_datetime(self._start_time)
 
     @property
     def end_time(self) -> datetime:
-        return utils.iso_to_datetime(self._end_time)
+        return utils.parse_iso_datetime(self._end_time)
 
 
 class ContentEvent:
@@ -119,11 +119,11 @@ class ContentEvent:
 
     @property
     def start_time(self) -> datetime:
-        return utils.iso_to_datetime(self._start_time)
+        return utils.parse_iso_datetime(self._start_time)
 
     @property
     def end_time(self) -> datetime:
-        return utils.iso_to_datetime(self._end_time)
+        return utils.parse_iso_datetime(self._end_time)
 
 class ContentTier(BaseModel):
 
@@ -138,14 +138,14 @@ class ContentTier(BaseModel):
 
     def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
-        self._display_name: Optional[Union[str, Dict[str, str]]] = data.get('displayName')
-        self._dev_name: str = data.get('devName')
-        self._rank: int = data.get('rank')
-        self._juice_value: int = data.get('juiceValue')
-        self._juice_cost: int = data.get('juiceCost')
-        self._highlight_color: str = data.get('highlightColor')
-        self._display_icon: str = data.get('displayIcon')
-        self._asset_path: str = data.get('assetPath')
+        self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
+        self.dev_name: str = data['devName']
+        self.rank: int = data['rank']
+        self.juice_value: int = data['juiceValue']
+        self.juice_cost: int = data['juiceCost']
+        self.highlight_color: str = data['highlightColor']
+        self._display_icon: str = data['displayIcon']
+        self.asset_path: str = data['assetPath']
 
     @property
     def name_localizations(self) -> Localization:
@@ -158,36 +158,12 @@ class ContentTier(BaseModel):
         return self.name_localizations.american_english
 
     @property
-    def dev_name(self) -> str:
-        """:class: `str` Returns the content tier's dev name."""
-        return self._dev_name
-
-    @property
-    def rank(self) -> int:
-        """:class: `int` Returns the content tier's rank."""
-        return self._rank
-
-    @property
-    def juice_value(self) -> int:
-        """:class: `int` Returns the content tier's juice value."""
-        return self._juice_value
-
-    @property
-    def juice_cost(self) -> int:
-        """:class: `int` Returns the content tier's juice cost."""
-        return self._juice_cost
-
-    @property
-    def highlight_color(self) -> str:
-        """:class: `str` Returns the content tier's highlight color RGBA."""
-        return self._highlight_color
+    def highlight_color_rgb(self) -> str:
+        """:class: `str` Returns the content tier's highlight color RGB."""
+        # rgba to rgb
+        return self.highlight_color[:-1]
 
     @property
     def display_icon(self) -> Asset:
         """:class: `Asset` Returns the content tier's icon."""
         return Asset._from_url(self._client, self._display_icon)
-
-    @property
-    def asset_path(self) -> str:
-        """:class: `str` Returns the content tier's asset path."""
-        return self._asset_path

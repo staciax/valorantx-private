@@ -51,10 +51,10 @@ class Buddy(BaseModel):
     def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
-        self._theme_uuid: Optional[str] = data.get('themeUuid')
-        self._display_icon: Optional[str] = data.get('displayIcon')
-        self._asset_path: str = data['assetPath']
+        self.is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
+        self._theme_uuid: Optional[str] = data['themeUuid']
+        self._display_icon: Optional[str] = data['displayIcon']
+        self.asset_path: str = data['assetPath']
         self._levels: List[Dict[str, Any]] = data['levels']
         self._price: int = data.get('price', 0)
         if self._extras.get('bundle') is not None:
@@ -76,11 +76,6 @@ class Buddy(BaseModel):
         return self.name_localizations.american_english
 
     @property
-    def is_hidden_if_not_owned(self) -> bool:
-        """:class: `bool` Returns whether the buddy is hidden if not owned."""
-        return self._is_hidden_if_not_owned
-
-    @property
     def theme(self) -> str:  # TODO: Theme Object
         """:class: `str` Returns the buddy's theme."""
         return self._theme_uuid
@@ -89,11 +84,6 @@ class Buddy(BaseModel):
     def display_icon(self) -> Asset:
         """:class: `Asset` Returns the buddy's icon."""
         return Asset._from_url(client=self._client, url=self._display_icon)
-
-    @property
-    def asset_path(self) -> str:
-        """:class: `str` Returns the buddy's asset path."""
-        return self._asset_path
 
     @property
     def levels(self) -> List[BuddyLevel]:
@@ -136,10 +126,10 @@ class BuddyLevel(BaseModel):
     def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._default_uuid: Optional[str] = data.get('default_uuid')
-        self._charm_level: str = data['charmLevel']
+        self.level: int = data['charmLevel']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data.get('displayIcon')
-        self._asset_path: str = data['assetPath']
+        self.asset_path: str = data['assetPath']
         self._price: int = data.get('price', 0)
 
     @property
@@ -153,19 +143,9 @@ class BuddyLevel(BaseModel):
         return self.name_localizations.american_english
 
     @property
-    def level(self) -> int:
-        """:class: `int` Returns the charm level."""
-        return int(self._charm_level)
-
-    @property
     def display_icon(self) -> Optional[Asset]:
         """:class: `str` Returns the charm's display icon."""
         return Asset._from_url(client=self._client, url=self._display_icon) if self._display_icon else None
-
-    @property
-    def asset_path(self) -> str:
-        """:class: `str` Returns the charm's asset path."""
-        return self._asset_path
 
     @property
     def price(self) -> int:

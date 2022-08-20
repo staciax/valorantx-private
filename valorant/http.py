@@ -53,6 +53,10 @@ MISSING = utils.MISSING
 if TYPE_CHECKING:
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
+    from .types import (
+        version
+    )
+
 
 # disable urllib3 warnings that might arise from making requests to 127.0.0.1
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -207,64 +211,70 @@ class HTTPClient:
 
     # valorant-api.com
 
-    def asset_valorant_version(self) -> Response[Any]:
+    def asset_valorant_version(self) -> Response[version.Version]:
         return self.request(Route("GET", "/version", "valorant_api"))
 
-    def asset_get_agent(self) -> Response[Any]:
+    def asset_get_agents(self) -> Response[Any]:
         return self.request(Route('GET', '/agents', 'valorant_api', isPlayableCharacter=True, language='all'))
 
-    def asset_get_buddy(self) -> Response[Any]:
+    def asset_get_buddies(self) -> Response[Any]:
         return self.request(Route('GET', '/buddies', 'valorant_api', language='all'))
 
-    def asset_get_bundle(self) -> Response[Any]:
+    def asset_get_bundles(self) -> Response[Any]:
         return self.request(Route('GET', '/bundles', 'valorant_api', language='all'))
 
-    def asset_get_ceremonie(self) -> Response[Any]:
+    def asset_get_ceremonies(self) -> Response[Any]:
         return self.request(Route('GET', '/ceremonies', 'valorant_api', language='all'))
 
-    def asset_get_competitive_tier(self) -> Response[Any]:
+    def asset_get_events(self) -> Response[Any]:
+        return self.request(Route('GET', '/events', 'valorant_api', language='all'))
+
+    def asset_get_competitive_tiers(self) -> Response[Any]:
         return self.request(Route('GET', '/competitivetiers', 'valorant_api', language='all'))
 
-    def asset_get_content_tier(self) -> Response[Any]:
+    def asset_get_content_tiers(self) -> Response[Any]:
         return self.request(Route('GET', '/contenttiers', 'valorant_api', language='all'))
 
-    def asset_get_contract(self) -> Response[Any]:
+    def asset_get_contracts(self) -> Response[Any]:
         return self.request(Route('GET', '/contracts', 'valorant_api', language='all'))
 
-    def asset_get_currency(self) -> Response[Any]:
+    def asset_get_currencies(self) -> Response[Any]:
         return self.request(Route('GET', '/currencies', 'valorant_api', language='all'))
 
-    def asset_get_game_mode(self) -> Response[Any]:
+    def asset_get_game_modes(self) -> Response[Any]:
         return self.request(Route('GET', '/gamemodes', 'valorant_api', language='all'))
+
+    def asset_get_game_modes_equippables(self) -> Response[Any]:
+        return self.request(Route('GET', '/gamemodes/equippables', 'valorant_api', language='all'))
 
     def asset_get_gear(self) -> Response[Any]:
         return self.request(Route('GET', '/gear', 'valorant_api', language='all'))
 
-    def asset_get_level_border(self) -> Response[Any]:
+    def asset_get_level_borders(self) -> Response[Any]:
         return self.request(Route('GET', '/levelborders', 'valorant_api', language='all'))
 
-    def asset_get_map(self) -> Response[Any]:
+    def asset_get_maps(self) -> Response[Any]:
         return self.request(Route('GET', '/maps', 'valorant_api', language='all'))
 
-    def asset_get_mission(self) -> Response[Any]:
+    def asset_get_missions(self) -> Response[Any]:
         return self.request(Route('GET', '/missions', 'valorant_api', language='all'))
 
-    def asset_get_player_card(self) -> Response[Any]:
+    def asset_get_player_cards(self) -> Response[Any]:
         return self.request(Route('GET', '/playercards', 'valorant_api', language='all'))
 
-    def asset_get_player_title(self) -> Response[Any]:
+    def asset_get_player_titles(self) -> Response[Any]:
         return self.request(Route('GET', '/playertitles', 'valorant_api', language='all'))
 
-    def asset_get_season(self) -> Response[Any]:
+    def asset_get_seasons(self) -> Response[Any]:
         return self.request(Route('GET', '/seasons', 'valorant_api', language='all'))
 
-    def asset_get_spray(self) -> Response[Any]:
+    def asset_get_sprays(self) -> Response[Any]:
         return self.request(Route('GET', '/sprays', 'valorant_api', language='all'))
 
-    def asset_get_theme(self) -> Response[Any]:
+    def asset_get_themes(self) -> Response[Any]:
         return self.request(Route('GET', '/themes', 'valorant_api', language='all'))
 
-    def asset_get_weapon(self) -> Response[Any]:
+    def asset_get_weapons(self) -> Response[Any]:
         return self.request(Route('GET', '/weapons', 'valorant_api', language='all'))
 
     # valtracker endpoint
@@ -528,8 +538,3 @@ class HTTPClient:
         self._headers['X-Riot-Entitlements-JWT'] = auth.entitlements_token
         self._headers['X-Riot-ClientPlatform'] = self._client_platform
         self._headers['X-Riot-ClientVersion'] = await self._get_current_version()  # TODO: from client
-
-    async def get_valorant_version(self) -> str:
-        resp = await self.asset_valorant_version()
-        return resp['data']['version']
-

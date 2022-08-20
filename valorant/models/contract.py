@@ -49,20 +49,19 @@ class Contract(BaseModel):
 
     def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
-        self._display_name: Optional[Union[str, Dict[str, str]]] = data.get('displayName')
-        self._display_icon: Optional[str] = data.get('displayIcon')
-        self._ship_it: bool = data.get('shipIt')
-        self._free_reward_schedule_uuid: str = data.get('freeRewardScheduleUuid')
+        self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
+        self._display_icon: Optional[str] = data['displayIcon']
+        self.ship_it: bool = data['shipIt']
+        self.free_reward_schedule_uuid: str = data['freeRewardScheduleUuid']
+        self.asset_path: str = data['assetPath']
 
         # content
-        self._content: Dict[Any, Any] = data.get('content')
-        self._relation_type: Optional[str] = self._content.get('relationType')
-        self._relation_uuid: Optional[str] = self._content.get('relationUuid')
-        self._chapters: List[Dict[Any, Any]] = self._content.get('chapters')
-        self._premium_reward_schedule_uuid: Optional[str] = self._content.get('premiumRewardScheduleUuid')
-        self._premium_vp_cost: int = self._content.get('premiumVPCost')
-
-        self._asset_path: str = data.get('assetPath')
+        self._content: Dict[Any, Any] = data['content']
+        self._relation_type: Optional[str] = self._content['relationType']
+        self._relation_uuid: Optional[str] = self._content['relationUuid']
+        self._chapters: List[Dict[Any, Any]] = self._content['chapters']
+        self._premium_reward_schedule_uuid: Optional[str] = self._content['premiumRewardScheduleUuid']
+        self._premium_vp_cost: int = self._content['premiumVPCost']
 
         self._complete: bool = False
         self._objectives: Dict[str, Any] = {}
@@ -90,16 +89,6 @@ class Contract(BaseModel):
         return Asset._from_url(self._client, self._display_icon)
 
     @property
-    def ship_it(self) -> bool:
-        """:class: `bool` Returns whether the contract is ship it."""
-        return self._ship_it
-
-    @property
-    def free_reward_schedule_uuid(self) -> str:
-        """:class: `str` Returns the contract's free reward schedule uuid."""
-        return self._free_reward_schedule_uuid
-
-    @property
     def relation_type(self) -> Optional[str]:
         """:class: `str` Returns the contract's relation type."""
         return self._relation_type
@@ -124,11 +113,6 @@ class Contract(BaseModel):
         """:class: `int` Returns the contract's premium vp cost."""
         return self._premium_vp_cost
 
-    @property
-    def asset_path(self) -> str:
-        """:class: `str` Returns the contract's asset path."""
-        return self._asset_path
-
     # user contract
 
     @property
@@ -144,7 +128,7 @@ class Contract(BaseModel):
     @property
     def expiration_time(self) -> Optional[datetime.datetime]:
         """:class: `datetime.datetime` Returns the contract's expiration time."""
-        return utils.iso_to_datetime(self._expiration_time_iso) if self._expiration_time_iso else None
+        return utils.parse_iso_datetime(self._expiration_time_iso) if self._expiration_time_iso else None
 
     # class MissionMeta(NamedTuple):
     #     NPECompleted: bool

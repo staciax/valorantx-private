@@ -34,9 +34,10 @@ from .assets import Assets
 
 from .models import (
     MMR,
-    Wallet
+    Wallet,
+    Version
 )
-from .models.contents import Content
+from .models.content import Content
 
 from typing import (
     Any,
@@ -173,3 +174,7 @@ class Client:
 
     async def fetch_all_assets(self, force: bool = False) -> None:
         await self.assets.fetch_all_assets(force=force)
+
+    async def get_valorant_version(self) -> Version:
+        data = await self.http.asset_valorant_version()
+        return Version(client=self, data=data)

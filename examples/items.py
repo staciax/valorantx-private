@@ -20,7 +20,7 @@ async def main():
         print("Player Title:", player_title.name_localizations.german)
 
         spray = client.assets.get_spray('20d547a4-4ec8-c9ef-dd9d-1c8b74d0e6f7')
-        print("Spray:", spray.icon)
+        print("Spray:", spray.display_icon)
 
         bundle = client.assets.get_bundle('sentinels')
         print("Bundle:", bundle.name_localizations.english)

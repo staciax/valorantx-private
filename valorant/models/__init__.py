@@ -7,18 +7,32 @@ Typings for the Valorant API
 """
 
 from .agent import *
-from .bundles import *
-from .buddies import *
-from .contents import *
-from .contracts import *
-from .maps import *
-from .party import *
+from .buddy import *
+from .bundle import *
+from .ceremony import *
+from .competitive import *
+from .content import *
+from .contract import *
+from .currency import *
+from .event import *
+from .gamemode import *
+from .gear import *
+from .level_border import *
+from .map import *
+from .map import *
 from .match import *
-from .missions import *
+from .mission import *
 from .other import *
+from .party import *
 from .player import *
-from .player_cards import *
+from .player_card import *
 from .player_title import *
-from .sprays import *
+from .season import *
+from .spray import *
 from .store import *
+from .theme import *
+from .version import *
 from .weapons import *
+
+# TODO: model __slot__ for all classes
+# TODO: TypeDict Payload for all classes

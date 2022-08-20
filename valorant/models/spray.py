@@ -51,14 +51,14 @@ class Spray(BaseModel):
     def _update(self, data: Any) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._category: str = data['category']
+        self._category: Optional[str] = data['category']
         self._theme_uuid: str = data['themeUuid']
         self._display_icon: Optional[str] = data['displayIcon']
-        self._full_icon: Optional[str] = data.get('fullIcon')
-        self._full_transparent_icon: Optional[str] = data.get('fullTransparentIcon')
-        self._animation_png: Optional[str] = data.get('animationPng')
-        self._animation_gif: Optional[str] = data.get('animationGif')
-        self._asset_path: str = data['assetPath']
+        self._full_icon: Optional[str] = data['fullIcon']
+        self._full_transparent_icon: Optional[str] = data['fullTransparentIcon']
+        self._animation_png: Optional[str] = data['animationPng']
+        self._animation_gif: Optional[str] = data['animationGif']
+        self.asset_path: str = data['assetPath']
         self._levels: List[Dict[str, Any]] = data['levels']
         self._price = data.get('price', 0)
         if self._extras.get('bundle') is not None:
@@ -78,6 +78,11 @@ class Spray(BaseModel):
     def name(self) -> str:
         """:class: `str` Returns the skin's name."""
         return self.name_localizations.american_english
+
+    @property
+    def category(self) -> Optional[str]:
+        """:class: `str` Returns the skin's category."""
+        return self._category.removeprefix('EAresSprayCategory::') if self._category else None
 
     @property
     def display_icon(self) -> Optional[Asset]:
@@ -113,11 +118,6 @@ class Spray(BaseModel):
         if self._animation_gif is None:
             return None
         return Asset._from_url(client=self._client, url=self._animation_gif)
-
-    @property
-    def asset_path(self) -> str:
-        """:class: `str` Returns the skin's asset path."""
-        return self._asset_path
 
     @property
     def levels(self) -> List[SprayLevel]:
@@ -159,10 +159,10 @@ class SprayLevel(BaseModel):
 
     def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
-        self._default_uuid: Optional[str] = data.get('default_uuid')
+        self._default_uuid: Optional[str] = data['default_uuid']
         self._spray_level: int = data['sprayLevel']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._display_icon: Optional[str] = data.get('displayIcon')
+        self._display_icon: Optional[str] = data['displayIcon']
         self._asset_path: str = data['assetPath']
         self._price: int = data.get('price', 0)
 

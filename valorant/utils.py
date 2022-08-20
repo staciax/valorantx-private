@@ -80,7 +80,7 @@ class _MissingSentinel:
 MISSING: Any = _MissingSentinel()
 
 
-def iso_to_datetime(iso: str) -> datetime.datetime:
+def parse_iso_datetime(iso: str) -> datetime.datetime:
     """Convert ISO8601 string to datetime"""
     try:
         dt = datetime.datetime.strptime(iso, '%Y-%m-%dT%H:%M:%S.%fZ')

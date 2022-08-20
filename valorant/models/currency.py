@@ -23,48 +23,66 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from .base import BaseModel
+from ..asset import Asset
 from ..localization import Localization
+from .base import BaseModel
 
-from typing import Any, Optional, Dict, Union, TYPE_CHECKING
+from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..client import Client
 
-class PlayerTitle(BaseModel):
+# fmt: off
+__all__ = (
+    'Currency',
+)
+# fmt: on
 
-    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
+class Currency(BaseModel):
+
+    def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 
     def __str__(self) -> str:
-        return self.text
+        return self.name
 
     def __repr__(self) -> str:
-        return f"<PlayerTitle name={self.name!r} text={self.text!r}>"
+        return f'<Currency name={self.name!r}>'
 
-    def _update(self, data: Any) -> None:
+    def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._title_text: Union[str, Dict[str, str]] = data['titleText']
-        self.is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
+        self._display_name_singular: Union[str, Dict[str, str]] = data['displayNameSingular']
+        self._display_icon: str = data['displayIcon']
+        self._large_icon: str = data['largeIcon']
         self.asset_path: str = data['assetPath']
 
     @property
     def name_localizations(self) -> Localization:
-        """:class: `Translator` Returns the player title's names."""
+        """:class: `Localization` Returns the agent's names."""
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
     def name(self) -> str:
-        """:class: `str` Returns the player title's name."""
+        """:class: `str` Returns the agent's name."""
         return self.name_localizations.american_english
 
     @property
-    def text_localizations(self) -> Localization:
-        """:class: `Translator` Returns the player title's title text."""
-        return Localization(self._title_text, locale=self._client.locale)
+    def name_singular_localizations(self) -> Localization:
+        """:class: `Localization` Returns the agent's singular names."""
+        return Localization(self._display_name_singular, locale=self._client.locale)
 
     @property
-    def text(self) -> str:
-        """:class: `str` Returns the player title's title text."""
-        return self.text_localizations.american_english
+    def name_singular(self) -> str:
+        """:class: `str` Returns the agent's singular name."""
+        return self.name_singular_localizations.american_english
+
+    @property
+    def display_icon(self) -> Asset:
+        """:class: `Asset` Returns the agent's icon."""
+        return Asset._from_url(client=self._client, url=self._display_icon)
+
+    @property
+    def large_icon(self) -> Asset:
+        """:class: `Asset` Returns the agent's large icon."""
+        return Asset._from_url(client=self._client, url=self._large_icon)

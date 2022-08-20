@@ -46,13 +46,13 @@ class PlayerCard(BaseModel):
     def _update(self, data: Any) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
+        self.is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
         self._display_icon: Optional[str] = data['displayIcon']
         self._small_icon: Optional[str] = data['smallArt']
         self._wide_icon: Optional[str] = data['wideArt']
         self._large_icon: Optional[str] = data['largeArt']
         self._theme_uuid: Optional[str] = data['themeUuid']
-        self._asset_path: str = data['assetPath']
+        self.asset_path: str = data['assetPath']
         self._price = data.get('price', 0)
         if self._extras.get('bundle') is not None:
             self._bundle: Any = self._extras['bundle']
@@ -71,11 +71,6 @@ class PlayerCard(BaseModel):
     def name(self) -> str:
         """:class: `str` Returns the buddy's name."""
         return self.name_localizations.american_english
-
-    @property
-    def is_hidden_if_not_owned(self) -> bool:
-        """:class: `bool` Returns whether the player card is hidden if not owned."""
-        return self._is_hidden_if_not_owned
 
     @property
     def display_icon(self) -> Optional[Asset]:
@@ -109,11 +104,6 @@ class PlayerCard(BaseModel):
     def theme_uuid(self) -> Optional[str]:
         """:class: `str` Returns the buddy's theme uuid."""
         return self._theme_uuid
-
-    @property
-    def asset_path(self) -> str:
-        """:class: `str` Returns the buddy's asset path."""
-        return self._asset_path
 
     @property
     def price(self) -> int:
