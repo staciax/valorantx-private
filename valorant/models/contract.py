@@ -36,6 +36,12 @@ from typing import Optional, Dict, Any, Union, List, TYPE_CHECKING
 if TYPE_CHECKING:
     from ..client import Client
 
+# fmt: off
+__all__ = (
+    'Contract',
+)
+# fmt: on
+
 class Contract(BaseModel):
 
     def __init__(self, client: Client, data: Optional[Dict[str, Any]], user_contract: Any = None) -> None:

@@ -36,6 +36,11 @@ from typing import Any, List, Optional, Dict, Union, TYPE_CHECKING
 if TYPE_CHECKING:
     from ..client import Client
 
+__all__ = (
+    'Content',
+    'ContentTier'
+)
+
 class Content:
 
     def __init__(self, client: Client, data: Any) -> None:
@@ -93,7 +98,6 @@ class ContentSeason:
     @property
     def end_time(self) -> datetime:
         return utils.parse_iso_datetime(self._end_time)
-
 
 class ContentEvent:
     def __init__(self, data: Any) -> None:

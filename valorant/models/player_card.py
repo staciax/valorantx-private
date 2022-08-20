@@ -32,6 +32,12 @@ from typing import Optional, Dict, Any, Union, TYPE_CHECKING
 if TYPE_CHECKING:
     from ..client import Client
 
+# fmt: off
+__all__ = (
+    'PlayerCard',
+)
+# fmt: on
+
 class PlayerCard(BaseModel):
 
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]], bundle: Any = None) -> None:
