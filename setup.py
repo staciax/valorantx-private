@@ -16,13 +16,11 @@ readme = ''
 with open('README.md') as f:
     readme = f.read()
 
-# packages = [
-#     'valorant',
-#     'valorant.models',
-#     'valorant.types',
-#     'valorant.cache',
-#     'valorant.cache.additional.json',
-# ]
+packages = [
+    'valorant',
+    'valorant.models',
+    'valorant.types'
+]
 
 setup(
     name='pylorant',
@@ -32,8 +30,7 @@ setup(
         "Issue tracker": "https://github.com/staciax/pylorant/issues",
     },
     version=version,
-    package_dir={'', 'valorant'},
-    packages=setuptools.find_packages(where='valorant'),
+    packages=packages,
     license='MIT',
     description='An Asynchronous Valorant API Wrapper for Python',
     long_description=readme,
@@ -50,5 +47,6 @@ setup(
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Topic :: Internet :: WWW/HTTP',
-    ]
+    ],
+    include_package_data=True,
 )

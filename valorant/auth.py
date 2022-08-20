@@ -217,7 +217,7 @@ class RiotAuth:
                 "Content-Type": "application/json",
                 "Accept-Encoding": "deflate, gzip, zstd",
                 "user-agent": RiotAuth.RIOT_CLIENT_USER_AGENT % "rso-auth",
-                "Cache-Control": "no-cache",
+                "Cache-Control": "no-assets",
                 "Accept": "application/json",
             }
 

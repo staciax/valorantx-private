@@ -133,7 +133,7 @@ def maybe_display_name(key: str = 'displayName'):
 class Assets:
 
     _cache_dir: Path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "cache"
+        os.path.dirname(os.path.abspath(__file__)), "assets"
     )
 
     ASSET_CACHE = {}
@@ -142,7 +142,7 @@ class Assets:
         self._client = client
         self.locale = locale
 
-        # load cache
+        # load assets
         self.reload_assets()
 
     @maybe_display_name()
@@ -434,7 +434,7 @@ class Assets:
                     _log.info(f'Removed asset directory {maybe_asset_dir}')
 
     def __mkdir_cache_dir(self) -> bool:
-        """Make the cache directory."""
+        """Make the assets directory."""
         if not os.path.exists(self._cache_dir):
             try:
                 os.mkdir(self._cache_dir)
@@ -458,10 +458,10 @@ class Assets:
                 return True
 
     def __mkdir_cache_gitignore(self) -> None:
-        """Make a .gitignore file in the cache directory."""
+        """Make a .gitignore file in the assets directory."""
 
         gitignore_path = os.path.join(self._cache_dir, ".gitignore")
-        msg = "# This directory is used to cache data from the Valorant API.\n*\n"
+        msg = "# This directory is used to assets data from the Valorant API.\n*\n"
         if not os.path.exists(gitignore_path):
             with open(gitignore_path, 'w', encoding='utf-8') as f:
                 f.write(msg)
@@ -474,7 +474,7 @@ class Assets:
 
     @staticmethod
     def __to_cache(path: str, filename: str) -> None:
-        """Add data to the cache."""
+        """Add data to the assets."""
         file_path = os.path.join(path, filename)
         with open(file_path, encoding='utf-8') as f:
             to_dict = json.load(f)
@@ -482,7 +482,7 @@ class Assets:
 
     @staticmethod
     def __customize_asset_cache_format(filename: str, data: Any) -> None:
-        """Customize the asset cache format."""
+        """Customize the asset assets format."""
 
         new_dict = {}
         buddy_level_dict = {}
