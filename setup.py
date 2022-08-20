@@ -32,6 +32,7 @@ setup(
         "Issue tracker": "https://github.com/staciax/pylorant/issues",
     },
     version=version,
+    package_dir={'', 'valorant'},
     packages=setuptools.find_packages(where='valorant'),
     license='MIT',
     description='An Asynchronous Valorant API Wrapper for Python',
