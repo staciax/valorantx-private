@@ -74,6 +74,7 @@ class Bundle(BaseModel):
 
         if self._extras.get('bundle') is None:  # TODO: futured_bundle
             self._items = data.get('items', [])
+            # TODO: filter items
         else:
             self._bundle: Any = self._extras['bundle']
             self._duration: int = self._bundle['DurationRemainingInSeconds']
@@ -160,12 +161,12 @@ class Bundle(BaseModel):
         return self.description_promo_localizations.american_english
 
     @property
-    def icon(self) -> Asset:
+    def display_icon(self) -> Asset:
         """:class: `Asset` Returns the bundle's icon."""
         return Asset._from_url(client=self._client, url=self._display_icon)
 
     @property
-    def icon_2(self) -> Asset:
+    def display_icon_2(self) -> Asset:
         """:class: `Asset` Returns the bundle's icon 2."""
         return Asset._from_url(client=self._client, url=self._display_icon_2)
 

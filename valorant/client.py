@@ -36,7 +36,7 @@ from .models import (
     MMR,
     Wallet
 )
-from .models.contents import GameContent
+from .models.contents import Content
 
 from typing import (
     Any,
@@ -122,8 +122,8 @@ class Client:
 
     # PVP endpoints
 
-    def fetch_game_content(self) -> GameContent:
-        return GameContent(client=self, data=self.http.fetch_content())
+    def fetch_game_content(self) -> Content:
+        return Content(client=self, data=self.http.fetch_content())
 
     def fetch_account_xp(self) -> Coroutine[Any, Any, None]:
         return self.http.fetch_account_xp()

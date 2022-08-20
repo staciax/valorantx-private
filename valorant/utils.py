@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from aiohttp import ClientResponse
 
 
-def validate_uuid(value: str) -> bool:
+def is_uuid(value: str) -> bool:
     """
     Checks if a string is a valid UUID.
     """

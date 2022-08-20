@@ -27,10 +27,15 @@ from .base import BaseModel
 from ..asset import Asset
 from ..localization import Localization
 
-from typing import Optional, Dict, Any, Union, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..client import Client
+
+__all__ = (
+    'Spray',
+    'SprayLevel'
+)
 
 class Spray(BaseModel):
 
@@ -46,13 +51,15 @@ class Spray(BaseModel):
     def _update(self, data: Any) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._category: str = data['category']
+        self._theme_uuid: str = data['themeUuid']
         self._display_icon: Optional[str] = data['displayIcon']
-        self._full_icon: Optional[str] = data['fullIcon']
-        self._full_transparent_icon: Optional[str] = data['fullTransparentIcon']
-        self._animation_png: Optional[str] = data['animationPng']
-        self._animation_gif: Optional[str] = data['animationGif']
-        self._spray_level: int = data['sprayLevel']
+        self._full_icon: Optional[str] = data.get('fullIcon')
+        self._full_transparent_icon: Optional[str] = data.get('fullTransparentIcon')
+        self._animation_png: Optional[str] = data.get('animationPng')
+        self._animation_gif: Optional[str] = data.get('animationGif')
         self._asset_path: str = data['assetPath']
+        self._levels: List[Dict[str, Any]] = data['levels']
         self._price = data.get('price', 0)
         if self._extras.get('bundle') is not None:
             self._bundle: Any = self._extras['bundle']
@@ -73,7 +80,7 @@ class Spray(BaseModel):
         return self.name_localizations.american_english
 
     @property
-    def icon(self) -> Optional[Asset]:
+    def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon."""
         if self._full_icon is None:
             return None
@@ -108,14 +115,14 @@ class Spray(BaseModel):
         return Asset._from_url(client=self._client, url=self._animation_gif)
 
     @property
-    def spray_level(self) -> int:
-        """:class: `int` Returns the skin's spray level."""
-        return self._spray_level
-
-    @property
     def asset_path(self) -> str:
         """:class: `str` Returns the skin's asset path."""
         return self._asset_path
+
+    @property
+    def levels(self) -> List[SprayLevel]:
+        """:class: `list` Returns the skin's levels."""
+        return [SprayLevel(client=self._client, data=level) for level in self._levels]
 
     @property
     def price(self) -> int:
@@ -138,3 +145,58 @@ class Spray(BaseModel):
     def is_promo(self) -> bool:
         """:class: `bool` Returns whether the bundle is a promo."""
         return self._is_promo
+
+class SprayLevel(BaseModel):
+
+    def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
+        super().__init__(client=client, data=data)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f'<SprayLevel name={self.name!r} default={self.default!r}>'
+
+    def _update(self, data: Optional[Any]) -> None:
+        self._uuid: str = data['uuid']
+        self._default_uuid: Optional[str] = data.get('default_uuid')
+        self._spray_level: int = data['sprayLevel']
+        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._display_icon: Optional[str] = data.get('displayIcon')
+        self._asset_path: str = data['assetPath']
+        self._price: int = data.get('price', 0)
+
+    @property
+    def name_localizations(self) -> Localization:
+        """:class: `Localization` Returns the buddy's names."""
+        return Localization(self._display_name, locale=self._client.locale)
+
+    @property
+    def name(self) -> str:
+        """:class: `str` Returns the buddy's name."""
+        return self.name_localizations.american_english
+
+    @property
+    def level(self) -> int:
+        """:class: `int` Returns the spray level."""
+        return self._spray_level
+
+    @property
+    def display_icon(self) -> Optional[Asset]:
+        """:class: `str` Returns the spray's display icon."""
+        return Asset._from_url(client=self._client, url=self._display_icon) if self._display_icon else None
+
+    @property
+    def asset_path(self) -> str:
+        """:class: `str` Returns the asset path of the spray."""
+        return self._asset_path
+
+    @property
+    def price(self) -> int:
+        """:class: `int` Returns the price of the spray."""
+        return self._price
+
+    @property
+    def default(self) -> Spray:
+        """:class: `Spray` Returns the spray's default."""
+        return self._client.assets.get_spray(self._default_uuid)

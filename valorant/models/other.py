@@ -34,7 +34,7 @@ __all__ = (
     'MMR',
 )
 
-class CompetitiveUpdate(NamedTuple):
+class CompetitiveUpdate(NamedTuple):  # TODO: Model
     MatchID: str
     MapID: str
     SeasonID: str
@@ -53,7 +53,7 @@ class MMR(BaseModel):
         super().__init__(client, data, **kwargs)
 
     def __repr__(self) -> str:
-        return f'<FetchMMR uuid={self.uuid!r} version={self.version!r} latest_competitive_update={self.latest_competitive_update!r}>'
+        return f'<MMR uuid={self.uuid!r} version={self.version!r} latest_competitive_update={self.latest_competitive_update!r}>'
 
     def __hash__(self) -> int:
         return hash(self.uuid)

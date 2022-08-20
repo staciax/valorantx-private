@@ -78,7 +78,7 @@ class PlayerCard(BaseModel):
         return self._is_hidden_if_not_owned
 
     @property
-    def icon(self) -> Optional[Asset]:
+    def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the buddy's icon."""
         if self._display_icon is None:
             return None

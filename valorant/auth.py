@@ -1,24 +1,83 @@
+"""
+The MIT License (MIT)
+
+Copyright (c) 2022-present Huba Tuba (floxay)
+Copyright (c) 2022-present xStacia
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Links to the original source code: https://github.com/floxay/python-riot-auth
+
+"""
+
 import ctypes
 import json
 import ssl
 import sys
 import warnings
-from base64 import urlsafe_b64decode
-from secrets import token_urlsafe
-from typing import Dict, List, Optional, Sequence, Tuple, Union, TYPE_CHECKING
-from urllib.parse import parse_qsl, urlsplit
 
 import aiohttp
 
-if TYPE_CHECKING:
-    from client import Client
+from base64 import urlsafe_b64decode
+from secrets import token_urlsafe
+from urllib.parse import parse_qsl, urlsplit
 
-# by https://github.com/floxay/python-riot-auth
+from typing import Dict, List, Optional, Sequence, Tuple, Union
+
+class RiotAuthError(Exception):
+    """Base class for RiotAuth errors."""
+
+
+class RiotAuthenticationError(RiotAuthError):
+    """Failed to authenticate."""
+
+
+class RiotRatelimitError(RiotAuthError):
+    """Ratelimit error."""
+
+
+class RiotMultifactorError(RiotAuthError):
+    """Error related to multifactor authentication."""
+
+
+class RiotUnknownResponseTypeError(RiotAuthError):
+    """Unknown response type."""
+
+
+class RiotUnknownErrorTypeError(RiotAuthError):
+    """Unknown response error type."""
+
+
+__all__ = (
+    "RiotAuthenticationError",
+    "RiotAuthError",
+    "RiotMultifactorError",
+    "RiotRatelimitError",
+    "RiotUnknownErrorTypeError",
+    "RiotUnknownResponseTypeError",
+    "RiotAuth",
+)
+
 
 class RiotAuth:
-
     RIOT_CLIENT_USER_AGENT = (
-        "RiotClient/52.0.1.4472310.4470164 %s (Windows;10;;Professional, x64)"
+        "RiotClient/56.0.0.4578455.4552318 %s (Windows;10;;Professional, x64)"
     )
     CIPHERS13 = ":".join(  # https://docs.python.org/3/library/ssl.html#tls-1-3
         (
@@ -60,10 +119,7 @@ class RiotAuth:
         )
     )
 
-    def __init__(self, *, client: Client, user_agent: Optional[str] = None) -> None:
-        self.__client = client
-        self.__user_agent = user_agent
-
+    def __init__(self) -> None:
         self._auth_ssl_ctx = RiotAuth.create_riot_auth_ssl_ctx()
         self._cookie_jar = aiohttp.CookieJar()
         self.access_token: Optional[str] = None
@@ -82,13 +138,13 @@ class RiotAuth:
         addr = id(ssl_ctx) + sys.getsizeof(object())
         ssl_ctx_addr = ctypes.cast(addr, ctypes.POINTER(ctypes.c_void_p)).contents
 
-        if sys.platform == "win32":
+        if sys.platform.startswith("win32"):
             libssl = ctypes.CDLL("libssl-1_1.dll")
-        elif sys.platform.startswith("linux"):
+        elif sys.platform.startswith(("linux", "darwin")):
             libssl = ctypes.CDLL(ssl._ssl.__file__)
         else:
             raise NotImplementedError(
-                "Only Windows (win32) and Linux (linux) are supported atm."
+                "Only Windows (win32), Linux (linux) and macOS (darwin) are supported."
             )
 
         with warnings.catch_warnings():
@@ -144,111 +200,113 @@ class RiotAuth:
         data = dict(parse_qsl(result))
         self.__update(extract_jwt=True, **data)
 
-    # async def authorize(
-    #         self, username: str, password: str, use_query_response_mode: bool = False
-    # ) -> None:
-    #     """
-    #     Authenticate using username and password.
-    #     """
-    #     if username and password:
-    #         self._cookie_jar.clear()
-    #
-    #     conn = aiohttp.TCPConnector(ssl=self._auth_ssl_ctx)
-    #     async with aiohttp.ClientSession(
-    #             connector=conn, raise_for_status=True, cookie_jar=self._cookie_jar
-    #     ) as session:
-    #         headers = {
-    #             "Accept-Encoding": "deflate, gzip, zstd",
-    #             "user-agent": RiotAuth.RIOT_CLIENT_USER_AGENT % "rso-auth",
-    #             "Cache-Control": "no-cache",
-    #             "Accept": "application/data",
-    #         }
-    #
-    #         # region Begin auth/Reauth
-    #         body = {
-    #             "acr_values": "",
-    #             "claims": "",
-    #             "client_id": "riot-client",
-    #             "code_challenge": "",
-    #             "code_challenge_method": "",
-    #             "nonce": token_urlsafe(16),
-    #             "redirect_uri": "http://localhost/redirect",
-    #             "response_type": "token id_token",
-    #             "scope": "openid link ban lol_region account",
-    #         }
-    #         if use_query_response_mode:
-    #             body["response_mode"] = "query"
-    #         async with session.post(
-    #                 "https://auth.riotgames.com/api/v1/authorization",
-    #                 data=body,
-    #                 headers=headers,
-    #         ) as r:
-    #             data: Dict = await r.data()
-    #             resp_type = data["type"]
-    #         # endregion
-    #
-    #         if resp_type != "response":  # not reauth
-    #             # region Authenticate
-    #             body = {
-    #                 "language": "en_US",
-    #                 "password": password,
-    #                 "region": None,
-    #                 "remember": False,
-    #                 "type": "auth",
-    #                 "username": username,
-    #             }
-    #             async with session.put(
-    #                     "https://auth.riotgames.com/api/v1/authorization",
-    #                     data=body,
-    #                     headers=headers,
-    #             ) as r:
-    #                 data: Dict = await r.data()
-    #                 resp_type = data["type"]
-    #                 if resp_type == "response":
-    #                     ...
-    #                 elif resp_type == "auth":
-    #                     err = data.get("error")
-    #                     if err == "auth_failure":
-    #                         raise RiotAuthenticationError(
-    #                             f"Failed to authenticate. Make sure username and password are correct. `{err}`."
-    #                         )
-    #                     elif err == "rate_limited":
-    #                         raise RiotRatelimitError()
-    #                     else:
-    #                         raise RiotUnknownErrorTypeError(
-    #                             f"Got unknown error `{err}` during authentication."
-    #                         )
-    #                 elif resp_type == "multifactor":
-    #                     raise RiotMultifactorError(
-    #                         "Multi-factor authentication is not currently supported."
-    #                     )
-    #                 else:
-    #                     raise RiotUnknownResponseTypeError(
-    #                         f"Got unknown response type `{resp_type}` during authentication."
-    #                     )
-    #             # endregion
-    #
-    #         self._cookie_jar = session.cookie_jar
-    #         self.__set_tokens_from_uri(data)
-    #
-    #         # region Get new entitlements token
-    #         headers["Authorization"] = f"{self.token_type} {self.access_token}"
-    #         async with session.post(
-    #                 "https://entitlements.auth.riotgames.com/api/token/v1",
-    #                 headers=headers,
-    #                 data={},
-    #                 # data={"urn": "urn:entitlement:%"},
-    #         ) as r:
-    #             self.entitlements_token = (await r.data())["entitlements_token"]
-    #         # endregion
+    async def authorize(
+            self, username: str, password: str, use_query_response_mode: bool = False
+    ) -> None:
+        """
+        Authenticate using username and password.
+        """
+        if username and password:
+            self._cookie_jar.clear()
 
-    # async def reauthorize(self) -> bool:
-    #     """
-    #     Reauthenticate using cookies.
-    #     Returns a ``bool`` indicating success or failure.
-    #     """
-    #     try:
-    #         await self.authorize("", "")
-    #         return True
-    #     except RiotAuthenticationError:  # because credentials are empty
-    #         return False
+        conn = aiohttp.TCPConnector(ssl=self._auth_ssl_ctx)
+        async with aiohttp.ClientSession(
+                connector=conn, raise_for_status=True, cookie_jar=self._cookie_jar
+        ) as session:
+            headers = {
+                "Content-Type": "application/json",
+                "Accept-Encoding": "deflate, gzip, zstd",
+                "user-agent": RiotAuth.RIOT_CLIENT_USER_AGENT % "rso-auth",
+                "Cache-Control": "no-cache",
+                "Accept": "application/json",
+            }
+
+            # region Begin auth/Reauth
+            body = {
+                "acr_values": "",
+                "claims": "",
+                "client_id": "riot-client",
+                "code_challenge": "",
+                "code_challenge_method": "",
+                "nonce": token_urlsafe(16),
+                "redirect_uri": "http://localhost/redirect",
+                "response_type": "token id_token",
+                "scope": "openid link ban lol_region account",
+            }
+            if use_query_response_mode:
+                body["response_mode"] = "query"
+            async with session.post(
+                    "https://auth.riotgames.com/api/v1/authorization",
+                    json=body,
+                    headers=headers,
+            ) as r:
+                data: Dict = await r.json()
+                resp_type = data["type"]
+            # endregion
+
+            if resp_type != "response":  # not reauth
+                # region Authenticate
+                body = {
+                    "language": "en_US",
+                    "password": password,
+                    "region": None,
+                    "remember": False,
+                    "type": "auth",
+                    "username": username,
+                }
+                async with session.put(
+                        "https://auth.riotgames.com/api/v1/authorization",
+                        json=body,
+                        headers=headers,
+                ) as r:
+                    data: Dict = await r.json()
+                    resp_type = data["type"]
+                    if resp_type == "response":
+                        ...
+                    elif resp_type == "auth":
+                        err = data.get("error")
+                        if err == "auth_failure":
+                            raise RiotAuthenticationError(
+                                f"Failed to authenticate. Make sure username and password are correct. `{err}`."
+                            )
+                        elif err == "rate_limited":
+                            raise RiotRatelimitError()
+                        else:
+                            raise RiotUnknownErrorTypeError(
+                                f"Got unknown error `{err}` during authentication."
+                            )
+                    elif resp_type == "multifactor":
+                        raise RiotMultifactorError(
+                            "Multi-factor authentication is not currently supported."
+                        )
+                    else:
+                        raise RiotUnknownResponseTypeError(
+                            f"Got unknown response type `{resp_type}` during authentication."
+                        )
+                # endregion
+
+            self._cookie_jar = session.cookie_jar
+            self.__set_tokens_from_uri(data)
+
+            # region Get new entitlements token
+            headers["Authorization"] = f"{self.token_type} {self.access_token}"
+            async with session.post(
+                    "https://entitlements.auth.riotgames.com/api/token/v1",
+                    headers=headers,
+                    json={},
+                    # json={"urn": "urn:entitlement:%"},
+            ) as r:
+                self.entitlements_token = (await r.json())["entitlements_token"]
+            # endregion
+
+    async def reauthorize(self) -> bool:
+        """
+        Reauthenticate using cookies.
+
+        Returns a ``bool`` indicating success or failure.
+        """
+        try:
+            await self.authorize("", "")
+            return True
+        except RiotAuthenticationError:  # because credentials are empty
+            return False

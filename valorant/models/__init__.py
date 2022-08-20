@@ -7,14 +7,14 @@ Typings for the Valorant API
 """
 
 from .agent import *
-from .bundle import *
+from .bundles import *
 from .buddies import *
 from .contents import *
 from .contracts import *
 from .maps import *
 from .party import *
 from .match import *
-from .mission import *
+from .missions import *
 from .other import *
 from .player import *
 from .player_cards import *
