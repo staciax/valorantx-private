@@ -19,7 +19,8 @@ packages = [
     'valorant',
     'valorant.models',
     'valorant.types',
-    'valorant.cache'
+    'valorant.cache',
+    'valorant.cache.additional',
 ]
 
 setup(
