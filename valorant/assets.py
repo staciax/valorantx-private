@@ -133,7 +133,7 @@ def maybe_display_name(key: str = 'displayName'):
 class Assets:
 
     _cache_dir: Path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), ".lib_cache"
+        os.path.dirname(os.path.abspath(__file__)), "cache"
     )
 
     ASSET_CACHE = {}
