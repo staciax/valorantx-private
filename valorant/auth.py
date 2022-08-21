@@ -318,6 +318,8 @@ class RiotAuth:
             ) as r:
                 self.entitlements_token = (await r.json())["entitlements_token"]
 
+            # Get user info
+
             async with session.post(
                     'https://auth.riotgames.com/userinfo',
                     headers=headers
@@ -327,8 +329,9 @@ class RiotAuth:
                 self.name = data['acct']['game_name']
                 self.tag = data['acct']['tag_line']
 
-            body = {"id_token": self.id_token}
+            # Get regions
 
+            body = {"id_token": self.id_token}
             async with session.put(
                     'https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant',
                     headers=headers,
