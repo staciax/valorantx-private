@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from .base import BaseModel
+
 from ..asset import Asset
 from ..localization import Localization
 

@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from .base import BaseModel
+
 from ..localization import Localization
 
 from typing import Any, Dict, Optional, Union, TYPE_CHECKING

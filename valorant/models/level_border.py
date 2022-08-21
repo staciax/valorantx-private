@@ -23,8 +23,9 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from ..asset import Asset
 from .base import BaseModel
+
+from ..asset import Asset
 
 from typing import Any, Dict, Optional, TYPE_CHECKING
 
