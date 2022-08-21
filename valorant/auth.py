@@ -38,7 +38,8 @@ from base64 import urlsafe_b64decode
 from secrets import token_urlsafe
 from urllib.parse import parse_qsl, urlsplit
 
-from typing import Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+
 
 class RiotAuthError(Exception):
     """Base class for RiotAuth errors."""
@@ -73,6 +74,19 @@ __all__ = (
     "RiotUnknownResponseTypeError",
     "RiotAuth",
 )
+
+
+class _CookieSentinel:
+    __slots__ = ()
+
+    def __getattr__(self, attr: str) -> None:
+        msg = (
+            'loop attribute cannot be accessed in non-async contexts. '
+        )
+        raise AttributeError(msg)
+
+
+_cookie_jar: Any = _CookieSentinel()
 
 
 class RiotAuth:
@@ -121,7 +135,7 @@ class RiotAuth:
 
     def __init__(self) -> None:
         self._auth_ssl_ctx = RiotAuth.create_riot_auth_ssl_ctx()
-        self._cookie_jar = aiohttp.CookieJar()
+        self._cookie_jar: aiohttp.CookieJar = _cookie_jar
         self.access_token: Optional[str] = None
         self.scope: Optional[str] = None
         self.id_token: Optional[str] = None
@@ -129,6 +143,7 @@ class RiotAuth:
         self.expires_at: int = 0
         self.user_id: Optional[str] = None
         self.entitlements_token: Optional[str] = None
+        self.puuid: Optional[str] = None
 
     @staticmethod
     def create_riot_auth_ssl_ctx() -> ssl.SSLContext:
@@ -206,6 +221,9 @@ class RiotAuth:
         """
         Authenticate using username and password.
         """
+        if self._cookie_jar is _cookie_jar:
+            self._cookie_jar = aiohttp.CookieJar()
+
         if username and password:
             self._cookie_jar.clear()
 
@@ -214,7 +232,6 @@ class RiotAuth:
                 connector=conn, raise_for_status=True, cookie_jar=self._cookie_jar
         ) as session:
             headers = {
-                "Content-Type": "application/json",
                 "Accept-Encoding": "deflate, gzip, zstd",
                 "user-agent": RiotAuth.RIOT_CLIENT_USER_AGENT % "rso-auth",
                 "Cache-Control": "no-assets",
@@ -297,6 +314,14 @@ class RiotAuth:
                     # json={"urn": "urn:entitlement:%"},
             ) as r:
                 self.entitlements_token = (await r.json())["entitlements_token"]
+
+            async with session.post(
+                    'https://auth.riotgames.com/userinfo',
+                    headers=headers
+            ) as r:
+                data = await r.json()
+                self.puuid = data['sub']
+
             # endregion
 
     async def reauthorize(self) -> bool:

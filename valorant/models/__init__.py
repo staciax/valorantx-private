@@ -34,5 +34,5 @@ from .theme import *
 from .version import *
 from .weapons import *
 
-# TODO: model __slot__ __eq__ __ne__ for some models
+# TODO: model __slot__ __eq__ __ne__ __len__ for some models
 # TODO: TypeDict Payload for all classes

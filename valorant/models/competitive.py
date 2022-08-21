@@ -28,7 +28,7 @@ from .base import BaseModel
 from ..asset import Asset
 from ..localization import Localization
 
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Union, TypedDict, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -37,6 +37,7 @@ if TYPE_CHECKING:
 # fmt: off
 __all__ = (
     'CompetitiveTier',
+    'MMR'
 )
 
 
@@ -147,3 +148,38 @@ class CompetitiveTier(BaseModel):
         """Returns the competitive tier with the given UUID."""
         data = client.assets.get_competitive_tier(uuid)
         return cls(client=client, data=data) if data else None
+
+class CompetitiveUpdate(TypedDict):  # TODO: Model
+    MatchID: str
+    MapID: str
+    SeasonID: str
+    MatchStartTime: int
+    TierAfterUpdate: int
+    TierBeforeUpdate: int
+    RankedRatingAfterUpdate: int
+    RankedRatingBeforeUpdate: int
+    RankedRatingEarned: int
+    RankedRatingPerformanceBonus: int
+    AFKPenalty: int
+
+class MMR(BaseModel):
+
+    def __init__(self, client: Client, data: Any, **kwargs) -> None:
+        super().__init__(client, data, **kwargs)
+
+    def __repr__(self) -> str:
+        return f'<MMR uuid={self.uuid!r} version={self.version!r} latest_competitive_update={self.latest_competitive_update!r}>'
+
+    def __hash__(self) -> int:
+        return hash(self.uuid)
+
+    def _update(self, data: Any) -> None:
+        self._uuid = data['Subject']
+        self.version = data['Version']
+        self.queue_skills: Dict[str, Any] = data['QueueSkills']  # TODO: Object
+        self.new_player_experience_finished: bool = data['NewPlayerExperienceFinished']
+        self.is_leaderboard_anonymized: bool = data['IsLeaderboardAnonymized']
+        self.is_act_rank_badge_hidden: bool = data['IsActRankBadgeHidden']
+        self._latest_competitive_update: Dict[str, Any] = data['LatestCompetitiveUpdate']
+        # TODO: Object
+        self.latest_competitive_update: CompetitiveUpdate = CompetitiveUpdate(self._latest_competitive_update)

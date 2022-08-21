@@ -26,13 +26,24 @@ from __future__ import annotations
 from .base import BaseModel
 
 from ..asset import Asset
+from ..enums import CurrencyID
 from ..localization import Localization
+from .. import utils
 
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING, Literal, overload
 
 if TYPE_CHECKING:
+    import datetime
     from typing_extensions import Self
     from ..client import Client
+
+__all__ = (
+    'Weapon',
+    'Skin',
+    'SkinChroma',
+    'SkinLevel',
+    'SkinNightMarket',
+)
 
 class Weapon(BaseModel):
 
@@ -192,6 +203,7 @@ class Skin(BaseModel):
         self.asset_path: str = data['assetPath']
         self._chromas: List[Dict[str, Any]] = data['chromas']
         self._levels: List[Dict[str, Any]] = data['levels']
+        self.price: int = data.get('price', 0)
 
     @property
     def name_localizations(self) -> Localization:
@@ -242,11 +254,41 @@ class Skin(BaseModel):
         """:class: `Weapon` Returns the skin's base weapon."""
         return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid)
 
+    # @classmethod
+    # def _from_uuid(cls, client: Client, uuid: str, all_type: bool = False) -> Optional[Self]:
+    #     """Returns the skin with the given UUID."""
+    #     data = client.assets.get_skin(uuid)
+    #     if not all_type:
+    #         return cls(client=client, data=data)
+
     @classmethod
-    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+    @overload
+    def _from_uuid(
+            cls,
+            client: Client,
+            uuid: str,
+            all_type: Literal[False]
+    ) -> Optional[Self]:
+        ...
+
+    @classmethod
+    @overload
+    def _from_uuid(
+            cls,
+            client: Client,
+            uuid: str,
+            all_type: Literal[True]
+    ) -> Optional[Union[Self, SkinLevel, SkinChroma]]:
+        ...
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str, all_type: bool = False) -> Optional[Self]:
         """Returns the skin with the given UUID."""
         data = client.assets.get_skin(uuid)
-        return cls(client=client, data=data) if data else None
+        if not all_type:
+            return cls(client=client, data=data)
+        else:
+            return client.get_skin_level(uuid) or client.get_skin_chroma(uuid)
 
 class SkinChroma(BaseModel):
 
@@ -389,3 +431,35 @@ class SkinLevel(BaseModel):
         """Returns the skin with the given UUID."""
         data = client.assets.get_skin_level(uuid)
         return cls(client=client, data=data) if data else None
+
+class SkinNightMarket(SkinLevel):
+
+    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]], extras: Any) -> None:
+        super().__init__(client=client, data=data)
+        self.discount_percent: int = extras['DiscountPercent']
+        self.price: int = extras['Offer']['Cost'][str(CurrencyID.valorant_point)]
+        self.discount_price: int = extras['DiscountCosts'][str(CurrencyID.valorant_point)]
+        self.is_direct_purchase: bool = extras['Offer']['IsDirectPurchase']
+        self.is_seen: bool = extras['IsSeen']
+        self._rewards: List[Dict[str, Any]] = extras['Offer']['Rewards']
+        self._start_time_iso: str = extras['Offer']['StartDate']
+
+    def __repr__(self) -> str:
+        return f"<SkinNightMarket name={self.name!r} price={self.price!r} discount_price={self.discount_price!r}>"
+
+    @property
+    def price_difference(self) -> int:
+        """ Returns the difference between the base price and the discounted price """
+        return self.price_difference - self.discount_price
+
+    @property
+    def start_time(self) -> datetime.datetime:
+        """ Returns the time the offer started """
+        return utils.parse_iso_datetime(self._start_time_iso)
+
+    @classmethod
+    def _from_data(cls, client: Client, skin_data: Dict[str, Any]) -> Self:
+        """Returns the skin with the given UUID."""
+        uuid = skin_data['Offer']['OfferID']
+        data = client.assets.get_skin_level(uuid)
+        return cls(client=client, data=data, extras=skin_data)

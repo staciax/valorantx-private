@@ -66,7 +66,7 @@ _log = logging.getLogger(__name__)
 
 class Route:
 
-    BASE_URL: ClassVar[str] = "https://pd.{shard}.a.pvp.net"
+    BASE_PD_URL: ClassVar[str] = "https://pd.{shard}.a.pvp.net"
     BASE_GLZ_URL: ClassVar[str] = "https://glz-{region}-1.{shard}.a.pvp.net"
     BASE_SHARD_URL: ClassVar[str] = "https://shared.{shard}.a.pvp.net"
     BASE_PLAY_VALORANT_URL: ClassVar[str] = "https://playvalorant.com"
@@ -92,7 +92,7 @@ class Route:
         url = ''
 
         if endpoint == 'pd':
-            url = self.BASE_URL.format(shard=self.shard) + path
+            url = self.BASE_PD_URL.format(shard=self.shard) + path
         elif endpoint == 'glz':
             url = self.BASE_GLZ_URL.format(region=self.region, shard=self.region) + path
         elif endpoint == 'shared':
@@ -126,8 +126,6 @@ class HTTPClient:
     async def request(self, route: Route, **kwargs: Any) -> Any:
         method = route.method
         url = route.url
-
-        # TODO: build headers
 
         kwargs['headers'] = self._headers
 
@@ -200,6 +198,8 @@ class HTTPClient:
         Riot Auth login.
         """
         await self._riot_auth.authorize(username, password)
+        self._puuid = self._riot_auth.puuid
+        await self.__build_headers()
 
     async def read_from_url(self, url: str) -> bytes:
         async with self._session.get(url) as resp:
@@ -536,8 +536,13 @@ class HTTPClient:
         """If puuid passed into method is None make it current user's puuid"""
         return self._puuid if puuid is None else puuid
 
-    async def __build_headers(self, auth: Dict) -> None:
-        self._headers['Authorization'] = f"Bearer {auth.access_token}"
-        self._headers['X-Riot-Entitlements-JWT'] = auth.entitlements_token
+    async def __build_headers(self) -> None:
+        self._headers['Authorization'] = f"Bearer %s" % self._riot_auth.access_token
+        self._headers['X-Riot-Entitlements-JWT'] = self._riot_auth.entitlements_token
         self._headers['X-Riot-ClientPlatform'] = self._client_platform
         self._headers['X-Riot-ClientVersion'] = await self._get_current_version()  # TODO: from client
+
+    async def _get_current_version(self) -> str:  # todo to async
+        resp = await self.asset_valorant_version()
+        data = resp['data']
+        return f"{data['branch']}-shipping-{data['buildVersion']}-{data['version'].split('.')[3]}"

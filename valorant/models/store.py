@@ -26,108 +26,263 @@ from __future__ import annotations
 # from .skin import SkinNightMarket
 from datetime import datetime, timezone, timedelta
 
-from .weapons import Skin
+from .weapons import Skin, SkinNightMarket
 from .bundle import Bundle
 
-from typing import Any, Mapping, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..client import Client
 
 __all__ = (
-    'StoreNightMarketOffer',
     'StoreFront',
     'StoreOffer',
+    'NightMarket',
     'Wallet',
 )
 
 class StoreFront:
 
+    __slot__ = ()
+
     def __init__(self, *, client: Any, data: Any) -> None:
         self._client = client
-        self.data = data
+        self._featured_bundle: Dict[Any, Any] = data['FeaturedBundle']
+        self._bundle: Dict[Any, Any] = self._featured_bundle['Bundle']
+        self._bundles: Dict[Any, Any] = self._featured_bundle.get('Bundles', [])
+        self._skins_panel_layout: Dict[Any, Any] = data['SkinsPanelLayout']
+        self._bonus_store: Dict[Any, Any] = data.get('BonusStore')
+
+    def __repr__(self) -> str:
+        return f'<StoreFront bundles={self.bundles} store={self.store} nightmarket={self.nightmarket}>'
 
     @property
     def bundle(self) -> Bundle:
-        """ Returns the bundle for the storefront """
-        return Bundle._from_store(client=self._client, bundle=self.data['FeaturedBundle']['Bundle'])
+        """:class:`.models.Bundle`: The bundle in the featured panel."""
+        return Bundle._from_store(client=self._client, bundle=self._bundle)
 
     @property
-    def bundles(self) -> List[Bundle]:
-        """ Returns a list of bundles """
+    def bundles(self) -> Union[List[Bundle]]:
+        """:class:`.models.Bundle`: The list of bundles in the featured panel."""
         return [
             Bundle._from_store(client=self._client, bundle=bundle)
-            for bundle in self.data['FeaturedBundle']['Bundles']
+            for bundle in self._bundles
         ]
 
     @property
     def store(self) -> StoreOffer:
-        return StoreOffer(client=self._client, data=self.data['SkinsPanelLayout'])
+        """:class:`.models.StoreOffer`: The store offer in the featured panel."""
+        return StoreOffer(client=self._client, data=self._skins_panel_layout)
 
     @property
-    def nightmarket(self) -> Optional[StoreNightMarketOffer]:
-        """ alias for offers """
-        if 'BonusStore' in self.data:
-            return StoreNightMarketOffer(client=self._client, data=self.data['BonusStore'])
-        return None
+    def nightmarket(self) -> Optional[NightMarket]:
+        """:class:`.models.NightMarketOffer`: The nightmarket offer in the featured panel."""
 
-    # alias
-    @property
-    def shop(self) -> StoreOffer:
-        """ alias for store """
-        return self.store
+        data = {
+        "BonusStoreOffers": [
+            {
+                "BonusOfferID": "c205e641-76df-4213-979c-98e8b60da2b0",
+                "Offer": {
+                    "OfferID": "13f3818c-4518-cf39-51f6-8cad1dc5bfc6",
+                    "IsDirectPurchase": True,
+                    "StartDate": "2022-07-23T09:29:40.391021883Z",
+                    "Cost": {
+                        "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1775
+                    },
+                    "Rewards": [
+                        {
+                            "ItemTypeID": "e7c63390-eda7-46e0-bb7a-a6abdacd2433",
+                            "ItemID": "13f3818c-4518-cf39-51f6-8cad1dc5bfc6",
+                            "Quantity": 1
+                        }
+                    ]
+                },
+                "DiscountPercent": 28,
+                "DiscountCosts": {
+                    "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1278
+                },
+                "IsSeen": False
+            },
+            {
+                "BonusOfferID": "19874eca-cf92-49aa-b440-e76ff23afc35",
+                "Offer": {
+                    "OfferID": "f987be1f-4287-35a4-34a9-d6a92805e7ff",
+                    "IsDirectPurchase": True,
+                    "StartDate": "2022-07-23T09:29:40.390967957Z",
+                    "Cost": {
+                        "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1775
+                    },
+                    "Rewards": [
+                        {
+                            "ItemTypeID": "e7c63390-eda7-46e0-bb7a-a6abdacd2433",
+                            "ItemID": "f987be1f-4287-35a4-34a9-d6a92805e7ff",
+                            "Quantity": 1
+                        }
+                    ]
+                },
+                "DiscountPercent": 42,
+                "DiscountCosts": {
+                    "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1030
+                },
+                "IsSeen": False
+            },
+            {
+                "BonusOfferID": "875bd9e0-ae98-4330-a683-f455637fe98f",
+                "Offer": {
+                    "OfferID": "186d9fbb-400e-665b-e5f3-c08b24b6974f",
+                    "IsDirectPurchase": True,
+                    "StartDate": "2022-07-23T09:29:40.391004006Z",
+                    "Cost": {
+                        "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1275
+                    },
+                    "Rewards": [
+                        {
+                            "ItemTypeID": "e7c63390-eda7-46e0-bb7a-a6abdacd2433",
+                            "ItemID": "186d9fbb-400e-665b-e5f3-c08b24b6974f",
+                            "Quantity": 1
+                        }
+                    ]
+                },
+                "DiscountPercent": 30,
+                "DiscountCosts": {
+                    "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 893
+                },
+                "IsSeen": False
+            },
+            {
+                "BonusOfferID": "c74a52ee-d91e-452f-a035-c64b02bbb08f",
+                "Offer": {
+                    "OfferID": "a2045403-40f7-2926-f955-028b6867c79a",
+                    "IsDirectPurchase": True,
+                    "StartDate": "2022-07-23T09:29:40.390994562Z",
+                    "Cost": {
+                        "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1275
+                    },
+                    "Rewards": [
+                        {
+                            "ItemTypeID": "e7c63390-eda7-46e0-bb7a-a6abdacd2433",
+                            "ItemID": "a2045403-40f7-2926-f955-028b6867c79a",
+                            "Quantity": 1
+                        }
+                    ]
+                },
+                "DiscountPercent": 26,
+                "DiscountCosts": {
+                    "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 944
+                },
+                "IsSeen": False
+            },
+            {
+                "BonusOfferID": "ecf88a54-4207-476f-a2ed-a7a2bb6853dd",
+                "Offer": {
+                    "OfferID": "56042ce2-4f95-19be-7cac-5fb191683953",
+                    "IsDirectPurchase": True,
+                    "StartDate": "2022-07-23T09:29:40.391006281Z",
+                    "Cost": {
+                        "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1775
+                    },
+                    "Rewards": [
+                        {
+                            "ItemTypeID": "e7c63390-eda7-46e0-bb7a-a6abdacd2433",
+                            "ItemID": "56042ce2-4f95-19be-7cac-5fb191683953",
+                            "Quantity": 1
+                        }
+                    ]
+                },
+                "DiscountPercent": 39,
+                "DiscountCosts": {
+                    "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1083
+                },
+                "IsSeen": False
+            },
+            {
+                "BonusOfferID": "b2e5933c-2aae-47f3-b5ae-67668f9139ac",
+                "Offer": {
+                    "OfferID": "e16ea577-4d7f-e686-456a-54b4b1d9cba2",
+                    "IsDirectPurchase": True,
+                    "StartDate": "2022-07-23T09:29:40.391035351Z",
+                    "Cost": {
+                        "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1775
+                    },
+                    "Rewards": [
+                        {
+                            "ItemTypeID": "e7c63390-eda7-46e0-bb7a-a6abdacd2433",
+                            "ItemID": "e16ea577-4d7f-e686-456a-54b4b1d9cba2",
+                            "Quantity": 1
+                        }
+                    ]
+                },
+                "DiscountPercent": 31,
+                "DiscountCosts": {
+                    "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1225
+                },
+                "IsSeen": False
+            }
+        ],
+        "BonusStoreRemainingDurationInSeconds": 829819
+    }
+        return (
+            NightMarket(client=self._client, data=data)
+            # if self._bonus_store is not None else None
+        )
 
 class StoreOffer:
 
-    __slot__ = ('_client', '_skin_offers', '_duration')
+    __slot__ = ()
 
     def __init__(self, *, client: Any, data: Any) -> None:
         self._client: Client = client
         self._skin_offers: List[str] = data['SingleItemOffers']
         self._duration: int = data['SingleItemOffersRemainingDurationInSeconds']
 
+    def __repr__(self) -> str:
+        return f'<StoreOffer skins={self.skins!r} duration={self.duration} reset_at={self.reset_at}>'
+
+    def __len__(self) -> int:
+        return len(self.skins)
+
     @property
     def skins(self) -> List[Skin]:
-        """ Returns a list of skins in the offer """
-        return [Skin._from_uuid(client=self._client, uuid=uuid) for uuid in self._skin_offers]
+        """:class:`.models.Skin`: The list of skins in the store offer."""
+        return [Skin._from_uuid(client=self._client, uuid=uuid, all_type=True) for uuid in self._skin_offers]
 
     @property
     def duration(self) -> float:
-        """ Returns the duration of the offer in seconds """
+        """:class:`float`: The duration of the store offer in seconds."""
         return self._duration
 
     @property
-    def resets_at(self) -> datetime:
+    def reset_at(self) -> datetime:
+        """:class:`datetime.datetime`: The time when the store offer will reset."""
         dt = datetime.utcnow() + timedelta(seconds=self._duration)
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
         return dt
 
-class StoreNightMarketOffer:
-    duration: int
-    _skin_offers: List[str]
+class NightMarket:
 
-    __slot__ = ('data', '_skin_offers', 'duration')
+    __slot__ = ()
 
     def __init__(self, *, client: Client, data: Any) -> None:
         self._client = client
-        self.data = data
-        self._skin_offers: Mapping = data['BonusStoreOffers']
-        self._duration = data['BonusStoreRemainingDurationInSeconds']
+        self._skin_offers: List[Dict[str, Any]] = data['BonusStoreOffers']
+        self.duration: int = data['BonusStoreRemainingDurationInSeconds']
+
+    def __repr__(self) -> str:
+        return f'<NightMarket skins={self.skins!r} duration={self.duration}>'
+
+    def __len__(self) -> int:
+        return len(self.skins)
 
     @property
-    def skins(self) -> List[Skin]:
+    def skins(self) -> List[SkinNightMarket]:
         """ Returns a list of skins in the offer """
-        return [Skin._from_uuid(client=self._client, extras=skin) for skin in self._skin_offers]
+        return [SkinNightMarket._from_data(client=self._client, skin_data=skin) for skin in self._skin_offers]
 
     @property
-    def duration(self) -> float:
-        """ Returns the duration of the offer in seconds """
-        return self._duration
-
-    @property
-    def expires_at(self) -> datetime:
-        dt = datetime.utcnow() + timedelta(seconds=self._duration)
+    def expire_at(self) -> datetime:
+        """:class:`datetime.datetime`: The time when the offer will expire."""
+        dt = datetime.utcnow() + timedelta(seconds=self.duration)
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
         return dt

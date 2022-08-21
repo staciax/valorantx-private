@@ -479,6 +479,8 @@ class Assets:
     def __customize_asset_cache_format(filename: str, data: Any) -> None:
         """Customize the asset assets format."""
 
+        # TODO: additional asset weapons
+
         new_dict = {}
         buddy_level_dict = {}
         spray_level_dict = {}

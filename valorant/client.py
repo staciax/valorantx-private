@@ -28,9 +28,10 @@ import json
 import asyncio
 import logging
 
+from . import utils
+from .assets import Assets
 from .enums import Locale, QueueID
 from .http import HTTPClient
-from .assets import Assets
 
 from .models import (
     Agent,
@@ -63,7 +64,9 @@ from .models import (
     Content,
     MMR,
     Wallet,
-    Version
+    StoreFront,
+    Version,
+    PatchNotes
 )
 
 from typing import (
@@ -85,6 +88,8 @@ __all__ = ('Client',)
 
 _log = logging.getLogger(__name__)
 
+MISSING: Any = utils.MISSING
+
 class Client:
 
     def __init__(self, *, locale: Union[Locale, str] = Locale.american_english) -> None:
@@ -99,19 +104,22 @@ class Client:
         self._season: Optional[str] = None
 
         # locale
-        self._locale: str = locale
+        self._locale: Union[Locale, str] = locale
 
         # assets
         self.assets: Assets = Assets(client=self, locale=locale)
 
     async def __aenter__(self) -> Self:
+        # do something
+        loop = asyncio.get_running_loop()
+        self.loop = loop
         return self
 
     async def __aexit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+            self,
+            exc_type: Optional[Type[BaseException]],
+            exc_value: Optional[BaseException],
+            traceback: Optional[TracebackType],
     ) -> None:
         if not self.is_closed():
             await self.close()
@@ -295,7 +303,7 @@ class Client:
 
     # async def fetch_player_loadout(self) -> Collection:
     #     account_xp = await self.http.fetch_account_xp()
-    #     self.user._account_level = account_xp['Progress']['Level']
+    #     self.user._account_level = account_xp['Progress']['Level']  # TODO: models.User.account_level
     #     data = await self.http.fetch_player_loadout()
     #     return Collection(client=self, data=data)
 
@@ -320,19 +328,19 @@ class Client:
     #     match_details = await self.http.fetch_match_details(match_id)
     #     return MatchDetail(client=self, data=match_details)
 
-    # # store endpoints
-    #
-    # async def fetch_storefront(self) -> StoreFront:
-    #     data = await self.http.store_fetch_storefront()
-    #     return StoreFront(client=self, data=data)
+    # store endpoints
+
+    async def fetch_store_front(self) -> StoreFront:
+        data = await self.http.store_fetch_storefront()
+        return StoreFront(client=self, data=data)
 
     async def fetch_wallet(self) -> Wallet:
         data = await self.http.store_fetch_wallet()
         return Wallet(client=self, data=data)
 
-    # async def fetch_patch_notes(self, locale: str) -> PatchNotes:
-    #     data = await self.http.fetch_patch_notes(locale)
-    #     return PatchNotes(client=self, data=data, locale=locale)
+    async def fetch_patch_notes(self, locale: Union[str, Locale] = Locale.american_english) -> PatchNotes:
+        data = await self.http.fetch_patch_notes(locale)
+        return PatchNotes(client=self, data=data, locale=locale)
 
     # asset
 
