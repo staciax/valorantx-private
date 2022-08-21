@@ -1,4 +1,3 @@
-import setuptools
 from setuptools import setup
 import re
 
@@ -23,17 +22,18 @@ packages = [
 ]
 
 setup(
-    name='pylorant',
+    name='valorant-diff.py',
     author='xStacia',
-    url='https://github.com/staciax/pylorant',
+    url='https://github.com/staciax/valorant-diff.py',
     project_urls={
-        "Issue tracker": "https://github.com/staciax/pylorant/issues",
+        "Issue tracker": "https://github.com/staciax/valorant-diff.py/issues",
     },
     version=version,
     packages=packages,
     license='MIT',
     description='An Asynchronous Valorant API Wrapper for Python',
     long_description=readme,
+    include_package_data=True,
     install_requires=requirements,
     python_requires='>=3.8.0',
     classifiers=[
@@ -45,8 +45,6 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
-        'Programming Language :: Python :: 3.11',
-        'Topic :: Internet :: WWW/HTTP',
-    ],
-    include_package_data=True,
+        'Programming Language :: Python :: 3.11'
+    ]
 )

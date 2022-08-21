@@ -6,14 +6,17 @@ A basic wrapper for the Valorant API.
 :license: MIT, see LICENSE for more details.
 """
 
-__title__ = 'pylorant'
+__title__ = 'valorant-diff.py'
 __author__ = 'xStacia'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2022-present xStacia'
 __version__ = '1.0.0.dev0'
 
+from .asset import *
 from .assets import *
 from .client import *
 from .enums import *
+from .errors import *
+from .file import *
 from .models import *
-
+from .localization import *
