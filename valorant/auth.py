@@ -144,6 +144,9 @@ class RiotAuth:
         self.user_id: Optional[str] = None
         self.entitlements_token: Optional[str] = None
         self.puuid: Optional[str] = None
+        self.name: Optional[str] = None
+        self.tag: Optional[str] = None
+        self.region: Optional[str] = None
 
     @staticmethod
     def create_riot_auth_ssl_ctx() -> ssl.SSLContext:
@@ -321,6 +324,18 @@ class RiotAuth:
             ) as r:
                 data = await r.json()
                 self.puuid = data['sub']
+                self.name = data['acct']['game_name']
+                self.tag = data['acct']['tag_line']
+
+            body = {"id_token": self.id_token}
+
+            async with session.put(
+                    'https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant',
+                    headers=headers,
+                    json=body
+            ) as r:
+                data = await r.json()
+                self.region = data['affinities']['live']
 
             # endregion
 
