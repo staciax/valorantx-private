@@ -542,7 +542,6 @@ class HTTPClient:
         self._headers['X-Riot-ClientPlatform'] = self._client_platform
         self._headers['X-Riot-ClientVersion'] = await self._get_current_version()  # TODO: from client
 
-    async def _get_current_version(self) -> str:  # todo to async
-        resp = await self.asset_valorant_version()
-        data = resp['data']
-        return f"{data['branch']}-shipping-{data['buildVersion']}-{data['version'].split('.')[3]}"
+    async def _get_current_version(self) -> str:
+        resp = await self.asset_valorant_version()  # TODO: objectify response ??
+        return resp['data']['riotClientVersion']

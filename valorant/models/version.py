@@ -40,7 +40,7 @@ __all__ = (
 class Version:
 
     def __init__(self, client: Client, data: VersionPayload) -> None:
-        self._client = client
+        self._client: Client = client
         self.manifest_id: str = data['data']['manifestId']
         self.branch: str = data['data']['branch']
         self.version: str = data['data']['version']
@@ -48,6 +48,15 @@ class Version:
         self.engine_version: str = data['data']['engineVersion']
         self.riot_client_version: str = data['data']['riotClientVersion']
         self._build_date_iso: str = data['data']['buildDate']
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, self.__class__) and self.version == other.version
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash(self.version)
 
     def __str__(self) -> str:
         return self.version

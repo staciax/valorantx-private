@@ -303,17 +303,17 @@ class Assets:
         get_version = await self._client.get_valorant_version()
 
         if get_version != self._client.version:
-            self._client.version = get_version.version
+            self._client.version = get_version
 
         # self.__mkdir_cache_dir()
         self.__mkdir_assets_dir()
 
         if (
-            not self._get_asset_dir().endswith(self._client.version)
+            not self._get_asset_dir().endswith(self._client.version.version)
             or len(os.listdir(self._get_asset_dir())) == 0
             or force
         ):
-            _log.info(f"Fetching assets for version {self._client.version!r}")
+            _log.info(f"Fetching assets for version {self._client.version.version!r}")
 
             async_tasks = [
                 asyncio.ensure_future(self._client.http.asset_get_agents()),
@@ -403,7 +403,7 @@ class Assets:
 
     def _get_asset_dir(self) -> str:
         """Get the asset directory."""
-        return os.path.join(Assets._cache_dir, self._client.version)
+        return os.path.join(Assets._cache_dir, self._client.version.version)
 
     def __load_assets(self) -> None:
         """Load assets."""

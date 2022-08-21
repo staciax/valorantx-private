@@ -100,7 +100,7 @@ class Client:
         # config
         self._closed: bool = False
         self._ready: bool = False
-        self._version: Optional[str] = None
+        self._version: Optional[Version] = None
         self._season: Optional[str] = None
 
         # locale
@@ -145,11 +145,11 @@ class Client:
         return self._locale
 
     @property
-    def version(self) -> Optional[str]:
+    def version(self) -> Optional[Version]:
         return self._version
 
     @version.setter
-    def version(self, value: Optional[str]) -> None:
+    def version(self, value: Optional[Version]) -> None:
         self._version = value
 
     @locale.setter
