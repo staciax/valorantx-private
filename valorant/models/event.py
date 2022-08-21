@@ -32,6 +32,7 @@ from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     import datetime
+    from typing_extensions import Self
     from ..client import Client
 
 # fmt: off
@@ -88,3 +89,9 @@ class Event(BaseModel):
     def end_time(self) -> datetime.datetime:
         """:class: `datetime.datetime` Returns the event's end time."""
         return utils.parse_iso_datetime(self._end_time_iso)
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the event with the given UUID."""
+        data = client.assets.get_event(uuid)
+        return cls(client=client, data=data) if data else None

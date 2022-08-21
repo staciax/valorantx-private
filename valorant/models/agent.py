@@ -30,6 +30,7 @@ from .base import BaseModel
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from ..client import Client
 
 # fmt: off
@@ -39,6 +40,8 @@ __all__ = (
 # fmt: on
 
 # https://dash.valorant-api.com/endpoints/agents
+
+# TODO: _agent abilities, voice lines, mediaList, etc.
 
 class _AgentRole(BaseModel):
 
@@ -156,3 +159,9 @@ class Agent(BaseModel):
     def killfeed_portrait(self) -> Asset:
         """:class: `Asset` Returns the agent's killfeed portrait."""
         return Asset._from_url(client=self._client, url=self._killfeed_portrait)
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the agent with the given UUID."""
+        data = client.assets.get_agent(uuid)
+        return cls(client=client, data=data) if data else None

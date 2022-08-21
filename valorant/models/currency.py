@@ -30,6 +30,7 @@ from .base import BaseModel
 from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from ..client import Client
 
 # fmt: off
@@ -86,3 +87,9 @@ class Currency(BaseModel):
     def large_icon(self) -> Asset:
         """:class: `Asset` Returns the agent's large icon."""
         return Asset._from_url(client=self._client, url=self._large_icon)
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the currency with the given UUID."""
+        data = client.assets.get_currency(uuid)
+        return cls(client=client, data=data) if data else None

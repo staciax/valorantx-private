@@ -30,6 +30,7 @@ from ..localization import Localization
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from ..client import Client
 
 __all__ = (
@@ -146,6 +147,12 @@ class Spray(BaseModel):
         """:class: `bool` Returns whether the bundle is a promo."""
         return self._is_promo
 
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the spray with the given uuid."""
+        data = client.assets.get_spray(uuid=uuid)
+        return cls(client=client, data=data) if data else None
+
 class SprayLevel(BaseModel):
 
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
@@ -199,4 +206,10 @@ class SprayLevel(BaseModel):
     @property
     def base_spray(self) -> Spray:
         """:class: `Spray` Returns the base spray."""
-        return self._client.assets.get_spray(self._base_spray_uuid)
+        return self._client.get_spray(self._base_spray_uuid)
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the spray level with the given uuid."""
+        data = client.assets.get_spray_level(uuid=uuid)
+        return cls(client=client, data=data) if data else None

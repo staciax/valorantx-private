@@ -29,6 +29,7 @@ from .base import BaseModel
 from typing import Any, Dict, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from ..client import Client
 
 # fmt: off
@@ -70,3 +71,8 @@ class LevelBorder(BaseModel):
         """:class: `Asset` Returns the small player card appearance of the level border."""
         return Asset._from_url(client=self._client, url=self._small_player_card_appearance)
 
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the level border with the given UUID."""
+        data = client.assets.get_level_border(uuid=uuid)
+        return cls(client=client, data=data) if data else None

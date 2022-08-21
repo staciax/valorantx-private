@@ -34,6 +34,7 @@ from ..localization import Localization
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from ..client import Client
 
 # fmt: off
@@ -136,7 +137,13 @@ class Contract(BaseModel):
         """:class: `datetime.datetime` Returns the contract's expiration time."""
         return utils.parse_iso_datetime(self._expiration_time_iso) if self._expiration_time_iso else None
 
-    # class MissionMeta(NamedTuple):
-    #     NPECompleted: bool
-    #     WeeklyCheckpoint: str
-    #     WeeklyRefillTime: str
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the contract with the given uuid."""
+        data = client.assets.get_contract(uuid)
+        return cls(client=client, data=data) if data else None
+
+# class MissionMeta(NamedTuple):
+#     NPECompleted: bool
+#     WeeklyCheckpoint: str
+#     WeeklyRefillTime: str

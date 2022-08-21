@@ -29,7 +29,6 @@ from datetime import datetime, timezone, timedelta
 from .weapons import Skin
 from .bundle import Bundle
 
-
 from typing import Any, Mapping, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:

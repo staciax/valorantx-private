@@ -30,6 +30,7 @@ from .base import BaseModel
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from ..client import Client
 
 # fmt: off
@@ -139,3 +140,9 @@ class CompetitiveTier(BaseModel):
     def tiers(self) -> List[Tier]:
         """:class: `list` Returns the competitive tier's tiers."""
         return [Tier(client=self._client, data=tier) for tier in self._tiers]
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the competitive tier with the given UUID."""
+        data = client.assets.get_competitive_tier(uuid)
+        return cls(client=client, data=data) if data else None

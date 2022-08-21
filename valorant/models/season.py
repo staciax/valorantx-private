@@ -31,6 +31,7 @@ from ..localization import Localization
 from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     import datetime
     from ..client import Client
 
@@ -79,3 +80,9 @@ class Season(BaseModel):
     def end_time(self) -> datetime.datetime:
         """:class: `datetime.datetime` Returns the season's end time."""
         return utils.parse_iso_datetime(self._end_time_iso)
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the season with the given UUID."""
+        data = client.assets.get_season(uuid)
+        return cls(client=client, data=data) if data else None

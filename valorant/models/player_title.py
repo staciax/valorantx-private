@@ -29,6 +29,7 @@ from ..localization import Localization
 from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from ..client import Client
 
 # fmt: off
@@ -74,3 +75,9 @@ class PlayerTitle(BaseModel):
     def text(self) -> str:
         """:class: `str` Returns the player title's title text."""
         return self.text_localizations.american_english
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the player title with the given UUID."""
+        data = client.assets.get_player_title(uuid)
+        return cls(client=client, data=data) if data else None

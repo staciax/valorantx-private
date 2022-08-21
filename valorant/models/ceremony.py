@@ -29,6 +29,7 @@ from .base import BaseModel
 from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from ..client import Client
 
 # fmt: off
@@ -62,3 +63,9 @@ class Ceremony(BaseModel):
     def name(self) -> str:
         """:class: `str` Returns the ceremony's name."""
         return self.name_localizations.american_english
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the ceremony with the given UUID."""
+        data = client.assets.get_ceremony(uuid)
+        return cls(client=client, data=data) if data else None

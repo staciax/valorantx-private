@@ -31,6 +31,7 @@ from ..localization import Localization
 from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from ..client import Client
 
 # fmt: off
@@ -122,3 +123,9 @@ class Gear(BaseModel):
         if self._new_image_2 is None:
             return None
         return Asset._from_url(client=self._client, url=self._new_image_2)
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the gear with the given UUID."""
+        data = client.assets.get_gear(uuid=uuid)
+        return cls(client=client, data=data) if data else None

@@ -34,6 +34,7 @@ from ..localization import Localization
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from ..client import Client
 
 __all__ = (
@@ -171,3 +172,9 @@ class ContentTier(BaseModel):
     def display_icon(self) -> Asset:
         """:class: `Asset` Returns the content tier's icon."""
         return Asset._from_url(self._client, self._display_icon)
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the content tier with the given UUID."""
+        data = client.assets.get_content_tier(uuid)
+        return cls(client=client, data=data) if data else None

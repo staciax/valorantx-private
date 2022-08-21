@@ -30,6 +30,7 @@ from ..localization import Localization
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from ..client import Client
 
 __all__ = (
@@ -112,6 +113,12 @@ class Buddy(BaseModel):
         """:class: `bool` Returns whether the bundle is a promo."""
         return self._is_promo
 
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the buddy with the given UUID."""
+        data = client.assets.get_buddy(uuid)
+        return cls(client=client, data=data) if data else None
+
 class BuddyLevel(BaseModel):
 
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
@@ -155,4 +162,10 @@ class BuddyLevel(BaseModel):
     @property
     def base_buddy(self) -> Buddy:
         """:class: `Buddy` Returns the base buddy."""
-        return self._client.assets.get_buddy(self._base_buddy_uuid)
+        return self._client.get_buddy(self._base_buddy_uuid)
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the buddy level with the given UUID."""
+        data = client.assets.get_buddy_level(uuid)
+        return cls(client=client, data=data) if data else None

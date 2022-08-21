@@ -31,6 +31,7 @@ from ..localization import Localization
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from ..client import Client
 
 # fmt: off
@@ -102,3 +103,9 @@ class Map(BaseModel):
     def callouts(self) -> List[Dict[str, Any]]:
         """:class: `List[Dict[str, Any]]` Returns the mission's callouts."""
         return self._callouts
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the mission with the given UUID."""
+        data = client.assets.get_map(uuid=uuid)
+        return cls(client=client, data=data) if data else None

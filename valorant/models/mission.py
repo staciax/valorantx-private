@@ -33,6 +33,7 @@ from ..localization import Localization
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from ..client import Client
 
 # fmt: off
@@ -97,3 +98,9 @@ class Mission(BaseModel):
     def expiration_date(self) -> datetime.datetime:
         """:class: `datetime.datetime` Returns the mission's expiration date."""
         return utils.parse_iso_datetime(self._expiration_date_iso)
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the mission with the given UUID."""
+        data = client.assets.get_mission(uuid)
+        return cls(client=client, data=data) if data else None

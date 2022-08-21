@@ -30,6 +30,7 @@ from .base import BaseModel
 from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from .weapons import Weapon
     from ..client import Client
 
@@ -63,6 +64,12 @@ class GameMode(BaseModel):
     def name(self) -> str:
         """:class: `str` Returns the game mode's name."""
         return self.name_localizations.american_english
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the game mode with the given UUID."""
+        data = client.assets.get_game_mode(uuid)
+        return cls(client=client, data=data) if data else None
 
 class GameModeEquippable(BaseModel):
 
@@ -110,3 +117,9 @@ class GameModeEquippable(BaseModel):
         """:class: `Weapon` Returns the game mode's weapon."""
         data = self._client.assets.get_weapon(uuid=self._uuid)
         return Weapon(client=self._client, data=data)
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the game mode with the given UUID."""
+        data = client.assets.get_game_mode_equippable(uuid)
+        return cls(client=client, data=data) if data else None

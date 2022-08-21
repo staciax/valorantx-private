@@ -30,6 +30,7 @@ from .base import BaseModel
 from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from ..client import Client
 
 # fmt: off
@@ -79,3 +80,9 @@ class Theme(BaseModel):
         if self._store_featured_image is None:
             return None
         return Asset._from_url(self._client, self._store_featured_image)
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the theme with the given UUID."""
+        data = client.assets.get_theme(uuid)
+        return cls(client=client, data=data) if data else None

@@ -164,10 +164,10 @@ class Weapon(BaseModel):
         return [Skin(client=self._client, data=skin) for skin in self._skins]
 
     @classmethod
-    def _from_uuid(cls, client: Client, uuid: str) -> Self:
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the weapon with the given UUID."""
         data = client.assets.get_weapon(uuid)
-        return cls(client=client, data=data)
+        return cls(client=client, data=data) if data else None
 
 class Skin(BaseModel):
 
@@ -242,10 +242,10 @@ class Skin(BaseModel):
         return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid)
 
     @classmethod
-    def _from_uuid(cls, client: Client, uuid: str) -> Self:
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the skin with the given UUID."""
         data = client.assets.get_skin(uuid)
-        return cls(client=client, data=data)
+        return cls(client=client, data=data) if data else None
 
 class SkinChroma(BaseModel):
 
@@ -318,9 +318,10 @@ class SkinChroma(BaseModel):
         return Skin._from_uuid(client=self._client, uuid=self._base_skin_uuid)
 
     @classmethod
-    def _from_uuid(cls, client: Client, uuid: str) -> Self:
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the skin with the given UUID."""
-        return client.assets.get_skin_chroma(uuid)
+        data = client.assets.get_skin_chroma(uuid)
+        return cls(client=client, data=data) if data else None
 
 class SkinLevel(BaseModel):
 
@@ -382,7 +383,8 @@ class SkinLevel(BaseModel):
         """:class: `Skin` Returns the skin's base skin."""
         return Skin._from_uuid(client=self._client, uuid=self._base_skin_uuid)
 
-    @staticmethod
-    def _from_uuid(client: Client, uuid: str) -> Self:
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the skin with the given UUID."""
-        return client.assets.get_skin_level(uuid)
+        data = client.assets.get_skin_level(uuid)
+        return cls(client=client, data=data) if data else None
