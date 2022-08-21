@@ -27,7 +27,7 @@ from .base import BaseModel
 from ..asset import Asset
 from ..localization import Localization
 
-from typing import Optional, Dict, Any, Union, TYPE_CHECKING
+from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..client import Client
@@ -140,3 +140,7 @@ class PlayerCard(BaseModel):
     # def is_owned(self) -> bool:
     #     """:class: `bool` Returns whether the player card is owned."""
     #     return self._client.player_cards.is_owned(self.uuid)
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Self:
+        return cls(client=client, data=client.player_cards.get(uuid))

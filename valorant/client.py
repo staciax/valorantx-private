@@ -33,16 +33,43 @@ from .http import HTTPClient
 from .assets import Assets
 
 from .models import (
+    Agent,
+    Buddy,
+    BuddyLevel,
+    Bundle,
+    Ceremony,
+    CompetitiveTier,
+    ContentTier,
+    Contract,
+    Currency,
+    Event,
+    GameMode,
+    GameModeEquippable,
+    Gear,
+    LevelBorder,
+    Map,
+    Mission,
+    PlayerCard,
+    PlayerTitle,
+    Season,
+    Skin,
+    SkinChroma,
+    SkinLevel,
+    Spray,
+    SprayLevel,
+    Theme,
+    Weapon,
+
+    Content,
     MMR,
     Wallet,
     Version
 )
-from .models.content import Content
 
 from typing import (
     Any,
     Coroutine,
-    Generator,
+    Iterator,
     Mapping,
     Optional,
     Type,
@@ -50,13 +77,13 @@ from typing import (
     TYPE_CHECKING,
 )
 
-__all__ = ('Client',)
-
-_log = logging.getLogger(__name__)
-
 if TYPE_CHECKING:
     from typing_extensions import Self
     from types import TracebackType
+
+__all__ = ('Client',)
+
+_log = logging.getLogger(__name__)
 
 class Client:
 
@@ -120,6 +147,143 @@ class Client:
     @locale.setter
     def locale(self, locale: str) -> None:
         self._locale = locale
+
+    # assets
+
+    def get_agent(self, uuid: str) -> Optional[Agent]:
+        """Get an agent by UUID or Display Name."""
+        data = self.assets.get_agent(uuid)
+        return Agent(client=self, data=data) if data else None
+
+    def get_buddy(self, uuid: str) -> Optional[Union[Buddy, BuddyLevel]]:
+        """Get a buddy by UUID or Display Name."""
+        data = self.assets.get_buddy(uuid)
+        return Buddy(client=self, data=data) if data else self.get_buddy_level(uuid)
+
+    def get_buddy_level(self, uuid: str) -> Optional[BuddyLevel]:
+        """Get a buddy level by UUID or Display Name."""
+        data = self.assets.get_buddy_level(uuid)
+        return BuddyLevel(client=self, data=data) if data else None
+
+    def get_bundle(self, uuid: str) -> Optional[Bundle]:
+        """Get a bundle by UUID or Display Name."""
+        data = self.assets.get_bundle(uuid)
+        return Bundle(client=self, data=data) if data else None
+
+    def get_ceremony(self, uuid: str) -> Optional[Ceremony]:
+        """Get a ceremony by UUID."""
+        data = self.assets.get_ceremony(uuid)
+        return Ceremony(client=self, data=data) if data else None
+
+    def get_competitive_tier(self, uuid: str) -> Optional[CompetitiveTier]:
+        """Get a competitive tier by UUID."""
+        data = self.assets.get_competitive_tier(uuid)
+        return CompetitiveTier(client=self, data=data) if data else None
+
+    def get_content_tier(self, uuid: str) -> Optional[ContentTier]:
+        """Get a content tier by UUID."""
+        data = self.assets.get_content_tier(uuid)
+        return ContentTier(client=self, data=data) if data else None
+
+    def get_contract(self, uuid: str) -> Optional[Contract]:
+        """Get a contract by UUID."""
+        data = self.assets.get_contract(uuid)
+        return Contract(client=self, data=data) if data else None
+
+    def get_currency(self, uuid: str) -> Optional[Currency]:
+        """Get a currency by UUID."""
+        data = self.assets.get_currency(uuid)
+        return Currency(client=self, data=data) if data else None
+
+    def get_event(self, uuid: str) -> Optional[Event]:
+        """Get an event by UUID."""
+        data = self.assets.get_event(uuid)
+        return Event(client=self, data=data) if data else None
+
+    def get_game_mode(self, uuid: str) -> Optional[GameMode]:
+        """Get a game mode by UUID."""
+        data = self.assets.get_game_mode(uuid)
+        return GameMode(client=self, data=data) if data else None
+
+    def get_game_mode_equippable(self, uuid: str) -> Optional[GameModeEquippable]:
+        """Get a game mode equippable by UUID."""
+        data = self.assets.get_game_mode_equippable(uuid)
+        return GameModeEquippable(client=self, data=data) if data else None
+
+    def get_gear(self, uuid: str) -> Optional[Gear]:
+        """Get a gear by UUID."""
+        data = self.assets.get_gear(uuid)
+        return Gear(client=self, data=data) if data else None
+
+    def get_level_border(self, uuid: str) -> Optional[LevelBorder]:
+        """Get a level border by UUID."""
+        data = self.assets.get_level_border(uuid)
+        return LevelBorder(client=self, data=data) if data else None
+
+    def get_map(self, uuid: str) -> Optional[Map]:
+        """Get a map by UUID."""
+        data = self.assets.get_map(uuid)
+        return Map(client=self, data=data) if data else None
+
+    def get_mission(self, uuid: str) -> Optional[Mission]:
+        """missions, Get a mission by UUID."""
+        data = self.assets.get_mission(uuid)
+        return Mission(client=self, data=data) if data else None
+
+    def get_player_card(self, uuid: str) -> Optional[PlayerCard]:
+        """player_cards, Get a player card by UUID."""
+        data = self.assets.get_player_card(uuid)
+        return PlayerCard(client=self, data=data) if data else None
+
+    def get_player_title(self, uuid: str) -> Optional[PlayerTitle]:
+        """player_titles, Get a player title by UUID."""
+        data = self.assets.get_player_title(uuid)
+        return PlayerTitle(client=self, data=data) if data else None
+
+    def get_season(self, uuid: str) -> Optional[Season]:
+        """seasons, Get a season by UUID."""
+        data = self.assets.get_season(uuid)
+        return Season(client=self, data=data) if data else None
+
+    def get_spray(self, uuid: str) -> Optional[Union[Spray, SprayLevel]]:
+        """Get a spray by UUID."""
+        data = self.assets.get_spray(uuid)
+        return Spray(client=self, data=data) if data else self.get_spray_level(uuid)
+
+    def get_spray_level(self, uuid: str) -> Optional[SprayLevel]:
+        """Get a spray level by UUID."""
+        data = self.assets.get_spray_level(uuid)
+        return SprayLevel(client=self, data=data) if data else None
+
+    def get_theme(self, uuid: str) -> Optional[Theme]:
+        """themes, Get a theme by UUID."""
+        data = self.assets.get_theme(uuid)
+        return Theme(client=self, data=data) if data else None
+
+    def get_weapon(self, uuid: str) -> Optional[Weapon]:
+        """weapons, Get a weapon by UUID."""
+        data = self.assets.get_weapon(uuid)
+        return Weapon(client=self, data=data) if data else None
+
+    def get_skin(self, uuid: str) -> Optional[Union[Skin, SkinLevel, SkinChroma]]:
+        """weapon_skins, Get a weapon skin by UUID."""
+        data = self.assets.get_skin(uuid)
+        return Skin(client=self, data=data) if data else self.get_skin_level(uuid) or self.get_skin_chroma(uuid)
+
+    def get_skin_level(self, uuid: str) -> Optional[SkinLevel]:
+        """weapon_skins_levels, Get a weapon skin level by UUID."""
+        data = self.assets.get_skin_level(uuid)
+        return SkinLevel(client=self, data=data) if data else None
+
+    def get_skin_chroma(self, uuid: str) -> Optional[SkinChroma]:
+        """weapon_skins_chromas, Get a weapon skin chroma by UUID."""
+        data = self.assets.get_skin_chroma(uuid)
+        return SkinChroma(client=self, data=data) if data else None
+
+    def get_all_bundles(self) -> Iterator[Bundle]:
+        data = self.assets.get_asset('bundles')
+        for item in data.values():
+            yield Bundle(client=self, data=item)
 
     # PVP endpoints
 

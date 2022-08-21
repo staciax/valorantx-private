@@ -155,11 +155,11 @@ class SprayLevel(BaseModel):
         return self.name
 
     def __repr__(self) -> str:
-        return f'<SprayLevel name={self.name!r} default={self.default!r}>'
+        return f'<SprayLevel name={self.name!r} base={self.base_spray!r}>'
 
     def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
-        self._default_uuid: Optional[str] = data['default_uuid']
+        self._base_spray_uuid: Optional[str] = data['base_uuid']
         self._spray_level: int = data['sprayLevel']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
@@ -197,6 +197,6 @@ class SprayLevel(BaseModel):
         return self._price
 
     @property
-    def default(self) -> Spray:
-        """:class: `Spray` Returns the spray's default."""
-        return self._client.assets.get_spray(self._default_uuid)
+    def base_spray(self) -> Spray:
+        """:class: `Spray` Returns the base spray."""
+        return self._client.assets.get_spray(self._base_spray_uuid)

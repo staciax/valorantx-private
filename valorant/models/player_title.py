@@ -26,7 +26,7 @@ from __future__ import annotations
 from .base import BaseModel
 from ..localization import Localization
 
-from typing import Any, Optional, Dict, Union, TYPE_CHECKING
+from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..client import Client

@@ -23,8 +23,6 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import datetime
-
 from .base import BaseModel
 
 from ..asset import Asset

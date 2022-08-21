@@ -27,9 +27,10 @@ from .base import BaseModel
 from ..asset import Asset
 from ..localization import Localization
 
-from typing import Optional, Dict, Any, Union, List, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from ..client import Client
 
 class Weapon(BaseModel):
@@ -162,6 +163,11 @@ class Weapon(BaseModel):
         """:class: `list` Returns the weapon's skins."""
         return [Skin(client=self._client, data=skin) for skin in self._skins]
 
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Self:
+        """Returns the weapon with the given UUID."""
+        data = client.assets.get_weapon(uuid)
+        return cls(client=client, data=data)
 
 class Skin(BaseModel):
 
@@ -176,6 +182,7 @@ class Skin(BaseModel):
 
     def _update(self, data: Any) -> None:
         self._uuid = data['uuid']
+        self._base_weapon_uuid: str = data['base_weapon_uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._theme_uuid: str = data['themeUuid']
         self._content_tier_uuid: str = data['contentTierUuid']
@@ -229,6 +236,16 @@ class Skin(BaseModel):
         """:class: `list` Returns the skin's levels."""
         return [SkinLevel(client=self._client, data=data) for data in self._levels]
 
+    @property
+    def base_weapon(self) -> Weapon:
+        """:class: `Weapon` Returns the skin's base weapon."""
+        return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid)
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Self:
+        """Returns the skin with the given UUID."""
+        data = client.assets.get_skin(uuid)
+        return cls(client=client, data=data)
 
 class SkinChroma(BaseModel):
 
@@ -243,6 +260,8 @@ class SkinChroma(BaseModel):
 
     def _update(self, data: Any) -> None:
         self._uuid: str = data['uuid']
+        self._base_weapon_uuid: str = data['base_weapon_uuid']
+        self._base_skin_uuid: str = data['base_skin_uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: str = data['displayIcon']
         self._full_render: str = data['fullRender']
@@ -288,6 +307,20 @@ class SkinChroma(BaseModel):
             else None
         )
 
+    @property
+    def base_weapon(self) -> Weapon:
+        """:class: `Weapon` Returns the skin's base weapon."""
+        return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid)
+
+    @property
+    def base_skin(self) -> Skin:
+        """:class: `Skin` Returns the skin's base skin."""
+        return Skin._from_uuid(client=self._client, uuid=self._base_skin_uuid)
+
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Self:
+        """Returns the skin with the given UUID."""
+        return client.assets.get_skin_chroma(uuid)
 
 class SkinLevel(BaseModel):
 
@@ -302,6 +335,8 @@ class SkinLevel(BaseModel):
 
     def _update(self, data: Any) -> None:
         self._uuid: str = data['uuid']
+        self._base_weapon_uuid: str = data['base_weapon_uuid']
+        self._base_skin_uuid: str = data['base_skin_uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._level: Optional[str] = data['levelItem']
         self._display_icon: str = data['displayIcon']
@@ -336,3 +371,18 @@ class SkinLevel(BaseModel):
             if self._streamed_video
             else None
         )
+
+    @property
+    def base_weapon(self) -> Weapon:
+        """:class: `Weapon` Returns the skin's base weapon."""
+        return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid)
+
+    @property
+    def base_skin(self) -> Skin:
+        """:class: `Skin` Returns the skin's base skin."""
+        return Skin._from_uuid(client=self._client, uuid=self._base_skin_uuid)
+
+    @staticmethod
+    def _from_uuid(client: Client, uuid: str) -> Self:
+        """Returns the skin with the given UUID."""
+        return client.assets.get_skin_level(uuid)

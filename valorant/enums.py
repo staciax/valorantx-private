@@ -43,6 +43,7 @@ from typing import (
     TYPE_CHECKING
 )
 
+
 # -- https://github.com/Rapptz/discord.py/blob/master/discord/enums.py
 
 def _create_value_cls(name: str, comparable: bool):
@@ -165,7 +166,6 @@ else:
             except (KeyError, TypeError):
                 return value
 
-
 # --
 
 EmptyTitle = 'd13e579c-435e-44d4-cec2-6eae5a3c5ed4'
@@ -207,6 +207,7 @@ class Region(Enum):
             return self.NA.value
         return self.value
 
+
 class Shard(Enum):
     NA = 'na'
     EU = 'eu'
@@ -218,6 +219,7 @@ class Shard(Enum):
 
     def __str__(self) -> str:
         return self.value
+
 
 class ItemType(Enum):
     agent = '01bb38e1-da47-4e6a-9b3d-945fe4655707'
@@ -231,6 +233,7 @@ class ItemType(Enum):
 
     def __str__(self) -> str:
         return self.value
+
 
 class AgentID(Enum):
     astra = '41fb69c1-4189-7b37-f117-bcaf1e96f1bf'
@@ -256,6 +259,7 @@ class AgentID(Enum):
     def __str__(self) -> str:
         return self.value
 
+
 class QueueID(Enum):
     competitive = 'competitive'
     custom = 'custom'
@@ -273,6 +277,7 @@ class QueueID(Enum):
     @classmethod
     def values(cls) -> List[str]:
         return [str(x) for x in cls]
+
 
 class MapID(Enum):
     ascent = '7eaecc1b-4337-bbf6-6ab9-04b8f06b3319'
@@ -299,6 +304,7 @@ class MapID(Enum):
                 return x.value
         raise ValueError(f'No map found for url {url}')
 
+
 class MapURL(Enum):
     ascent = '/Game/Maps/Ascent/Ascent'
     bind = '/Game/Maps/Duality/Duality'
@@ -321,8 +327,8 @@ class MapURL(Enum):
                 return x.value
         raise ValueError(f'No map found for uuid {uuid}')
 
-class WeaponID(Enum):
 
+class WeaponID(Enum):
     ares = '55d8a0f4-4274-ca67-fe2c-06ab45efdf58'
     bucky = '910be174-449b-c412-ab22-d0873436b21b'
     bulldog = 'ae3de142-4d85-2547-dd26-4e90bed35cf7'
@@ -354,6 +360,7 @@ class CurrencyID(Enum):
     def __str__(self) -> str:
         return self.value
 
+
 class SpraySlotID(Enum):
     slot_1 = '0814b2fe-4512-60a4-5288-1fbdcec6ca48'
     slot_2 = '04af080a-4071-487b-61c0-5b9c0cfaac74'
@@ -374,8 +381,8 @@ class SpraySlotID(Enum):
 
         raise ValueError(f'Unknown slot id: {slot_id}')
 
-class Locale(Enum):
 
+class Locale(Enum):
     arabic = 'ar-AE'
     german = 'de-DE'
     american_english = 'en-US'
@@ -395,6 +402,78 @@ class Locale(Enum):
     vietnamese = 'vi-VN'
     chinese_simplified = 'zh-CN'
     chinese_traditional = 'zh-TW'
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class BundleID(Enum):
+    Arcane = '2270b116-4255-8a14-4486-db9de4979b89'
+    Avalanche = '0dee7ef6-d3ea-400a-b15c-5b9524243439'
+    BlastX = 'a31f7d1f-89d8-47ae-875b-1ae2117655c2'
+    Celestial = '473e694c-4940-078b-fb49-e994dff766cf'
+    Champions_2021 = 'bf987f36-4a33-45e4-3c49-1ab9a2502607'
+    Champions_2022 = '...'
+    Doodle_Buds = '2ed936df-4959-acc7-9aca-358d34a50619'
+    Ego = '2d6ec1d9-4152-8a43-5f7f-ff96b29c857f'
+    Elderflame = '1ba50cf0-46dd-848f-13a9-dc92fb0a3e3b'
+    Endeavour = '957f55ff-48a1-d0e2-41b1-ca89bf036b6e'
+    Forsaken = '1b98ee1c-4d9a-9e9d-0b36-f1a001a76628'
+    Gaias_Vengeance = 'e10e00ae-4dcc-3c4a-16f7-7e885314f0d0'
+    Give_Back = '441117e1-40be-42e2-3aeb-49957e5c03fd'
+    Glitchpop = 'fc723fef-444a-4013-a741-3e85a97382f2'
+    Glitchpop_2 = '05e8add9-404d-5d37-8973-9f93f8880e2d'
+    Gravitational_Uranium_Neuroblaster = 'e84d5a16-462f-6fbf-bee0-5a80191a19e5'
+    Horizon = 'abba1438-4900-ce9b-8b81-38b6975a419f'
+    Infantry = '9be3549b-4124-7fc2-aa79-8d817f728a18'
+    Ion = '693d675e-4ed2-c00a-5e38-6b859b275565'
+    Luxe = '1703b166-4e32-63da-9d16-a7a144aab574'
+    Magepunk = '338cabdb-473f-1f37-fa35-47a3d994517f'
+    Magepunk_2 = 'a981af4a-4d81-9668-8923-9c84c43da3d3'
+    Minima = 'cd095669-4a29-a7f3-e00d-f694186863cc'
+    Nebula = 'c520fbb0-492c-960e-8b77-f69fc4ce1838'
+    Neptune = 'ce15405a-4471-3290-1a16-abab355f97da'
+    Nunca_Olvidados = 'a4d5c5f5-4647-d984-011d-dea2ef7b56c5'
+    Oni = 'ebfb909d-45ba-c514-3369-55bf014ba293'
+    Origin = '54f8793c-4daa-6e45-bcfd-e9bfc742dc30'
+    Prelude_to_Chaos = '526f7d0c-414b-24bb-bcd0-10aed1f3e824'
+    Pride = '7b6b00f0-4fb9-7395-067d-44bcb4e20d9a'
+    Prime = '2116a38e-4b71-f169-0d16-ce9289af4bfa'
+    Prime_2_0 = 'de041dd5-4e17-2924-6d09-b4a3ccd82e6f'
+    Prism = 'ce6c1fa1-4eae-6db9-779f-f6988b866de4'
+    Prism_II = '224ddcc4-4a2b-cc61-01a2-97835777b3f6'
+    Protocol_781_A = 'ab83f73d-485f-e010-8ea0-24b538468a1a'
+    RGX_11z_Pro = 'ed453815-44aa-4c4d-f3aa-77b4bcf048d7'
+    RGX_11z_Pro_2 = 'd958b181-4e7b-dc60-7c3c-e3a3a376a8d2'
+    Radiant_Crisis_001 = '3a824027-4414-5a08-64f0-c8905a2aaa66'
+    Reaver = '81d85522-4651-4f66-72de-5fa057b3514c'
+    Reaver_2 = '...'
+    Recon = 'b6b1b7ea-4a10-f810-a416-03adbb69d379'
+    Ruination = 'ae0c9cc4-4c03-f8d6-745c-84953db684fc'
+    Run_It_Back = '332d705c-4852-11e5-c590-88b1f6e47f72'
+    Run_It_Back_2 = 'bcdd8956-4588-f586-fda8-fd991c593449'
+    Run_It_Back_3 = '...'
+    Sarmad = '...'
+    Sakura = '49d7951e-4e5d-304c-31a0-589b79096d5a'
+    Sensation = '54cbf45c-4b92-5cd9-07ab-3d98175fafa6'
+    Sentinels_of_Light = '13d427c1-49d7-44f9-6576-27a9c83d787f'
+    Silvanus = '3aaeac8c-469f-bf29-7802-a09cc8729a3e'
+    Singularity = 'ef72e3c0-467b-ab15-076a-1e9690d16d6f'
+    Smite = 'adec612c-4c82-a4b2-a5f2-b7909e638a67'
+    Snowfall = '8a3507cd-44ef-0695-1d66-4da0f87e7522'
+    Sovereign = 'fd9fd08f-446f-018f-c632-0e96428f2978'
+    Spectrum = 'f7f37856-4af7-9b0e-08aa-91a5207c0439'
+    Spline = 'c1b255e2-411d-b159-6da3-5ab6c011a8cf'
+    Team_Ace = 'f7bf90a6-4e39-6c04-c12a-b79c8842359c'
+    Tethered_Realms = '1b632bcd-4e3d-eb8e-cca6-cebf937e6ebb'
+    Tigris = 'f1befd6b-4270-01b6-8a43-06b52fa417ae'
+    Titanmail = '866ce9c2-4493-daba-a025-7c805c4e3eed'
+    Undercity = 'd84cd2bf-42e5-34e8-062f-cba8d2c66fb2'
+    VALORANT_GO_Vol_1 = 'b37b6a01-40f9-af81-ed34-fd8563539d44'
+    VALORANT_GO_Vol_2 = '5c8b9297-465f-080c-3c0d-c9b9811432ed'
+    Wasteland = '4e3a244b-4482-0541-3eab-b8912cdb72d6'
+    Winterwunderland = '79d2f4b9-4066-8b5b-884f-1d95b33d2ac5'
+    Xenohunter = '3941ad01-4e3b-46e0-ba3a-ab94f7c67f98'
 
     def __str__(self) -> str:
         return self.value
@@ -425,6 +504,7 @@ def try_enum(cls: Type[E], val: Any, default: Optional[Any] = None) -> E:
             return default
         return create_unknown_value(cls, val)
 
+
 def try_enum_key(cls: Type[E], val: Any) -> E:
     """ A function that tries to turn the value into enum ``cls``."""
 
@@ -432,6 +512,5 @@ def try_enum_key(cls: Type[E], val: Any) -> E:
         return cls._enum_string_key_map_[val]  # type: ignore # All errors are caught below
     except (KeyError, TypeError, AttributeError):
         return create_unknown_value(cls, val)
-
 
 # ---

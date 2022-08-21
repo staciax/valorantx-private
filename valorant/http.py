@@ -23,13 +23,14 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import sys
 import asyncio
 import logging
 import urllib3
 import aiohttp
 
 from urllib.parse import urlencode
-from . import utils
+from . import utils, __version__
 from .enums import Region, ItemType, QueueID, Locale, try_enum
 from .auth import RiotAuth
 from .errors import HTTPException, Forbidden, NotFound, RiotServerError
@@ -117,8 +118,10 @@ class HTTPClient:
         self._headers: Dict[str, str] = {}
         self._client_platform = 'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9'  # noqa: E501 ignore PyPEP8
         # TODO: to base 64
-
         self._riot_auth: RiotAuth = RiotAuth()
+
+        user_agent = 'valorant-diff.py (https://github.com/staciax/valorant-diff.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'  # noqa: E501 ignore PyPEP8
+        self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
 
     async def request(self, route: Route, **kwargs: Any) -> Any:
         method = route.method

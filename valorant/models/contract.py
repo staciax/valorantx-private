@@ -31,7 +31,7 @@ from .. import utils
 from ..asset import Asset
 from ..localization import Localization
 
-from typing import Optional, Dict, Any, Union, List, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..client import Client

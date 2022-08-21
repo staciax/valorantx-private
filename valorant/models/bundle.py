@@ -26,9 +26,8 @@ from __future__ import annotations
 from .base import BaseModel
 
 from ..asset import Asset
-from ..localization import Localization
 from ..enums import ItemType
-
+from ..localization import Localization
 
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 

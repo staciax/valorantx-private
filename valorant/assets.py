@@ -34,36 +34,8 @@ from functools import wraps
 
 from .enums import Locale, ItemType
 from .utils import is_uuid
-from .models import (
-    Agent,
-    Buddy,
-    BuddyLevel,
-    Bundle,
-    Ceremony,
-    CompetitiveTier,
-    ContentTier,
-    Contract,
-    Currency,
-    Event,
-    GameMode,
-    GameModeEquippable,
-    Gear,
-    LevelBorder,
-    Map,
-    Mission,
-    PlayerCard,
-    PlayerTitle,
-    Season,
-    Skin,
-    SkinChroma,
-    SkinLevel,
-    Spray,
-    SprayLevel,
-    Theme,
-    Weapon,
-)
 
-from typing import Any, Iterator, Optional, Union, TYPE_CHECKING
+from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .client import Client
@@ -157,191 +129,173 @@ class Assets:
         # load assets
         self.reload_assets()
 
+    def get_asset(self, key: str, tries: int = 1) -> Optional[Dict[str, Any]]:
+        """Get an asset."""
+        if key in self.ASSET_CACHE:
+            return self.ASSET_CACHE[key]
+
+        for _ in range(tries):
+            self.reload_assets()
+            if key in self.ASSET_CACHE:
+                return self.ASSET_CACHE[key]
+            else:
+                raise KeyError(f"Asset {key!r} not found")
+
     @maybe_uuid()
-    def get_agent(self, uuid: str) -> Optional[Agent]:
+    def get_agent(self, uuid: str) -> Optional[Dict[str, Any]]:
         """agents, Get an agent by UUID."""
-        agents = self.ASSET_CACHE["agents"]
-        data = agents.get(uuid)
-        return Agent(client=self._client, data=data) if data is not None else None
+        data = self.get_asset('agents')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_buddy(self, uuid: str) -> Optional[Union[Buddy, BuddyLevel]]:
+    def get_buddy(self, uuid: str) -> Optional[Dict[str, Any]]:
         """buddies, Get a buddy by UUID."""
-        buddies = self.ASSET_CACHE["buddies"]
-        data = buddies.get(uuid)
-        return Buddy(client=self._client, data=data) if data is not None else self.get_buddy_level(uuid)
+        data = self.get_asset('buddies')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_buddy_level(self, uuid: str) -> Optional[BuddyLevel]:
+    def get_buddy_level(self, uuid: str) -> Optional[Dict[str, Any]]:
         """buddies_levels, Get a buddy level by UUID."""
-        buddy_levels = self.ASSET_CACHE["buddies_levels"]
-        data = buddy_levels.get(uuid)
-        return BuddyLevel(client=self._client, data=data) if data is not None else None
+        data = self.get_asset('buddies_levels')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_bundle(self, uuid: str) -> Optional[Bundle]:
+    def get_bundle(self, uuid: str) -> Optional[Dict[str, Any]]:
         """bundles, Get a bundle by UUID."""
-        bundles = self.ASSET_CACHE["bundles"]
-        data = bundles.get(uuid)
-        return Bundle(client=self._client, data=data) if data else None
+        data = self.get_asset('bundles')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_ceremony(self, uuid: str) -> Optional[Ceremony]:
+    def get_ceremony(self, uuid: str) -> Optional[Dict[str, Any]]:
         """ceremonies, Get a ceremony by UUID."""
-        ceremonies = self.ASSET_CACHE["ceremonies"]
-        data = ceremonies.get(uuid)
-        return Ceremony(client=self._client, data=data) if data else None
+        data = self.get_asset('ceremonies')
+        return data.get(uuid)
 
     @validate_uuid  # TODO: re format json
-    def get_competitive_tier(self, uuid: str) -> Optional[CompetitiveTier]:
-        """competitiveTiers, Get a competitive tier by UUID."""
-        competitive_tiers = self.ASSET_CACHE["competitive_tiers"]
-        data = competitive_tiers.get(uuid)
-        return CompetitiveTier(client=self._client, data=data) if data else None
+    def get_competitive_tier(self, uuid: str) -> Optional[Dict[str, Any]]:
+        """competitive_tiers, Get a competitive tier by UUID."""
+        data = self.get_asset('competitive_tiers')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_content_tier(self, uuid: str) -> Optional[ContentTier]:
+    def get_content_tier(self, uuid: str) -> Optional[Dict[str, Any]]:
         """content_tiers, Get a content tier by UUID."""
-        content_tiers = self.ASSET_CACHE["content_tiers"]
-        data = content_tiers.get(uuid)
-        return ContentTier(client=self._client, data=data) if data else None
+        data = self.get_asset('content_tiers')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_contract(self, uuid: str) -> Optional[Contract]:
+    def get_contract(self, uuid: str) -> Optional[Dict[str, Any]]:
         """contracts, Get a contract by UUID."""
-        contracts = self.ASSET_CACHE["contracts"]
-        data = contracts.get(uuid)
-        return Contract(client=self._client, data=data) if data else None
+        data = self.get_asset('contracts')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_currency(self, uuid: str) -> Optional[Currency]:
+    def get_currency(self, uuid: str) -> Optional[Dict[str, Any]]:
         """currencies, Get a currency by UUID."""
-        currencies = self.ASSET_CACHE["currencies"]
-        data = currencies.get(uuid)
-        return Currency(client=self._client, data=data) if data else None
+        data = self.get_asset('currencies')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_event(self, uuid: str) -> Optional[Event]:
+    def get_event(self, uuid: str) -> Optional[Dict[str, Any]]:
         """events, Get an event by UUID."""
-        events = self.ASSET_CACHE["events"]
-        data = events.get(uuid)
-        return Event(client=self._client, data=data) if data else None
+        data = self.get_asset('events')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_game_mode(self, uuid: str) -> Optional[GameMode]:
+    def get_game_mode(self, uuid: str) -> Optional[Dict[str, Any]]:
         """game_modes, Get a game mode by UUID."""
-        game_modes = self.ASSET_CACHE["game_modes"]
-        data = game_modes.get(uuid)
-        return GameMode(client=self._client, data=data) if data else None
+        data = self.get_asset('game_modes')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_game_mode_equippable(self, uuid: str) -> Optional[GameModeEquippable]:
+    def get_game_mode_equippable(self, uuid: str) -> Optional[Dict[str, Any]]:
         """game_modes_equippables, Get a game mode equippable by UUID."""
-        game_modes_equippables = self.ASSET_CACHE["game_modes_equippables"]
-        data = game_modes_equippables.get(uuid)
-        return GameModeEquippable(client=self._client, data=data) if data else None
+        data = self.get_asset('game_modes_equippables')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_gear(self, uuid: str) -> Optional[Gear]:
+    def get_gear(self, uuid: str) -> Optional[Dict[str, Any]]:
         """gear, Get a gear by UUID."""
-        gear = self.ASSET_CACHE["gear"]
-        data = gear.get(uuid)
-        return Gear(client=self._client, data=data) if data else None
+        data = self.get_asset('gear')
+        return data.get(uuid)
 
     @validate_uuid  # TODO : get by startingLevel
-    def get_level_border(self, uuid: str) -> Optional[LevelBorder]:
+    def get_level_border(self, uuid: str) -> Optional[Dict[str, Any]]:
         """level_borders, Get a level border by UUID."""
-        level_borders = self.ASSET_CACHE["level_borders"]
-        data = level_borders.get(uuid)
-        return LevelBorder(client=self._client, data=data) if data else None
+        data = self.get_asset('level_borders')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_map(self, uuid: str) -> Optional[Map]:
+    def get_map(self, uuid: str) -> Optional[Dict[str, Any]]:
         """maps, Get a map by UUID."""
-        maps = self.ASSET_CACHE["maps"]
-        data = maps.get(uuid)
-        return Map(client=self._client, data=data) if data else None
+        data = self.get_asset('maps')
+        return data.get(uuid)
 
     @validate_uuid
-    def get_mission(self, uuid: str) -> Optional[Mission]:
+    def get_mission(self, uuid: str) -> Optional[Dict[str, Any]]:
         """missions, Get a mission by UUID."""
-        missions = self.ASSET_CACHE["missions"]
-        data = missions.get(uuid)
-        return Mission(client=self._client, data=data) if data else None
+        data = self.get_asset('missions')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_player_card(self, uuid: str) -> Optional[PlayerCard]:
+    def get_player_card(self, uuid: str) -> Optional[Dict[str, Any]]:
         """player_cards, Get a player card by UUID."""
-        player_cards = self.ASSET_CACHE["player_cards"]
-        data = player_cards.get(uuid)
-        return PlayerCard(client=self._client, data=data) if data else None
+        data = self.get_asset('player_cards')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_player_title(self, uuid: str) -> Optional[PlayerTitle]:
+    def get_player_title(self, uuid: str) -> Optional[Dict[str, Any]]:
         """player_titles, Get a player title by UUID."""
-        player_titles = self.ASSET_CACHE["player_titles"]
-        data = player_titles.get(uuid)
-        return PlayerTitle(client=self._client, data=data) if data else None
+        data = self.get_asset('player_titles')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_season(self, uuid: str) -> Optional[Season]:
+    def get_season(self, uuid: str) -> Optional[Dict[str, Any]]:
         """seasons, Get a season by UUID."""
-        seasons = self.ASSET_CACHE["seasons"]
-        data = seasons.get(uuid)
-        return Season(client=self._client, data=data) if data else None
+        data = self.get_asset('seasons')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_spray(self, uuid: str) -> Optional[Union[Spray, SprayLevel]]:
+    def get_spray(self, uuid: str) -> Optional[Dict[str, Any]]:
         """sprays, Get a spray by UUID."""
-        sprays = self.ASSET_CACHE["sprays"]
-        data = sprays.get(uuid)
-        return Spray(client=self._client, data=data) if data else self.get_spray_level(uuid)
+        data = self.get_asset('sprays')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_spray_level(self, uuid: str) -> Optional[SprayLevel]:
+    def get_spray_level(self, uuid: str) -> Optional[Dict[str, Any]]:
         """sprays_levels, Get a spray level by UUID."""
-        spray_levels = self.ASSET_CACHE["sprays_levels"]
-        data = spray_levels.get(uuid)
-        return SprayLevel(client=self._client, data=data) if data is not None else None
+        data = self.get_asset('sprays_levels')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_theme(self, uuid: str) -> Optional[Theme]:
+    def get_theme(self, uuid: str) -> Optional[Dict[str, Any]]:
         """themes, Get a theme by UUID."""
-        themes = self.ASSET_CACHE["themes"]
-        data = themes.get(uuid)
-        return Theme(client=self._client, data=data) if data else None
+        data = self.get_asset('themes')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_weapon(self, uuid: str) -> Optional[Weapon]:
+    def get_weapon(self, uuid: str) -> Optional[Dict[str, Any]]:
         """weapons, Get a weapon by UUID."""
-        weapons = self.ASSET_CACHE["weapons"]
-        data = weapons.get(uuid)
-        return Weapon(client=self._client, data=data) if data else None
+        data = self.get_asset('weapons')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_skin(self, uuid: str) -> Union[Skin, SkinChroma, SkinLevel]:
+    def get_skin(self, uuid: str) -> Optional[Dict[str, Any]]:
         """weapon_skins, Get a weapon skin by UUID."""
-        skins = self.ASSET_CACHE["weapon_skins"]
-        data = skins.get(uuid)
-        return Skin(client=self._client, data=data) if data else None
+        data = self.get_asset('weapon_skins')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_skin_level(self, uuid: str) -> Optional[Union[SkinLevel, SkinChroma]]:
-        """weapon_skin_levels, Get a weapon skin level by UUID."""
-        skin_levels = self.ASSET_CACHE["weapon_skin_levels"]
-        data = skin_levels.get(uuid)
-        return SkinLevel(client=self._client, data=data) if data else self.get_skin_chroma(uuid)
+    def get_skin_level(self, uuid: str) -> Optional[Dict[str, Any]]:
+        """weapon_skins_levels, Get a weapon skin level by UUID."""
+        data = self.get_asset('weapon_skins_levels')
+        return data.get(uuid)
 
     @maybe_uuid()
-    def get_skin_chroma(self, uuid: str) -> Optional[SkinChroma]:
-        """weapon_skin_chromas, Get a weapon skin chroma by UUID."""
-        skin_chromas = self.ASSET_CACHE["weapon_skin_chromas"]
-        data = skin_chromas.get(uuid)
-        return SkinChroma(client=self._client, data=data) if data else None
-
-    def get_all_bundles(self) -> Iterator[Bundle]:
-        for item in self.ASSET_CACHE["bundles"].values():
-            yield Bundle(client=self._client, data=item)
+    def get_skin_chroma(self, uuid: str) -> Optional[Dict[str, Any]]:
+        """weapon_skins_chromas, Get a weapon skin chroma by UUID."""
+        data = self.get_asset('weapon_skins_chromas')
+        return data.get(uuid)
 
     async def fetch_all_assets(self, *, force: bool = False) -> None:
         """Fetch all assets."""
@@ -528,21 +482,43 @@ class Assets:
         new_dict = {}
         buddy_level_dict = {}
         spray_level_dict = {}
+        skin_dict = {}
+        skin_level_dict = {}
+        skin_chroma_dict = {}
 
         for item in data['data']:
             uuid = item['uuid']
 
             if filename.startswith('buddies'):
                 for buddy_level in item['levels']:
-                    buddy_level['default_uuid'] = uuid
+                    buddy_level['base_uuid'] = uuid
                     buddy_level_dict[buddy_level['uuid']] = buddy_level
                 Assets.ASSET_CACHE['buddies_levels'] = buddy_level_dict
 
             elif filename.startswith('sprays'):
                 for spray_level in item['levels']:
-                    spray_level['default_uuid'] = uuid
+                    spray_level['base_uuid'] = uuid
                     spray_level_dict[spray_level['uuid']] = spray_level
                 Assets.ASSET_CACHE['sprays_levels'] = spray_level_dict
+
+            elif filename.startswith('weapons'):
+                for skin in item['skins']:
+                    skin['base_weapon_uuid'] = uuid
+                    skin_dict[skin['uuid']] = skin
+
+                    for skin_chroma in skin['chromas']:
+                        skin_chroma['base_weapon_uuid'] = uuid
+                        skin_chroma['base_skin_uuid'] = skin['uuid']
+                        skin_chroma_dict[skin_chroma['uuid']] = skin_chroma
+                    Assets.ASSET_CACHE['weapon_skins_chromas'] = skin_chroma_dict
+
+                    for skin_level in skin['levels']:
+                        skin_level['base_weapon_uuid'] = uuid
+                        skin_level['base_skin_uuid'] = skin['uuid']
+                        skin_level_dict[skin_level['uuid']] = skin_level
+                    Assets.ASSET_CACHE['weapon_skins_levels'] = skin_level_dict
+
+                Assets.ASSET_CACHE['weapon_skins'] = skin_dict
 
             elif filename.startswith('_bundle_items'):
                 bundle = Assets.ASSET_CACHE['bundles'][uuid]

@@ -27,7 +27,7 @@ from .base import BaseModel
 from ..asset import Asset
 from ..localization import Localization
 
-from typing import Any, Dict, List,  Optional, Union, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..client import Client
@@ -121,14 +121,14 @@ class BuddyLevel(BaseModel):
         return self.name
 
     def __repr__(self) -> str:
-        return f'<BuddyLevel name={self.name!r} default={self.default!r}>'
+        return f'<BuddyLevel name={self.name!r} base={self.base_buddy!r}>'
 
     def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
-        self._default_uuid: Optional[str] = data.get('default_uuid')
+        self._base_buddy_uuid: Optional[str] = data['base_uuid']
         self.level: int = data['charmLevel']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._display_icon: Optional[str] = data.get('displayIcon')
+        self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
         self._price: int = data.get('price', 0)
 
@@ -144,15 +144,15 @@ class BuddyLevel(BaseModel):
 
     @property
     def display_icon(self) -> Optional[Asset]:
-        """:class: `str` Returns the charm's display icon."""
+        """:class: `str` Returns the buddy's display icon."""
         return Asset._from_url(client=self._client, url=self._display_icon) if self._display_icon else None
 
     @property
     def price(self) -> int:
-        """:class: `int` Returns the charm's price."""
+        """:class: `int` Returns the buddy's price."""
         return self._price
 
     @property
-    def default(self) -> Buddy:
-        """:class: `Buddy` Returns the buddy's default."""
-        return self._client.assets.get_buddy(self._default_uuid)
+    def base_buddy(self) -> Buddy:
+        """:class: `Buddy` Returns the base buddy."""
+        return self._client.assets.get_buddy(self._base_buddy_uuid)

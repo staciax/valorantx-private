@@ -33,11 +33,11 @@ from typing import Optional, Union, Any, Tuple, TYPE_CHECKING
 from . import utils
 from .file import File
 
-MISSING = utils.MISSING
-
 if TYPE_CHECKING:
     from typing_extensions import Self
     from .client import Client
+
+MISSING = utils.MISSING
 
 class AssetMixin:
 
@@ -160,7 +160,11 @@ class Asset(AssetMixin):
         self._animated = animated
 
     @classmethod
-    def _from_url(cls, client: Client, url: str, *, animated: bool = False) -> Self:
+    def _from_url(cls, client: Client, url: Optional[str] = None, *, animated: bool = False) -> Self:
+
+        if url is None:
+            raise TypeError('Expected URL, not NoneType')
+
         video = True if url.endswith('.mp4') else False
         if not animated and url.endswith('.gif'):
             animated = True
