@@ -50,7 +50,7 @@ class Version:
         self._build_date_iso: str = data['data']['buildDate']
 
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, self.__class__) and self.version == other.version
+        return isinstance(other, Version) and other.manifest_id == self.manifest_id
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
