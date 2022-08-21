@@ -93,7 +93,7 @@ def maybe_uuid(key: str = 'displayName'):
             if not is_uuid(str(may_be_uuid)) and not may_be_uuid == '':
 
                 get_key = function.__doc__.split(',')[0].strip()
-                data = Assets.ASSET_CACHE[get_key]
+                data = Assets.ASSET_CACHE.get(get_key, {})
 
                 for value in data.values():
                     display_names = value.get(key)
