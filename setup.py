@@ -1,5 +1,6 @@
-from setuptools import setup
 import re
+
+from setuptools import setup
 
 # inspired by https://github.com/Rapptz/discord.py/blob/master/setup.py
 
@@ -15,11 +16,7 @@ readme = ''
 with open('README.md') as f:
     readme = f.read()
 
-packages = [
-    'valorant',
-    'valorant.models',
-    'valorant.types'
-]
+packages = ['valorant', 'valorant.models', 'valorant.types']
 
 setup(
     name='valorant-diff.py',
@@ -45,6 +42,6 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
-        'Programming Language :: Python :: 3.11'
-    ]
+        'Programming Language :: Python :: 3.11',
+    ],
 )

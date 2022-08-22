@@ -1,11 +1,13 @@
 import asyncio
 import logging
+
 import valorant
 
 client = valorant.Client(locale='en-US')
 
 # get basic logging
 logging.basicConfig(level=logging.INFO)
+
 
 async def main():
     async with client:
@@ -94,6 +96,7 @@ async def main():
 
         theme = client.get_theme('fdfe356c-40c4-ac6a-864e-16998fc784ef')
         print(repr(theme))
+
 
 if __name__ == '__main__':
     asyncio.run(main())

@@ -23,21 +23,21 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from .base import BaseModel
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from ..asset import Asset
 from ..enums import ItemType
 from ..localization import Localization
-
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from .base import BaseModel
 
 if TYPE_CHECKING:
-    from ..client import Client
     from typing_extensions import Self
-    from .weapons import Skin
+
+    from ..client import Client
+    from .buddy import Buddy
     from .player_card import PlayerCard
     from .spray import Spray
-    from .buddy import Buddy
+    from .weapons import Skin
 
 # fmt: off
 __all__ = (
@@ -45,8 +45,8 @@ __all__ = (
 )
 # fmt: on
 
-class Bundle(BaseModel):
 
+class Bundle(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]], **kwargs) -> None:
         super().__init__(client=client, data=data, **kwargs)
 
@@ -80,10 +80,7 @@ class Bundle(BaseModel):
             self._whole_sale_only: bool = self._bundle['WholesaleOnly']
             self.__bundle_items(self._bundle['Items'])
 
-    def __bundle_items(
-            self,
-            items: List[Dict[str, Any]]
-    ) -> None:
+    def __bundle_items(self, items: List[Dict[str, Any]]) -> None:
 
         for item in items:
             item_type = item['Item']['ItemTypeID']
@@ -170,9 +167,9 @@ class Bundle(BaseModel):
         return Asset._from_url(client=self._client, url=self._display_icon_2)
 
     @property
-    def vertical_promo_image(self) -> Asset:
+    def vertical_promo_image(self) -> Optional[Asset]:
         """:class: `Asset` Returns the bundle's vertical promo image."""
-        return Asset._from_url(client=self._client, url=self._vertical_promo_image)
+        return Asset._from_url(client=self._client, url=self._vertical_promo_image) if self._vertical_promo_image else None
 
     @property
     def items(self) -> List[Union[Buddy, Spray, PlayerCard]]:
@@ -213,4 +210,3 @@ class Bundle(BaseModel):
         """Returns the bundle with the given uuid."""
         data = client.assets.get_bundle(uuid)
         return cls(client=client, data=data) if data else None
-

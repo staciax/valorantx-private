@@ -43,8 +43,8 @@ from typing import (
     TYPE_CHECKING
 )
 
-
 # -- https://github.com/Rapptz/discord.py/blob/master/discord/enums.py
+
 
 def _create_value_cls(name: str, comparable: bool):
     # All the type ignores here are due to the type checker being unable to recognise
@@ -155,6 +155,7 @@ class EnumMeta(type):
 
 if TYPE_CHECKING:
     from enum import Enum
+
     from typing_extensions import Self
 else:
 
@@ -165,6 +166,7 @@ else:
                 return cls._enum_value_map_[value]
             except (KeyError, TypeError):
                 return value
+
 
 # --
 
@@ -182,7 +184,7 @@ __all__ = (
     'SpraySlotID',
     'Locale',
     'try_enum',
-    'try_enum_key'
+    'try_enum_key',
 )
 
 
@@ -506,11 +508,12 @@ def try_enum(cls: Type[E], val: Any, default: Optional[Any] = None) -> E:
 
 
 def try_enum_key(cls: Type[E], val: Any) -> E:
-    """ A function that tries to turn the value into enum ``cls``."""
+    """A function that tries to turn the value into enum ``cls``."""
 
     try:
         return cls._enum_string_key_map_[val]  # type: ignore # All errors are caught below
     except (KeyError, TypeError, AttributeError):
         return create_unknown_value(cls, val)
+
 
 # ---

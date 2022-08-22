@@ -23,24 +23,23 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from .base import BaseModel
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from ..asset import Asset
+from ..enums import SpraySlotID
 from ..localization import Localization
-
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from .base import BaseModel
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-    from ..client import Client
 
-__all__ = (
-    'Spray',
-    'SprayLevel'
-)
+    from ..client import Client
+    from ..types.collection import SprayLoadout as SprayLoadoutPayload
+
+__all__ = ('Spray', 'SprayLevel', 'SprayLoadout', 'SprayLevelLoadout')
+
 
 class Spray(BaseModel):
-
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]], bundle: Any = None) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 
@@ -154,8 +153,8 @@ class Spray(BaseModel):
         data = client.assets.get_spray(uuid=uuid)
         return cls(client=client, data=data) if data else None
 
-class SprayLevel(BaseModel):
 
+class SprayLevel(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 
@@ -214,3 +213,47 @@ class SprayLevel(BaseModel):
         """Returns the spray level with the given uuid."""
         data = client.assets.get_spray_level(uuid=uuid)
         return cls(client=client, data=data) if data else None
+
+
+class SprayLoadout(Spray):
+    def __init__(self, client: Client, data: Any, loadout: SprayLoadoutPayload) -> None:
+        super().__init__(client=client, data=data)
+        self._update_loadout(loadout)
+
+    def __repr__(self) -> str:
+        return f'<SprayLoadout name={self.name!r}>'
+
+    def _update_loadout(self, loadout: SprayLoadoutPayload) -> None:
+        self._slot = SpraySlotID._from_id(loadout['EquipSlotID'])
+
+    @property
+    def slot(self) -> int:
+        """:class: `int` Returns the slot number."""
+        return self._slot
+
+    @classmethod
+    def _from_loadout(cls, client: Client, uuid: str, loadout: SprayLoadoutPayload) -> Self:
+        data = client.assets.get_spray(uuid)
+        return cls(client=client, data=data, loadout=loadout)
+
+
+class SprayLevelLoadout(SprayLevel):
+    def __init__(self, client: Client, data: Any, loadout: SprayLoadoutPayload) -> None:
+        super().__init__(client=client, data=data)
+        self._update_loadout(loadout)
+
+    def __repr__(self) -> str:
+        return f'<SprayLevelLoadout name={self.name!r} base={self.base_spray!r}>'
+
+    def _update_loadout(self, loadout: SprayLoadoutPayload) -> None:
+        self._slot = SpraySlotID._from_id(loadout['EquipSlotID'])
+
+    @property
+    def slot(self) -> int:
+        """:class: `int` Returns the slot number."""
+        return self._slot
+
+    @classmethod
+    def _from_loadout(cls, client: Client, uuid: str, loadout: SprayLoadoutPayload) -> Self:
+        data = client.assets.get_spray_level(uuid)
+        return cls(client=client, data=data, loadout=loadout)

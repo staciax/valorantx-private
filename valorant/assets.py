@@ -23,19 +23,17 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import os
+import asyncio
 import json
 import logging
-import asyncio
+import os
 import shutil
-
-from pathlib import Path
 from functools import wraps
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
-from .enums import Locale, ItemType
+from .enums import ItemType, Locale
 from .utils import is_uuid
-
-from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .client import Client
@@ -74,13 +72,12 @@ def validate_uuid(func):
     return decorator
 
 
-def maybe_uuid(key: str = 'displayName'):
+def maybe_uuid():
     def decorator(function):
-
         @wraps(function)
         def wrapper(uuid: str, *args, **kwargs) -> Any:
 
-            # TODO: kwargs option on or off
+            # TODO: kwargs option on or off and set key to find
 
             if not isinstance(uuid, str):
                 try:
@@ -96,15 +93,20 @@ def maybe_uuid(key: str = 'displayName'):
                 data = Assets.ASSET_CACHE.get(get_key, {})
 
                 for value in data.values():
-                    display_names = value.get(key)
+                    display_names = value.get('displayName')
                     if display_names is not None:
-                        for display_name in display_names.values():
-                            if (
-                                display_name.lower().startswith(may_be_uuid.lower())
-                                or may_be_uuid.lower() == display_name.lower()
-                            ):
-                                args = (value['uuid'],)
-                                return function(uuid, *args)
+                        try:
+                            for display_name in display_names.values():
+
+                                if (
+                                    display_name.lower().startswith(may_be_uuid.lower())
+                                    or may_be_uuid.lower() == display_name.lower()
+                                ):
+                                    args = (value['uuid'],)
+                                    return function(uuid, *args)
+
+                        except AttributeError:
+                            pass
 
                 raise ValueError('Invalid UUID')
 
@@ -116,9 +118,7 @@ def maybe_uuid(key: str = 'displayName'):
 
 
 class Assets:
-    _cache_dir: Path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "assets"
-    )
+    _cache_dir: Path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
 
     ASSET_CACHE = {}
 
@@ -462,7 +462,7 @@ class Assets:
                 f.write(msg)
 
     def __dump_to(self, data: Any, filename: str) -> None:
-        """ Dump data to a file. """
+        """Dump data to a file."""
         file_path = os.path.join(self._get_asset_dir(), f'{filename}.json')
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4, ensure_ascii=False)

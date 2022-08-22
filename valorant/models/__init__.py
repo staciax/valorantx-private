@@ -10,6 +10,7 @@ from .agent import *
 from .buddy import *
 from .bundle import *
 from .ceremony import *
+from .collection import *
 from .competitive import *
 from .content import *
 from .contract import *
@@ -18,7 +19,6 @@ from .event import *
 from .gamemode import *
 from .gear import *
 from .level_border import *
-from .map import *
 from .map import *
 from .match import *
 from .mission import *

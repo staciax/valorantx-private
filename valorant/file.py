@@ -23,16 +23,17 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, Optional, Union
 
-import os
 import io
+import os
+from typing import Any, Dict, Optional, Union
 
 # fmt: off
 __all__ = (
     'File',
 )
 # fmt: on
+
 
 class File:
     r"""A parameter object used for :meth:`abc.Messageable.send`
@@ -61,11 +62,7 @@ class File:
 
     __slots__ = ('fp', '_filename', '_original_pos', '_owner', '_closer')
 
-    def __init__(
-        self,
-        fp: Union[str, bytes, os.PathLike[Any], io.BufferedIOBase],
-        filename: Optional[str] = None
-    ):
+    def __init__(self, fp: Union[str, bytes, os.PathLike[Any], io.BufferedIOBase], filename: Optional[str] = None):
         if isinstance(fp, io.IOBase):
             if not (fp.seekable() and fp.readable()):
                 raise ValueError(f'File buffer {fp!r} must be seekable and readable')

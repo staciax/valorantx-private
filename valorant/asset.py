@@ -25,19 +25,22 @@ Links to the original source code:  https://github.com/Rapptz/discord.py/blob/ma
 
 from __future__ import annotations
 
-import os
 import io
+import os
+from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
+
 import yarl
-from typing import Optional, Union, Any, Tuple, TYPE_CHECKING
 
 from . import utils
 from .file import File
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+
     from .client import Client
 
 MISSING = utils.MISSING
+
 
 class AssetMixin:
 
@@ -130,6 +133,7 @@ class AssetMixin:
         file_filename = filename if filename is not MISSING else yarl.URL(self.url).name
         return File(io.BytesIO(data), filename=file_filename)
 
+
 class Asset(AssetMixin):
 
     """Represents a CDN asset on Valorant.
@@ -146,12 +150,7 @@ class Asset(AssetMixin):
             Returns the hash of the asset.
     """
 
-    __slot__: Tuple[str, ...] = (
-        '_client',
-        '_url',
-        '_video',
-        '_animated'
-    )
+    __slot__: Tuple[str, ...] = ('_client', '_url', '_video', '_animated')
 
     def __init__(self, client: Client, url: str, *, animated: bool = False, video: bool = False) -> None:
         self._client = client
@@ -197,5 +196,5 @@ class Asset(AssetMixin):
 
     @property
     def video(self) -> bool:
-        """ :class:`bool`: Returns whether the asset is a video."""
+        """:class:`bool`: Returns whether the asset is a video."""
         return self._video

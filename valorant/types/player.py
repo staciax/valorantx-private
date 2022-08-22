@@ -20,3 +20,49 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, List, TypedDict, Union, Optional
+from typing_extensions import NotRequired
+
+if TYPE_CHECKING:
+    import datetime
+
+
+class PartialPlayer(TypedDict, total=False):
+    puuid: NotRequired[str]
+    username: str
+    tagline: str
+
+
+class Player(PartialPlayer, total=False):
+    region: NotRequired[str]
+
+
+class AccountXPProgress(TypedDict):
+    Level: int
+    XP: int
+
+
+class AccountXPSources(TypedDict):
+    ID: str
+    Amount: int
+
+
+class AccountXPHistory(TypedDict):
+    ID: str
+    MatchStart: Union[str, datetime.datetime]
+    StartProgress: AccountXPProgress
+    EndProgress: AccountXPProgress
+    XPSources: List[AccountXPSources]
+    XPMultipliers: List[Any]
+
+
+class AccountXP(TypedDict):
+    Version: int
+    Subject: str
+    Progress: AccountXPProgress
+    History: List[AccountXPHistory]
+    LastTimeGrantedFirstWin: Union[str, datetime.datetime]
+    NextTimeFirstWinAvailable: Union[str, datetime.datetime]

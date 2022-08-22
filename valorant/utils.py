@@ -23,11 +23,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import uuid
-import json
 import datetime
-
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+import json
+import uuid
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 if TYPE_CHECKING:
     from aiohttp import ClientResponse

@@ -23,16 +23,17 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from .base import BaseModel
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from .. import utils
 from ..localization import Localization
-
-from typing import Any, Dict, Optional, Union, TYPE_CHECKING
+from .base import BaseModel
 
 if TYPE_CHECKING:
     import datetime
+
     from typing_extensions import Self
+
     from ..client import Client
 
 # fmt: off
@@ -41,8 +42,8 @@ __all__ = (
 )
 # fmt: on
 
-class Event(BaseModel):
 
+class Event(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 

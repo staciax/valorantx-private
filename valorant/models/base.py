@@ -23,14 +23,16 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Union
 
 if TYPE_CHECKING:
     from ..client import Client
 
+
 class _ModelTag:
     __slots__ = ()
     uuid: str
+
 
 class BaseModel(_ModelTag):
     __slots__ = (
@@ -52,9 +54,7 @@ class BaseModel(_ModelTag):
         return self.uuid or ''
 
     def __repr__(self) -> str:
-        return (
-            f"<BaseModel uuid={self.uuid}>"
-        )
+        return f"<BaseModel uuid={self.uuid}>"
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, _ModelTag) and other.uuid == self.uuid

@@ -23,15 +23,15 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from .base import BaseModel
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from ..asset import Asset
 from ..localization import Localization
-
-from typing import Any, Dict, Optional, Union, TYPE_CHECKING
+from .base import BaseModel
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+
     from ..client import Client
 
 # fmt: off
@@ -40,8 +40,8 @@ __all__ = (
 )
 # fmt: on
 
-class Theme(BaseModel):
 
+class Theme(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 

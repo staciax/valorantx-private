@@ -24,25 +24,20 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-
-from .base import BaseModel
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .. import utils
-from ..enums import Locale
 from ..asset import Asset
-
-from typing import Any, List, Dict, Optional, Union, TYPE_CHECKING
+from ..enums import Locale
+from .base import BaseModel
 
 if TYPE_CHECKING:
     from ..client import Client
 
-__all__ = (
-    'PatchNotes',
-    'PatchNote'
-)
+__all__ = ('PatchNotes', 'PatchNote')
+
 
 class PatchNotes:
-
     def __init__(self, *, client: Client, data: Any, locale: Union[str, Locale]) -> None:
         self._client: Client = client
         self.locale: Union[str, Locale] = locale
@@ -75,15 +70,12 @@ class PatchNotes:
 
     @property
     def patch_notes(self) -> List[PatchNote]:
-        return [PatchNote(
-            client=self._client,
-            data=article,
-            locale=self.locale
-        ) for article in self._articles]
+        return [PatchNote(client=self._client, data=article, locale=self.locale) for article in self._articles]
 
     @property
     def last_patch_note(self) -> PatchNote:
         return PatchNote(client=self._client, data=self._articles[0], locale=self.locale)
+
 
 class PatchNote:
 

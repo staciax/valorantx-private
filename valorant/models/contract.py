@@ -24,17 +24,16 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-
-from .base import BaseModel
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .. import utils
 from ..asset import Asset
 from ..localization import Localization
-
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from .base import BaseModel
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+
     from ..client import Client
 
 # fmt: off
@@ -43,8 +42,8 @@ __all__ = (
 )
 # fmt: on
 
-class Contract(BaseModel):
 
+class Contract(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]], user_contract: Any = None) -> None:
         super().__init__(client=client, data=data, user_contract=user_contract)
 
@@ -142,6 +141,7 @@ class Contract(BaseModel):
         """Returns the contract with the given uuid."""
         data = client.assets.get_contract(uuid)
         return cls(client=client, data=data) if data else None
+
 
 # class MissionMeta(NamedTuple):
 #     NPECompleted: bool

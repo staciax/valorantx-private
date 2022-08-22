@@ -23,24 +23,21 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from .base import BaseModel
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from ..asset import Asset
 from ..localization import Localization
-
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from .base import BaseModel
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+
     from ..client import Client
 
-__all__ = (
-    'Buddy',
-    'BuddyLevel'
-)
+__all__ = ('Buddy', 'BuddyLevel')
+
 
 class Buddy(BaseModel):
-
     def __init__(self, client: Client, data: Optional[Dict[str, Any]], bundle: Any = None) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 
@@ -120,8 +117,8 @@ class Buddy(BaseModel):
         data = client.assets.get_buddy(uuid)
         return cls(client=client, data=data) if data else None
 
-class BuddyLevel(BaseModel):
 
+class BuddyLevel(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 

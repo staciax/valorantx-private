@@ -23,19 +23,22 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from .base import BaseModel
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, overload
 
+from .. import utils
 from ..asset import Asset
 from ..enums import CurrencyID
 from ..localization import Localization
-from .. import utils
-
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING, Literal, overload
+from .base import BaseModel
+from .buddy import Buddy, BuddyLevel
 
 if TYPE_CHECKING:
     import datetime
+
     from typing_extensions import Self
+
     from ..client import Client
+    from ..types.collection import SkinLoadout as SkinLoadoutPayload
 
 __all__ = (
     'Weapon',
@@ -43,10 +46,13 @@ __all__ = (
     'SkinChroma',
     'SkinLevel',
     'SkinNightMarket',
+    'SkinLoadout',
+    'SkinLevelLoadout',
+    'SkinChromaLoadout',
 )
 
-class Weapon(BaseModel):
 
+class Weapon(BaseModel):
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 
@@ -66,16 +72,25 @@ class Weapon(BaseModel):
         self.asset_path: str = data['assetPath']
         self._stats: Dict[str, Any] = data['weaponStats']
         self._shop: Dict[str, Any] = data.get('shopData', None)
+        self._shop_category: Optional[str] = None
+        self._shop_category_text: Optional[Union[str, Dict[str, str]]] = None
+        self._grid_position: Optional[Dict[str, int]] = None
+        self._can_be_trashed: bool = False
+        self._image: Optional[str] = None
+        self._new_image: Optional[str] = None
+        self._new_image_2: Optional[str] = None
+        self._shop_asset_path: Optional[str] = None
+        self._price: int = 0
         if self._shop is not None:
-            self._price: int = self._shop.get('cost', 0)
-            self._shop_category: str = self._shop['category']
-            self._shop_category_text: Union[str, Dict[str, str]] = self._shop['categoryText']
-            self._grid_position: Dict[str, int] = self._shop['gridPosition']
-            self._can_be_trashed: bool = self._shop['canBeTrashed']
-            self._image: Optional[str] = self._shop['image']
-            self._new_image: Optional[str] = self._shop['newImage']
-            self._new_image_2: Optional[str] = self._shop['newImage2']
-            self._shop_asset_path: str = self._shop['assetPath']
+            self._price = self._shop.get('cost', 0)
+            self._shop_category = self._shop['category']
+            self._shop_category_text = self._shop['categoryText']
+            self._grid_position = self._shop['gridPosition']
+            self._can_be_trashed = self._shop['canBeTrashed']
+            self._image = self._shop['image']
+            self._new_image = self._shop['newImage']
+            self._new_image_2 = self._shop['newImage2']
+            self._shop_asset_path = self._shop['assetPath']
         self._skins: List[Dict[str, Any]] = data['skins']
 
     @property
@@ -141,29 +156,17 @@ class Weapon(BaseModel):
     @property
     def image(self) -> Optional[Asset]:
         """:class: `Asset` Returns the weapon's image."""
-        return (
-            Asset._from_url(client=self._client, url=self._image)
-            if self._image
-            else None
-        )
+        return Asset._from_url(client=self._client, url=self._image) if self._image else None
 
     @property
     def new_image(self) -> Optional[Asset]:
         """:class: `Asset` Returns the weapon's new image."""
-        return (
-            Asset._from_url(client=self._client, url=self._new_image)
-            if self._new_image
-            else None
-        )
+        return Asset._from_url(client=self._client, url=self._new_image) if self._new_image else None
 
     @property
     def new_image_2(self) -> Optional[Asset]:
         """:class: `Asset` Returns the weapon's new image 2."""
-        return (
-            Asset._from_url(client=self._client, url=self._new_image_2)
-            if self._new_image_2
-            else None
-        )
+        return Asset._from_url(client=self._client, url=self._new_image_2) if self._new_image_2 else None
 
     @property
     def shop_asset_path(self) -> str:
@@ -181,8 +184,8 @@ class Weapon(BaseModel):
         data = client.assets.get_weapon(uuid)
         return cls(client=client, data=data) if data else None
 
-class Skin(BaseModel):
 
+class Skin(BaseModel):
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 
@@ -226,18 +229,15 @@ class Skin(BaseModel):
         return self._content_tier_uuid
 
     @property
-    def display_icon(self) -> Asset:
+    def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon."""
-        return Asset._from_url(client=self._client, url=self._display_icon)
+        display_icon = self._display_icon or (self.levels[0].display_icon if len(self.levels) > 0 else None)
+        return Asset._from_url(self._client, str(display_icon)) if display_icon else None
 
     @property
     def wallpaper(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's wallpaper."""
-        return (
-            Asset._from_url(client=self._client, url=self._wallpaper)
-            if self._wallpaper
-            else None
-        )
+        return Asset._from_url(client=self._client, url=self._wallpaper) if self._wallpaper else None
 
     @property
     def chromas(self) -> List[SkinChroma]:
@@ -254,31 +254,14 @@ class Skin(BaseModel):
         """:class: `Weapon` Returns the skin's base weapon."""
         return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid)
 
-    # @classmethod
-    # def _from_uuid(cls, client: Client, uuid: str, all_type: bool = False) -> Optional[Self]:
-    #     """Returns the skin with the given UUID."""
-    #     data = client.assets.get_skin(uuid)
-    #     if not all_type:
-    #         return cls(client=client, data=data)
-
     @classmethod
     @overload
-    def _from_uuid(
-            cls,
-            client: Client,
-            uuid: str,
-            all_type: Literal[False]
-    ) -> Optional[Self]:
+    def _from_uuid(cls, client: Client, uuid: str, all_type: bool = True) -> Optional[Union[Self, SkinLevel, SkinChroma]]:
         ...
 
     @classmethod
     @overload
-    def _from_uuid(
-            cls,
-            client: Client,
-            uuid: str,
-            all_type: Literal[True]
-    ) -> Optional[Union[Self, SkinLevel, SkinChroma]]:
+    def _from_uuid(cls, client: Client, uuid: str, all_type: bool = False) -> Optional[Self]:
         ...
 
     @classmethod
@@ -290,8 +273,8 @@ class Skin(BaseModel):
         else:
             return client.get_skin_level(uuid) or client.get_skin_chroma(uuid)
 
-class SkinChroma(BaseModel):
 
+class SkinChroma(BaseModel):
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 
@@ -323,32 +306,25 @@ class SkinChroma(BaseModel):
         return self.name_localizations.american_english
 
     @property
-    def display_icon(self) -> Asset:
+    def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon."""
-        return Asset._from_url(client=self._client, url=self._display_icon)
+        display_icon = self._display_icon or self.base_skin.display_icon
+        return Asset._from_url(client=self._client, url=str(display_icon)) if display_icon else None
 
     @property
-    def display_icon_full_render(self) -> Asset:
+    def display_icon_full_render(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon full render."""
-        return Asset._from_url(client=self._client, url=self._full_render)
+        return Asset._from_url(client=self._client, url=self._full_render) if self._full_render else None
 
     @property
     def swatch(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's swatch."""
-        return (
-            Asset._from_url(client=self._client, url=self._swatch)
-            if self._swatch
-            else None
-        )
+        return Asset._from_url(client=self._client, url=self._swatch) if self._swatch else None
 
     @property
     def video(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's video."""
-        return (
-            Asset._from_url(client=self._client, url=self._streamed_video)
-            if self._streamed_video
-            else None
-        )
+        return Asset._from_url(client=self._client, url=self._streamed_video) if self._streamed_video else None
 
     @property
     def base_weapon(self) -> Weapon:
@@ -366,8 +342,8 @@ class SkinChroma(BaseModel):
         data = client.assets.get_skin_chroma(uuid)
         return cls(client=client, data=data) if data else None
 
-class SkinLevel(BaseModel):
 
+class SkinLevel(BaseModel):
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 
@@ -403,18 +379,15 @@ class SkinLevel(BaseModel):
         return self._level.removeprefix('EEquippableSkinLevelItem::') if self._level else None
 
     @property
-    def display_icon(self) -> Asset:
+    def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon."""
-        return Asset._from_url(client=self._client, url=self._display_icon)
+        display_icon = self._display_icon or self.base_skin.display_icon or self.base_weapon.display_icon
+        return Asset._from_url(client=self._client, url=str(display_icon)) if display_icon else None
 
     @property
     def video(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's video."""
-        return (
-            Asset._from_url(client=self._client, url=self._streamed_video)
-            if self._streamed_video
-            else None
-        )
+        return Asset._from_url(client=self._client, url=self._streamed_video) if self._streamed_video else None
 
     @property
     def base_weapon(self) -> Weapon:
@@ -432,8 +405,8 @@ class SkinLevel(BaseModel):
         data = client.assets.get_skin_level(uuid)
         return cls(client=client, data=data) if data else None
 
-class SkinNightMarket(SkinLevel):
 
+class SkinNightMarket(SkinLevel):
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]], extras: Any) -> None:
         super().__init__(client=client, data=data)
         self.discount_percent: int = extras['DiscountPercent']
@@ -449,12 +422,12 @@ class SkinNightMarket(SkinLevel):
 
     @property
     def price_difference(self) -> int:
-        """ Returns the difference between the base price and the discounted price """
+        """Returns the difference between the base price and the discounted price"""
         return self.price_difference - self.discount_price
 
     @property
     def start_time(self) -> datetime.datetime:
-        """ Returns the time the offer started """
+        """Returns the time the offer started"""
         return utils.parse_iso_datetime(self._start_time_iso)
 
     @classmethod
@@ -463,3 +436,87 @@ class SkinNightMarket(SkinLevel):
         uuid = skin_data['Offer']['OfferID']
         data = client.assets.get_skin_level(uuid)
         return cls(client=client, data=data, extras=skin_data)
+
+
+class SkinLoadout(Skin):
+    def __init__(self, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
+        super().__init__(client=client, data=data)
+        self._update_loadout(loadout)
+
+    def __repr__(self) -> str:
+        return f"<SkinLoadout name={self.name!r}>"
+
+    def _update_loadout(self, loadout: SkinLoadoutPayload) -> None:
+        self._buddy_uuid = loadout.get('CharmID')
+        self._buddy_level_uuid = loadout.get('CharmLevelID')
+
+    @property
+    def buddy(self) -> Optional[Buddy]:
+        """Returns the buddy for this skin"""
+        return Buddy._from_uuid(client=self._client, uuid=self._buddy_uuid) if self._buddy_uuid else None
+
+    @property
+    def buddy_level(self) -> Optional[BuddyLevel]:
+        """Returns the buddy level for this skin"""
+        return BuddyLevel._from_uuid(client=self._client, uuid=self._buddy_level_uuid) if self._buddy_level_uuid else None
+
+    @classmethod
+    def _from_loadout(cls, client: Client, uuid: str, loadout: SkinLoadoutPayload) -> Optional[Self]:
+        data = client.assets.get_skin(uuid)
+        return cls(client=client, data=data, loadout=loadout) if data else None
+
+
+class SkinLevelLoadout(SkinLevel):
+    def __init__(self, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
+        super().__init__(client=client, data=data)
+        self._update_loadout(loadout)
+
+    def __repr__(self) -> str:
+        return f"<SkinLevelLoadout name={self.name!r}>"
+
+    def _update_loadout(self, loadout: SkinLoadoutPayload) -> None:
+        self._buddy_uuid = loadout.get('CharmID')
+        self._buddy_level_uuid = loadout.get('CharmLevelID')
+
+    @property
+    def buddy(self) -> Optional[Buddy]:
+        """Returns the buddy for this skin"""
+        return Buddy._from_uuid(client=self._client, uuid=self._buddy_uuid) if self._buddy_uuid else None
+
+    @property
+    def buddy_level(self) -> Optional[BuddyLevel]:
+        """Returns the buddy level for this skin"""
+        return BuddyLevel._from_uuid(client=self._client, uuid=self._buddy_level_uuid) if self._buddy_level_uuid else None
+
+    @classmethod
+    def _from_loadout(cls, client: Client, uuid: str, loadout: SkinLoadoutPayload) -> Self:
+        data = client.assets.get_skin_level(uuid)
+        return cls(client=client, data=data, loadout=loadout)
+
+
+class SkinChromaLoadout(SkinChroma):
+    def __init__(self, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
+        super().__init__(client=client, data=data)
+        self._update_loadout(loadout)
+
+    def __repr__(self) -> str:
+        return f"<SkinChromaLoadout name={self.name!r}>"
+
+    def _update_loadout(self, loadout: SkinLoadoutPayload) -> None:
+        self._buddy_uuid = loadout.get('CharmID')
+        self._buddy_level_uuid = loadout.get('CharmLevelID')
+
+    @property
+    def buddy(self) -> Optional[Buddy]:
+        """Returns the buddy for this skin"""
+        return Buddy._from_uuid(client=self._client, uuid=self._buddy_uuid) if self._buddy_uuid else None
+
+    @property
+    def buddy_level(self) -> Optional[BuddyLevel]:
+        """Returns the buddy level for this skin"""
+        return BuddyLevel._from_uuid(client=self._client, uuid=self._buddy_level_uuid) if self._buddy_level_uuid else None
+
+    @classmethod
+    def _from_loadout(cls, client: Client, uuid: str, loadout: SkinLoadoutPayload) -> Self:
+        data = client.assets.get_skin_chroma(uuid)
+        return cls(client=client, data=data, loadout=loadout)

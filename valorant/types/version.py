@@ -23,8 +23,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from .base import AssetPayload
 from typing import TypedDict
+
+from .base import AssetPayload
+
 
 class VersionData(TypedDict):
     manifestId: str
@@ -34,6 +36,7 @@ class VersionData(TypedDict):
     engineVersion: str
     riotClientVersion: str
     buildDate: str
+
 
 class Version(AssetPayload):
     data: VersionData

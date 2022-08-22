@@ -23,15 +23,15 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from .base import BaseModel
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from ..asset import Asset
 from ..localization import Localization
-
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from .base import BaseModel
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+
     from ..client import Client
 
 # fmt: off
@@ -44,8 +44,8 @@ __all__ = (
 
 # TODO: _agent abilities, voice lines, mediaList, etc.
 
-class _AgentRole(BaseModel):
 
+class _AgentRole(BaseModel):
     def __init__(self, client: Client, data: Any) -> None:
         super().__init__(client=client, data=data)
 
@@ -81,8 +81,8 @@ class _AgentRole(BaseModel):
         """:class: `Asset` Returns the agent role's display icon."""
         return Asset._from_url(client=self._client, url=self._display_icon)
 
-class Agent(BaseModel):
 
+class Agent(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 

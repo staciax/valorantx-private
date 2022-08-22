@@ -24,16 +24,15 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-
-from .base import BaseModel
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .. import utils
 from ..localization import Localization
-
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from .base import BaseModel
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+
     from ..client import Client
 
 # fmt: off
@@ -42,8 +41,8 @@ __all__ = (
 )
 # fmt: on
 
-class Mission(BaseModel):
 
+class Mission(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 

@@ -1,11 +1,15 @@
 import asyncio
 import logging
+
 import valorant
+
+# from valorant.models import *
 
 client = valorant.Client(locale='en-US')
 
 # get basic logging
 logging.basicConfig(level=logging.INFO)
+
 
 async def main():
     async with client:
@@ -38,7 +42,7 @@ async def main():
         contract = client.get_contract('7ae5ad85-400b-beba-989d-42924ccf39be')
         print(repr(contract))
 
-        weapon = client.get_weapon('Vandal')
+        weapon = client.get_weapon('Operator')
         print(repr(weapon))
         for skin in weapon.skins:
             print(repr(skin))
@@ -94,6 +98,11 @@ async def main():
 
         theme = client.get_theme('fdfe356c-40c4-ac6a-864e-16998fc784ef')
         print(repr(theme))
+
+        # get_all = client.assets.get_asset('weapons')
+        # for x in get_all.values():
+        #     print(Weapon(client=client, data=x).kill_stream_icon)
+
 
 if __name__ == '__main__':
     asyncio.run(main())

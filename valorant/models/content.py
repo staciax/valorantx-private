@@ -24,26 +24,22 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-
-from .base import BaseModel
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .. import utils
 from ..asset import Asset
 from ..localization import Localization
-
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from .base import BaseModel
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+
     from ..client import Client
 
-__all__ = (
-    'Content',
-    'ContentTier'
-)
+__all__ = ('Content', 'ContentTier')
+
 
 class Content:
-
     def __init__(self, client: Client, data: Any) -> None:
         self._client = client
         self._update(data)
@@ -67,6 +63,7 @@ class Content:
     @property
     def events(self) -> List[ContentEvent]:
         return [ContentEvent(event) for event in self._events]
+
 
 class ContentSeason:
     def __init__(self, data: Any) -> None:
@@ -100,6 +97,7 @@ class ContentSeason:
     def end_time(self) -> datetime:
         return utils.parse_iso_datetime(self._end_time)
 
+
 class ContentEvent:
     def __init__(self, data: Any) -> None:
         self._update(data)
@@ -130,8 +128,8 @@ class ContentEvent:
     def end_time(self) -> datetime:
         return utils.parse_iso_datetime(self._end_time)
 
-class ContentTier(BaseModel):
 
+class ContentTier(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
 

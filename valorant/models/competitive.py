@@ -23,15 +23,15 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from .base import BaseModel
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, TypedDict, Union
 
 from ..asset import Asset
 from ..localization import Localization
-
-from typing import Any, Dict, List, Optional, Union, TypedDict, TYPE_CHECKING
+from .base import BaseModel
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+
     from ..client import Client
 
 # fmt: off
@@ -182,4 +182,4 @@ class MMR(BaseModel):
         self.is_act_rank_badge_hidden: bool = data['IsActRankBadgeHidden']
         self._latest_competitive_update: Dict[str, Any] = data['LatestCompetitiveUpdate']
         # TODO: Object
-        self.latest_competitive_update: CompetitiveUpdate = CompetitiveUpdate(self._latest_competitive_update)
+        # self.latest_competitive_update: CompetitiveUpdate = CompetitiveUpdate(self._latest_competitive_update)

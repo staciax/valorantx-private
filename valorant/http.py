@@ -23,18 +23,9 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import sys
 import asyncio
 import logging
-import urllib3
-import aiohttp
-
-from urllib.parse import urlencode
-from . import utils, __version__
-from .enums import Region, ItemType, QueueID, Locale, try_enum
-from .auth import RiotAuth
-from .errors import HTTPException, Forbidden, NotFound, RiotServerError
-
+import sys
 from typing import (
     Any,
     ClassVar,
@@ -48,21 +39,29 @@ from typing import (
     Union,
     TYPE_CHECKING
 )
+from urllib.parse import urlencode
+
+import aiohttp
+import urllib3
+
+from . import __version__, utils
+from .auth import RiotAuth
+from .enums import ItemType, Locale, QueueID, Region, try_enum
+from .errors import Forbidden, HTTPException, NotFound, RiotServerError
 
 MISSING = utils.MISSING
 
 if TYPE_CHECKING:
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
-    from .types import (
-        version
-    )
+    from .types import collection, player, version
 
 
 # disable urllib3 warnings that might arise from making requests to 127.0.0.1
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 _log = logging.getLogger(__name__)
+
 
 class Route:
 
@@ -110,7 +109,6 @@ class Route:
 
 
 class HTTPClient:
-
     def __init__(self) -> None:
         # self.user: Optional[ClientPlayer] = None
         self._session: aiohttp.ClientSession = MISSING
@@ -194,9 +192,7 @@ class HTTPClient:
             await self._session.close()
 
     async def static_login(self, username: str, password: str) -> None:
-        """
-        Riot Auth login.
-        """
+        """Riot Auth login."""
         await self._riot_auth.authorize(username, password)
         self._puuid = self._riot_auth.puuid
         await self.__build_headers()
@@ -304,14 +300,14 @@ class HTTPClient:
         """
         return self.request(Route('GET', '/content-service/v3/content', 'shared'))
 
-    def fetch_account_xp(self) -> Response[Any]:
+    def fetch_account_xp(self) -> Response[player.AccountXP]:
         """
         AccountXP_GetPlayer
         Get the account level, XP, and XP history for the active player
         """
         return self.request(Route('GET', f'/account-xp/v1/players/{self._puuid}', 'pd'))
 
-    def fetch_player_loadout(self) -> Response[None]:
+    def fetch_player_loadout(self) -> Response[loadout.Loadout]:
         """
         playerLoadoutUpdate
         Get the player's current loadout
@@ -324,9 +320,7 @@ class HTTPClient:
         Use the values from self._fetch_player_loadout() excluding properties like subject and version.
         Loadout changes take effect when starting a new game
         """
-        r = Route(
-            'PUT', f'/personalization/v2/players/{self._puuid}/playerloadout', 'pd'
-        )
+        r = Route('PUT', f'/personalization/v2/players/{self._puuid}/playerloadout', 'pd')
         return self.request(r, json=loadout)
 
     def fetch_mmr(self, puuid: Optional[str] = None) -> Response[None]:
@@ -359,7 +353,7 @@ class HTTPClient:
             'pd',
             startIndex=start_index,
             endIndex=end_index,
-            queue=str(queue_id)
+            queue=str(queue_id),
         )
         return self.request(r)
 
@@ -392,7 +386,7 @@ class HTTPClient:
             "pd",
             startIndex=start_index,
             endIndex=end_index,
-            queue=str(queue_id)
+            queue=str(queue_id),
         )
         return self.request(r)
 

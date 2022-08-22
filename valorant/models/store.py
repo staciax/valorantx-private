@@ -24,12 +24,11 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 # from .skin import SkinNightMarket
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from .weapons import Skin, SkinNightMarket
 from .bundle import Bundle
-
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from .weapons import Skin, SkinNightMarket
 
 if TYPE_CHECKING:
     from ..client import Client
@@ -40,6 +39,7 @@ __all__ = (
     'NightMarket',
     'Wallet',
 )
+
 
 class StoreFront:
 
@@ -64,10 +64,7 @@ class StoreFront:
     @property
     def bundles(self) -> Union[List[Bundle]]:
         """:class:`.models.Bundle`: The list of bundles in the featured panel."""
-        return [
-            Bundle._from_store(client=self._client, bundle=bundle)
-            for bundle in self._bundles
-        ]
+        return [Bundle._from_store(client=self._client, bundle=bundle) for bundle in self._bundles]
 
     @property
     def store(self) -> StoreOffer:
@@ -77,154 +74,8 @@ class StoreFront:
     @property
     def nightmarket(self) -> Optional[NightMarket]:
         """:class:`.models.NightMarketOffer`: The nightmarket offer in the featured panel."""
+        return NightMarket(client=self._client, data=self._bonus_store) if self._bonus_store is not None else None
 
-        data = {
-        "BonusStoreOffers": [
-            {
-                "BonusOfferID": "c205e641-76df-4213-979c-98e8b60da2b0",
-                "Offer": {
-                    "OfferID": "13f3818c-4518-cf39-51f6-8cad1dc5bfc6",
-                    "IsDirectPurchase": True,
-                    "StartDate": "2022-07-23T09:29:40.391021883Z",
-                    "Cost": {
-                        "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1775
-                    },
-                    "Rewards": [
-                        {
-                            "ItemTypeID": "e7c63390-eda7-46e0-bb7a-a6abdacd2433",
-                            "ItemID": "13f3818c-4518-cf39-51f6-8cad1dc5bfc6",
-                            "Quantity": 1
-                        }
-                    ]
-                },
-                "DiscountPercent": 28,
-                "DiscountCosts": {
-                    "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1278
-                },
-                "IsSeen": False
-            },
-            {
-                "BonusOfferID": "19874eca-cf92-49aa-b440-e76ff23afc35",
-                "Offer": {
-                    "OfferID": "f987be1f-4287-35a4-34a9-d6a92805e7ff",
-                    "IsDirectPurchase": True,
-                    "StartDate": "2022-07-23T09:29:40.390967957Z",
-                    "Cost": {
-                        "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1775
-                    },
-                    "Rewards": [
-                        {
-                            "ItemTypeID": "e7c63390-eda7-46e0-bb7a-a6abdacd2433",
-                            "ItemID": "f987be1f-4287-35a4-34a9-d6a92805e7ff",
-                            "Quantity": 1
-                        }
-                    ]
-                },
-                "DiscountPercent": 42,
-                "DiscountCosts": {
-                    "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1030
-                },
-                "IsSeen": False
-            },
-            {
-                "BonusOfferID": "875bd9e0-ae98-4330-a683-f455637fe98f",
-                "Offer": {
-                    "OfferID": "186d9fbb-400e-665b-e5f3-c08b24b6974f",
-                    "IsDirectPurchase": True,
-                    "StartDate": "2022-07-23T09:29:40.391004006Z",
-                    "Cost": {
-                        "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1275
-                    },
-                    "Rewards": [
-                        {
-                            "ItemTypeID": "e7c63390-eda7-46e0-bb7a-a6abdacd2433",
-                            "ItemID": "186d9fbb-400e-665b-e5f3-c08b24b6974f",
-                            "Quantity": 1
-                        }
-                    ]
-                },
-                "DiscountPercent": 30,
-                "DiscountCosts": {
-                    "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 893
-                },
-                "IsSeen": False
-            },
-            {
-                "BonusOfferID": "c74a52ee-d91e-452f-a035-c64b02bbb08f",
-                "Offer": {
-                    "OfferID": "a2045403-40f7-2926-f955-028b6867c79a",
-                    "IsDirectPurchase": True,
-                    "StartDate": "2022-07-23T09:29:40.390994562Z",
-                    "Cost": {
-                        "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1275
-                    },
-                    "Rewards": [
-                        {
-                            "ItemTypeID": "e7c63390-eda7-46e0-bb7a-a6abdacd2433",
-                            "ItemID": "a2045403-40f7-2926-f955-028b6867c79a",
-                            "Quantity": 1
-                        }
-                    ]
-                },
-                "DiscountPercent": 26,
-                "DiscountCosts": {
-                    "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 944
-                },
-                "IsSeen": False
-            },
-            {
-                "BonusOfferID": "ecf88a54-4207-476f-a2ed-a7a2bb6853dd",
-                "Offer": {
-                    "OfferID": "56042ce2-4f95-19be-7cac-5fb191683953",
-                    "IsDirectPurchase": True,
-                    "StartDate": "2022-07-23T09:29:40.391006281Z",
-                    "Cost": {
-                        "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1775
-                    },
-                    "Rewards": [
-                        {
-                            "ItemTypeID": "e7c63390-eda7-46e0-bb7a-a6abdacd2433",
-                            "ItemID": "56042ce2-4f95-19be-7cac-5fb191683953",
-                            "Quantity": 1
-                        }
-                    ]
-                },
-                "DiscountPercent": 39,
-                "DiscountCosts": {
-                    "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1083
-                },
-                "IsSeen": False
-            },
-            {
-                "BonusOfferID": "b2e5933c-2aae-47f3-b5ae-67668f9139ac",
-                "Offer": {
-                    "OfferID": "e16ea577-4d7f-e686-456a-54b4b1d9cba2",
-                    "IsDirectPurchase": True,
-                    "StartDate": "2022-07-23T09:29:40.391035351Z",
-                    "Cost": {
-                        "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1775
-                    },
-                    "Rewards": [
-                        {
-                            "ItemTypeID": "e7c63390-eda7-46e0-bb7a-a6abdacd2433",
-                            "ItemID": "e16ea577-4d7f-e686-456a-54b4b1d9cba2",
-                            "Quantity": 1
-                        }
-                    ]
-                },
-                "DiscountPercent": 31,
-                "DiscountCosts": {
-                    "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741": 1225
-                },
-                "IsSeen": False
-            }
-        ],
-        "BonusStoreRemainingDurationInSeconds": 829819
-    }
-        return (
-            NightMarket(client=self._client, data=data)
-            # if self._bonus_store is not None else None
-        )
 
 class StoreOffer:
 
@@ -259,6 +110,7 @@ class StoreOffer:
             dt = dt.replace(tzinfo=timezone.utc)
         return dt
 
+
 class NightMarket:
 
     __slot__ = ()
@@ -276,7 +128,7 @@ class NightMarket:
 
     @property
     def skins(self) -> List[SkinNightMarket]:
-        """ Returns a list of skins in the offer """
+        """Returns a list of skins in the offer"""
         return [SkinNightMarket._from_data(client=self._client, skin_data=skin) for skin in self._skin_offers]
 
     @property
@@ -287,8 +139,8 @@ class NightMarket:
             dt = dt.replace(tzinfo=timezone.utc)
         return dt
 
-class Wallet:
 
+class Wallet:
     def __init__(self, *, client: Client, data: Any) -> None:
         self._client = client
         self._update(data)
@@ -301,10 +153,10 @@ class Wallet:
 
     @property
     def valorant_points(self) -> int:
-        """ Returns the valorant points for the wallet """
+        """Returns the valorant points for the wallet"""
         return self.balances.get('85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741', 0)
 
     @property
     def radiant_points(self) -> int:
-        """ Returns the radiant points for the wallet """
+        """Returns the radiant points for the wallet"""
         return self.balances.get('e59aa87c-4cbf-517a-5983-6e81511be9b7', 0)

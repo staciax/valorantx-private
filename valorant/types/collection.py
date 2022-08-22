@@ -20,3 +20,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
+from typing import Any, List, TypedDict
+
+from typing_extensions import NotRequired
+
+
+class SprayLoadout(TypedDict):
+    EquipSlotID: str
+    SprayID: str
+    SprayLevelID: str
+
+
+class SkinLoadout(TypedDict, total=False):
+    ID: str
+    SkinID: str
+    SkinLevelID: str
+    ChromaID: str
+    CharmInstanceID: NotRequired[str]
+    CharmID: NotRequired[str]
+    CharmLevelID: NotRequired[str]
+    Attachments: List[Any]
+
+
+class IdentityLoadout(TypedDict):
+    PlayerCardID: str
+    PlayerTitleID: str
+    AccountLevel: int
+    PreferredLevelBorderID: str
+    HideAccountLevel: bool
+
+
+class Loadout(TypedDict):
+    Subject: str
+    Version: int
+    Guns: List[SkinLoadout]
+    Sprays: List[SprayLoadout]
+    Identity: IdentityLoadout
+    Incognito: bool

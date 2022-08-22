@@ -23,23 +23,27 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import os
-import json
 import asyncio
+import json
 import logging
+import os
+from typing import TYPE_CHECKING, Any, Coroutine, Iterator, Mapping, Optional, Type, Union
 
 from . import utils
 from .assets import Assets
 from .enums import Locale, QueueID
 from .http import HTTPClient
-
 from .models import (
+    MMR,
+    AccountXP,
     Agent,
     Buddy,
     BuddyLevel,
     Bundle,
     Ceremony,
+    Collection,
     CompetitiveTier,
+    Content,
     ContentTier,
     Contract,
     Currency,
@@ -50,6 +54,7 @@ from .models import (
     LevelBorder,
     Map,
     Mission,
+    PatchNotes,
     PlayerCard,
     PlayerTitle,
     Season,
@@ -58,31 +63,17 @@ from .models import (
     SkinLevel,
     Spray,
     SprayLevel,
-    Theme,
-    Weapon,
-
-    Content,
-    MMR,
-    Wallet,
     StoreFront,
+    Theme,
     Version,
-    PatchNotes
-)
-
-from typing import (
-    Any,
-    Coroutine,
-    Iterator,
-    Mapping,
-    Optional,
-    Type,
-    Union,
-    TYPE_CHECKING,
+    Wallet,
+    Weapon,
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
     from types import TracebackType
+
+    from typing_extensions import Self
 
 __all__ = ('Client',)
 
@@ -90,8 +81,8 @@ _log = logging.getLogger(__name__)
 
 MISSING: Any = utils.MISSING
 
-class Client:
 
+class Client:
     def __init__(self, *, locale: Union[Locale, str] = Locale.american_english) -> None:
 
         # http client
@@ -116,10 +107,10 @@ class Client:
         return self
 
     async def __aexit__(
-            self,
-            exc_type: Optional[Type[BaseException]],
-            exc_value: Optional[BaseException],
-            traceback: Optional[TracebackType],
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
     ) -> None:
         if not self.is_closed():
             await self.close()
@@ -158,9 +149,9 @@ class Client:
 
     # assets
 
-    def get_agent(self, uuid: str) -> Optional[Agent]:
+    def get_agent(self, uuid: str, **kwargs) -> Optional[Agent]:
         """Get an agent by UUID or Display Name."""
-        data = self.assets.get_agent(uuid)
+        data = self.assets.get_agent(uuid, **kwargs)
         return Agent(client=self, data=data) if data else None
 
     def get_buddy(self, uuid: str) -> Optional[Union[Buddy, BuddyLevel]]:
@@ -298,14 +289,16 @@ class Client:
     def fetch_game_content(self) -> Content:
         return Content(client=self, data=self.http.fetch_content())
 
-    def fetch_account_xp(self) -> Coroutine[Any, Any, None]:
-        return self.http.fetch_account_xp()
+    async def fetch_account_xp(self) -> AccountXP:
+        data = await self.http.fetch_account_xp()
+        return AccountXP(client=self, data=data)
 
-    # async def fetch_player_loadout(self) -> Collection:
-    #     account_xp = await self.http.fetch_account_xp()
-    #     self.user._account_level = account_xp['Progress']['Level']  # TODO: models.User.account_level
-    #     data = await self.http.fetch_player_loadout()
-    #     return Collection(client=self, data=data)
+    async def fetch_player_loadout(self) -> Collection:
+        # ensure
+        # account_xp = await self.fetch_account_xp()
+        # self.user._account_level = account_xp.progress['Level']  # TODO: models.User.account_level
+        data = await self.http.fetch_player_loadout()
+        return Collection(client=self, data=data)
 
     def put_player_loadout(self, loadout: Mapping) -> Coroutine[Any, Any, None]:
         return self.http.put_player_loadout(loadout)

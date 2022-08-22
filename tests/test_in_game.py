@@ -1,7 +1,9 @@
 import asyncio
+
 import valorant
 
 client = valorant.Client(locale='en-US')
+
 
 async def main():
     async with client:
@@ -17,6 +19,7 @@ async def main():
 
         patch_note = await client.fetch_patch_notes(locale=valorant.Locale.thai)
         print(patch_note)
+
 
 if __name__ == '__main__':
     asyncio.run(main())

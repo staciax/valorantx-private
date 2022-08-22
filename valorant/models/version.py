@@ -23,11 +23,13 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from .. import utils
 from typing import TYPE_CHECKING
+
+from .. import utils
 
 if TYPE_CHECKING:
     import datetime
+
     from ..client import Client
     from ..types.version import Version as VersionPayload
 
@@ -37,8 +39,8 @@ __all__ = (
 )
 # fmt: on
 
-class Version:
 
+class Version:
     def __init__(self, client: Client, data: VersionPayload) -> None:
         self._client: Client = client
         self.manifest_id: str = data['data']['manifestId']

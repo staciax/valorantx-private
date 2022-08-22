@@ -23,10 +23,12 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from .enums import Locale
 from typing import Dict, Union
 
+from .enums import Locale
+
 __all__ = ("Localization",)
+
 
 class Localization:
     def __init__(
@@ -45,9 +47,7 @@ class Localization:
         return self.english
 
     def __eq__(self, other: object) -> bool:
-        return (
-            isinstance(other, Localization) and self.untranslated == other.untranslated
-        )
+        return isinstance(other, Localization) and self.untranslated == other.untranslated
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
@@ -162,7 +162,7 @@ class Localization:
 
     @property
     def locale(self) -> str:
-        """ :class:`str`: Returns from your current locale."""
+        """:class:`str`: Returns from your current locale."""
         return self._locale
 
     def from_str(self, value: str):

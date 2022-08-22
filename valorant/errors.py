@@ -25,10 +25,12 @@ Exception handler functions: https://github.com/Rapptz/discord.py/blob/master/di
 """
 
 from __future__ import annotations
-from typing import Any, Dict, Union, List, Tuple, Optional, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 if TYPE_CHECKING:
     from aiohttp import ClientResponse
+
 
 def _flatten_error_dict(d: Dict[str, Any], key: str = '') -> Dict[str, str]:
     items: List[Tuple[str, str]] = []
@@ -50,7 +52,9 @@ def _flatten_error_dict(d: Dict[str, Any], key: str = '') -> Dict[str, str]:
 
 class ValorantException(Exception):
     """Base class for all exceptions in this module."""
+
     pass
+
 
 class HandshakeError(Exception):
     """
@@ -58,6 +62,7 @@ class HandshakeError(Exception):
     """
 
     pass
+
 
 class ResponseError(Exception):
     """
@@ -72,6 +77,7 @@ class PhaseError(Exception):
     Raised whenever there's a problem while attempting to fetch phase data.
     This typically occurs when the phase is null (i.e. player is not in the agent select phase.)
     """
+
 
 class HTTPException(ValorantException):
     """Exception that's raised when an HTTP request operation fails.
@@ -114,27 +120,35 @@ class HTTPException(ValorantException):
 
         super().__init__(fmt.format(self.response, self.code, self.text))
 
+
 class AuthFailure(ResponseError):
     """Exception that's raised when the :meth:`Client.login` function
     fails to log you in from improper credentials or some other misc.
     failure.
     """
+
     pass
+
 
 class Forbidden(HTTPException):
     """Exception that's raised for when status code 403 occurs.
     Subclass of :exc:`HTTPException`
     """
+
     pass
+
 
 class NotFound(HTTPException):
     """Exception that's raised for when status code 404 occurs.
     Subclass of :exc:`HTTPException`
     """
+
     pass
+
 
 class RiotServerError(HTTPException):
     """Exception that's raised for when a 500 range status code occurs.
     Subclass of :exc:`HTTPException`.
     """
+
     pass

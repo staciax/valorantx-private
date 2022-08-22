@@ -21,315 +21,285 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-# from __future__ import annotations
-#
-# from typing import Optional, List, Dict, Any, TYPE_CHECKING
-#
-# from ..enums import WeaponID
-#
-# from .player_card import PlayerCard
-# from .player_title import PlayerTitle
-# from .level_border import LevelBorder
-# # from .other import LevelBorder
-# # from .spray import SprayLoadout, SprayCollection
-# # from .skin import SkinLoadout
-#
-# if TYPE_CHECKING:
-#     from ..client import Client
-#
-# __all__ = ('Collection', 'SkinCollection')
-#
-#
-# class Collection:
-#
-#     """
-#     Player Loadout Collection
-#
-#     .. container:: operations
-#
-#         .. describe:: x == y
-#
-#             Checks if two players are equal.
-#
-#         .. describe:: x != y
-#
-#             Checks if two players are not equal.
-#
-#         .. describe:: str(x)
-#
-#             Returns a string representation of the player.
-#
-#     Attributes:
-#     ___________
-#     uuid: :class:`str`
-#         The UUID of player.
-#     version: :class:`int`
-#         The version of player loadout.
-#     incognito: :class:`bool`
-#         Whether the player is incognito.
-#     """
-#
-#     def __init__(self, client: Client, data: Any) -> None:
-#         self._client = client
-#         # self.user = client.user
-#         self.uuid: str = data['Subject']
-#         self.version: int = data['Version']
-#         self.incognito: bool = data['Incognito']
-#         self._identity: Dict[str, Any] = data['Identity']
-#         self._skins_loadout: str = data['Guns']
-#         self._sprays_loadout: str = data['Sprays']
-#         self._player_card_uuid: str = self._identity['PlayerCardID']
-#         self._player_title_uuid: str = self._identity['PlayerTitleID']
-#         self._level_border_uuid: str = self._identity['PreferredLevelBorderID']
-#
-#     # def _update(self, data: Any) -> None:
-#     #     self._version: int = data['Version']
-#     #     self._incognito: bool = data['Incognito']
-#     #     self._identity: Dict[str, Any] = data['Identity']
-#     #     self._skins_loadout: str = data['Guns']
-#     #     self._sprays_loadout: str = data['Sprays']
-#     #     self._player_card_uuid: str = self._identity['PlayerCardID']
-#     #     self._player_title_uuid: str = self._identity['PlayerTitleID']
-#     #     self._level_border_uuid: str = self._identity['PreferredLevelBorderID']
-#
-#     def __repr__(self) -> str:
-#         return f'<Collection uuid={self.uuid!r} version={self.version!r} incognito={self.incognito!r}>'
-#
-#     def __eq__(self, other: object) -> bool:
-#         return isinstance(other, Collection) and (self.version == other.version or self.incognito == other.incognito)
-#
-#     def __ne__(self, other: object) -> bool:
-#         return not self.__eq__(other)
-#
-#     def __hash__(self) -> int:
-#         return hash((self.uuid, self.version, self.incognito))
-#
-#     @property
-#     def skins(self) -> SkinCollection:
-#         return SkinCollection([
-#             SkinLoadout._from_uuid(client=self._client, uuid=skin['ChromaID'], extra=skin) for skin in
-#             sorted(self._skins_loadout, key=lambda x: x['ID'])
-#         ])
-#
-#     @property
-#     def sprays(self) -> SprayCollection:
-#         return SprayCollection([
-#             SprayLoadout._from_uuid(client=self._client, uuid=spray['SprayID'], extra=spray) for spray in
-#             self._sprays_loadout
-#         ])
-#
-#     # @property
-#     # def level(self) -> int:
-#     #     return self._client.user.account_level
-#
-#     @property
-#     def level_border(self) -> Optional[LevelBorder]:
-#         if self._level_border_uuid == '00000000-0000-0000-0000-000000000000':
-#             self._level_border_uuid = 'ebc736cd-4b6a-137b-e2b0-1486e31312c9'
-#         return LevelBorder._from_uuid(client=self._client, uuid=self._level_border_uuid)
-#
-#     @property
-#     def player_card(self) -> PlayerTitle:
-#         return PlayerCard._from_uuid(client=self._client, uuid=self._player_card_uuid)
-#
-#     @property
-#     def player_title(self) -> PlayerTitle:
-#         return PlayerTitle._from_uuid(client=self._client, uuid=self._player_title_uuid)
-#
-#     # @property
-#     # def player_name(self) -> str:
-#     #     return self._client.user.name
-#
-#
-# class SkinCollection:
-#
-#     def __init__(self, loadout: List[SkinLoadout]) -> None:
-#         self._update(loadout)
-#
-#     def _update(self, loadout: List[SkinLoadout]) -> None:
-#         for skin in loadout:
-#             match skin.weapon_id:
-#                 case WeaponID.vandal.value:
-#                     self._vandal_loadout = skin
-#                 case WeaponID.odin.value:
-#                     self._odin_loadout = skin
-#                 case WeaponID.ares.value:
-#                     self._ares_loadout = skin
-#                 case WeaponID.bulldog.value:
-#                     self._bulldog_loadout = skin
-#                 case WeaponID.phantom.value:
-#                     self._phantom_loadout = skin
-#                 case WeaponID.judge.value:
-#                     self._judge_loadout = skin
-#                 case WeaponID.bucky.value:
-#                     self._bucky_loadout = skin
-#                 case WeaponID.frenzy.value:
-#                     self._frenzy_loadout = skin
-#                 case WeaponID.classic.value:
-#                     self._classic_loadout = skin
-#                 case WeaponID.ghost.value:
-#                     self._ghost_loadout = skin
-#                 case WeaponID.sheriff.value:
-#                     self._sheriff_loadout = skin
-#                 case WeaponID.shorty.value:
-#                     self._shorty_loadout = skin
-#                 case WeaponID.operator.value:
-#                     self._operator_loadout = skin
-#                 case WeaponID.guardian.value:
-#                     self._guardian_loadout = skin
-#                 case WeaponID.marshal.value:
-#                     self._marshal_loadout = skin
-#                 case WeaponID.spectre.value:
-#                     self._spectre_loadout = skin
-#                 case WeaponID.stinger.value:
-#                     self._stinger_loadout = skin
-#                 case WeaponID.melee.value:
-#                     self._melee_loadout = skin
-#
-#     @property
-#     def melee(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the melee loadout."""
-#         return self._melee_loadout
-#
-#     @property
-#     def classic(self) -> SkinLoadout:
-#         """ :class:`SkinLoadout` Returns the classic loadout."""
-#         return self._classic_loadout
-#
-#     @property
-#     def shorty(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the shorty loadout."""
-#         return self._shorty_loadout
-#
-#     @property
-#     def frenzy(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the frenzy loadout."""
-#         return self._frenzy_loadout
-#
-#     @property
-#     def ghost(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the ghost loadout."""
-#         return self._ghost_loadout
-#
-#     @property
-#     def sheriff(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the sheriff loadout."""
-#         return self._sheriff_loadout
-#
-#     @property
-#     def stinger(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the stinger loadout."""
-#         return self._stinger_loadout
-#
-#     @property
-#     def spectre(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the spectre loadout."""
-#         return self._spectre_loadout
-#
-#     @property
-#     def bucky(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the bucky loadout."""
-#         return self._bucky_loadout
-#
-#     @property
-#     def judge(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the judge loadout."""
-#         return self._judge_loadout
-#
-#     @property
-#     def bulldog(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the bulldog loadout."""
-#         return self._bulldog_loadout
-#
-#     @property
-#     def guardian(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the guardian loadout."""
-#         return self._guardian_loadout
-#
-#     @property
-#     def phantom(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the phantom loadout."""
-#         return self._phantom_loadout
-#
-#     @property
-#     def vandal(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the vandal loadout."""
-#         return self._vandal_loadout
-#
-#     @property
-#     def marshal(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the marshal loadout."""
-#         return self._marshal_loadout
-#
-#     @property
-#     def operator(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the operator loadout."""
-#         return self._operator_loadout
-#
-#     @property
-#     def ares(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the ares loadout."""
-#         return self._ares_loadout
-#
-#     @property
-#     def odin(self) -> SkinLoadout:
-#         """:class:`SkinLoadout` Returns the odin loadout."""
-#         return self._odin_loadout
-#
-#     @property
-#     def sidearms(self) -> List[SkinLoadout]:
-#         return [
-#             self.classic,
-#             self.shorty,
-#             self.frenzy,
-#             self.ghost,
-#             self.sheriff,
-#         ]
-#
-#     @property
-#     def smgs(self) -> List[SkinLoadout]:
-#         return [
-#             self.stinger,
-#             self.spectre
-#         ]
-#
-#     @property
-#     def shotguns(self) -> List[SkinLoadout]:
-#         return [
-#             self.bucky,
-#             self.judge
-#         ]
-#
-#     @property
-#     def rifles(self) -> List[SkinLoadout]:
-#         return [
-#             self.bulldog,
-#             self.guardian,
-#             self.phantom,
-#             self.vandal
-#         ]
-#
-#     @property
-#     def snipers(self) -> List[SkinLoadout]:
-#         return [
-#             self.marshal,
-#             self.operator
-#         ]
-#
-#     @property
-#     def machine_guns(self) -> List[SkinLoadout]:
-#         return [
-#             self.ares,
-#             self.odin
-#         ]
-#
-#     def to_list(self) -> List[SkinLoadout]:
-#         return [
-#             self.melee,
-#             *self.sidearms,
-#             *self.smgs,
-#             *self.shotguns,
-#             *self.rifles,
-#             *self.snipers,
-#             *self.machine_guns
-#         ]
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, List, Optional, TypeAlias, Union
+
+from ..enums import WeaponID
+from .base import BaseModel
+from .level_border import LevelBorder
+from .player_card import PlayerCard
+from .player_title import PlayerTitle
+from .spray import SprayLevelLoadout, SprayLoadout
+from .weapons import SkinChromaLoadout, SkinLevelLoadout, SkinLoadout
+
+if TYPE_CHECKING:
+    from ..client import Client
+    from ..types.collection import Loadout as LoadoutPayload
+
+SprayL: TypeAlias = Union[SprayLoadout, SprayLevelLoadout]
+SkinL: TypeAlias = Union[SkinLoadout, SkinLevelLoadout, SkinChromaLoadout]
+
+__all__ = (
+    'Collection',
+    'SkinCollection',
+    'SprayCollection',
+)
+
+
+class Collection(BaseModel):
+
+    """
+    Player Loadout
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two players are equal.
+
+        .. describe:: x != y
+
+            Checks if two players are not equal.
+
+    Attributes:
+    ___________
+    uuid: :class:`str`
+        The UUID of player.
+    version: :class:`int`
+        The version of player loadout.
+    incognito: :class:`bool`
+        Whether the player is incognito.
+    """
+
+    def __init__(self, client: Client, data: LoadoutPayload, **kwargs: Any) -> None:
+        super().__init__(client, data, **kwargs)
+        # self.user = client.user
+        self._level_border_uuid = 'ebc736cd-4b6a-137b-e2b0-1486e31312c9'
+        self._uuid = data['Subject']
+        self.version = data['Version']
+        self.incognito = data['Incognito']
+        self._identity = data['Identity']
+        self._skins_loadout = data['Guns']
+        self._sprays_loadout = data['Sprays']
+        self._player_card_uuid = self._identity['PlayerCardID']
+        self._player_title_uuid = self._identity['PlayerTitleID']
+        self._level_border_uuid = self._identity['PreferredLevelBorderID']
+
+    # def __str__(self) -> str:
+    # return self.__repr__()
+
+    # def __repr__(self) -> str:
+    # return f'<Loadout skins={self.skins!r} version={self.version!r} incognito={self.incognito!r}>'
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Collection) and (self.version == other.version or self.incognito == other.incognito)
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash((self.uuid, self.version, self.incognito))
+
+    @property
+    def sprays(self) -> SprayCollection:
+        # TODO: SprayID or SprayLevelID?
+
+        # spray_loadout = [
+        #     SprayLoadout._from_loadout(client=self._client, uuid=spray['SprayID'], loadout=spray)
+        #     for spray in self._sprays_loadout
+        # ]
+        # print(self._sprays_loadout)
+        # spray_level_loadout = [
+        #     SprayLevelLoadout._from_loadout(client=self._client, uuid=spray['SprayLevelID'], loadout=spray)
+        #     for spray in self._sprays_loadout
+        # ]
+
+        spray_loadout = []
+        for spray in self._sprays_loadout:
+            print(spray)
+            if spray['SprayLevelID']:
+                spray_loadout.append(
+                    SprayLevelLoadout._from_loadout(client=self._client, uuid=spray['SprayLevelID'], loadout=spray)
+                )
+            elif spray['SprayID']:
+                spray_loadout.append(SprayLoadout._from_loadout(client=self._client, uuid=spray['SprayID'], loadout=spray))
+
+        return SprayCollection(spray_loadout)
+
+    @property
+    def skins(self) -> SkinCollection:
+
+        # skin_loadout = [
+        #     SkinLoadout._from_loadout(client=self._client, uuid=skin['SkinID'], loadout=skin)
+        #     for skin in sorted(self._skins_loadout, key=lambda x: x['ID'])
+        # ]
+        #
+        # skin_level_loadout = [
+        #     SkinLevelLoadout._from_loadout(client=self._client, uuid=skin['SkinLevelID'], loadout=skin)
+        #     for skin in sorted(self._skins_loadout, key=lambda x: x['ID'])
+        # ]
+        #
+        # skin_chroma_loadout = [
+        #     SkinChromaLoadout._from_loadout(client=self._client, uuid=skin['ChromaID'], loadout=skin)
+        #     for skin in sorted(self._skins_loadout, key=lambda x: x['ID'])
+        #
+        # ]
+
+        skin_loadout = []
+        for skin in sorted(self._skins_loadout, key=lambda x: x['ID']):
+            if skin['ChromaID']:
+                skin_loadout.append(
+                    SkinChromaLoadout._from_loadout(client=self._client, uuid=skin['ChromaID'], loadout=skin)
+                )
+            elif skin['SkinLevelID']:
+                skin_loadout.append(
+                    SkinLevelLoadout._from_loadout(client=self._client, uuid=skin['SkinLevelID'], loadout=skin)
+                )
+            elif skin['SkinID']:
+                skin_loadout.append(SkinLoadout._from_loadout(client=self._client, uuid=skin['SkinID'], loadout=skin))
+
+        return SkinCollection(skin_loadout)
+
+    # @property
+    # def level(self) -> int:
+    #     return self._client.user.account_level
+
+    @property
+    def level_border(self) -> Optional[LevelBorder]:
+        if self._level_border_uuid == '00000000-0000-0000-0000-000000000000':
+            pass
+        return LevelBorder._from_uuid(client=self._client, uuid=self._level_border_uuid)
+
+    @property
+    def player_card(self) -> PlayerTitle:
+        return PlayerCard._from_uuid(client=self._client, uuid=self._player_card_uuid)
+
+    @property
+    def player_title(self) -> PlayerTitle:
+        return PlayerTitle._from_uuid(client=self._client, uuid=self._player_title_uuid)
+
+    # @property
+    # def player_name(self) -> str:
+    #     return self._client.user.name
+
+
+class SkinCollection:
+
+    classic: SkinL
+    shorty: SkinL
+    frenzy: SkinL
+    ghost: SkinL
+    sheriff: SkinL
+    stinger: SkinL
+    spectre: SkinL
+    bucky: SkinL
+    judge: SkinL
+    bulldog: SkinL
+    guardian: SkinL
+    phantom: SkinL
+    vandal: SkinL
+    marshal: SkinL
+    operator: SkinL
+    ares: SkinL
+    odin: SkinL
+    melee: SkinL
+
+    def __init__(self, loadout: List[SkinL]) -> None:
+        self._update(loadout)
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('classic', self.classic),
+            ('shorty', self.shorty),
+            ('frenzy', self.frenzy),
+            ('ghost', self.ghost),
+            ('sheriff', self.sheriff),
+            ('stinger', self.stinger),
+            ('spectre', self.spectre),
+            ('bucky', self.bucky),
+            ('judge', self.judge),
+            ('bulldog', self.bulldog),
+            ('guardian', self.guardian),
+            ('phantom', self.phantom),
+            ('vandal', self.vandal),
+            ('marshal', self.marshal),
+            ('operator', self.operator),
+            ('ares', self.ares),
+            ('odin', self.odin),
+            ('melee', self.melee),
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
+    def _update(self, loadout: List[SkinL]) -> None:
+        for skin in loadout:
+            setattr(self, skin.base_weapon.name.lower(), skin)
+
+    @property
+    def sidearms(self) -> List[SkinL]:
+        return [
+            self.classic,
+            self.shorty,
+            self.frenzy,
+            self.ghost,
+            self.sheriff,
+        ]
+
+    @property
+    def smgs(self) -> List[SkinL]:
+        return [self.stinger, self.spectre]
+
+    @property
+    def shotguns(self) -> List[SkinL]:
+        return [self.bucky, self.judge]
+
+    @property
+    def rifles(self) -> List[SkinL]:
+        return [self.bulldog, self.guardian, self.phantom, self.vandal]
+
+    @property
+    def snipers(self) -> List[SkinL]:
+        return [self.marshal, self.operator]
+
+    @property
+    def machine_guns(self) -> List[SkinL]:
+        return [self.ares, self.odin]
+
+    def to_list(self) -> List[SkinL]:
+        return [self.melee, *self.sidearms, *self.smgs, *self.shotguns, *self.rifles, *self.snipers, *self.machine_guns]
+
+
+class SprayCollection:
+    def __init__(self, loadout: List[SprayL]) -> None:
+        self._slot_1: Optional[SprayL] = None
+        self._slot_2: Optional[SprayL] = None
+        self._slot_3: Optional[SprayL] = None
+        self._update(loadout)
+
+    def __repr__(self) -> str:
+        return f'<SprayCollection slot_1={self.slot_1!r}, slot_2={self.slot_2!r} slot_3={self.slot_3!r}>'
+
+    def _update(self, loadout: List[SprayLoadout]) -> None:
+        for spray in loadout:
+            if spray.slot == 1:
+                self._slot_1 = spray
+            elif spray.slot == 2:
+                self._slot_2 = spray
+            elif spray.slot == 3:
+                self._slot_3 = spray
+
+    @property
+    def slot_1(self) -> SprayL:
+        return self._slot_1
+
+    @property
+    def slot_2(self) -> SprayL:
+        return self._slot_2
+
+    @property
+    def slot_3(self) -> SprayL:
+        return self._slot_3
+
+    def to_list(self) -> List[SprayL]:
+        return [self.slot_1, self.slot_2, self.slot_3]
