@@ -61,14 +61,21 @@ class Spray(BaseModel):
         self._animation_gif: Optional[str] = data['animationGif']
         self.asset_path: str = data['assetPath']
         self._levels: List[Dict[str, Any]] = data['levels']
-        self._price = data.get('price', 0)
+        self._price: int = data.get('price', 0)
+
+        # bundle
+        self._is_promo: bool = False
+        self._discounted_price: int = 0
+        self._currency_id: Optional[str] = None
+        self._discount_percent: float = 0.0
+
         if self._extras.get('bundle') is not None:
             self._bundle: Any = self._extras['bundle']
-            self._price: int = self._bundle.get('BasePrice', self._price)
-            self._discounted_price: int = self._bundle.get('DiscountedPrice', self._price)
-            self._is_promo: bool = self._bundle.get('IsPromoItem')
-            self._currency_id: str = self._bundle.get('CurrencyID')
-            self._discount_percent: float = self._bundle.get('DiscountPercent')
+            self._price = self._bundle.get('BasePrice', self._price)
+            self._discounted_price = self._bundle.get('DiscountedPrice', self._price)
+            self._is_promo = self._bundle.get('IsPromoItem')
+            self._currency_id = self._bundle.get('CurrencyID')
+            self._discount_percent = self._bundle.get('DiscountPercent')
 
     @property
     def name_localizations(self) -> Localization:
@@ -142,7 +149,6 @@ class Spray(BaseModel):
         """:class: `float` Returns the discount percent."""
         return self._discount_percent
 
-    @property
     def is_promo(self) -> bool:
         """:class: `bool` Returns whether the bundle is a promo."""
         return self._is_promo

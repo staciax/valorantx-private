@@ -106,10 +106,10 @@ class Agent(BaseModel):
         self._killfeed_portrait: str = data['killfeedPortrait']
         self.background: Optional[str] = data['background']
         self.background_gradient_colors: List[str] = data['backgroundGradientColors']
-        self.is_full_portrait_right_facing: bool = data['isFullPortraitRightFacing']
-        self.is_playable_character: bool = data['isPlayableCharacter']
-        self.is_available_for_test: bool = data['isAvailableForTest']
-        self.is_base_content: bool = data['isBaseContent']
+        self._is_full_portrait_right_facing: bool = data['isFullPortraitRightFacing']
+        self._is_playable_character: bool = data['isPlayableCharacter']
+        self._is_available_for_test: bool = data['isAvailableForTest']
+        self._is_base_content: bool = data['isBaseContent']
 
     @property
     def name_localizations(self) -> Localization:
@@ -161,8 +161,25 @@ class Agent(BaseModel):
         """:class: `Asset` Returns the agent's killfeed portrait."""
         return Asset._from_url(client=self._client, url=self._killfeed_portrait)
 
+    def is_full_portrait_right_facing(self) -> bool:
+        """:class: `bool` Returns whether the agent's full portrait is right facing."""
+        return self._is_full_portrait_right_facing
+
+    def is_playable_character(self) -> bool:
+        """Returns whether the agent is playable."""
+        return self._is_playable_character
+
+    def is_available_for_test(self) -> bool:
+        """Returns whether the agent is available for test."""
+        return self._is_available_for_test
+
+    def is_base_content(self) -> bool:
+        """Returns whether the agent is base content."""
+        return self._is_base_content
+
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the agent with the given UUID."""
         data = client.assets.get_agent(uuid)
         return cls(client=client, data=data) if data else None
+

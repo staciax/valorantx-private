@@ -54,7 +54,7 @@ class PlayerTitle(BaseModel):
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._title_text: Union[str, Dict[str, str]] = data['titleText']
-        self.is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
+        self._is_hidden_if_not_owned: bool = data.get('isHiddenIfNotOwned', False)
         self.asset_path: str = data['assetPath']
 
     @property
@@ -76,6 +76,10 @@ class PlayerTitle(BaseModel):
     def text(self) -> str:
         """:class: `str` Returns the player title's title text."""
         return self.text_localizations.american_english
+
+    def is_hidden_if_not_owned(self) -> bool:
+        """:class: `bool` Returns whether the player title is hidden if not owned."""
+        return self._is_hidden_if_not_owned
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

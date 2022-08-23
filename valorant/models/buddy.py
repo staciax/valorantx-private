@@ -50,19 +50,26 @@ class Buddy(BaseModel):
     def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self.is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
+        self._is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
         self._theme_uuid: Optional[str] = data['themeUuid']
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
         self._levels: List[Dict[str, Any]] = data['levels']
         self._price: int = data.get('price', 0)
+
+        # bundle
+        self._discounted_price: int = 0
+        self._is_promo: bool = False
+        self._currency_id: Optional[str] = None
+        self._discount_percent: float = 0.0
+
         if self._extras.get('bundle') is not None:
             self._bundle: Any = self._extras['bundle']
-            self._price: int = self._bundle.get('BasePrice', self._price)
-            self._discounted_price: int = self._bundle.get('DiscountedPrice', self._price)
-            self._is_promo: bool = self._bundle.get('IsPromoItem')
-            self._currency_id: str = self._bundle.get('CurrencyID')
-            self._discount_percent: float = self._bundle.get('DiscountPercent')
+            self._price = self._bundle.get('BasePrice', self._price)
+            self._discounted_price = self._bundle.get('DiscountedPrice', self._price)
+            self._is_promo = self._bundle.get('IsPromoItem', False)
+            self._currency_id = self._bundle.get('CurrencyID')
+            self._discount_percent = self._bundle.get('DiscountPercent')
 
     @property
     def name_localizations(self) -> Localization:
@@ -89,6 +96,10 @@ class Buddy(BaseModel):
         """:class: `List[BuddyLevel]` Returns the buddy's levels."""
         return [BuddyLevel(client=self._client, data=level) for level in self._levels]
 
+    def is_hidden_if_not_owned(self) -> bool:
+        """:class: `bool` Returns whether the buddy is hidden if not owned."""
+        return self._is_hidden_if_not_owned
+
     @property
     def price(self) -> int:
         """:class: `int` Returns the buddy's price."""
@@ -106,7 +117,6 @@ class Buddy(BaseModel):
         """:class: `float` Returns the discount percent."""
         return self._discount_percent
 
-    @property
     def is_promo(self) -> bool:
         """:class: `bool` Returns whether the bundle is a promo."""
         return self._is_promo

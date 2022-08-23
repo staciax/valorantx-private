@@ -57,7 +57,7 @@ class Contract(BaseModel):
         self._uuid: str = data['uuid']
         self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
-        self.ship_it: bool = data['shipIt']
+        self._ship_it: bool = data.get('shipIt', False)
         self.free_reward_schedule_uuid: str = data['freeRewardScheduleUuid']
         self.asset_path: str = data['assetPath']
 
@@ -94,6 +94,10 @@ class Contract(BaseModel):
         """:class: `Asset` Returns the contract's icon."""
         return Asset._from_url(self._client, self._display_icon)
 
+    def ship_it(self) -> bool:
+        """:class: `bool` Returns whether the contract is ship it."""
+        return self._ship_it
+
     @property
     def relation_type(self) -> Optional[str]:
         """:class: `str` Returns the contract's relation type."""
@@ -121,7 +125,6 @@ class Contract(BaseModel):
 
     # user contract
 
-    @property
     def complete(self) -> bool:
         """:class: `bool` Returns whether the contract is complete."""
         return self._complete

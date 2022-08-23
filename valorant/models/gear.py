@@ -62,7 +62,7 @@ class Gear(BaseModel):
         self.shop_category: str = self._shop['category']
         self._shop_category_text: Union[str, Dict[str, str]] = self._shop['categoryText']
         self.shop_grid_position: Optional[Dict[str, int]] = self._shop['gridPosition']
-        self.can_be_trashed: bool = self._shop['canBeTrashed']
+        self._can_be_trashed: bool = self._shop.get('canBeTrashed', False)
         self._image: Optional[str] = self._shop['image']
         self._new_image: Optional[str] = self._shop['newImage']
         self._new_image_2: Optional[str] = self._shop['newImage2']
@@ -123,6 +123,10 @@ class Gear(BaseModel):
         if self._new_image_2 is None:
             return None
         return Asset._from_url(client=self._client, url=self._new_image_2)
+
+    def can_be_trashed(self) -> bool:
+        """:class: `bool` Returns whether the gear can be trashed."""
+        return self._can_be_trashed
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

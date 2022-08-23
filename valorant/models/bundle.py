@@ -71,13 +71,17 @@ class Bundle(BaseModel):
         self._discount_price: int = 0
         self._items: List[Union[Skin, Buddy, Spray, PlayerCard]] = []
 
+        # bundle
+        self._whole_sale_only: bool = False
+        self._duration: int = 0
+
         if self._extras.get('bundle') is None:  # TODO: futured_bundle
             self._items = data.get('items', [])
             # TODO: filter items
         else:
             self._bundle: Any = self._extras['bundle']
-            self._duration: int = self._bundle['DurationRemainingInSeconds']
-            self._whole_sale_only: bool = self._bundle['WholesaleOnly']
+            self._duration = self._bundle['DurationRemainingInSeconds']
+            self._whole_sale_only = self._bundle['WholesaleOnly']
             self.__bundle_items(self._bundle['Items'])
 
     def __bundle_items(self, items: List[Dict[str, Any]]) -> None:
@@ -183,7 +187,6 @@ class Bundle(BaseModel):
         """:class: `int` Returns the bundle's duration."""
         return self._duration
 
-    @property
     def whole_sale_only(self) -> bool:
         """:class: `bool` Returns the bundle's wholesale only."""
         return self._whole_sale_only

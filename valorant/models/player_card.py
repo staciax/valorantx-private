@@ -54,7 +54,7 @@ class PlayerCard(BaseModel):
     def _update(self, data: Any) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self.is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
+        self._is_hidden_if_not_owned: bool = data.get('isHiddenIfNotOwned', False)
         self._display_icon: Optional[str] = data['displayIcon']
         self._small_icon: Optional[str] = data['smallArt']
         self._wide_icon: Optional[str] = data['wideArt']
@@ -137,6 +137,10 @@ class PlayerCard(BaseModel):
     def currency_id(self) -> str:
         """:class: `str` Returns the currency id."""
         return self._currency_id
+
+    def is_hidden_if_not_owned(self) -> bool:
+        """:class: `bool` Returns whether the buddy is hidden if not owned."""
+        return self._is_hidden_if_not_owned
 
     # @property
     # def is_owned(self) -> bool:  # TODO: Someday...

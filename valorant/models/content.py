@@ -85,16 +85,22 @@ class ContentSeason:
         self.id: str = data['ID']
         self.name: str = data['Name']
         self.type: str = data['Type']
-        self.is_active: bool = data['IsActive']
+        self._is_active: bool = data['IsActive']
         self._start_time: str = data['StartTime']
         self._end_time: str = data['EndTime']
 
+    def is_active(self) -> bool:
+        """:class:`bool` Returns whether the season is active."""
+        return self._is_active
+
     @property
     def start_time(self) -> datetime:
+        """:class:`datetime.datetime` Returns the start time of the season."""
         return utils.parse_iso_datetime(self._start_time)
 
     @property
     def end_time(self) -> datetime:
+        """:class:`datetime.datetime` Returns the end time of the season."""
         return utils.parse_iso_datetime(self._end_time)
 
 
@@ -116,16 +122,22 @@ class ContentEvent:
     def _update(self, data: Any) -> None:
         self.id: str = data['ID']
         self.name: str = data['Name']
-        self.is_active: bool = data['IsActive']
+        self._is_active: bool = data['IsActive']
         self._start_time: str = data['StartTime']
         self._end_time: str = data['EndTime']
 
+    def is_active(self) -> bool:
+        """:class:`bool` Returns whether the event is active."""
+        return self._is_active
+
     @property
     def start_time(self) -> datetime:
+        """:class:`datetime.datetime` Returns the start time of the event."""
         return utils.parse_iso_datetime(self._start_time)
 
     @property
     def end_time(self) -> datetime:
+        """:class:`datetime.datetime` Returns the end time of the event."""
         return utils.parse_iso_datetime(self._end_time)
 
 

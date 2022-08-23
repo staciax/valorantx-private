@@ -166,9 +166,11 @@ class MMR(BaseModel):
 
     def __init__(self, client: Client, data: Any, **kwargs) -> None:
         super().__init__(client, data, **kwargs)
+        self._is_leaderboard_anonymized: bool = False
+        self._is_act_rank_badge_hidden: bool = False
 
-    def __repr__(self) -> str:
-        return f'<MMR uuid={self.uuid!r} version={self.version!r} latest_competitive_update={self.latest_competitive_update!r}>'
+    # def __repr__(self) -> str:
+        # return f'<MMR uuid={self.uuid!r} version={self.version!r} latest_competitive_update={self.latest_competitive_update!r}>'
 
     def __hash__(self) -> int:
         return hash(self.uuid)
@@ -177,9 +179,21 @@ class MMR(BaseModel):
         self._uuid = data['Subject']
         self.version = data['Version']
         self.queue_skills: Dict[str, Any] = data['QueueSkills']  # TODO: Object
-        self.new_player_experience_finished: bool = data['NewPlayerExperienceFinished']
-        self.is_leaderboard_anonymized: bool = data['IsLeaderboardAnonymized']
-        self.is_act_rank_badge_hidden: bool = data['IsActRankBadgeHidden']
+        self._new_player_experience_finished: bool = data.get('NewPlayerExperienceFinished', False)
+        self._is_leaderboard_anonymized: bool = data.get('IsLeaderboardAnonymized', False)
+        self._is_act_rank_badge_hidden: bool = data.get('IsActRankBadgeHidden', False)
         self._latest_competitive_update: Dict[str, Any] = data['LatestCompetitiveUpdate']
         # TODO: Object
         # self.latest_competitive_update: CompetitiveUpdate = CompetitiveUpdate(self._latest_competitive_update)
+
+    def new_player_experience_finished(self) -> bool:
+        """:class: `bool` Returns whether the new player experience is finished."""
+        return self._new_player_experience_finished
+
+    def is_leaderboard_anonymized(self) -> bool:
+        """:class: `bool` Returns whether the leaderboard is anonymized."""
+        return self._is_leaderboard_anonymized
+
+    def is_act_rank_badge_hidden(self) -> bool:
+        """:class: `bool` Returns whether the act rank badge is hidden."""
+        return self._is_act_rank_badge_hidden
