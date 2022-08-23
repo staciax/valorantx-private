@@ -14,9 +14,11 @@ __version__ = '1.0.0.dev0'
 
 from .asset import *
 from .assets import *
+from .auth import *
 from .client import *
 from .enums import *
 from .errors import *
 from .file import *
 from .localization import *
 from .models import *
+from . import utils as utils

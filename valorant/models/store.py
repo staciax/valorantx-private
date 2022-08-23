@@ -23,9 +23,8 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-# from .skin import SkinNightMarket
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Iterator
 
 from .bundle import Bundle
 from .weapons import Skin, SkinNightMarket
@@ -52,6 +51,9 @@ class StoreFront:
         self._bundles: Dict[Any, Any] = self._featured_bundle.get('Bundles', [])
         self._skins_panel_layout: Dict[Any, Any] = data['SkinsPanelLayout']
         self._bonus_store: Dict[Any, Any] = data.get('BonusStore')
+
+    def __str__(self) -> str:
+        return self.__repr__()
 
     def __repr__(self) -> str:
         return f'<StoreFront bundles={self.bundles} store={self.store} nightmarket={self.nightmarket}>'
@@ -92,6 +94,9 @@ class StoreOffer:
     def __len__(self) -> int:
         return len(self.skins)
 
+    def __iter__(self) -> Iterator[Skin]:
+        return iter(self.skins)
+
     @property
     def skins(self) -> List[Skin]:
         """:class:`.models.Skin`: The list of skins in the store offer."""
@@ -125,6 +130,9 @@ class NightMarket:
 
     def __len__(self) -> int:
         return len(self.skins)
+
+    def __iter__(self) -> Iterator[SkinNightMarket]:
+        return iter(self.skins)
 
     @property
     def skins(self) -> List[SkinNightMarket]:
