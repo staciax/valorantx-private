@@ -25,6 +25,7 @@ from typing import Any, List, TypedDict
 
 from .player import Player as BasePlayer
 
+
 class PlayerParty(BasePlayer, TypedDict):
     Subject: str
     CompetitiveTier: int

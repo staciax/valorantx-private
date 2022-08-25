@@ -182,4 +182,3 @@ class Agent(BaseModel):
         """Returns the agent with the given UUID."""
         data = client.assets.get_agent(uuid)
         return cls(client=client, data=data) if data else None
-

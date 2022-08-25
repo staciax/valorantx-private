@@ -26,19 +26,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import sys
-from typing import (
-    Any,
-    ClassVar,
-    List,
-    Optional,
-    # NoReturn,
-    Mapping,
-    TypeVar,
-    Coroutine,
-    Dict,
-    Union,
-    TYPE_CHECKING
-)
+from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, List, Mapping, Optional, TypeVar, Union  # NoReturn,
 from urllib.parse import urlencode
 
 import aiohttp
@@ -54,7 +42,7 @@ MISSING = utils.MISSING
 if TYPE_CHECKING:
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
-    from .types import collection, player, version
+    from .types import collection, match, player, version
 
 
 # disable urllib3 warnings that might arise from making requests to 127.0.0.1
@@ -307,7 +295,7 @@ class HTTPClient:
         """
         return self.request(Route('GET', f'/account-xp/v1/players/{self._puuid}', 'pd'))
 
-    def fetch_player_loadout(self) -> Response[loadout.Loadout]:
+    def fetch_player_loadout(self) -> Response[collection.Loadout]:
         """
         playerLoadoutUpdate
         Get the player's current loadout
@@ -337,7 +325,7 @@ class HTTPClient:
         start_index: int = 0,
         end_index: int = 15,
         queue_id: Union[str, QueueID] = QueueID.competitive,
-    ) -> Response[None]:
+    ) -> Response[match.MatchHistory]:
         """
         MatchHistory_FetchMatchHistory
         Get recent matches for a player
@@ -357,7 +345,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def fetch_match_details(self, match_id: str) -> Response[None]:
+    def fetch_match_details(self, match_id: str) -> Response[match.MatchDetails]:
         """
         Get the full info for a previous match
         Includes everything that the in-game match details screen shows including damage and kill positions,
@@ -447,6 +435,15 @@ class HTTPClient:
         if puuid is None:
             puuid = []
         return self.request(Route('PUT', '/name-service/v2/players', 'pd'), json=puuid)
+
+    # contract endpoints
+
+    def contract_fetch_definitions(self) -> Response[None]:
+        """
+        ContractDefinitions_Fetch
+        Get names and descriptions for contracts
+        """
+        return self.request(Route('GET', '/contract-definitions/v3/item-upgrades', 'pd'))
 
     # store endpoints
 

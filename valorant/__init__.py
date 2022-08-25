@@ -12,6 +12,7 @@ __license__ = 'MIT'
 __copyright__ = 'Copyright 2022-present xStacia'
 __version__ = '1.0.0.dev0'
 
+from . import utils as utils
 from .asset import *
 from .assets import *
 from .auth import *
@@ -21,4 +22,3 @@ from .errors import *
 from .file import *
 from .localization import *
 from .models import *
-from . import utils as utils

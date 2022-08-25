@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import types
 from collections import namedtuple
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Mapping, Optional, Tuple, Type, TypeVar, Final
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Final, Iterator, List, Mapping, Optional, Tuple, Type, TypeVar
 
 # -- https://github.com/Rapptz/discord.py/blob/master/discord/enums.py
 
@@ -172,10 +172,11 @@ __all__ = (
     'try_enum',
     'try_enum_key',
     'LevelBorderID',
-    'EmptyTitleID'
+    'EmptyTitleID',
 )
 
 EmptyTitleID = 'd13e579c-435e-44d4-cec2-6eae5a3c5ed4'  # TODO: Remove this when we have a proper title system
+
 
 class Region(Enum):
     NA = 'na'
@@ -224,6 +225,7 @@ class ItemType(Enum):
 
     def __str__(self) -> str:
         return self.value
+
 
 class AgentID(Enum):
     astra = '41fb69c1-4189-7b37-f117-bcaf1e96f1bf'
@@ -396,8 +398,8 @@ class Locale(Enum):
     def __str__(self) -> str:
         return self.value
 
-class LevelBorderID(Enum):
 
+class LevelBorderID(Enum):
     empty = '00000000-0000-0000-0000-000000000000'
     _1 = 'ebc736cd-4b6a-137b-e2b0-1486e31312c9'
     _20 = '5156a90d-4d65-58d0-f6a8-48a0c003878a'
@@ -424,6 +426,7 @@ class LevelBorderID(Enum):
     _440 = '086dd1ab-4889-793a-4b33-0a99e311fa25'
     _460 = '08ab72f1-4fce-ddb5-5fd5-22abd3bc9d49'
     _480 = '6694d7f7-4ab9-8545-5921-35a9ea8cec24'
+
 
 class BundleID(Enum):
     Arcane = '2270b116-4255-8a14-4486-db9de4979b89'
@@ -514,7 +517,6 @@ def try_enum(cls: Type[E], val: Any, default: Optional[Any] = None) -> E:
 
     If it fails it returns a proxy invalid value instead.
     """
-
     try:
         return cls._enum_value_map_[val]  # type: ignore # All errors are caught below
     except (KeyError, TypeError, AttributeError):

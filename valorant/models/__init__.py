@@ -22,7 +22,6 @@ from .level_border import *
 from .map import *
 from .match import *
 from .mission import *
-from .other import *
 from .party import *
 from .player import *
 from .player_card import *

@@ -39,6 +39,7 @@ __all__ = (
     'percent',
 )
 
+
 def is_uuid(value: str) -> bool:
     """
     Checks if a string is a valid UUID.

@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Iterator
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 from .bundle import Bundle
 from .weapons import Skin, SkinNightMarket
@@ -77,7 +77,6 @@ class StoreFront:
     def nightmarket(self) -> Optional[NightMarket]:
         """:class:`.models.NightMarketOffer`: The nightmarket offer in the featured panel."""
         return NightMarket(client=self._client, data=self._bonus_store) if self._bonus_store is not None else None
-
 
 class StoreOffer:
 
