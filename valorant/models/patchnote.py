@@ -20,22 +20,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
-
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
-from .. import utils
 from ..asset import Asset
 from ..enums import Locale
-from .base import BaseModel
+from .. import utils
 
 if TYPE_CHECKING:
     from ..client import Client
 
-__all__ = ('PatchNotes', 'PatchNote')
 
+__all__ = (
+    'PatchNotes',
+    'PatchNote'
+)
 
 class PatchNotes:
     def __init__(self, *, client: Client, data: Any, locale: Union[str, Locale]) -> None:
@@ -51,6 +52,10 @@ class PatchNotes:
 
     def __repr__(self) -> str:
         return f'<PatchNotes title={self.title!r} patch_notes={self.patch_notes!r}>'
+
+    def __iter__(self) -> Iterator[PatchNote]:
+        for article in self._articles:
+            yield PatchNote(client=self._client, data=article, locale=self.locale)
 
     @property
     def see_article_title(self) -> str:
@@ -73,7 +78,7 @@ class PatchNotes:
         return [PatchNote(client=self._client, data=article, locale=self.locale) for article in self._articles]
 
     @property
-    def last_patch_note(self) -> PatchNote:
+    def latest(self) -> PatchNote:
         return PatchNote(client=self._client, data=self._articles[0], locale=self.locale)
 
 
@@ -87,7 +92,7 @@ class PatchNote:
         self._update(data)
 
     def __repr__(self) -> str:
-        return f'<PatchNote title={self.title!r}>'
+        return f'<PatchNote title={self.title!r} locale={self.locale!r}>'
 
     def __hash__(self) -> int:
         return hash(self.id)
@@ -97,7 +102,7 @@ class PatchNote:
         self.uid: str = data['uid']
         self.title: str = data['title']
         self.description: str = data['description']
-        self.url: str = self.BASE_URL + '/' + self.locale.lower() + data['url']['url']
+        self._url: str = self.BASE_URL + '/' + self.locale.lower() + data['url']['url']
         self.external_link: Optional[str] = data['external_link']
         self._banner = data['banner']
         self._banner_url: str = self._banner['url']
@@ -109,6 +114,20 @@ class PatchNote:
         self.article_type: str = data['article_type']
         self._date_iso: str = data['date']
         self._category_title: str = data['category']
+
+    @property
+    def url(self) -> str:
+        return self._url
+
+    @property
+    def version(self) -> float:
+        digits = [i for i in self.title if i.isdigit()]
+        try:
+            version = float(digits[0] + '.' + ''.join(digits[1:]))
+        except (IndexError, ValueError):
+            return 0.0
+        else:
+            return version
 
     @property
     def banner(self) -> Asset:
