@@ -23,21 +23,30 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, TypedDict, Union, Optional
-from typing_extensions import NotRequired
+from typing import TYPE_CHECKING, Any, List, Optional, TypedDict, Union
+
+from valorant.types.match import (
+    MatchPlayerPlatformInfo,
+    MatchPlayerStats,
+    RoundDamage,
+    behaviorFactors,
+    newPlayerExperienceDetails,
+    xpModification,
+)
 
 if TYPE_CHECKING:
     import datetime
 
 
-class PartialPlayer(TypedDict, total=False):
-    puuid: NotRequired[str]
+class PartialPlayer(TypedDict):
+    puuid: str
     username: str
     tagline: str
 
 
-class Player(PartialPlayer, total=False):
-    region: NotRequired[str]
+class Player(PartialPlayer):
+    region: str
+    locale: Optional[str]
 
 
 class AccountXPProgress(TypedDict):
@@ -66,3 +75,24 @@ class AccountXP(TypedDict):
     History: List[AccountXPHistory]
     LastTimeGrantedFirstWin: Union[str, datetime.datetime]
     NextTimeFirstWinAvailable: Union[str, datetime.datetime]
+
+
+class PlayerMatch(Player):
+    subject: str
+    gameName: str
+    tagLine: str
+    platformInfo: MatchPlayerPlatformInfo
+    teamId: str
+    partyId: str
+    characterId: str
+    stats: MatchPlayerStats
+    roundDamage: List[RoundDamage]
+    competitiveTier: int
+    playerCard: str
+    playerTitle: str
+    preferredLevelBorder: str
+    accountLevel: int
+    sessionPlaytimeMinutes: int
+    xpModifications: List[xpModification]
+    behaviorFactors: behaviorFactors
+    newPlayerExperienceDetails: newPlayerExperienceDetails
