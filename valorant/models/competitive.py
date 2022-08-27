@@ -149,18 +149,20 @@ class CompetitiveTier(BaseModel):
         data = client.assets.get_competitive_tier(uuid)
         return cls(client=client, data=data) if data else None
 
-class CompetitiveUpdate(TypedDict):  # TODO: Model
-    MatchID: str
-    MapID: str
-    SeasonID: str
-    MatchStartTime: int
-    TierAfterUpdate: int
-    TierBeforeUpdate: int
-    RankedRatingAfterUpdate: int
-    RankedRatingBeforeUpdate: int
-    RankedRatingEarned: int
-    RankedRatingPerformanceBonus: int
-    AFKPenalty: int
+class LatestCompetitiveUpdate:
+
+    def __init__(self, data: Any) -> None:
+        self.match_id: str = data['MatchID']
+        self.map_id: str = data['MapID']
+        self.season_id: str = data['SeasonID']
+        self.match_start_time: int = data['MatchStartTime']
+        self.tier_after_update: int = data['TierAfterUpdate']
+        self.tier_before_update: int = data['TierBeforeUpdate']
+        self.ranked_rating_after_update: int = data['RankedRatingAfterUpdate']
+        self.ranked_rating_before_update: int = data['RankedRatingBeforeUpdate']
+        self.ranked_rating_earned: int = data['RankedRatingEarned']
+        self.ranked_rating_performance_bonus: int = data['RankedRatingPerformanceBonus']
+        self.afk_penalty: int = data['AFKPenalty']
 
 class MMR(BaseModel):
 
@@ -169,22 +171,22 @@ class MMR(BaseModel):
         self._is_leaderboard_anonymized: bool = False
         self._is_act_rank_badge_hidden: bool = False
 
-    # def __repr__(self) -> str:
-    #     return f'<MMR version={self.version!r} latest_competitive_update={self.latest_competitive_update!r}>'
+    def __repr__(self) -> str:
+        return f'<MMR version={self.version!r} latest_competitive_update={self.latest_competitive_update!r}>'
 
     def __hash__(self) -> int:
         return hash(self.uuid)
 
-    def _update(self, data: Any) -> None:
+    def _update(self, data: Dict[str, Any]) -> None:
         self._uuid = data['Subject']
         self.version = data['Version']
-        self.queue_skills: Dict[str, Any] = data['QueueSkills']  # TODO: Object
+        self.queue_skills: Dict[str, Any] = data['QueueSkills']
         self._new_player_experience_finished: bool = data.get('NewPlayerExperienceFinished', False)
         self._is_leaderboard_anonymized: bool = data.get('IsLeaderboardAnonymized', False)
         self._is_act_rank_badge_hidden: bool = data.get('IsActRankBadgeHidden', False)
-        self._latest_competitive_update: Dict[str, Any] = data['LatestCompetitiveUpdate']
-        # TODO: Object
-        # self.latest_competitive_update: CompetitiveUpdate = CompetitiveUpdate(self._latest_competitive_update)
+        self.latest_competitive_update: Optional[LatestCompetitiveUpdate] = LatestCompetitiveUpdate(
+            data['LatestCompetitiveUpdate']
+        ) if data.get('LatestCompetitiveUpdate') in data else None
 
     def new_player_experience_finished(self) -> bool:
         """:class: `bool` Returns whether the new player experience is finished."""

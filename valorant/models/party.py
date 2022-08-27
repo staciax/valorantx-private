@@ -20,3 +20,72 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, List
+
+from .player import BasePlayer
+
+if TYPE_CHECKING:
+    from ..client import Client
+
+    if TYPE_CHECKING:
+        from ..client import Client
+        from ..types.party import PlayerParty as PlayerPartyPayload
+
+
+class PlayerParty(BasePlayer):
+    """
+    A player that is currently in a party.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two players are equal.
+
+        .. describe:: x != y
+
+            Checks if two players are not equal.
+
+        .. describe:: str(x)
+
+            Returns a string representation of the player.
+    """
+
+    __slots__ = ('_is_owner', '_is_ready', 'is_moderator', 'platform_type', '_pings')
+
+    def __init__(self, *, client: Client, data: PlayerPartyPayload) -> None:
+        super().__init__(client=client, data=data)
+        self._is_owner: bool = data.get('IsOwner', False)
+        self._is_ready: bool = data.get('IsReady', False)
+        self.is_moderator: bool = data.get('IsModerator', False)
+        self.platform_type: str = data['PlatformType']
+        self._pings: List[Any] = data.get('Pings', [])
+
+    def __repr__(self) -> str:
+        return f'<PlayerParty puuid={self.puuid!r} name={self.name!r} tagline={self.tagline!r} region={self.region!r}>'
+
+    def is_owner(self) -> bool:
+        """
+        :class: `bool`
+        Returns whether the player is the party owner.
+        """
+        return self._is_owner
+
+    def is_ready(self) -> bool:
+        """
+        :class: `bool`
+        Returns whether the player is ready to play.
+        """
+        return self._is_ready
+
+    @staticmethod
+    def __get_server_ping(game_pod_id: str) -> str:
+        server_name = game_pod_id.split('-')[5]
+        server_number = game_pod_id.split('-')[6]
+        return f"{server_name}-{server_number}"
+
+    @property
+    def pings(self) -> List[str]:
+        return [f"{self.__get_server_ping(ping['GamePodID'])}: {ping['Ping']}" for ping in self._pings]

@@ -23,9 +23,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Optional, TypeAlias, Union
+import uuid
+from typing import TYPE_CHECKING, Any, Iterator, List, Optional, TypeAlias, Union
 
-from ..enums import WeaponID
+from ..enums import LevelBorderID, WeaponID
 from .base import BaseModel
 from .level_border import LevelBorder
 from .player_card import PlayerCard
@@ -35,7 +36,12 @@ from .weapons import SkinChromaLoadout, SkinLevelLoadout, SkinLoadout
 
 if TYPE_CHECKING:
     from ..client import Client
-    from ..types.collection import Loadout as LoadoutPayload
+    from ..types.collection import (
+        IdentityLoadout as IdentityLoadoutPayload,
+        Loadout as LoadoutPayload,
+        SkinLoadout as SkinLoadoutPayload,
+        SprayLoadout as SprayLoadoutPayload,
+    )
 
 SprayL: TypeAlias = Union[SprayLoadout, SprayLevelLoadout]
 SkinL: TypeAlias = Union[SkinLoadout, SkinLevelLoadout, SkinChromaLoadout]
@@ -76,21 +82,21 @@ class Collection(BaseModel):
         super().__init__(client, data, **kwargs)
         # self.user = client.user
         self._level_border_uuid = 'ebc736cd-4b6a-137b-e2b0-1486e31312c9'
-        self._uuid = data['Subject']
-        self.version = data['Version']
-        self.incognito = data['Incognito']
-        self._identity = data['Identity']
-        self._skins_loadout = data['Guns']
-        self._sprays_loadout = data['Sprays']
-        self._player_card_uuid = self._identity['PlayerCardID']
-        self._player_title_uuid = self._identity['PlayerTitleID']
-        self._level_border_uuid = self._identity['PreferredLevelBorderID']
+        self._uuid: str = data['Subject']
+        self.version: int = data['Version']
+        self._incognito: bool = data['Incognito']
+        self._identity: IdentityLoadoutPayload = data['Identity']
+        self._skins_loadout: List[SkinLoadoutPayload] = data['Guns']
+        self._sprays_loadout: List[SprayLoadoutPayload] = data['Sprays']
+        self._player_card_uuid: str = self._identity['PlayerCardID']
+        self._player_title_uuid: str = self._identity['PlayerTitleID']
+        self._level_border_uuid: str = self._identity['PreferredLevelBorderID']
 
-    # def __str__(self) -> str:
-    # return self.__repr__()
+    def __str__(self) -> str:
+        return self.__repr__()
 
-    # def __repr__(self) -> str:
-    # return f'<Loadout skins={self.skins!r} version={self.version!r} incognito={self.incognito!r}>'
+    def __repr__(self) -> str:
+        return f'<Loadout skins={self.skins!r} version={self.version!r} incognito={self.incognito()!r}>'
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Collection) and (self.version == other.version or self.incognito == other.incognito)
@@ -101,50 +107,29 @@ class Collection(BaseModel):
     def __hash__(self) -> int:
         return hash((self.uuid, self.version, self.incognito))
 
+    def incognito(self) -> bool:
+        """
+        Whether the player is incognito.
+        """
+        return self._incognito
+
     @property
-    def sprays(self) -> SprayCollection:
-        # TODO: SprayID or SprayLevelID?
-
-        # spray_loadout = [
-        #     SprayLoadout._from_loadout(client=self._client, uuid=spray['SprayID'], loadout=spray)
-        #     for spray in self._sprays_loadout
-        # ]
-        # print(self._sprays_loadout)
-        # spray_level_loadout = [
-        #     SprayLevelLoadout._from_loadout(client=self._client, uuid=spray['SprayLevelID'], loadout=spray)
-        #     for spray in self._sprays_loadout
-        # ]
-
+    def sprays(self) -> Union[SprayCollection, List[SprayL]]:
         spray_loadout = []
         for spray in self._sprays_loadout:
-            print(spray)
             if spray['SprayLevelID']:
                 spray_loadout.append(
                     SprayLevelLoadout._from_loadout(client=self._client, uuid=spray['SprayLevelID'], loadout=spray)
                 )
             elif spray['SprayID']:
-                spray_loadout.append(SprayLoadout._from_loadout(client=self._client, uuid=spray['SprayID'], loadout=spray))
+                spray_loadout.append(
+                    SprayLoadout._from_loadout(client=self._client, uuid=spray['SprayID'], loadout=spray)
+                )  # noqa: E501
 
         return SprayCollection(spray_loadout)
 
     @property
-    def skins(self) -> SkinCollection:
-
-        # skin_loadout = [
-        #     SkinLoadout._from_loadout(client=self._client, uuid=skin['SkinID'], loadout=skin)
-        #     for skin in sorted(self._skins_loadout, key=lambda x: x['ID'])
-        # ]
-        #
-        # skin_level_loadout = [
-        #     SkinLevelLoadout._from_loadout(client=self._client, uuid=skin['SkinLevelID'], loadout=skin)
-        #     for skin in sorted(self._skins_loadout, key=lambda x: x['ID'])
-        # ]
-        #
-        # skin_chroma_loadout = [
-        #     SkinChromaLoadout._from_loadout(client=self._client, uuid=skin['ChromaID'], loadout=skin)
-        #     for skin in sorted(self._skins_loadout, key=lambda x: x['ID'])
-        #
-        # ]
+    def skins(self) -> Union[SkinCollection, List[SkinL]]:
 
         skin_loadout = []
         for skin in sorted(self._skins_loadout, key=lambda x: x['ID']):
@@ -166,9 +151,9 @@ class Collection(BaseModel):
     #     return self._client.user.account_level
 
     @property
-    def level_border(self) -> Optional[LevelBorder]:
-        if self._level_border_uuid == '00000000-0000-0000-0000-000000000000':
-            pass
+    def level_border(self) -> LevelBorder:
+        if self._level_border_uuid == str(uuid.UUID(int=0)) or not self._level_border_uuid:
+            self._level_border_uuid = str(LevelBorderID._1)
         return LevelBorder._from_uuid(client=self._client, uuid=self._level_border_uuid)
 
     @property
@@ -232,6 +217,11 @@ class SkinCollection:
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
 
+    def __iter__(self) -> Iterator[SkinL]:
+        return iter(
+            [self.melee, *self.sidearms, *self.smgs, *self.shotguns, *self.rifles, *self.snipers, *self.machine_guns]
+        )
+
     def _update(self, loadout: List[SkinL]) -> None:
         for skin in loadout:
             setattr(self, skin.base_weapon.name.lower(), skin)
@@ -279,6 +269,9 @@ class SprayCollection:
 
     def __repr__(self) -> str:
         return f'<SprayCollection slot_1={self.slot_1!r}, slot_2={self.slot_2!r} slot_3={self.slot_3!r}>'
+
+    def __iter__(self) -> Iterator[SprayL]:
+        return iter([self.slot_1, self.slot_2, self.slot_3])
 
     def _update(self, loadout: List[SprayLoadout]) -> None:
         for spray in loadout:
