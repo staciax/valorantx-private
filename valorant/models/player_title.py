@@ -48,7 +48,7 @@ class PlayerTitle(BaseModel):
         return self.text
 
     def __repr__(self) -> str:
-        return f"<PlayerTitle name={self.name!r} text={self.text!r}>"
+        return f"<PlayerTitle display_name={self.display_name!r} text={self.text!r}>"
 
     def _update(self, data: Any) -> None:
         self._uuid: str = data['uuid']
@@ -63,7 +63,7 @@ class PlayerTitle(BaseModel):
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
-    def name(self) -> str:
+    def display_name(self) -> str:
         """:class: `str` Returns the player title's name."""
         return self.name_localizations.american_english
 

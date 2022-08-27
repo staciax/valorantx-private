@@ -45,12 +45,15 @@ __all__ = (
 # TODO: _agent abilities, voice lines, mediaList, etc.
 
 
-class _AgentRole(BaseModel):
+class AgentRole(BaseModel):
     def __init__(self, client: Client, data: Any) -> None:
         super().__init__(client=client, data=data)
 
+    def __repr__(self) -> str:
+        return f'<AgentRole display_name={self.display_name!r}>'
+
     def _update(self, data: Any) -> None:
-        self._uuid = data['uuid']
+        self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._description: Union[str, Dict[str, str]] = data['description']
         self._display_icon: Optional[str] = data['displayIcon']
@@ -62,7 +65,7 @@ class _AgentRole(BaseModel):
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
-    def name(self) -> str:
+    def display_name(self) -> str:
         """:class: `str` Returns the agent role's name."""
         return self.name_localizations.american_english
 
@@ -87,10 +90,10 @@ class Agent(BaseModel):
         super().__init__(client=client, data=data)
 
     def __str__(self) -> str:
-        return self.name
+        return self.display_name
 
     def __repr__(self) -> str:
-        return f'<Agent name={self.name!r}>'
+        return f'<Agent display_name={self.display_name!r}>'
 
     def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
@@ -117,7 +120,7 @@ class Agent(BaseModel):
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
-    def name(self) -> str:
+    def display_name(self) -> str:
         """:class: `str` Returns the agent's name."""
         return self.name_localizations.american_english
 

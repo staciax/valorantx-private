@@ -28,6 +28,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from ..asset import Asset
 from ..localization import Localization
 from .base import BaseModel
+from .theme import Theme
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -42,10 +43,10 @@ class Buddy(BaseModel):
         super().__init__(client=client, data=data, bundle=bundle)
 
     def __str__(self) -> str:
-        return self.name
+        return self.display_name
 
     def __repr__(self) -> str:
-        return f'<Buddy name={self.name!r}>'
+        return f'<Buddy display_name={self.display_name!r}>'
 
     def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
@@ -77,14 +78,14 @@ class Buddy(BaseModel):
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
-    def name(self) -> str:
+    def display_name(self) -> str:
         """:class: `str` Returns the buddy's name."""
         return self.name_localizations.american_english
 
     @property
-    def theme(self) -> str:  # TODO: Theme Object
-        """:class: `str` Returns the buddy's theme."""
-        return self._theme_uuid
+    def theme(self) -> Theme:
+        """:class: `Theme` Returns the buddy's theme."""
+        return Theme._from_uuid(self._client, self._theme_uuid)
 
     @property
     def display_icon(self) -> Asset:
@@ -133,10 +134,10 @@ class BuddyLevel(BaseModel):
         super().__init__(client=client, data=data)
 
     def __str__(self) -> str:
-        return self.name
+        return self.display_name
 
     def __repr__(self) -> str:
-        return f'<BuddyLevel name={self.name!r} base={self.base_buddy!r}>'
+        return f'<BuddyLevel display_name={self.display_name!r} base={self.base_buddy!r}>'
 
     def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
@@ -153,7 +154,7 @@ class BuddyLevel(BaseModel):
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
-    def name(self) -> str:
+    def display_name(self) -> str:
         """:class: `str` Returns the buddy's name."""
         return self.name_localizations.american_english
 

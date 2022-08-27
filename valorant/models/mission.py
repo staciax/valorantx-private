@@ -74,7 +74,7 @@ class Mission(BaseModel):
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
-    def name(self) -> str:
+    def display_name(self) -> str:
         """:class: `str` Returns the mission's name."""
         return self.name_localizations.american_english
 

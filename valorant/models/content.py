@@ -70,16 +70,7 @@ class ContentSeason:
         self._update(data)
 
     def __repr__(self) -> str:
-        attrs = [
-            ('id', self.id),
-            ('name', self.name),
-            ('type', self.type),
-            ('is_active', self.is_active),
-            ('start_time', self.start_time),
-            ('end_time', self.end_time),
-        ]
-        joined = ' '.join('%s=%r' % t for t in attrs)
-        return f'<{self.__class__.__name__} {joined}>'
+        return f"<ContentSeason name={self.name!r} type={self.type!r} is_active={self.is_active()!r}>"
 
     def _update(self, data: Any) -> None:
         self.id: str = data['ID']
@@ -146,10 +137,10 @@ class ContentTier(BaseModel):
         super().__init__(client=client, data=data)
 
     def __str__(self) -> str:
-        return self.name
+        return self.display_name
 
     def __repr__(self) -> str:
-        return f'<ContentTier name={self.name!r}>'
+        return f'<ContentTier display_name={self.display_name!r}>'
 
     def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
@@ -168,7 +159,7 @@ class ContentTier(BaseModel):
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
-    def name(self) -> str:
+    def display_name(self) -> str:
         """:class: `str` Returns the content tier's name."""
         return self.name_localizations.american_english
 

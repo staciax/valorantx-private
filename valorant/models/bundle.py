@@ -51,10 +51,10 @@ class Bundle(BaseModel):
         super().__init__(client=client, data=data, **kwargs)
 
     def __str__(self) -> str:
-        return self.name
+        return self.display_name
 
     def __repr__(self) -> str:
-        return f'<Bundle name={self.name!r}>'
+        return f'<Bundle display_name={self.display_name!r}>'
 
     def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
@@ -116,7 +116,7 @@ class Bundle(BaseModel):
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
-    def name(self) -> str:
+    def display_name(self) -> str:
         """:class: `str` Returns the bundle's name."""
         return self.name_localizations.american_english
 
@@ -126,7 +126,7 @@ class Bundle(BaseModel):
         return Localization(self._display_name_sub_text, locale=self._client.locale)
 
     @property
-    def sub_name(self) -> str:
+    def display_sub_name(self) -> str:
         """:class: `str` Returns the bundle's sub name."""
         return self.name_sub_localizations.american_english
 
@@ -173,7 +173,7 @@ class Bundle(BaseModel):
     @property
     def vertical_promo_image(self) -> Optional[Asset]:
         """:class: `Asset` Returns the bundle's vertical promo image."""
-        return Asset._from_url(client=self._client, url=self._vertical_promo_image) if self._vertical_promo_image else None
+        return Asset._from_url(client=self._client, url=self._vertical_promo_image) if self._vertical_promo_image else None  # noqa: E501
 
     @property
     def items(self) -> List[Union[Buddy, Spray, PlayerCard]]:

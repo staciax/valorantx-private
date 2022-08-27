@@ -8,7 +8,6 @@ client = valorant.Client(locale='en-US')
 # get basic logging
 logging.basicConfig(level=logging.INFO)
 
-
 async def main():
     async with client:
         await client.fetch_all_assets()
@@ -40,8 +39,9 @@ async def main():
         contract = client.get_contract('7ae5ad85-400b-beba-989d-42924ccf39be')
         print(repr(contract))
 
-        weapon = client.get_weapon('Vandal')
-        print(repr(weapon))
+        weapon = client.get_weapon('Operator')
+        print(repr(weapon.stats))
+
         for skin in weapon.skins:
             print(repr(skin))
             for chroma in skin.chromas:
@@ -61,7 +61,7 @@ async def main():
         print(repr(skin_chroma.base_skin))
 
         all_bundles = client.get_all_bundles()
-        print(list(sorted(all_bundles, key=lambda b: b.name)))
+        print(list(sorted(all_bundles, key=lambda b: b.display_name)))
 
         ceremony = client.get_ceremony('1e71c55c-476e-24ac-0687-e48b547dbb35')
         print(repr(ceremony))
@@ -96,7 +96,6 @@ async def main():
 
         theme = client.get_theme('fdfe356c-40c4-ac6a-864e-16998fc784ef')
         print(repr(theme))
-
 
 if __name__ == '__main__':
     asyncio.run(main())

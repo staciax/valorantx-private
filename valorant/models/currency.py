@@ -46,10 +46,10 @@ class Currency(BaseModel):
         super().__init__(client=client, data=data)
 
     def __str__(self) -> str:
-        return self.name
+        return self.display_name
 
     def __repr__(self) -> str:
-        return f'<Currency name={self.name!r}>'
+        return f'<Currency display_name={self.display_name!r}>'
 
     def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
@@ -65,7 +65,7 @@ class Currency(BaseModel):
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
-    def name(self) -> str:
+    def display_name(self) -> str:
         """:class: `str` Returns the agent's name."""
         return self.name_localizations.american_english
 

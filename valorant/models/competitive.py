@@ -50,10 +50,10 @@ class Tier:
         self._update(data)
 
     def __str__(self) -> str:
-        return self.name
+        return self.display_name
 
     def __repr__(self) -> str:
-        return f'<Tier tier={self.tier!r} name={self.name!r} division={self.division!r}>'
+        return f'<Tier tier={self.tier!r} display_name={self.display_name!r} division={self.division!r}>'
 
     def __hash__(self) -> int:
         return hash(self.tier)
@@ -82,7 +82,7 @@ class Tier:
         return Localization(self._name, locale=self._client.locale)
 
     @property
-    def name(self) -> str:
+    def display_name(self) -> str:
         """:class: `str` Returns the tier's name."""
         return self.name_localizations.american_english
 
@@ -170,7 +170,7 @@ class MMR(BaseModel):
         self._is_act_rank_badge_hidden: bool = False
 
     # def __repr__(self) -> str:
-        # return f'<MMR uuid={self.uuid!r} version={self.version!r} latest_competitive_update={self.latest_competitive_update!r}>'
+    #     return f'<MMR version={self.version!r} latest_competitive_update={self.latest_competitive_update!r}>'
 
     def __hash__(self) -> int:
         return hash(self.uuid)
