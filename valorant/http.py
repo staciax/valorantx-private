@@ -324,7 +324,7 @@ class HTTPClient:
         puuid: Optional[str] = None,
         start_index: int = 0,
         end_index: int = 15,
-        queue_id: Union[str, QueueID] = QueueID.competitive,
+        queue_id: Union[str, QueueID] = QueueID.unrated,
     ) -> Response[match.MatchHistory]:
         """
         MatchHistory_FetchMatchHistory
@@ -334,7 +334,8 @@ class HTTPClient:
         """
 
         puuid = self.__check_puuid(puuid)
-        queue_id = try_enum(QueueID, queue_id, QueueID.competitive)
+        if isinstance(queue_id, str):
+            queue_id = try_enum(QueueID, queue_id, QueueID.unrated)
         r = Route(
             'GET',
             f'/match-history/v1/history/{puuid}',

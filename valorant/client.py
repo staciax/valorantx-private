@@ -24,14 +24,13 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
-import os
 from typing import TYPE_CHECKING, Any, Coroutine, Iterator, Mapping, Optional, Type, Union
 
 from . import utils
 from .assets import Assets
-from .enums import Locale, QueueID
+from .enums import Locale, QueueID, try_enum
+from .errors import AuthRequired
 from .http import HTTPClient
 from .models import (
     MMR,
@@ -53,8 +52,9 @@ from .models import (
     Gear,
     LevelBorder,
     Map,
+    MatchDetails,
+    MatchHistory,
     Mission,
-    PatchNotes,
     PlayerCard,
     PlayerTitle,
     Season,
@@ -69,33 +69,50 @@ from .models import (
     Wallet,
     Weapon,
 )
+from .models.patchnote import PatchNotes
 
 if TYPE_CHECKING:
     from types import TracebackType
 
     from typing_extensions import Self
 
-__all__ = ('Client',)
+# fmt: off
+__all__ = (
+    'Client',
+)
+# fmt: on
 
 _log = logging.getLogger(__name__)
 
 MISSING: Any = utils.MISSING
 
 
-class Client:
-    def __init__(self, *, locale: Union[Locale, str] = Locale.american_english) -> None:
+def _authorize_required(func):
+    def wrapper(self: Client, *args: Any, **kwargs: Any) -> Any:
+        if not self.is_authorized():
+            client_func = f'Client.{func.__name__}'
+            raise AuthRequired(f"{client_func!r} requires authorization")
+        return func(self, *args, **kwargs)
 
-        # http client
-        self.http: HTTPClient = HTTPClient()
+    return wrapper
+
+
+class Client:
+    def __init__(self, *, locale: Union[Locale, str] = Locale.american_english, auto_fetch_assets: bool = True) -> None:
+
+        self._locale: Union[Locale, str] = locale
+        self._auto_fetch_assets: bool = auto_fetch_assets
 
         # config
         self._closed: bool = False
         self._ready: bool = False
         self._version: Optional[Version] = None
-        self._season: Optional[str] = None
+        self._season: Optional[Season] = None
 
-        # locale
-        self._locale: Union[Locale, str] = locale
+        self._is_authorized: bool = False
+
+        # http client
+        self._http: HTTPClient = HTTPClient()
 
         # assets
         self.assets: Assets = Assets(client=self, locale=locale)
@@ -115,11 +132,29 @@ class Client:
         if not self.is_closed():
             await self.close()
 
-    def activate(self) -> None:
-        ...
-        # self.version = self.http.get_valorant_version()
-        # self.season = self.http.get_valorant_season()
+    async def authorize(self, username: Optional[str], password: Optional[str]) -> None:
+        """Authorize the client with the given username and password."""
         #  TODO: fetch version and season
+
+        self._is_authorized = True
+        await self.http.static_login(username.strip(), password.strip())
+
+    def is_authorized(self) -> bool:
+        """Check if the client is authorized."""
+        return self._is_authorized
+
+    # def run(self, username: Optional[str], password: Optional[str]) -> None:
+    #     async def runner():
+    #         async with self:
+    #             await self.login(username, password)
+    #
+    #     try:
+    #         asyncio.run(runner())
+    #     except KeyboardInterrupt:
+    #         # nothing to do here
+    #         # `asyncio.run` handles the loop cleanup
+    #         # and `self.start` closes all sockets and the HTTPClient instance.
+    #         return
 
     async def close(self) -> None:
 
@@ -130,6 +165,14 @@ class Client:
 
     def is_closed(self) -> bool:
         return self._closed
+
+    @property
+    def http(self) -> HTTPClient:
+        return self._http
+
+    @http.setter
+    def http(self, http: HTTPClient) -> None:
+        self._http = http
 
     @property
     def locale(self) -> str:
@@ -143,11 +186,22 @@ class Client:
     def version(self, value: Optional[Version]) -> None:
         self._version = value
 
+    @property
+    def season(self) -> Optional[Season]:
+        return self._season
+
+    @season.setter
+    def season(self, value: Optional[Season]) -> None:
+        self._season = value
+
     @locale.setter
     def locale(self, locale: str) -> None:
         self._locale = locale
 
     # assets
+
+    async def fetch_all_assets(self, force: bool = False) -> None:
+        await self.assets.fetch_all_assets(force=force)
 
     def get_agent(self, uuid: str, **kwargs) -> Optional[Agent]:
         """Get an agent by UUID or Display Name."""
@@ -284,62 +338,81 @@ class Client:
         for item in data.values():
             yield Bundle(client=self, data=item)
 
+    async def get_valorant_version(self) -> Version:
+        data = await self.http.asset_valorant_version()
+        return Version(client=self, data=data)
+
+    # patch notes
+
+    async def fetch_patch_notes(self, locale: Union[str, Locale] = Locale.american_english) -> PatchNotes:
+
+        if isinstance(locale, str):
+            locale = try_enum(Locale, str(locale))
+
+        # endpoint is not available for simplified chinese
+        if locale is Locale.chinese_simplified:
+            locale = Locale.chinese_traditional
+        data = await self.http.fetch_patch_notes(locale)
+
+        return PatchNotes(client=self, data=data, locale=locale)
+
     # PVP endpoints
 
-    def fetch_game_content(self) -> Content:
-        return Content(client=self, data=self.http.fetch_content())
+    @_authorize_required
+    async def fetch_content(self) -> Content:
+        data = await self.http.fetch_content()
+        return Content(client=self, data=data)
 
+    @_authorize_required
     async def fetch_account_xp(self) -> AccountXP:
         data = await self.http.fetch_account_xp()
         return AccountXP(client=self, data=data)
 
-    async def fetch_player_loadout(self) -> Collection:
+    @_authorize_required
+    async def fetch_player_loadout(self, *, fetch_account_xp: bool = True) -> Collection:
         # ensure
-        # account_xp = await self.fetch_account_xp()
-        # self.user._account_level = account_xp.progress['Level']  # TODO: models.User.account_level
+        if fetch_account_xp:
+            account_xp = await self.fetch_account_xp()
+            # self.user._account_level = account_xp.level
         data = await self.http.fetch_player_loadout()
         return Collection(client=self, data=data)
 
+    @_authorize_required
     def put_player_loadout(self, loadout: Mapping) -> Coroutine[Any, Any, None]:
         return self.http.put_player_loadout(loadout)
 
+    @_authorize_required
     async def fetch_player_mmr(self, puuid: Optional[str] = None) -> MMR:
         data = await self.http.fetch_mmr(puuid)
         return MMR(client=self, data=data)
 
-    # async def fetch_player_match_history(
-    #     self,
-    #     puuid: Optional[str] = None,
-    #     start_index: int = 0,
-    #     end_index: int = 15,
-    #     queue_id: Optional[str, QueueID] = QueueID.unrated,
-    # ) -> FetchMatchHistory:
-    #     data = await self.http.fetch_match_history(puuid, start_index, end_index, queue_id)
-    #     return FetchMatchHistory(client=self, data=data)
+    async def fetch_match_history(
+        self,
+        puuid: Optional[str] = None,
+        start_index: int = 0,
+        end_index: int = 15,
+        queue_id: Optional[str, QueueID] = QueueID.unrated,
+        *,
+        fetch_match_details: bool = True,
+    ) -> Optional[MatchHistory]:
+        data = await self.http.fetch_match_history(puuid, start_index, end_index, queue_id)
+        history = MatchHistory(client=self, data=data) if data else None
+        if fetch_match_details and history:
+            await history.fetch_history()
+        return history
 
-    # async def fetch_match_details(self, match_id: str) -> Any:
-    #     match_details = await self.http.fetch_match_details(match_id)
-    #     return MatchDetail(client=self, data=match_details)
+    async def fetch_match_details(self, match_id: str) -> Optional[MatchDetails]:
+        match_details = await self.http.fetch_match_details(match_id)
+        return MatchDetails(client=self, data=match_details)
 
     # store endpoints
 
+    @_authorize_required
     async def fetch_store_front(self) -> StoreFront:
         data = await self.http.store_fetch_storefront()
         return StoreFront(client=self, data=data)
 
+    @_authorize_required
     async def fetch_wallet(self) -> Wallet:
         data = await self.http.store_fetch_wallet()
         return Wallet(client=self, data=data)
-
-    async def fetch_patch_notes(self, locale: Union[str, Locale] = Locale.american_english) -> PatchNotes:
-        data = await self.http.fetch_patch_notes(locale)
-        return PatchNotes(client=self, data=data, locale=locale)
-
-    # asset
-
-    async def fetch_all_assets(self, force: bool = False) -> None:
-        await self.assets.fetch_all_assets(force=force)
-
-    async def get_valorant_version(self) -> Version:
-        data = await self.http.asset_valorant_version()
-        return Version(client=self, data=data)
