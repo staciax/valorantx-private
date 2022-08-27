@@ -38,40 +38,19 @@ from urllib.parse import parse_qsl, urlsplit
 
 import aiohttp
 
+from .errors import (
+    RiotAuthenticationError,
+    RiotMultifactorError,
+    RiotRatelimitError,
+    RiotUnknownErrorTypeError,
+    RiotUnknownResponseTypeError,
+)
 
-class RiotAuthError(Exception):
-    """Base class for RiotAuth errors."""
-
-
-class RiotAuthenticationError(RiotAuthError):
-    """Failed to authenticate."""
-
-
-class RiotRatelimitError(RiotAuthError):
-    """Ratelimit error."""
-
-
-class RiotMultifactorError(RiotAuthError):
-    """Error related to multifactor authentication."""
-
-
-class RiotUnknownResponseTypeError(RiotAuthError):
-    """Unknown response type."""
-
-
-class RiotUnknownErrorTypeError(RiotAuthError):
-    """Unknown response error type."""
-
-
+# fmt: off
 __all__ = (
-    "RiotAuthenticationError",
-    "RiotAuthError",
-    "RiotMultifactorError",
-    "RiotRatelimitError",
-    "RiotUnknownErrorTypeError",
-    "RiotUnknownResponseTypeError",
     "RiotAuth",
 )
+# fmt: on
 
 
 class _CookieSentinel:

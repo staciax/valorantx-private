@@ -152,3 +152,33 @@ class RiotServerError(HTTPException):
     """
 
     pass
+
+
+class RiotAuthError(Exception):
+    """Base class for RiotAuth errors."""
+
+
+class RiotAuthenticationError(RiotAuthError):
+    """Failed to authenticate."""
+
+
+class RiotRatelimitError(RiotAuthError):
+    """Ratelimit error."""
+
+
+class RiotMultifactorError(RiotAuthError):
+    """Error related to multifactor authentication."""
+
+
+class RiotUnknownResponseTypeError(RiotAuthError):
+    """Unknown response type."""
+
+
+class RiotUnknownErrorTypeError(RiotAuthError):
+    """Unknown response error type."""
+
+
+class AuthRequired(ValorantException):
+    """Exception that's raised when the client is not logged in."""
+
+    pass
