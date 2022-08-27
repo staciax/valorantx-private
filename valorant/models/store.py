@@ -78,6 +78,7 @@ class StoreFront:
         """:class:`.models.NightMarketOffer`: The nightmarket offer in the featured panel."""
         return NightMarket(client=self._client, data=self._bonus_store) if self._bonus_store is not None else None
 
+
 class StoreOffer:
 
     __slot__ = ()

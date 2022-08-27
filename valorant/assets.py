@@ -72,7 +72,7 @@ def validate_uuid(func):
     return decorator
 
 
-def maybe_uuid():
+def maybe_uuid():  # TODO: rework this
     def decorator(function):
         @wraps(function)
         def wrapper(uuid: str, *args, **kwargs) -> Any:
@@ -171,7 +171,7 @@ class Assets:
         data = self.get_asset('ceremonies')
         return data.get(uuid)
 
-    @validate_uuid  # TODO: re format json
+    @validate_uuid
     def get_competitive_tier(self, uuid: str) -> Optional[Dict[str, Any]]:
         """competitive_tiers, Get a competitive tier by UUID."""
         data = self.get_asset('competitive_tiers')

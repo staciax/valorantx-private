@@ -25,18 +25,16 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
+from .. import utils
 from ..asset import Asset
 from ..enums import Locale
-from .. import utils
 
 if TYPE_CHECKING:
     from ..client import Client
 
 
-__all__ = (
-    'PatchNotes',
-    'PatchNote'
-)
+__all__ = ('PatchNotes', 'PatchNote')
+
 
 class PatchNotes:
     def __init__(self, *, client: Client, data: Any, locale: Union[str, Locale]) -> None:

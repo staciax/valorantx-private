@@ -173,7 +173,9 @@ class Bundle(BaseModel):
     @property
     def vertical_promo_image(self) -> Optional[Asset]:
         """:class: `Asset` Returns the bundle's vertical promo image."""
-        return Asset._from_url(client=self._client, url=self._vertical_promo_image) if self._vertical_promo_image else None  # noqa: E501
+        return (
+            Asset._from_url(client=self._client, url=self._vertical_promo_image) if self._vertical_promo_image else None
+        )  # noqa: E501
 
     @property
     def items(self) -> List[Union[Buddy, Spray, PlayerCard]]:
