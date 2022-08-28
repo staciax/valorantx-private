@@ -607,7 +607,7 @@ class SkinNightMarket(SkinLevel):
         self._start_time_iso: str = extras['Offer']['StartDate']
 
     def __repr__(self) -> str:
-        return f"<SkinNightMarket name={self.name!r} price={self.price!r} discount_price={self.discount_price!r}>"
+        return f"<SkinNightMarket display_name={self.display_name!r} price={self.price!r} discount_price={self.discount_price!r}>"
 
     def is_seen(self) -> bool:
         """Returns whether the skin is seen."""
@@ -680,7 +680,7 @@ class SkinLoadout(Skin, BuddySkinLoadout):
         self._update_loadout(loadout)
 
     def __repr__(self) -> str:
-        return f"<SkinLoadout name={self.name!r}>"
+        return f"<SkinLoadout display_name={self.display_name!r}>"
 
     @classmethod
     def _from_loadout(cls, client: Client, uuid: str, loadout: SkinLoadoutPayload) -> Optional[Self]:
@@ -694,7 +694,7 @@ class SkinLevelLoadout(SkinLevel, BuddySkinLoadout):
         self._update_loadout(loadout)
 
     def __repr__(self) -> str:
-        return f"<SkinLevelLoadout name={self.name!r}>"
+        return f"<SkinLevelLoadout display_name={self.display_name!r}>"
 
     @classmethod
     def _from_loadout(cls, client: Client, uuid: str, loadout: SkinLoadoutPayload) -> Self:
@@ -708,7 +708,7 @@ class SkinChromaLoadout(SkinChroma, BuddySkinLoadout):
         self._update_loadout(loadout)
 
     def __repr__(self) -> str:
-        return f"<SkinChromaLoadout name={self.name!r}>"
+        return f"<SkinChromaLoadout display_name={self.display_name!r}>"
 
     @classmethod
     def _from_loadout(cls, client: Client, uuid: str, loadout: SkinLoadoutPayload) -> Self:
