@@ -225,14 +225,6 @@ class VoiceLineLocalization:
 class Agent(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f'<Agent display_name={self.display_name!r}>'
-
-    def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._description: Union[str, Dict[str, str]] = data['description']
@@ -253,6 +245,12 @@ class Agent(BaseModel):
         self._role: Dict[str, str] = data['role']
         self._abilities: List[Dict[Any, Any]] = data.get('abilities', [])
         self._voice_line: Dict[str, Any] = data['voiceLine']
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f'<Agent display_name={self.display_name!r}>'
 
     @property
     def name_localizations(self) -> Localization:

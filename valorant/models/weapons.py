@@ -458,7 +458,10 @@ class SkinChroma(BaseModel):
     @property
     def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon."""
-        display_icon = self._display_icon or self.base_skin.display_icon
+        if self._display_name == self.base_weapon._display_name:
+            display_icon = self.base_weapon.display_icon
+        else:
+            display_icon = self._display_icon or self.base_skin.display_icon
         return Asset._from_url(client=self._client, url=str(display_icon)) if display_icon else None
 
     @property

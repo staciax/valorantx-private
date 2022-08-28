@@ -45,14 +45,6 @@ __all__ = (
 class PlayerCard(BaseModel):
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f"<PlayerCard display_name={self.display_name!r}>"
-
-    def _update(self, data: Any) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._is_hidden_if_not_owned: bool = data.get('isHiddenIfNotOwned', False)
@@ -63,6 +55,12 @@ class PlayerCard(BaseModel):
         self._theme_uuid: Optional[str] = data['themeUuid']
         self.asset_path: str = data['assetPath']
         self._price = data.get('price', 0)
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f"<PlayerCard display_name={self.display_name!r}>"
 
     @property
     def name_localizations(self) -> Localization:

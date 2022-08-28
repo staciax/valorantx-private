@@ -65,12 +65,6 @@ __all__ = (
 class AccountXP:
     def __init__(self, client: Client, data: AccXPPayload) -> None:
         self._client = client
-        self._update(data)
-
-    def __repr__(self) -> str:
-        return f'<AccountXP version={self.version!r} subject={self.subject!r}>'
-
-    def _update(self, data: AccXPPayload) -> None:
         self.version: int = data['Version']
         self.subject: str = data['Subject']
         self._progress: AccXPProgressPayload = data['Progress']
@@ -79,6 +73,9 @@ class AccountXP:
         self._history: List[AccXPHistoryPayload] = data['History']  # TODO: Objectify this
         self._last_time_granted_first_win_iso: Optional[str, datetime.datetime] = data['LastTimeGrantedFirstWin']
         self._next_time_first_win_available_iso: Optional[str, datetime.datetime] = data['NextTimeFirstWinAvailable']
+
+    def __repr__(self) -> str:
+        return f'<AccountXP version={self.version!r} subject={self.subject!r}>'
 
     @property
     def last_time_granted_first_win(self) -> datetime.datetime:

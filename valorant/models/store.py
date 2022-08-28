@@ -160,13 +160,10 @@ class NightMarket:
 class Wallet:
     def __init__(self, *, client: Client, data: WalletPayload) -> None:
         self._client = client
-        self._update(data)
+        self.balances = data['Balances']
 
     def __repr__(self) -> str:
         return f'<Wallet valorant_points={self.valorant_points!r} radiant_points={self.radiant_points!r}>'
-
-    def _update(self, data: Any) -> None:
-        self.balances = data['Balances']
 
     @property
     def valorant_points(self) -> int:

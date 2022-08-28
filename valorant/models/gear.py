@@ -44,14 +44,6 @@ __all__ = (
 class Gear(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f'<Gear display_name={self.display_name!r}>'
-
-    def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._description: Union[str, Dict[str, str]] = data['description']
@@ -67,6 +59,12 @@ class Gear(BaseModel):
         self._new_image: Optional[str] = self._shop['newImage']
         self._new_image_2: Optional[str] = self._shop['newImage2']
         self.shop_asset_path: str = self._shop['assetPath']
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f'<Gear display_name={self.display_name!r}>'
 
     @property
     def name_localizations(self) -> Localization:

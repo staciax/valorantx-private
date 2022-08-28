@@ -42,15 +42,12 @@ __all__ = ('Content', 'ContentSeason', 'ContentEvent', 'ContentTier')
 class Content:
     def __init__(self, client: Client, data: Any) -> None:
         self._client = client
-        self._update(data)
-
-    def __repr__(self) -> str:
-        return f"<Content season={self.seasons!r}"
-
-    def _update(self, data: Any) -> None:
         self._disabled_ids: List[str] = data['DisabledIDs']
         self._seasons: List[ContentSeason] = data['Seasons']
         self._events: List[str] = data['Events']
+
+    def __repr__(self) -> str:
+        return f"<Content season={self.seasons!r}"
 
     @property
     def disabled_ids(self) -> List[str]:
@@ -67,18 +64,15 @@ class Content:
 
 class ContentSeason:
     def __init__(self, data: Any) -> None:
-        self._update(data)
-
-    def __repr__(self) -> str:
-        return f"<ContentSeason name={self.name!r} type={self.type!r} is_active={self.is_active()!r}>"
-
-    def _update(self, data: Any) -> None:
         self.id: str = data['ID']
         self.name: str = data['Name']
         self.type: str = data['Type']
         self._is_active: bool = data['IsActive']
         self._start_time: str = data['StartTime']
         self._end_time: str = data['EndTime']
+
+    def __repr__(self) -> str:
+        return f"<ContentSeason name={self.name!r} type={self.type!r} is_active={self.is_active()!r}>"
 
     def is_active(self) -> bool:
         """:class:`bool` Returns whether the season is active."""
@@ -97,7 +91,11 @@ class ContentSeason:
 
 class ContentEvent:
     def __init__(self, data: Any) -> None:
-        self._update(data)
+        self.id: str = data['ID']
+        self.name: str = data['Name']
+        self._is_active: bool = data['IsActive']
+        self._start_time: str = data['StartTime']
+        self._end_time: str = data['EndTime']
 
     def __repr__(self) -> str:
         attrs = [
@@ -109,13 +107,6 @@ class ContentEvent:
         ]
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
-
-    def _update(self, data: Any) -> None:
-        self.id: str = data['ID']
-        self.name: str = data['Name']
-        self._is_active: bool = data['IsActive']
-        self._start_time: str = data['StartTime']
-        self._end_time: str = data['EndTime']
 
     def is_active(self) -> bool:
         """:class:`bool` Returns whether the event is active."""
@@ -135,14 +126,6 @@ class ContentEvent:
 class ContentTier(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f'<ContentTier display_name={self.display_name!r}>'
-
-    def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
         self.dev_name: str = data['devName']
@@ -152,6 +135,12 @@ class ContentTier(BaseModel):
         self.highlight_color: str = data['highlightColor']
         self._display_icon: str = data['displayIcon']
         self.asset_path: str = data['assetPath']
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f'<ContentTier display_name={self.display_name!r}>'
 
     @property
     def name_localizations(self) -> Localization:

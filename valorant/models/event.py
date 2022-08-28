@@ -46,20 +46,18 @@ __all__ = (
 class Event(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f'<Event display_name={self.display_name!r}>'
-
-    def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._short_display_name: Union[str, Dict[str, str]] = data['shortDisplayName']
         self._start_time_iso: str = data['startTime']
         self._end_time_iso: str = data['endTime']
         self.asset_path: str = data['assetPath']
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f'<Event display_name={self.display_name!r}>'
 
     @property
     def name_localizations(self) -> Localization:

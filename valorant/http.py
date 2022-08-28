@@ -42,7 +42,7 @@ MISSING = utils.MISSING
 if TYPE_CHECKING:
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
-    from .types import collection, match, player, version, store
+    from .types import collection, match, player, store, version
 
 
 # disable urllib3 warnings that might arise from making requests to 127.0.0.1

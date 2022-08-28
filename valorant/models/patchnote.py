@@ -87,15 +87,6 @@ class PatchNote:
     def __init__(self, *, client: Client, data: Any, locale: Union[str, Locale]) -> None:
         self._client = client
         self.locale: str = str(locale)
-        self._update(data)
-
-    def __repr__(self) -> str:
-        return f'<PatchNote title={self.title!r} locale={self.locale!r}>'
-
-    def __hash__(self) -> int:
-        return hash(self.id)
-
-    def _update(self, data: Any) -> None:
         self.id: str = data['id']
         self.uid: str = data['uid']
         self.title: str = data['title']
@@ -112,6 +103,12 @@ class PatchNote:
         self.article_type: str = data['article_type']
         self._date_iso: str = data['date']
         self._category_title: str = data['category']
+
+    def __repr__(self) -> str:
+        return f'<PatchNote title={self.title!r} locale={self.locale!r}>'
+
+    def __hash__(self) -> int:
+        return hash(self.id)
 
     @property
     def url(self) -> str:

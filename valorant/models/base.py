@@ -47,6 +47,7 @@ class BaseModel(_ModelTag):
 
     def __init__(self, client: Client, data: Union[Any, Any], **kwargs: Any) -> None:
         self._client = client
+        self._uuid: str = data.get('uuid')
         self._extras = kwargs
         self._update(data)
 
@@ -54,7 +55,7 @@ class BaseModel(_ModelTag):
         return self.uuid or ''
 
     def __repr__(self) -> str:
-        return f"<BaseModel uuid={self.uuid}>"
+        return f"<{self.__class__.__name__} uuid={self.uuid!r}>"
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, _ModelTag) and other.uuid == self.uuid
@@ -66,7 +67,7 @@ class BaseModel(_ModelTag):
         return hash(self.uuid)
 
     def _update(self, data: Union[Any, Any]) -> None:
-        self._uuid: str = data.get('uuid', None)
+        pass
 
     @property
     def uuid(self) -> str:

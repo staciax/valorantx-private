@@ -45,17 +45,6 @@ __all__ = (
 class Mission(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
-
-    def __str__(self) -> str:
-        return self.title
-
-    def __repr__(self) -> str:
-        return f'<Mission name={self.title!r}>'
-
-    def __int__(self) -> int:
-        return self.xp
-
-    def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
         self._title: Optional[Union[str, Dict[str, str]]] = data['title']
@@ -67,6 +56,15 @@ class Mission(BaseModel):
         self.tags: Optional[List[str]] = data['tags']
         self.objectives: Optional[Dict[str, Any]] = data['objectives']
         self.asset_path: str = data['assetPath']
+
+    def __str__(self) -> str:
+        return self.title
+
+    def __repr__(self) -> str:
+        return f'<Mission name={self.title!r}>'
+
+    def __int__(self) -> int:
+        return self.xp
 
     @property
     def name_localizations(self) -> Localization:

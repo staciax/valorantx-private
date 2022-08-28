@@ -43,17 +43,15 @@ __all__ = (
 class Ceremony(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
+        self._uuid: str = data['uuid']
+        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self.asset_path: str = data['assetPath']
 
     def __str__(self) -> str:
         return self.display_name
 
     def __repr__(self) -> str:
         return f'<Ceremony display_name={self.display_name!r}>'
-
-    def _update(self, data: Optional[Any]) -> None:
-        self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self.asset_path: str = data['assetPath']
 
     @property
     def name_localizations(self) -> Localization:

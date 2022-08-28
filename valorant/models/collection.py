@@ -26,7 +26,7 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING, Any, Iterator, List, Optional, TypeAlias, Union
 
-from ..enums import LevelBorderID, WeaponID
+from ..enums import LevelBorderID
 from .base import BaseModel
 from .level_border import LevelBorder
 from .player_card import PlayerCard

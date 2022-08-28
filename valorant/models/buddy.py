@@ -41,14 +41,6 @@ __all__ = ('Buddy', 'BuddyLevel', 'BuddyBundle')
 class Buddy(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f'<Buddy display_name={self.display_name!r}>'
-
-    def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
@@ -57,6 +49,12 @@ class Buddy(BaseModel):
         self.asset_path: str = data['assetPath']
         self._levels: List[Dict[str, Any]] = data['levels']
         self._price: int = data.get('price', 0)
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f'<Buddy display_name={self.display_name!r}>'
 
     @property
     def name_localizations(self) -> Localization:
@@ -102,14 +100,6 @@ class Buddy(BaseModel):
 class BuddyLevel(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f'<BuddyLevel display_name={self.display_name!r} base={self.base_buddy!r}>'
-
-    def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._base_buddy_uuid: Optional[str] = data['base_uuid']
         self.level: int = data['charmLevel']
@@ -117,6 +107,12 @@ class BuddyLevel(BaseModel):
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
         self._price: int = data.get('price', 0)
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f'<BuddyLevel display_name={self.display_name!r} base={self.base_buddy!r}>'
 
     @property
     def name_localizations(self) -> Localization:

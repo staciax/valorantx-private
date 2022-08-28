@@ -43,19 +43,17 @@ __all__ = (
 class LevelBorder(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
+        self._uuid: str = data['uuid']
+        self._starting_level: int = data['startingLevel']
+        self._level_number_appearance: str = data['levelNumberAppearance']
+        self._small_player_card_appearance: str = data['smallPlayerCardAppearance']
+        self.asset_path: str = data['assetPath']
 
     def __str__(self) -> str:
         return str(self.starting_level)
 
     def __repr__(self) -> str:
         return f'<LevelBorder starting_level={self.starting_level!r}>'
-
-    def _update(self, data: Optional[Any]) -> None:
-        self._uuid: str = data['uuid']
-        self._starting_level: int = data['startingLevel']
-        self._level_number_appearance: str = data['levelNumberAppearance']
-        self._small_player_card_appearance: str = data['smallPlayerCardAppearance']
-        self.asset_path: str = data['assetPath']
 
     @property
     def starting_level(self) -> int:

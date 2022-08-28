@@ -43,19 +43,17 @@ __all__ = (
 class PlayerTitle(BaseModel):
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
+        self._uuid: str = data['uuid']
+        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._title_text: Union[str, Dict[str, str]] = data['titleText']
+        self._is_hidden_if_not_owned: bool = data.get('isHiddenIfNotOwned', False)
+        self.asset_path: str = data['assetPath']
 
     def __str__(self) -> str:
         return self.text
 
     def __repr__(self) -> str:
         return f"<PlayerTitle display_name={self.display_name!r} text={self.text!r}>"
-
-    def _update(self, data: Any) -> None:
-        self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._title_text: Union[str, Dict[str, str]] = data['titleText']
-        self._is_hidden_if_not_owned: bool = data.get('isHiddenIfNotOwned', False)
-        self.asset_path: str = data['assetPath']
 
     @property
     def name_localizations(self) -> Localization:

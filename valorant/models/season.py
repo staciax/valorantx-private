@@ -46,6 +46,13 @@ __all__ = (
 class Season(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
+        self._uuid: str = data['uuid']
+        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self.type: str = data['type']
+        self._start_time_iso: Union[str, datetime.datetime] = data['startTime']
+        self._end_time_iso: Union[str, datetime.datetime] = data['endTime']
+        self._parent_uuid: str = data['parentUuid']
+        self.asset_path: str = data['assetPath']
 
     def __str__(self) -> str:
         return self.display_name
@@ -55,20 +62,11 @@ class Season(BaseModel):
             ('uuid', self.uuid),
             ('display_name', self.display_name),
             ('type', self.type),
-            ('start_time', self.start_time),
-            ('end_time', self.end_time),
+            ('start_time', self.start_time.strftime('%Y-%m-%d %H:%M:%S')),
+            ('end_time', self.end_time.strftime('%Y-%m-%d %H:%M:%S')),
         ]
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
-
-    def _update(self, data: Optional[Any]) -> None:
-        self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self.type: str = data['type']
-        self._start_time_iso: Union[str, datetime.datetime] = data['startTime']
-        self._end_time_iso: Union[str, datetime.datetime] = data['endTime']
-        self._parent_uuid: str = data['parentUuid']
-        self.asset_path: str = data['assetPath']
 
     @property
     def name_localizations(self) -> Localization:

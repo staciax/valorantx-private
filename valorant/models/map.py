@@ -44,14 +44,6 @@ __all__ = (
 class Map(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f'<Map display_name={self.display_name!r}>'
-
-    def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._coordinates: Union[str, Dict[str, str]] = data['coordinates']
@@ -64,6 +56,12 @@ class Map(BaseModel):
         self.x_scalar_to_add: float = data['xScalarToAdd']
         self.y_scalar_to_add: float = data['yScalarToAdd']
         self._callouts: List[Dict[str, Any]] = data['callouts']  # TODO: Callout object
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f'<Map display_name={self.display_name!r}>'
 
     @property
     def name_localizations(self) -> Localization:

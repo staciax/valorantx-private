@@ -46,14 +46,6 @@ __all__ = (
 class Contract(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]], user_contract: Any = None) -> None:
         super().__init__(client=client, data=data, user_contract=user_contract)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f'<Contract display_name={self.display_name!r}>'
-
-    def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
@@ -78,6 +70,12 @@ class Contract(BaseModel):
             self._complete = self._user_contract.get('complete')
             self._objectives = self._user_contract.get('contract_objectives')
             self._expiration_time_iso = self._user_contract.get('expiration_time')
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f'<Contract display_name={self.display_name!r}>'
 
     @property
     def name_localizations(self) -> Localization:

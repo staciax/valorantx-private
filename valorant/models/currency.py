@@ -44,20 +44,18 @@ __all__ = (
 class Currency(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f'<Currency display_name={self.display_name!r}>'
-
-    def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_name_singular: Union[str, Dict[str, str]] = data['displayNameSingular']
         self._display_icon: str = data['displayIcon']
         self._large_icon: str = data['largeIcon']
         self.asset_path: str = data['assetPath']
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f'<Currency display_name={self.display_name!r}>'
 
     @property
     def name_localizations(self) -> Localization:

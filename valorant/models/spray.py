@@ -216,13 +216,10 @@ class SprayBundle(Spray, BaseFeaturedBundleItem):
 class SprayLoadout(Spray):
     def __init__(self, client: Client, data: Any, loadout: SprayLoadoutPayload) -> None:
         super().__init__(client=client, data=data)
-        self._update_loadout(loadout)
+        self._slot = SpraySlotID._from_id(loadout['EquipSlotID'])
 
     def __repr__(self) -> str:
-        return f'<SprayLoadout name={self.name!r}>'
-
-    def _update_loadout(self, loadout: SprayLoadoutPayload) -> None:
-        self._slot = SpraySlotID._from_id(loadout['EquipSlotID'])
+        return f'<SprayLoadout display_name={self.display_name!r}>'
 
     @property
     def slot(self) -> int:
@@ -238,13 +235,10 @@ class SprayLoadout(Spray):
 class SprayLevelLoadout(SprayLevel):
     def __init__(self, client: Client, data: Any, loadout: SprayLoadoutPayload) -> None:
         super().__init__(client=client, data=data)
-        self._update_loadout(loadout)
+        self._slot = SpraySlotID._from_id(loadout['EquipSlotID'])
 
     def __repr__(self) -> str:
-        return f'<SprayLevelLoadout name={self.name!r} base={self.base_spray!r}>'
-
-    def _update_loadout(self, loadout: SprayLoadoutPayload) -> None:
-        self._slot = SpraySlotID._from_id(loadout['EquipSlotID'])
+        return f'<SprayLevelLoadout display_name={self.display_name!r} base={self.base_spray!r}>'
 
     @property
     def slot(self) -> int:

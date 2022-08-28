@@ -81,20 +81,6 @@ class MatchHistory:
 class MatchDetails:
     def __init__(self, client: Client, data: MatchDetailsPayload) -> None:
         self._client = client
-        self._update(data)
-        self._my_team: Optional[str] = None
-        self._is_won: bool = False
-
-    def __repr__(self) -> str:
-        attrs = [
-            ('id', self.id),
-            ('queue', self.queue),
-            ('started_at', self.started_at.strftime('%Y-%m-%d %H:%M:%S')),
-        ]
-        joined = ' '.join('%s=%r' % t for t in attrs)
-        return f'<{self.__class__.__name__} {joined}>'
-
-    def _update(self, data: MatchDetailsPayload) -> None:
         self._match_info = match_info = data['matchInfo']
         self.id: str = match_info.get('matchId')  # TODO: format
         self._map_id: str = match_info.get('mapId')
@@ -119,6 +105,17 @@ class MatchDetails:
         self._game_start_millis: int = match_info.get('gameStartMillis')
         self._players: List[Dict[str, Any]] = data['players']
         self._game_length: int = match_info.get('gameLengthMillis')
+        self._my_team: Optional[str] = None
+        self._is_won: bool = False
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('id', self.id),
+            ('queue', self.queue),
+            ('started_at', self.started_at.strftime('%Y-%m-%d %H:%M:%S')),
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, MatchDetails) and self.id == other.id

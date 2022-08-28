@@ -93,6 +93,7 @@ def _authorize_required(func):
             client_func = f'Client.{func.__name__}'
             raise AuthRequired(f"{client_func!r} requires authorization")
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -371,8 +372,8 @@ class Client:
     async def fetch_player_loadout(self, *, fetch_account_xp: bool = True) -> Collection:
         # ensure
         # if fetch_account_xp:
-            # account_xp = await self.fetch_account_xp()
-            # self.user._account_level = account_xp.level
+        # account_xp = await self.fetch_account_xp()
+        # self.user._account_level = account_xp.level
         data = await self.http.fetch_player_loadout()
         return Collection(client=self, data=data)
 
