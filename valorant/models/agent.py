@@ -127,6 +127,8 @@ class AgentMedia:
         self.wwise: str = data['wwise']
         self.wave: str = data['wave']
 
+    def __repr__(self) -> str:
+        return f'<AgentMedia id={self.id!r} wwise={self.wwise!r} wave={self.wave!r}>'
 
 class AgentVoiceLine:
     def __init__(self, data: Dict[str, Any]) -> None:
@@ -134,6 +136,8 @@ class AgentVoiceLine:
         self.max_duration: float = data['maxDuration']
         self.media_list: List[AgentMedia] = [AgentMedia(media) for media in data['mediaList']]
 
+    def __repr__(self) -> str:
+        return f'<AgentVoiceLine min_duration={self.min_duration!r} max_duration={self.max_duration!r}>'
 
 class AgentVoiceLineLocalization:
     def __init__(
@@ -223,7 +227,28 @@ class AgentVoiceLineLocalization:
         self.chinese_traditional: AgentVoiceLine = self.zh_TW
 
     def __repr__(self) -> str:
-        return f'<AgentVoiceLineLocalization untranslated={self.untranslated!r}>'
+        attrs = [
+            ('ar_AE', self.ar_AE),
+            ('de_DE', self.de_DE),
+            ('en_US', self.en_US),
+            ('es_ES', self.es_ES),
+            ('es_MX', self.es_MX),
+            ('fr_FR', self.fr_FR),
+            ('id_ID', self.id_ID),
+            ('it_IT', self.it_IT),
+            ('ja_JP', self.ja_JP),
+            ('ko_KR', self.ko_KR),
+            ('pl_PL', self.pl_PL),
+            ('pt_BR', self.pt_BR),
+            ('ru_RU', self.ru_RU),
+            ('th_TH', self.th_TH),
+            ('tr_TR', self.tr_TR),
+            ('vi_VN', self.vi_VN),
+            ('zh_CN', self.zh_CN),
+            ('zh_TW', self.zh_TW),
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Localization) and self.untranslated == other.untranslated
@@ -263,12 +288,8 @@ class Agent(BaseModel):
         self._is_playable_character: bool = data['isPlayableCharacter']
         self._is_available_for_test: bool = data['isAvailableForTest']
         self._is_base_content: bool = data['isBaseContent']
-        self.role: AgentRole = AgentRole(client=self._client, data=data['role'])
-        self.abilities: Optional[List[AgentAbility]] = (
-            [AgentAbility(client=self._client, data=ability) for ability in data['abilities']]
-            if data.get('abilities')
-            else None
-        )
+        self._role: Dict[str, str] = data['role']
+        self._abilities: List[Dict[Any, Any]] = data.get('abilities', [])
         self._voice_line: Dict[str, Any] = data['voiceLine']
 
     @property
@@ -320,6 +341,21 @@ class Agent(BaseModel):
     def killfeed_portrait(self) -> Asset:
         """:class: `Asset` Returns the agent's killfeed portrait."""
         return Asset._from_url(client=self._client, url=self._killfeed_portrait)
+
+    @property
+    def role(self) -> AgentRole:
+        """:class: `AgentRole` Returns the agent's role."""
+        return AgentRole(client=self._client, data=self._role)
+
+    @property
+    def abilities(self) -> List[AgentAbility]:
+        """:class: `List[AgentAbility]` Returns the agent's abilities."""
+        return [AgentAbility(client=self._client, data=ability) for ability in self._abilities]
+
+    @property
+    def voice_line(self) -> AgentVoiceLineLocalization:
+        """:class: `AgentVoiceLineLocalization` Returns the agent's voice line."""
+        return AgentVoiceLineLocalization(self._voice_line)
 
     def is_full_portrait_right_facing(self) -> bool:
         """:class: `bool` Returns whether the agent's full portrait is right facing."""
