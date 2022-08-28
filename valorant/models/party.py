@@ -33,6 +33,8 @@ if TYPE_CHECKING:
         from ..client import Client
         from ..types.party import PlayerParty as PlayerPartyPayload
 
+__all__ = ('PlayerParty',)
+
 
 class PlayerParty(BasePlayer):
     """

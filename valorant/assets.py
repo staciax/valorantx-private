@@ -32,7 +32,7 @@ from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
-from .enums import ItemType, Locale
+from .enums import CurrencyID, ItemType, Locale
 from .utils import is_uuid
 
 if TYPE_CHECKING:
@@ -526,44 +526,56 @@ class Assets:
                 bundle = Assets.ASSET_CACHE['bundles'][uuid]
                 bundle['price'] = item['price']
                 bundle_items = []
-                default_payload = dict(amount=1, discount=0)
+
+                def bundle_item_payload(**kwargs) -> Dict[str, Any]:
+                    if kwargs['base_price'] is None:
+                        kwargs['base_price'] = -1
+                    return dict(
+                        Item=dict(ItemTypeID=kwargs['item_type_id'], ItemID=kwargs['item_id'], Amount=kwargs['amount']),
+                        BasePrice=kwargs['base_price'],
+                        CurrencyID=str(CurrencyID.valorant_point),
+                        DiscountPercent=0,
+                        DiscountedPrice=0,
+                        IsPromoItem=False,
+                    )
+
                 for weapon in item['weapons']:
                     bundle_items.append(
-                        dict(
-                            uuid=weapon['levels'][0]['uuid'],
-                            type=str(ItemType.skin),
-                            price=weapon.get('price', 0),
-                            **default_payload,
+                        bundle_item_payload(
+                            item_type_id=str(ItemType.skin),
+                            item_id=weapon['levels'][0]['uuid'],
+                            amount=1,
+                            base_price=weapon.get('price', 0),
                         )
                     )
                 for buddy in item['buddies']:
                     bundle_items.append(
-                        dict(
-                            uuid=buddy['uuid'],
-                            type=str(ItemType.buddy),
-                            price=buddy.get('price', 0),
-                            **default_payload,
+                        bundle_item_payload(
+                            item_type_id=str(ItemType.buddy),
+                            item_id=buddy['levels'][0]['uuid'],
+                            amount=2,
+                            base_price=buddy.get('price', 0),
                         )
                     )
-                for card in item['cards']:
+                for player_card in item['cards']:
                     bundle_items.append(
-                        dict(
-                            uuid=card['uuid'],
-                            type=str(ItemType.player_card),
-                            price=card.get('price', 0),
-                            **default_payload,
+                        bundle_item_payload(
+                            item_type_id=str(ItemType.player_card),
+                            item_id=player_card['uuid'],
+                            amount=1,
+                            base_price=player_card.get('price', 0),
                         )
                     )
                 for spray in item['sprays']:
                     bundle_items.append(
-                        dict(
-                            uuid=spray['uuid'],
-                            type=str(ItemType.spray),
-                            price=spray.get('price', 0),
-                            **default_payload,
+                        bundle_item_payload(
+                            item_type_id=str(ItemType.spray),
+                            item_id=spray['uuid'],
+                            amount=1,
+                            base_price=spray.get('price', 0),
                         )
                     )
-                bundle['items'] = bundle_items
+                bundle['Items'] = bundle_items
 
             new_dict[uuid] = item
 

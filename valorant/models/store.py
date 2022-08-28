@@ -26,7 +26,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
-from .bundle import Bundle
+from .bundle import FeaturedBundle
 from .weapons import Skin, SkinNightMarket
 
 if TYPE_CHECKING:
@@ -68,14 +68,14 @@ class StoreFront:
         return f'<StoreFront bundles={self.bundles} store={self.store} nightmarket={self.nightmarket}>'
 
     @property
-    def bundle(self) -> Bundle:
+    def bundle(self) -> FeaturedBundle:
         """:class:`.models.Bundle`: The bundle in the featured panel."""
-        return Bundle._from_store(client=self._client, bundle=self._bundle)
+        return FeaturedBundle._from_store(client=self._client, bundle=self._bundle)
 
     @property
-    def bundles(self) -> Union[List[Bundle]]:
+    def bundles(self) -> Union[List[FeaturedBundle]]:
         """:class:`.models.Bundle`: The list of bundles in the featured panel."""
-        return [Bundle._from_store(client=self._client, bundle=bundle) for bundle in self._bundles]
+        return [FeaturedBundle._from_store(client=self._client, bundle=bundle) for bundle in self._bundles]
 
     @property
     def store(self) -> StoreOffer:

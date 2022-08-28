@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from ..asset import Asset
 from ..localization import Localization
-from .base import BaseModel
+from .base import BaseFeaturedBundleItem, BaseModel
 from .theme import Theme
 
 if TYPE_CHECKING:
@@ -35,12 +35,12 @@ if TYPE_CHECKING:
 
     from ..client import Client
 
-__all__ = ('Buddy', 'BuddyLevel')
+__all__ = ('Buddy', 'BuddyLevel', 'BuddyBundle')
 
 
 class Buddy(BaseModel):
-    def __init__(self, client: Client, data: Optional[Dict[str, Any]], bundle: Any = None) -> None:
-        super().__init__(client=client, data=data, bundle=bundle)
+    def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
+        super().__init__(client=client, data=data)
 
     def __str__(self) -> str:
         return self.display_name
@@ -57,20 +57,6 @@ class Buddy(BaseModel):
         self.asset_path: str = data['assetPath']
         self._levels: List[Dict[str, Any]] = data['levels']
         self._price: int = data.get('price', 0)
-
-        # bundle
-        self._discounted_price: int = 0
-        self._is_promo: bool = False
-        self._currency_id: Optional[str] = None
-        self._discount_percent: float = 0.0
-
-        if self._extras.get('bundle') is not None:
-            self._bundle: Any = self._extras['bundle']
-            self._price = self._bundle.get('BasePrice', self._price)
-            self._discounted_price = self._bundle.get('DiscountedPrice', self._price)
-            self._is_promo = self._bundle.get('IsPromoItem', False)
-            self._currency_id = self._bundle.get('CurrencyID')
-            self._discount_percent = self._bundle.get('DiscountPercent')
 
     @property
     def name_localizations(self) -> Localization:
@@ -105,22 +91,6 @@ class Buddy(BaseModel):
     def price(self) -> int:
         """:class: `int` Returns the buddy's price."""
         return self._price
-
-    # bundle
-
-    @property
-    def discounted_price(self) -> int:
-        """:class: `int` Returns the discounted price."""
-        return self._discounted_price
-
-    @property
-    def discount_percent(self) -> float:
-        """:class: `float` Returns the discount percent."""
-        return self._discount_percent
-
-    def is_promo(self) -> bool:
-        """:class: `bool` Returns whether the bundle is a promo."""
-        return self._is_promo
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -168,6 +138,10 @@ class BuddyLevel(BaseModel):
         """:class: `int` Returns the buddy's price."""
         return self._price
 
+    @price.setter
+    def price(self, value: int) -> None:
+        self._price = value
+
     @property
     def base_buddy(self) -> Buddy:
         """:class: `Buddy` Returns the base buddy."""
@@ -178,3 +152,20 @@ class BuddyLevel(BaseModel):
         """Returns the buddy level with the given UUID."""
         data = client.assets.get_buddy_level(uuid)
         return cls(client=client, data=data) if data else None
+
+
+class BuddyBundle(BuddyLevel, BaseFeaturedBundleItem):
+    def __init__(self, client: Client, data: Optional[Dict[str, Any]], bundle: Dict[str, Any]) -> None:
+        BuddyLevel.__init__(self, client=client, data=data)
+        BaseFeaturedBundleItem.__init__(self, bundle=bundle)
+
+    def __repr__(self) -> str:
+        attrs = [('display_name', self.display_name), ('price', self.price), ('discounted_price', self.discounted_price)]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
+    @classmethod
+    def _from_bundle(cls, client: Client, uuid: str, bundle: Dict[str, Any]) -> Optional[Self]:
+        """Returns the buddy level with the given UUID."""
+        data = client.assets.get_buddy_level(uuid)
+        return cls(client=client, data=data, bundle=bundle) if data else None

@@ -29,6 +29,10 @@ from ..asset import Asset
 from ..enums import ItemType
 from ..localization import Localization
 from .base import BaseModel
+from .buddy import BuddyBundle
+from .player_card import PlayerCardBundle
+from .spray import SprayBundle
+from .weapons import SkinBundle
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -42,21 +46,14 @@ if TYPE_CHECKING:
 # fmt: off
 __all__ = (
     'Bundle',
+    'FeaturedBundle',
 )
 # fmt: on
 
 
 class Bundle(BaseModel):
-    def __init__(self, client: Client, data: Optional[Dict[str, Any]], **kwargs) -> None:
-        super().__init__(client=client, data=data, **kwargs)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f'<Bundle display_name={self.display_name!r}>'
-
-    def _update(self, data: Optional[Any]) -> None:
+    def __init__(self, client: Client, data: Optional[Dict[str, Any]], *, is_featured_bundle: bool = False) -> None:
+        super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_name_sub_text: Union[str, Dict[str, str]] = data['displayNameSubText']
@@ -71,44 +68,34 @@ class Bundle(BaseModel):
         self._discount_price: int = 0
         self._items: List[Union[Skin, Buddy, Spray, PlayerCard]] = []
 
-        # bundle
-        self._whole_sale_only: bool = False
-        self._duration: int = 0
-
-        if self._extras.get('bundle') is None:  # TODO: futured_bundle
-            self._items = data.get('items', [])
-            # TODO: filter items
+        if not is_featured_bundle:
+            if data.get('Items') is not None:
+                self._bundle_items(data['Items'])
         else:
-            self._bundle: Any = self._extras['bundle']
-            self._duration = self._bundle['DurationRemainingInSeconds']
-            self._whole_sale_only = self._bundle['WholesaleOnly']
-            self.__bundle_items(self._bundle['Items'])
+            print(self.uuid)
 
-    def __bundle_items(self, items: List[Dict[str, Any]]) -> None:
-
+    def _bundle_items(self, items: List[Dict[str, Any]]) -> None:
         for item in items:
             item_type = item['Item']['ItemTypeID']
             item_uuid = item['Item']['ItemID']
-            is_promo_item = item['IsPromoItem']
-            self._price += item['BasePrice']
-            self._discount_price += item['DiscountedPrice']
 
-            # if item_type == ItemType.Skin.value:
-            #     self.e_items.append(
-            #         Skin._from_uuid(client=self._client, uuid=item_uuid, bundle=item)
-            #     )
-            # if item_type == ItemType.Spray.value:
-            #     self.e_items.append(
-            #         Spray._from_uuid(client=self._client, uuid=item_uuid, bundle=item)
-            #     )
-            # elif item_type == ItemType.Buddy.value:
-            #     self.e_items.append(
-            #         Buddy._from_uuid(client=self._client, uuid=item_uuid, bundle=item)
-            #     )
-            # elif item_type == ItemType.PlayerCard.value:
-            #     self.e_items.append(
-            #         PlayerCard._from_uuid(client=self._client, uuid=item_uuid, bundle=item)
-            #     )
+            self._price += item.get('BasePrice', 0)
+            self._discount_price += item.get('DiscountedPrice', 0)
+
+            if item_type == ItemType.skin.value:
+                self._items.append(SkinBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))
+            elif item_type == ItemType.spray.value:
+                self._items.append(SprayBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))
+            elif item_type == ItemType.buddy.value:
+                self._items.append(BuddyBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))
+            elif item_type == ItemType.player_card.value:
+                self._items.append(PlayerCardBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f'<Bundle display_name={self.display_name!r}>'
 
     @property
     def name_localizations(self) -> Localization:
@@ -182,12 +169,20 @@ class Bundle(BaseModel):
         """:class: `List[Union[Buddy, Spray, PlayerCard]]` Returns the bundle's items."""
         return self._items
 
-    # bundle properties
+    @classmethod
+    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
+        """Returns the bundle with the given uuid."""
+        data = client.assets.get_bundle(uuid)
+        return cls(client=client, data=data) if data else None
 
-    @property
-    def duration(self) -> int:
-        """:class: `int` Returns the bundle's duration."""
-        return self._duration
+
+class FeaturedBundle(Bundle):
+    def __init__(self, client: Client, data: Dict[str, Any], bundle: Dict[str, Any]) -> None:
+        super().__init__(client, data, is_featured_bundle=True)
+        self._items = []
+        self.duration: int = bundle.get('DurationRemainingInSeconds', 0)
+        self._whole_sale_only: bool = bundle.get('WholesaleOnly', False)
+        self._bundle_items(bundle['Items'])
 
     def whole_sale_only(self) -> bool:
         """:class: `bool` Returns the bundle's wholesale only."""
@@ -209,9 +204,3 @@ class Bundle(BaseModel):
         uuid = bundle['DataAssetID']
         data = client.assets.get_bundle(uuid)
         return cls(client=client, data=data, bundle=bundle)
-
-    @classmethod
-    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
-        """Returns the bundle with the given uuid."""
-        data = client.assets.get_bundle(uuid)
-        return cls(client=client, data=data) if data else None

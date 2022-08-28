@@ -41,12 +41,8 @@ __all__ = (
 )
 # fmt: on
 
-# https://dash.valorant-api.com/endpoints/agents
 
-# TODO: _agent abilities, voice lines, mediaList, etc.
-
-
-class AgentRole:
+class Role:
     def __init__(self, client: Client, data: Dict[str, Any]) -> None:
         self._client = client
         self.uuid: str = data['uuid']
@@ -56,7 +52,7 @@ class AgentRole:
         self.asset_path: str = data['assetPath']
 
     def __repr__(self) -> str:
-        return f'<AgentRole display_name={self.display_name!r}>'
+        return f'<Role display_name={self.display_name!r}>'
 
     @property
     def name_localizations(self) -> Localization:
@@ -84,7 +80,7 @@ class AgentRole:
         return Asset._from_url(client=self._client, url=self._display_icon)
 
 
-class AgentAbility:
+class Ability:
     def __init__(self, client: Client, data: Dict[str, Any]) -> None:
         self._client = client
         self.slot: str
@@ -93,7 +89,7 @@ class AgentAbility:
         self._display_icon: str = data['displayIcon']
 
     def __repr__(self) -> str:
-        return f'<AgentAbility display_name={self.display_name!r}>'
+        return f'<Ability display_name={self.display_name!r}>'
 
     @property
     def name_localizations(self) -> Localization:
@@ -121,25 +117,27 @@ class AgentAbility:
         return Asset._from_url(client=self._client, url=self._display_icon)
 
 
-class AgentMedia:
+class Media:
     def __init__(self, data: Dict[str, Any]) -> None:
         self.id: int = data['id']
         self.wwise: str = data['wwise']
         self.wave: str = data['wave']
 
     def __repr__(self) -> str:
-        return f'<AgentMedia id={self.id!r} wwise={self.wwise!r} wave={self.wave!r}>'
+        return f'<Media id={self.id!r} wwise={self.wwise!r} wave={self.wave!r}>'
 
-class AgentVoiceLine:
+
+class VoiceLine:
     def __init__(self, data: Dict[str, Any]) -> None:
         self.min_duration: float = data['minDuration']
         self.max_duration: float = data['maxDuration']
-        self.media_list: List[AgentMedia] = [AgentMedia(media) for media in data['mediaList']]
+        self.media_list: List[Media] = [Media(media) for media in data['mediaList']]
 
     def __repr__(self) -> str:
         return f'<AgentVoiceLine min_duration={self.min_duration!r} max_duration={self.max_duration!r}>'
 
-class AgentVoiceLineLocalization:
+
+class VoiceLineLocalization:
     def __init__(
         self,
         untranslated: Dict[str, Any],
@@ -149,82 +147,46 @@ class AgentVoiceLineLocalization:
         self._locale = locale
 
         # locale code
-        self.ar_AE: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('ar-AE')) if self.untranslated.get('ar-AE') else None
-        )
-        self.de_DE: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('de-DE')) if self.untranslated.get('de-DE') else None
-        )
-        self.en_US: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('en-US')) if self.untranslated.get('en-US') else None
-        )
-        self.es_ES: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('es-ES')) if self.untranslated.get('es-ES') else None
-        )
-        self.es_MX: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('es-MX')) if self.untranslated.get('es-MX') else None
-        )
-        self.fr_FR: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('fr-FR')) if self.untranslated.get('fr-FR') else None
-        )
-        self.id_ID: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('id-ID')) if self.untranslated.get('id-ID') else None
-        )
-        self.it_IT: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('it-IT')) if self.untranslated.get('it-IT') else None
-        )
-        self.ja_JP: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('ja-JP')) if self.untranslated.get('ja-JP') else None
-        )
-        self.ko_KR: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('ko-KR')) if self.untranslated.get('ko-KR') else None
-        )
-        self.pl_PL: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('pl-PL')) if self.untranslated.get('pl-PL') else None
-        )
-        self.pt_BR: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('pt-BR')) if self.untranslated.get('pt-BR') else None
-        )
-        self.ru_RU: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('ru-RU')) if self.untranslated.get('ru-RU') else None
-        )
-        self.th_TH: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('th-TH')) if self.untranslated.get('th-TH') else None
-        )
-        self.tr_TR: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('tr-TR')) if self.untranslated.get('tr-TR') else None
-        )
-        self.vi_VN: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('vi-VN')) if self.untranslated.get('vi-VN') else None
-        )
-        self.zh_CN: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('zh-CN')) if self.untranslated.get('zh-CN') else None
-        )
-        self.zh_TW: AgentVoiceLine = (
-            AgentVoiceLine(self.untranslated.get('zh-TW')) if self.untranslated.get('zh-TW') else None
-        )
+        self.ar_AE: VoiceLine = VoiceLine(self.untranslated.get('ar-AE')) if self.untranslated.get('ar-AE') else None
+        self.de_DE: VoiceLine = VoiceLine(self.untranslated.get('de-DE')) if self.untranslated.get('de-DE') else None
+        self.en_US: VoiceLine = VoiceLine(self.untranslated.get('en-US')) if self.untranslated.get('en-US') else None
+        self.es_ES: VoiceLine = VoiceLine(self.untranslated.get('es-ES')) if self.untranslated.get('es-ES') else None
+        self.es_MX: VoiceLine = VoiceLine(self.untranslated.get('es-MX')) if self.untranslated.get('es-MX') else None
+        self.fr_FR: VoiceLine = VoiceLine(self.untranslated.get('fr-FR')) if self.untranslated.get('fr-FR') else None
+        self.id_ID: VoiceLine = VoiceLine(self.untranslated.get('id-ID')) if self.untranslated.get('id-ID') else None
+        self.it_IT: VoiceLine = VoiceLine(self.untranslated.get('it-IT')) if self.untranslated.get('it-IT') else None
+        self.ja_JP: VoiceLine = VoiceLine(self.untranslated.get('ja-JP')) if self.untranslated.get('ja-JP') else None
+        self.ko_KR: VoiceLine = VoiceLine(self.untranslated.get('ko-KR')) if self.untranslated.get('ko-KR') else None
+        self.pl_PL: VoiceLine = VoiceLine(self.untranslated.get('pl-PL')) if self.untranslated.get('pl-PL') else None
+        self.pt_BR: VoiceLine = VoiceLine(self.untranslated.get('pt-BR')) if self.untranslated.get('pt-BR') else None
+        self.ru_RU: VoiceLine = VoiceLine(self.untranslated.get('ru-RU')) if self.untranslated.get('ru-RU') else None
+        self.th_TH: VoiceLine = VoiceLine(self.untranslated.get('th-TH')) if self.untranslated.get('th-TH') else None
+        self.tr_TR: VoiceLine = VoiceLine(self.untranslated.get('tr-TR')) if self.untranslated.get('tr-TR') else None
+        self.vi_VN: VoiceLine = VoiceLine(self.untranslated.get('vi-VN')) if self.untranslated.get('vi-VN') else None
+        self.zh_CN: VoiceLine = VoiceLine(self.untranslated.get('zh-CN')) if self.untranslated.get('zh-CN') else None
+        self.zh_TW: VoiceLine = VoiceLine(self.untranslated.get('zh-TW')) if self.untranslated.get('zh-TW') else None
 
         # locale language
-        self.arabic: AgentVoiceLine = self.ar_AE
-        self.german: AgentVoiceLine = self.de_DE
-        self.english: AgentVoiceLine = self.en_US
-        self.american_english: AgentVoiceLine = self.en_US
-        self.british_english: AgentVoiceLine = self.en_US
-        self.spanish: AgentVoiceLine = self.es_ES
-        self.spanish_mexican: AgentVoiceLine = self.es_MX
-        self.french: AgentVoiceLine = self.fr_FR
-        self.indonesian: AgentVoiceLine = self.id_ID
-        self.italian: AgentVoiceLine = self.it_IT
-        self.japanese: AgentVoiceLine = self.ja_JP
-        self.korean: AgentVoiceLine = self.ko_KR
-        self.polish: AgentVoiceLine = self.pl_PL
-        self.portuguese_brazil: AgentVoiceLine = self.pt_BR
-        self.russian: AgentVoiceLine = self.ru_RU
-        self.thai: AgentVoiceLine = self.th_TH
-        self.turkish: AgentVoiceLine = self.tr_TR
-        self.vietnamese: AgentVoiceLine = self.vi_VN
-        self.chinese_simplified: AgentVoiceLine = self.zh_CN
-        self.chinese_traditional: AgentVoiceLine = self.zh_TW
+        self.arabic: VoiceLine = self.ar_AE
+        self.german: VoiceLine = self.de_DE
+        self.english: VoiceLine = self.en_US
+        self.american_english: VoiceLine = self.en_US
+        self.british_english: VoiceLine = self.en_US
+        self.spanish: VoiceLine = self.es_ES
+        self.spanish_mexican: VoiceLine = self.es_MX
+        self.french: VoiceLine = self.fr_FR
+        self.indonesian: VoiceLine = self.id_ID
+        self.italian: VoiceLine = self.it_IT
+        self.japanese: VoiceLine = self.ja_JP
+        self.korean: VoiceLine = self.ko_KR
+        self.polish: VoiceLine = self.pl_PL
+        self.portuguese_brazil: VoiceLine = self.pt_BR
+        self.russian: VoiceLine = self.ru_RU
+        self.thai: VoiceLine = self.th_TH
+        self.turkish: VoiceLine = self.tr_TR
+        self.vietnamese: VoiceLine = self.vi_VN
+        self.chinese_simplified: VoiceLine = self.zh_CN
+        self.chinese_traditional: VoiceLine = self.zh_TW
 
     def __repr__(self) -> str:
         attrs = [
@@ -343,19 +305,19 @@ class Agent(BaseModel):
         return Asset._from_url(client=self._client, url=self._killfeed_portrait)
 
     @property
-    def role(self) -> AgentRole:
+    def role(self) -> Role:
         """:class: `AgentRole` Returns the agent's role."""
-        return AgentRole(client=self._client, data=self._role)
+        return Role(client=self._client, data=self._role)
 
     @property
-    def abilities(self) -> List[AgentAbility]:
+    def abilities(self) -> List[Ability]:
         """:class: `List[AgentAbility]` Returns the agent's abilities."""
-        return [AgentAbility(client=self._client, data=ability) for ability in self._abilities]
+        return [Ability(client=self._client, data=ability) for ability in self._abilities]
 
     @property
-    def voice_line(self) -> AgentVoiceLineLocalization:
+    def voice_line(self) -> VoiceLineLocalization:
         """:class: `AgentVoiceLineLocalization` Returns the agent's voice line."""
-        return AgentVoiceLineLocalization(self._voice_line)
+        return VoiceLineLocalization(self._voice_line)
 
     def is_full_portrait_right_facing(self) -> bool:
         """:class: `bool` Returns whether the agent's full portrait is right facing."""

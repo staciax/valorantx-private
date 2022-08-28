@@ -119,9 +119,7 @@ class Collection(BaseModel):
                     SprayLevelLoadout._from_loadout(client=self._client, uuid=spray['SprayLevelID'], loadout=spray)
                 )
             elif spray['SprayID']:
-                spray_loadout.append(
-                    SprayLoadout._from_loadout(client=self._client, uuid=spray['SprayID'], loadout=spray)
-                )
+                spray_loadout.append(SprayLoadout._from_loadout(client=self._client, uuid=spray['SprayID'], loadout=spray))
 
         return SprayCollection(spray_loadout)
 

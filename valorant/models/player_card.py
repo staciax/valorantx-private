@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from ..asset import Asset
 from ..localization import Localization
-from .base import BaseModel
+from .base import BaseFeaturedBundleItem, BaseModel
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -37,13 +37,14 @@ if TYPE_CHECKING:
 # fmt: off
 __all__ = (
     'PlayerCard',
+    'PlayerCardBundle'
 )
 # fmt: on
 
 
 class PlayerCard(BaseModel):
-    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]], bundle: Any = None) -> None:
-        super().__init__(client=client, data=data, bundle=bundle)
+    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
+        super().__init__(client=client, data=data)
 
     def __str__(self) -> str:
         return self.display_name
@@ -62,13 +63,6 @@ class PlayerCard(BaseModel):
         self._theme_uuid: Optional[str] = data['themeUuid']
         self.asset_path: str = data['assetPath']
         self._price = data.get('price', 0)
-        if self._extras.get('bundle') is not None:
-            self._bundle: Any = self._extras['bundle']
-            self._price: int = self._bundle.get('BasePrice', self._price)
-            self._discounted_price: int = self._bundle.get('DiscountedPrice', self._price)
-            self._is_promo: bool = self._bundle.get('IsPromoItem')
-            self._currency_id: str = self._bundle.get('CurrencyID')
-            self._discount_percent: float = self._bundle.get('DiscountPercent')
 
     @property
     def name_localizations(self) -> Localization:
@@ -118,20 +112,9 @@ class PlayerCard(BaseModel):
         """:class: `int` Returns the buddy's price."""
         return self._price
 
-    @property
-    def discounted_price(self) -> int:
-        """:class: `int` Returns the discounted price."""
-        return self._discounted_price
-
-    @property
-    def discount_percent(self) -> float:
-        """:class: `float` Returns the discount percent."""
-        return self._discount_percent
-
-    @property
-    def is_promo(self) -> bool:
-        """:class: `bool` Returns whether the buddy is a promo."""
-        return self._is_promo
+    @price.setter
+    def price(self, value: int) -> None:
+        self._price = value
 
     @property
     def currency_id(self) -> str:
@@ -151,3 +134,20 @@ class PlayerCard(BaseModel):
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         data = client.assets.get_player_card(uuid)
         return cls(client=client, data=data) if data else None
+
+
+class PlayerCardBundle(PlayerCard, BaseFeaturedBundleItem):
+    def __init__(self, client: Client, data: Optional[Dict[str, Any]], bundle: Dict[str, Any]) -> None:
+        PlayerCard.__init__(self, client=client, data=data)
+        BaseFeaturedBundleItem.__init__(self, bundle=bundle)
+
+    def __repr__(self) -> str:
+        attrs = [('display_name', self.display_name), ('price', self.price), ('discounted_price', self.discounted_price)]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
+    @classmethod
+    def _from_bundle(cls, client: Client, uuid: str, bundle: Dict[str, Any]) -> Optional[Self]:
+        """Returns the spray level with the given UUID."""
+        data = client.assets.get_player_card(uuid)
+        return cls(client=client, data=data, bundle=bundle) if data else None

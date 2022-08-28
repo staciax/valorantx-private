@@ -29,7 +29,7 @@ from .. import utils
 from ..asset import Asset
 from ..enums import CurrencyID
 from ..localization import Localization
-from .base import BaseModel
+from .base import BaseFeaturedBundleItem, BaseModel
 from .buddy import Buddy, BuddyLevel
 from .content import ContentTier
 from .theme import Theme
@@ -48,10 +48,13 @@ __all__ = (
     'SkinChroma',
     'SkinLevel',
     'SkinNightMarket',
+    'SkinBundle',
     'SkinLoadout',
     'SkinLevelLoadout',
     'SkinChromaLoadout',
 )
+
+# --- sup models ---
 
 
 class GridPosition:
@@ -239,6 +242,9 @@ class ShopData:
         return Asset._from_url(client=self._client, url=self._new_image_2) if self._new_image_2 else None
 
 
+# --- end sub modules ---
+
+
 class Weapon(BaseModel):
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
@@ -324,14 +330,6 @@ class Weapon(BaseModel):
 class Skin(BaseModel):
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f"<Skin display_name={self.display_name!r}>"
-
-    def _update(self, data: Any) -> None:
         self._uuid = data['uuid']
         self._base_weapon_uuid: str = data['base_weapon_uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
@@ -342,7 +340,22 @@ class Skin(BaseModel):
         self.asset_path: str = data['assetPath']
         self._chromas: List[Dict[str, Any]] = data['chromas']
         self._levels: List[Dict[str, Any]] = data['levels']
-        self.price: int = data.get('price', 0)
+        self._price: int = data.get('price', 0)
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f"<Skin display_name={self.display_name!r}>"
+
+    @property
+    def price(self) -> int:
+        """:class: `int` Returns the skin's price."""
+        return self._price
+
+    @price.setter
+    def price(self, value: int) -> None:
+        self._price = value
 
     @property
     def name_localizations(self) -> Localization:
@@ -413,14 +426,6 @@ class Skin(BaseModel):
 class SkinChroma(BaseModel):
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f"<SkinChroma display_name={self.display_name!r}>"
-
-    def _update(self, data: Any) -> None:
         self._uuid: str = data['uuid']
         self._base_weapon_uuid: str = data['base_weapon_uuid']
         self._base_skin_uuid: str = data['base_skin_uuid']
@@ -430,6 +435,15 @@ class SkinChroma(BaseModel):
         self._swatch: Optional[str] = data['swatch']
         self._streamed_video: Optional[str] = data['streamedVideo']
         self.asset_path: str = data['assetPath']
+        self._price: int = 0
+        if hasattr(self.base_skin, 'price'):
+            self._price = self.base_skin.price
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f"<SkinChroma display_name={self.display_name!r}>"
 
     @property
     def name_localizations(self) -> Localization:
@@ -485,7 +499,11 @@ class SkinChroma(BaseModel):
     @property
     def price(self) -> Optional[int]:
         """:class: `int` Returns the skin's price."""
-        return self.base_skin.price
+        return self._price
+
+    @price.setter
+    def price(self, value: int) -> None:
+        self._price = value
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -497,14 +515,6 @@ class SkinChroma(BaseModel):
 class SkinLevel(BaseModel):
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f"<SkinLevel display_name={self.display_name!r} level={self.level!r}>"
-
-    def _update(self, data: Any) -> None:
         self._uuid: str = data['uuid']
         self._base_weapon_uuid: str = data['base_weapon_uuid']
         self._base_skin_uuid: str = data['base_skin_uuid']
@@ -513,6 +523,15 @@ class SkinLevel(BaseModel):
         self._display_icon: str = data['displayIcon']
         self._streamed_video: Optional[str] = data['streamedVideo']
         self.asset_path: str = data['assetPath']
+        self._price: int = 0
+        if hasattr(self.base_skin, 'price'):
+            self._price = self.base_skin.price
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f"<SkinLevel display_name={self.display_name!r} level={self.level!r}>"
 
     @property
     def name_localizations(self) -> Localization:
@@ -563,7 +582,11 @@ class SkinLevel(BaseModel):
     @property
     def price(self) -> Optional[int]:
         """:class: `int` Returns the skin's price."""
-        return self.base_skin.price
+        return self._price
+
+    @price.setter
+    def price(self, value: int) -> None:
+        self._price = value
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -610,6 +633,23 @@ class SkinNightMarket(SkinLevel):
         uuid = skin_data['Offer']['OfferID']
         data = client.assets.get_skin_level(uuid)
         return cls(client=client, data=data, extras=skin_data)
+
+
+class SkinBundle(SkinLevel, BaseFeaturedBundleItem):
+    def __init__(self, client: Client, data: Optional[Dict[str, Any]], bundle: Dict[str, Any]) -> None:
+        SkinLevel.__init__(self, client=client, data=data)
+        BaseFeaturedBundleItem.__init__(self, bundle=bundle)
+
+    def __repr__(self) -> str:
+        attrs = [('display_name', self.display_name), ('price', self.price), ('discounted_price', self.discounted_price)]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
+    @classmethod
+    def _from_bundle(cls, client: Client, uuid: str, bundle: Dict[str, Any]) -> Optional[Self]:
+        """Returns the spray level with the given UUID."""
+        data = client.assets.get_skin_level(uuid)
+        return cls(client=client, data=data, bundle=bundle) if data else None
 
 
 class BuddySkinLoadout:

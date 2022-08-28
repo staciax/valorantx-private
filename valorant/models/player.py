@@ -56,6 +56,8 @@ __all__ = (
     'AccountXP',
     'BasePlayer',
     'MatchPlayer',
+    'ClientPlayer',
+
 )
 # fmt: on
 

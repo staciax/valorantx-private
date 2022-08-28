@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
     from ..client import Client
 
-__all__ = ('Content', 'ContentTier')
+__all__ = ('Content', 'ContentSeason', 'ContentEvent', 'ContentTier')
 
 
 class Content:

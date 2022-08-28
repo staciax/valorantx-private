@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from ..asset import Asset
 from ..enums import SpraySlotID
 from ..localization import Localization
-from .base import BaseModel
+from .base import BaseFeaturedBundleItem, BaseModel
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -36,20 +36,12 @@ if TYPE_CHECKING:
     from ..client import Client
     from ..types.collection import SprayLoadout as SprayLoadoutPayload
 
-__all__ = ('Spray', 'SprayLevel', 'SprayLoadout', 'SprayLevelLoadout')
+__all__ = ('Spray', 'SprayLevel', 'SprayLoadout', 'SprayLevelLoadout', 'SprayBundle')
 
 
 class Spray(BaseModel):
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]], bundle: Any = None) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f"<Spray display_name={self.display_name!r}>"
-
-    def _update(self, data: Any) -> None:
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._category: Optional[str] = data['category']
@@ -63,19 +55,11 @@ class Spray(BaseModel):
         self._levels: List[Dict[str, Any]] = data['levels']
         self._price: int = data.get('price', 0)
 
-        # bundle
-        self._is_promo: bool = False
-        self._discounted_price: int = 0
-        self._currency_id: Optional[str] = None
-        self._discount_percent: float = 0.0
+    def __str__(self) -> str:
+        return self.display_name
 
-        if self._extras.get('bundle') is not None:
-            self._bundle: Any = self._extras['bundle']
-            self._price = self._bundle.get('BasePrice', self._price)
-            self._discounted_price = self._bundle.get('DiscountedPrice', self._price)
-            self._is_promo = self._bundle.get('IsPromoItem')
-            self._currency_id = self._bundle.get('CurrencyID')
-            self._discount_percent = self._bundle.get('DiscountPercent')
+    def __repr__(self) -> str:
+        return f"<Spray display_name={self.display_name!r}>"
 
     @property
     def name_localizations(self) -> Localization:
@@ -137,21 +121,9 @@ class Spray(BaseModel):
         """:class: `int` Returns the skin's price."""
         return self._price
 
-    # bundle
-
-    @property
-    def discounted_price(self) -> int:
-        """:class: `int` Returns the discounted price."""
-        return self._discounted_price
-
-    @property
-    def discount_percent(self) -> float:
-        """:class: `float` Returns the discount percent."""
-        return self._discount_percent
-
-    def is_promo(self) -> bool:
-        """:class: `bool` Returns whether the bundle is a promo."""
-        return self._is_promo
+    @price.setter
+    def price(self, value: int) -> None:
+        self._price = value
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -163,14 +135,6 @@ class Spray(BaseModel):
 class SprayLevel(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f'<SprayLevel display_name={self.display_name!r} base={self.base_spray!r}>'
-
-    def _update(self, data: Optional[Any]) -> None:
         self._uuid: str = data['uuid']
         self._base_spray_uuid: Optional[str] = data['base_uuid']
         self._spray_level: int = data['sprayLevel']
@@ -178,6 +142,12 @@ class SprayLevel(BaseModel):
         self._display_icon: Optional[str] = data['displayIcon']
         self._asset_path: str = data['assetPath']
         self._price: int = data.get('price', 0)
+
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f'<SprayLevel display_name={self.display_name!r} base={self.base_spray!r}>'
 
     @property
     def name_localizations(self) -> Localization:
@@ -209,6 +179,11 @@ class SprayLevel(BaseModel):
         """:class: `int` Returns the price of the spray."""
         return self._price
 
+    @price.setter
+    def price(self, value: int) -> None:
+        """Sets the price of the spray."""
+        self._price = value
+
     @property
     def base_spray(self) -> Spray:
         """:class: `Spray` Returns the base spray."""
@@ -219,6 +194,23 @@ class SprayLevel(BaseModel):
         """Returns the spray level with the given uuid."""
         data = client.assets.get_spray_level(uuid=uuid)
         return cls(client=client, data=data) if data else None
+
+
+class SprayBundle(Spray, BaseFeaturedBundleItem):
+    def __init__(self, client: Client, data: Optional[Dict[str, Any]], bundle: Dict[str, Any]) -> None:
+        Spray.__init__(self, client=client, data=data)
+        BaseFeaturedBundleItem.__init__(self, bundle=bundle)
+
+    def __repr__(self) -> str:
+        attrs = [('display_name', self.display_name), ('price', self.price), ('discounted_price', self.discounted_price)]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
+    @classmethod
+    def _from_bundle(cls, client: Client, uuid: str, bundle: Dict[str, Any]) -> Optional[Self]:
+        """Returns the spray level with the given UUID."""
+        data = client.assets.get_spray(uuid)
+        return cls(client=client, data=data, bundle=bundle) if data else None
 
 
 class SprayLoadout(Spray):

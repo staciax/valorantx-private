@@ -42,7 +42,7 @@ MISSING = utils.MISSING
 if TYPE_CHECKING:
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
-    from .types import collection, match, player, version
+    from .types import collection, match, player, version, store
 
 
 # disable urllib3 warnings that might arise from making requests to 127.0.0.1
@@ -455,14 +455,14 @@ class HTTPClient:
         """
         return self.request(Route('GET', '/store/v1/offers/', 'pd'))
 
-    def store_fetch_storefront(self) -> Response[None]:
+    def store_fetch_storefront(self) -> Response[store.StoreFront]:
         """
         Store_GetStorefrontV2
         Get the currently available items in the store
         """
         return self.request(Route('GET', f'/store/v2/storefront/{self._puuid}', 'pd'))
 
-    def store_fetch_wallet(self) -> Response[None]:
+    def store_fetch_wallet(self) -> Response[store.Wallet]:
         """
         Store_GetWallet
         Get amount of Valorant points and Radianite the player has

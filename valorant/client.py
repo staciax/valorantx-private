@@ -88,12 +88,11 @@ MISSING: Any = utils.MISSING
 
 
 def _authorize_required(func):
-    def wrapper(self: Client, *args: Any, **kwargs: Any) -> Any:
+    def wrapper(self: Optional[Client] = MISSING, *args: Any, **kwargs: Any) -> Any:
         if not self.is_authorized():
             client_func = f'Client.{func.__name__}'
             raise AuthRequired(f"{client_func!r} requires authorization")
         return func(self, *args, **kwargs)
-
     return wrapper
 
 
@@ -371,8 +370,8 @@ class Client:
     @_authorize_required
     async def fetch_player_loadout(self, *, fetch_account_xp: bool = True) -> Collection:
         # ensure
-        if fetch_account_xp:
-            account_xp = await self.fetch_account_xp()
+        # if fetch_account_xp:
+            # account_xp = await self.fetch_account_xp()
             # self.user._account_level = account_xp.level
         data = await self.http.fetch_player_loadout()
         return Collection(client=self, data=data)

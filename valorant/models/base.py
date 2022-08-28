@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 if TYPE_CHECKING:
     from ..client import Client
@@ -72,3 +72,21 @@ class BaseModel(_ModelTag):
     def uuid(self) -> str:
         """:class:`str`: The uuid of the object."""
         return self._uuid
+
+
+class BaseFeaturedBundleItem:
+
+    if TYPE_CHECKING:
+        price: int
+
+    def __init__(self, bundle: Dict[str, Any]) -> None:
+        self.price: int = bundle.get('BasePrice', self.price)
+        self.discounted_price: int = bundle.get('DiscountedPrice', self.price)
+        self._is_promo: bool = bundle.get('IsPromoItem', False)
+        self._currency_id: str = bundle.get('CurrencyID')
+        self.discount_percent: float = bundle.get('DiscountPercent', 0.0)
+        self.amount: int = bundle['Item']['Amount']
+
+    def is_promo(self) -> bool:
+        """:class: `bool` Returns whether the bundle is a promo."""
+        return self._is_promo
