@@ -224,7 +224,7 @@ class SkinCollection:
 
     def _update(self, loadout: List[SkinL]) -> None:
         for skin in loadout:
-            setattr(self, skin.base_weapon.name.lower(), skin)
+            setattr(self, skin.base_weapon.display_name.lower(), skin)
 
     @property
     def sidearms(self) -> List[SkinL]:
