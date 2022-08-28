@@ -24,13 +24,22 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
 from .bundle import Bundle
 from .weapons import Skin, SkinNightMarket
 
 if TYPE_CHECKING:
     from ..client import Client
+    from ..types.store import (
+        BonusStore as BonusStorePayload,
+        BonusStoreOffer as BonusStoreOfferPayload,
+        Bundle as BundlePayload,
+        FeaturedBundle as FeaturedBundlePayload,
+        SkinsPanelLayout as SkinsPanelLayoutPayload,
+        StoreFront as StoreFrontPayload,
+        Wallet as WalletPayload,
+    )
 
 __all__ = (
     'StoreFront',
@@ -44,13 +53,13 @@ class StoreFront:
 
     __slot__ = ()
 
-    def __init__(self, *, client: Any, data: Any) -> None:
+    def __init__(self, *, client: Any, data: StoreFrontPayload) -> None:
         self._client = client
-        self._featured_bundle: Dict[Any, Any] = data['FeaturedBundle']
-        self._bundle: Dict[Any, Any] = self._featured_bundle['Bundle']
-        self._bundles: Dict[Any, Any] = self._featured_bundle.get('Bundles', [])
-        self._skins_panel_layout: Dict[Any, Any] = data['SkinsPanelLayout']
-        self._bonus_store: Dict[Any, Any] = data.get('BonusStore')
+        self._featured_bundle: FeaturedBundlePayload = data['FeaturedBundle']
+        self._bundle: BundlePayload = self._featured_bundle['Bundle']
+        self._bundles: List[BundlePayload] = self._featured_bundle.get('Bundles', [])
+        self._skins_panel_layout: SkinsPanelLayoutPayload = data['SkinsPanelLayout']
+        self._bonus_store: BonusStorePayload = data.get('BonusStore')
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -83,7 +92,7 @@ class StoreOffer:
 
     __slot__ = ()
 
-    def __init__(self, *, client: Any, data: Any) -> None:
+    def __init__(self, *, client: Any, data: SkinsPanelLayoutPayload) -> None:
         self._client: Client = client
         self._skin_offers: List[str] = data['SingleItemOffers']
         self._duration: int = data['SingleItemOffersRemainingDurationInSeconds']
@@ -120,9 +129,9 @@ class NightMarket:
 
     __slot__ = ()
 
-    def __init__(self, *, client: Client, data: Any) -> None:
+    def __init__(self, *, client: Client, data: BonusStorePayload) -> None:
         self._client = client
-        self._skin_offers: List[Dict[str, Any]] = data['BonusStoreOffers']
+        self._skin_offers: List[BonusStoreOfferPayload] = data['BonusStoreOffers']
         self.duration: int = data['BonusStoreRemainingDurationInSeconds']
 
     def __repr__(self) -> str:
@@ -149,7 +158,7 @@ class NightMarket:
 
 
 class Wallet:
-    def __init__(self, *, client: Client, data: Any) -> None:
+    def __init__(self, *, client: Client, data: WalletPayload) -> None:
         self._client = client
         self._update(data)
 
