@@ -92,9 +92,6 @@ class Collection(BaseModel):
         self._player_title_uuid: str = self._identity['PlayerTitleID']
         self._level_border_uuid: str = self._identity['PreferredLevelBorderID']
 
-    def __str__(self) -> str:
-        return self.__repr__()
-
     def __repr__(self) -> str:
         return f'<Loadout skins={self.skins!r} version={self.version!r} incognito={self.incognito()!r}>'
 
@@ -124,7 +121,7 @@ class Collection(BaseModel):
             elif spray['SprayID']:
                 spray_loadout.append(
                     SprayLoadout._from_loadout(client=self._client, uuid=spray['SprayID'], loadout=spray)
-                )  # noqa: E501
+                )
 
         return SprayCollection(spray_loadout)
 
