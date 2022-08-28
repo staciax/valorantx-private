@@ -234,6 +234,7 @@ class AgentVoiceLineLocalization:
     def __hash__(self) -> int:
         return hash(self.untranslated)
 
+
 class Agent(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
