@@ -28,14 +28,6 @@ async def main():
         history = await client.fetch_match_history(queue_id=valorant.QueueID.deathmatch)
         print(repr(history))
 
-        sf = await client.fetch_store_front()
-        for skin in sf.store:
-            print(skin.display_name)
-            print(skin.display_icon)
-            print(skin.name_localizations)
-            print(skin.name_localizations.chinese_simplified)
-            print(skin.name_localizations.ko_KR)
-
         content = await client.fetch_content()
         print(repr(content.seasons))
 
@@ -50,7 +42,6 @@ async def main():
         print(repr(loadout.skins))
         for skin in loadout.skins:
             print(skin.display_name, skin.display_icon)
-
 
 if __name__ == '__main__':
     asyncio.run(main())
