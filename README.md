@@ -5,25 +5,25 @@
 
 ```python
 import asyncio
-import logging
 import valorant
 
-client = valorant.Client(locale='en-US')
-
-# get basic logging
-logging.basicConfig(level=logging.INFO)
+client = valorant.Client(locale=valorant.Locale.japanese)
 
 async def main():
     async with client:
-        await client.fetch_all_assets()
 
+        await client.fetch_assets(reload=True)
+        # after fetch_assets, you can comment above line and use below line
+        # client.reload_assets()
+        # if new version available, please use `await client.fetch_assets()` again
+    
         agent = client.get_agent('Killjoy')
         print(repr(agent))
 
         buddy = client.get_buddy('f2f07eae-4518-15eb-546b-018961e0dd60')
         print(repr(buddy))
 
-        bundle = client.get_bundle('sentinels')
+        bundle = client.get_bundle('Champions 2022')
         print(repr(bundle))
 
         player_card = client.get_player_card('The Way Forward Card')
@@ -44,8 +44,9 @@ async def main():
         contract = client.get_contract('7ae5ad85-400b-beba-989d-42924ccf39be')
         print(repr(contract))
 
-        weapon = client.get_weapon('Vandal')
+        weapon = client.get_weapon('Operator')
         print(repr(weapon))
+
         for skin in weapon.skins:
             print(repr(skin))
             for chroma in skin.chromas:
@@ -65,7 +66,7 @@ async def main():
         print(repr(skin_chroma.base_skin))
 
         all_bundles = client.get_all_bundles()
-        print(list(sorted(all_bundles, key=lambda b: b.name)))
+        print(list(sorted(all_bundles, key=lambda b: b.display_name)))
 
         ceremony = client.get_ceremony('1e71c55c-476e-24ac-0687-e48b547dbb35')
         print(repr(ceremony))
@@ -103,5 +104,4 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
-
 ```
