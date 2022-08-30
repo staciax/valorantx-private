@@ -3,7 +3,7 @@ import logging
 
 import valorant
 
-# loggin
+# logging
 logging.basicConfig(level=logging.ERROR)
 
 client = valorant.Client(locale=valorant.Locale.thai)
