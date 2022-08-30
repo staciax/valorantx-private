@@ -42,11 +42,8 @@ async def main():
         wallet = await client.fetch_wallet()
         print(repr(wallet))
 
-        async_tasks = []
         for locale in valorant.Locale:
-            async_tasks.append(asyncio.ensure_future(client.fetch_patch_notes(locale=locale)))
-        patch_notes = await asyncio.gather(*async_tasks)
-        for patch_note in patch_notes:
+            patch_note = await client.fetch_patch_notes(locale=locale)
             print(repr(patch_note.latest))
 
         loadout = await client.fetch_player_loadout()
