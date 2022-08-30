@@ -3,14 +3,19 @@ import logging
 
 import valorant
 
-client = valorant.Client(locale='en-US')
+client = valorant.Client(locale=valorant.Locale.japanese)
 
 # get basic logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
+
 
 async def main():
     async with client:
-        await client.fetch_all_assets()
+
+        await client.fetch_assets(reload=True)
+        # after fetch_assets, you can comment above line and use below line
+        # client.reload_assets()
+        # if new version available, please use `await client.fetch_assets()` again
 
         agent = client.get_agent('Killjoy')
         print(repr(agent))
@@ -18,7 +23,7 @@ async def main():
         buddy = client.get_buddy('f2f07eae-4518-15eb-546b-018961e0dd60')
         print(repr(buddy))
 
-        bundle = client.get_bundle('sentinels')
+        bundle = client.get_bundle('Champions 2022')
         print(repr(bundle))
 
         player_card = client.get_player_card('The Way Forward Card')
@@ -40,7 +45,7 @@ async def main():
         print(repr(contract))
 
         weapon = client.get_weapon('Operator')
-        print(repr(weapon.stats))
+        print(repr(weapon))
 
         for skin in weapon.skins:
             print(repr(skin))
@@ -96,6 +101,7 @@ async def main():
 
         theme = client.get_theme('fdfe356c-40c4-ac6a-864e-16998fc784ef')
         print(repr(theme))
+
 
 if __name__ == '__main__':
     asyncio.run(main())
