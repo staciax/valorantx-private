@@ -21,7 +21,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import List, TypedDict
+from typing import List, TypedDict, Union
 
 from typing_extensions import NotRequired
 
@@ -86,7 +86,7 @@ class Offer(TypedDict):
     OfferID: str
     IsDirectPurchase: bool
     StartDate: str
-    Cost: Cost
+    Cost: Union[str, Cost]
     Rewards: List[Reward]
 
 
@@ -121,3 +121,13 @@ Balances = TypedDict(
 
 class Wallet(TypedDict):
     Balances: Balances
+
+
+class UpgradeCurrencyOffer(TypedDict):
+    OfferID: str
+    StorefrontItemID: str
+
+
+class Offers(TypedDict):
+    Offers: List[Offer]
+    UpgradeCurrencyOffers: List[UpgradeCurrencyOffer]
