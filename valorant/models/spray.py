@@ -53,7 +53,7 @@ class Spray(BaseModel):
         self._animation_gif: Optional[str] = data['animationGif']
         self.asset_path: str = data['assetPath']
         self._levels: List[Dict[str, Any]] = data['levels']
-        self._price: int = data.get('price', 0)
+        self._price: int = self._client.get_item_price(self.uuid)
 
     def __str__(self) -> str:
         return self.display_name
@@ -141,7 +141,7 @@ class SprayLevel(BaseModel):
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
         self._asset_path: str = data['assetPath']
-        self._price: int = data.get('price', 0)
+        self._price: int = 0
 
     def __str__(self) -> str:
         return self.display_name
@@ -177,6 +177,9 @@ class SprayLevel(BaseModel):
     @property
     def price(self) -> int:
         """:class: `int` Returns the price of the spray."""
+        if self._price == 0:
+            if hasattr(self.base_spray, 'price'):
+                self._price = self.base_spray.price
         return self._price
 
     @price.setter

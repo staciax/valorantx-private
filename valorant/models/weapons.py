@@ -340,22 +340,13 @@ class Skin(BaseModel):
         self.asset_path: str = data['assetPath']
         self._chromas: List[Dict[str, Any]] = data['chromas']
         self._levels: List[Dict[str, Any]] = data['levels']
-        self._price: int = data.get('price', 0)
+        self._price: int = 0
 
     def __str__(self) -> str:
         return self.display_name
 
     def __repr__(self) -> str:
         return f"<Skin display_name={self.display_name!r}>"
-
-    @property
-    def price(self) -> int:
-        """:class: `int` Returns the skin's price."""
-        return self._price
-
-    @price.setter
-    def price(self, value: int) -> None:
-        self._price = value
 
     @property
     def name_localizations(self) -> Localization:
@@ -403,6 +394,18 @@ class Skin(BaseModel):
         """:class: `Weapon` Returns the skin's base weapon."""
         return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid)
 
+    @property
+    def price(self) -> int:
+        """:class: `int` Returns the skin's price."""
+        if self._price == 0:
+            if len(self.levels) > 0:
+                self._price = self.levels[0].price
+        return self._price
+
+    @price.setter
+    def price(self, value: int) -> None:
+        self._price = value
+
     @classmethod
     @overload
     def _from_uuid(cls, client: Client, uuid: str, all_type: bool = True) -> Optional[Union[Self, SkinLevel, SkinChroma]]:
@@ -436,8 +439,6 @@ class SkinChroma(BaseModel):
         self._streamed_video: Optional[str] = data['streamedVideo']
         self.asset_path: str = data['assetPath']
         self._price: int = 0
-        if hasattr(self.base_skin, 'price'):
-            self._price = self.base_skin.price
 
     def __str__(self) -> str:
         return self.display_name
@@ -502,6 +503,9 @@ class SkinChroma(BaseModel):
     @property
     def price(self) -> Optional[int]:
         """:class: `int` Returns the skin's price."""
+        if self._price == 0:
+            if hasattr(self.base_skin, 'price'):
+                self._price = self.base_skin.price
         return self._price
 
     @price.setter
@@ -526,9 +530,7 @@ class SkinLevel(BaseModel):
         self._display_icon: str = data['displayIcon']
         self._streamed_video: Optional[str] = data['streamedVideo']
         self.asset_path: str = data['assetPath']
-        self._price: int = 0
-        if hasattr(self.base_skin, 'price'):
-            self._price = self.base_skin.price
+        self._price: int = self._client.get_item_price(self.uuid)
 
     def __str__(self) -> str:
         return self.display_name

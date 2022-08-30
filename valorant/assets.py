@@ -30,9 +30,10 @@ import os
 import shutil
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from .enums import CurrencyID, ItemType, Locale
+from .enums import CurrencyID, ItemType
+from .errors import AuthRequired
 from .utils import is_uuid
 
 if TYPE_CHECKING:
@@ -77,7 +78,7 @@ def maybe_uuid():  # TODO: rework this
         @wraps(function)
         def wrapper(uuid: str, *args, **kwargs) -> Any:
 
-            # TODO: kwargs option on or off and set key to find
+            # TODO: kwargs search key optimization
 
             if not isinstance(uuid, str):
                 try:
@@ -97,10 +98,8 @@ def maybe_uuid():  # TODO: rework this
                     if display_names is not None:
                         try:
                             for display_name in display_names.values():
-
-                                if (
-                                    display_name.lower().startswith(may_be_uuid.lower())
-                                    or may_be_uuid.lower() == display_name.lower()
+                                if may_be_uuid.lower() == display_name.lower() or display_name.lower().startswith(
+                                    may_be_uuid.lower()
                                 ):
                                     args = (value['uuid'],)
                                     return function(uuid, *args)
@@ -118,16 +117,16 @@ def maybe_uuid():  # TODO: rework this
 
 
 class Assets:
+
     _cache_dir: Path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
 
     ASSET_CACHE = {}
+    OFFER_CACHE = {}
 
-    def __init__(self, *, client: Client, locale: Union[Locale, str] = Locale.american_english) -> None:
+    def __init__(self, *, client: Client, auto_reload: bool) -> None:
         self._client = client
-        self.locale = locale
-
-        # load assets
-        self.reload_assets()
+        if auto_reload:
+            self.reload_assets()
 
     def get_asset(self, key: str, tries: int = 1) -> Optional[Dict[str, Any]]:
         """Get an asset."""
@@ -297,7 +296,16 @@ class Assets:
         data = self.get_asset('weapon_skins_chromas')
         return data.get(uuid)
 
-    async def fetch_all_assets(self, *, force: bool = False) -> None:
+    def get_item_price(self, uuid: str) -> int:
+        return self.OFFER_CACHE.get(uuid, 0)
+
+    async def fetch_assets(
+        self,
+        *,
+        force: bool = False,
+        with_price: bool = False,
+        reload_asset: bool = False,
+    ) -> None:
         """Fetch all assets."""
 
         get_version = await self._client.get_valorant_version()
@@ -305,15 +313,64 @@ class Assets:
         if get_version != self._client.version:
             self._client.version = get_version
 
-        # self.__mkdir_cache_dir()
         self.__mkdir_assets_dir()
+        asset_path = self._get_asset_dir()
 
-        if (
-            not self._get_asset_dir().endswith(self._client.version.version)
-            or len(os.listdir(self._get_asset_dir())) == 0
-            or force
-        ):
-            _log.info(f"Fetching assets for version {self._client.version.version!r}")
+        filelist = (
+            'agents',
+            'buddies',
+            'bundles',
+            'ceremonies',
+            'currencies',
+            'competitive_tiers',
+            'content_tiers',
+            'contracts',
+            'currencies',
+            'events',
+            'game_modes',
+            'game_modes_equippables',
+            'gear',
+            'level_borders',
+            'maps',
+            'missions',
+            'player_cards',
+            'player_titles',
+            'seasons',
+            'sprays',
+            'themes',
+            'weapons',
+            '_bundle_items',
+        )
+
+        # verify files exist
+
+        list_dir = os.listdir(asset_path)
+        for filename in filelist:
+            if (filename + '.json') not in list_dir:
+                force = True
+                if len(list_dir) > 0:
+                    _log.warning('some assets are missing, forcing update')
+                break
+
+        # fetch offer/price of items
+
+        if with_price:
+            if not self._client.is_authorized():
+                raise AuthRequired("You need to be authorized to fetch prices")
+            if 'offers.json' not in list_dir:
+                data = await self._client.fetch_offers()
+                new_dict = {}
+                for offer in data.offers:
+                    new_dict[offer.id] = offer.cost
+                self._dump(new_dict, '_offers')
+        else:
+            if self._client.is_authorized():
+                _log.warning('You can fetch items prices by calling `client.fetch_offers(with_price=True)`')
+            else:
+                _log.info('Skipping fetching items prices')
+
+        if not asset_path.endswith(get_version.version) or len(os.listdir(self._get_asset_dir())) == 0 or force:
+            _log.info(f"Fetching assets for version {get_version.version!r}")
 
             async_tasks = [
                 asyncio.ensure_future(self._client.http.asset_get_agents()),
@@ -343,75 +400,64 @@ class Assets:
             assets = await asyncio.gather(*async_tasks)
             for index, asset in enumerate(assets, start=1):
                 if index == 1:
-                    self.__dump_to(asset, 'agents')
+                    self._dump(asset, 'agents')
                 elif index == 2:
-                    self.__dump_to(asset, 'buddies')
+                    self._dump(asset, 'buddies')
                 elif index == 3:
-                    self.__dump_to(asset, 'bundles')
+                    self._dump(asset, 'bundles')
                 elif index == 4:
-                    self.__dump_to(asset, 'ceremonies')
+                    self._dump(asset, 'ceremonies')
                 elif index == 5:
-                    self.__dump_to(asset, 'competitive_tiers')
+                    self._dump(asset, 'competitive_tiers')
                 elif index == 6:
-                    self.__dump_to(asset, 'content_tiers')
+                    self._dump(asset, 'content_tiers')
                 elif index == 7:
-                    self.__dump_to(asset, 'contracts')
+                    self._dump(asset, 'contracts')
                 elif index == 8:
-                    self.__dump_to(asset, 'currencies')
+                    self._dump(asset, 'currencies')
                 elif index == 9:
-                    self.__dump_to(asset, 'events')
+                    self._dump(asset, 'events')
                 elif index == 10:
-                    self.__dump_to(asset, 'game_modes')
+                    self._dump(asset, 'game_modes')
                 elif index == 11:
-                    self.__dump_to(asset, 'game_modes_equippables')
+                    self._dump(asset, 'game_modes_equippables')
                 elif index == 12:
-                    self.__dump_to(asset, 'gear')
+                    self._dump(asset, 'gear')
                 elif index == 13:
-                    self.__dump_to(asset, 'level_borders')
+                    self._dump(asset, 'level_borders')
                 elif index == 14:
-                    self.__dump_to(asset, 'maps')
+                    self._dump(asset, 'maps')
                 elif index == 15:
-                    self.__dump_to(asset, 'missions')
+                    self._dump(asset, 'missions')
                 elif index == 16:
-                    self.__dump_to(asset, 'player_cards')
+                    self._dump(asset, 'player_cards')
                 elif index == 17:
-                    self.__dump_to(asset, 'player_titles')
+                    self._dump(asset, 'player_titles')
                 elif index == 18:
-                    self.__dump_to(asset, 'seasons')
+                    self._dump(asset, 'seasons')
                 elif index == 19:
-                    self.__dump_to(asset, 'sprays')
+                    self._dump(asset, 'sprays')
                 elif index == 20:
-                    self.__dump_to(asset, 'themes')
+                    self._dump(asset, 'themes')
                 elif index == 21:
-                    self.__dump_to(asset, 'weapons')
+                    self._dump(asset, 'weapons')
                 elif index == 22:
-                    self.__dump_to(asset, '_bundle_items')
+                    self._dump(asset, '_bundle_items')
                 else:
                     print(f"Unknown asset type: {index}")
 
-        self.reload_assets()
+        if reload_asset:
+            self.reload_assets(with_price=with_price)
 
-    def reload_assets(self) -> None:
-        """Reload assets."""
-
+    def reload_assets(self, with_price=False):
+        """
+        Reload assets from disk.
+        """
         _log.info("Reloading assets")
 
         self.ASSET_CACHE.clear()
-        self.__load_assets()
-
-        _log.info("Assets reloaded")
-
-    def _get_asset_dir(self) -> str:
-        """Get the asset directory."""
-        return os.path.join(Assets._cache_dir, self._client.version.version)
-
-    def __load_assets(self) -> None:
-        """Load assets."""
-
-        # self.__mkdir_cache_dir()
 
         to_remove_dir = False
-
         for maybe_dir in sorted(
             os.listdir(self._cache_dir),
             key=lambda x: os.path.getmtime(os.path.join(self._cache_dir, x)),
@@ -422,11 +468,26 @@ class Assets:
                 if not to_remove_dir:
                     for filename in os.listdir(maybe_asset_dir):
                         if isinstance(filename, str) and filename.endswith('.json'):
-                            Assets.__to_cache(str(maybe_asset_dir), str(filename))
+                            file_path = os.path.join(str(maybe_asset_dir), filename)
+                            with open(file_path, encoding='utf-8') as f:
+                                to_dict = json.load(f)
+                                if not filename.startswith('_offers'):
+                                    self.__customize_asset_cache_format(filename, to_dict)
+                                elif filename.startswith('_offers') and with_price:
+                                    self.OFFER_CACHE.clear()
+                                    self.OFFER_CACHE.update(to_dict)
                     to_remove_dir = True
                 else:
                     shutil.rmtree(maybe_asset_dir)
                     _log.info(f'Removed asset directory {maybe_asset_dir}')
+
+        _log.info("Assets reloaded")
+        if with_price:
+            _log.info("Offers reloaded")
+
+    def _get_asset_dir(self) -> str:
+        """Get the asset directory."""
+        return os.path.join(Assets._cache_dir, self._client.version.version)
 
     def __mkdir_cache_dir(self) -> bool:
         """Make the assets' directory."""
@@ -461,22 +522,23 @@ class Assets:
             with open(gitignore_path, 'w', encoding='utf-8') as f:
                 f.write(msg)
 
-    def __dump_to(self, data: Any, filename: str) -> None:
+    def _dump(self, data: Any, filename: str) -> None:
         """Dump data to a file."""
-        file_path = os.path.join(self._get_asset_dir(), f'{filename}.json')
-        with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
+        asset_path = self._get_asset_dir()
+        file_path = os.path.join(asset_path, f'{filename}.json')
 
-    @staticmethod
-    def __to_cache(path: str, filename: str) -> None:
-        """Add data to the assets."""
-        file_path = os.path.join(path, filename)
-        with open(file_path, encoding='utf-8') as f:
-            to_dict = json.load(f)
-            Assets.__customize_asset_cache_format(filename, to_dict)
+        for tries in range(3):
+            try:
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=4, ensure_ascii=False)
+                break
+            except FileNotFoundError:
+                self.__mkdir_assets_dir()
+                if tries == 3:
+                    _log.error(f'Failed to create asset directory')
+                    return
 
-    @staticmethod
-    def __customize_asset_cache_format(filename: str, data: Any) -> None:
+    def __customize_asset_cache_format(self, filename: str, data: Any) -> None:
         """Customize the asset assets format."""
 
         # TODO: additional asset weapons
@@ -488,95 +550,101 @@ class Assets:
         skin_level_dict = {}
         skin_chroma_dict = {}
 
-        for item in data['data']:
-            uuid = item['uuid']
+        try:
 
-            if filename.startswith('buddies'):
-                for buddy_level in item['levels']:
-                    buddy_level['base_uuid'] = uuid
-                    buddy_level_dict[buddy_level['uuid']] = buddy_level
-                Assets.ASSET_CACHE['buddies_levels'] = buddy_level_dict
+            for item in data['data']:
+                uuid = item['uuid']
 
-            elif filename.startswith('sprays'):
-                for spray_level in item['levels']:
-                    spray_level['base_uuid'] = uuid
-                    spray_level_dict[spray_level['uuid']] = spray_level
-                Assets.ASSET_CACHE['sprays_levels'] = spray_level_dict
+                if filename.startswith('buddies'):
+                    for buddy_level in item['levels']:
+                        buddy_level['base_uuid'] = uuid
+                        buddy_level_dict[buddy_level['uuid']] = buddy_level
+                    Assets.ASSET_CACHE['buddies_levels'] = buddy_level_dict
 
-            elif filename.startswith('weapons'):
-                for skin in item['skins']:
-                    skin['base_weapon_uuid'] = uuid
-                    skin_dict[skin['uuid']] = skin
+                elif filename.startswith('sprays'):
+                    for spray_level in item['levels']:
+                        spray_level['base_uuid'] = uuid
+                        spray_level_dict[spray_level['uuid']] = spray_level
+                    Assets.ASSET_CACHE['sprays_levels'] = spray_level_dict
 
-                    for skin_chroma in skin['chromas']:
-                        skin_chroma['base_weapon_uuid'] = uuid
-                        skin_chroma['base_skin_uuid'] = skin['uuid']
-                        skin_chroma_dict[skin_chroma['uuid']] = skin_chroma
-                    Assets.ASSET_CACHE['weapon_skins_chromas'] = skin_chroma_dict
+                elif filename.startswith('weapons'):
 
-                    for skin_level in skin['levels']:
-                        skin_level['base_weapon_uuid'] = uuid
-                        skin_level['base_skin_uuid'] = skin['uuid']
-                        skin_level_dict[skin_level['uuid']] = skin_level
-                    Assets.ASSET_CACHE['weapon_skins_levels'] = skin_level_dict
+                    for skin in item['skins']:
+                        skin['base_weapon_uuid'] = uuid
+                        skin_dict[skin['uuid']] = skin
 
-                Assets.ASSET_CACHE['weapon_skins'] = skin_dict
+                        for skin_chroma in skin['chromas']:
+                            skin_chroma['base_weapon_uuid'] = uuid
+                            skin_chroma['base_skin_uuid'] = skin['uuid']
+                            skin_chroma_dict[skin_chroma['uuid']] = skin_chroma
+                        Assets.ASSET_CACHE['weapon_skins_chromas'] = skin_chroma_dict
 
-            elif filename.startswith('_bundle_items'):
-                bundle = Assets.ASSET_CACHE['bundles'][uuid]
-                bundle['price'] = item['price']
-                bundle_items = []
+                        for skin_level in skin['levels']:
+                            skin_level['base_weapon_uuid'] = uuid
+                            skin_level['base_skin_uuid'] = skin['uuid']
+                            skin_level_dict[skin_level['uuid']] = skin_level
+                        Assets.ASSET_CACHE['weapon_skins_levels'] = skin_level_dict
 
-                def bundle_item_payload(**kwargs) -> Dict[str, Any]:
-                    if kwargs['base_price'] is None:
-                        kwargs['base_price'] = -1
-                    return dict(
-                        Item=dict(ItemTypeID=kwargs['item_type_id'], ItemID=kwargs['item_id'], Amount=kwargs['amount']),
-                        BasePrice=kwargs['base_price'],
-                        CurrencyID=str(CurrencyID.valorant_point),
-                        DiscountPercent=0,
-                        DiscountedPrice=0,
-                        IsPromoItem=False,
-                    )
+                    Assets.ASSET_CACHE['weapon_skins'] = skin_dict
 
-                for weapon in item['weapons']:
-                    bundle_items.append(
-                        bundle_item_payload(
-                            item_type_id=str(ItemType.skin),
-                            item_id=weapon['levels'][0]['uuid'],
-                            amount=1,
-                            base_price=weapon.get('price', 0),
+                elif filename.startswith('_bundle_items'):
+                    bundle = Assets.ASSET_CACHE['bundles'][uuid]
+                    bundle['price'] = item['price']
+                    bundle_items = []
+
+                    def bundle_item_payload(**kwargs) -> Dict[str, Any]:
+                        if kwargs['base_price'] is None:
+                            kwargs['base_price'] = -1
+                        return dict(
+                            Item=dict(ItemTypeID=kwargs['item_type_id'], ItemID=kwargs['item_id'], Amount=kwargs['amount']),
+                            BasePrice=kwargs['base_price'],
+                            CurrencyID=str(CurrencyID.valorant_point),
+                            DiscountPercent=0,
+                            DiscountedPrice=0,
+                            IsPromoItem=False,
                         )
-                    )
-                for buddy in item['buddies']:
-                    bundle_items.append(
-                        bundle_item_payload(
-                            item_type_id=str(ItemType.buddy),
-                            item_id=buddy['levels'][0]['uuid'],
-                            amount=2,
-                            base_price=buddy.get('price', 0),
-                        )
-                    )
-                for player_card in item['cards']:
-                    bundle_items.append(
-                        bundle_item_payload(
-                            item_type_id=str(ItemType.player_card),
-                            item_id=player_card['uuid'],
-                            amount=1,
-                            base_price=player_card.get('price', 0),
-                        )
-                    )
-                for spray in item['sprays']:
-                    bundle_items.append(
-                        bundle_item_payload(
-                            item_type_id=str(ItemType.spray),
-                            item_id=spray['uuid'],
-                            amount=1,
-                            base_price=spray.get('price', 0),
-                        )
-                    )
-                bundle['Items'] = bundle_items
 
-            new_dict[uuid] = item
+                    for weapon in item['weapons']:
+                        bundle_items.append(
+                            bundle_item_payload(
+                                item_type_id=str(ItemType.skin),
+                                item_id=weapon['levels'][0]['uuid'],
+                                amount=1,
+                                base_price=weapon.get('price', 0),
+                            )
+                        )
+                    for buddy in item['buddies']:
+                        bundle_items.append(
+                            bundle_item_payload(
+                                item_type_id=str(ItemType.buddy),
+                                item_id=buddy['levels'][0]['uuid'],
+                                amount=2,
+                                base_price=buddy.get('price', 0),
+                            )
+                        )
+                    for player_card in item['cards']:
+                        bundle_items.append(
+                            bundle_item_payload(
+                                item_type_id=str(ItemType.player_card),
+                                item_id=player_card['uuid'],
+                                amount=1,
+                                base_price=player_card.get('price', 0),
+                            )
+                        )
+                    for spray in item['sprays']:
+                        bundle_items.append(
+                            bundle_item_payload(
+                                item_type_id=str(ItemType.spray),
+                                item_id=spray['uuid'],
+                                amount=1,
+                                base_price=spray.get('price', 0),
+                            )
+                        )
+                    bundle['Items'] = bundle_items
 
-        Assets.ASSET_CACHE[filename[:-5]] = new_dict
+                new_dict[uuid] = item
+
+            Assets.ASSET_CACHE[filename[:-5]] = new_dict
+
+        except KeyError:
+            _log.error(f'Failed to customize asset cache format for {filename}')

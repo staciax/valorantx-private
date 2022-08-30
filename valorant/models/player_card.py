@@ -54,7 +54,7 @@ class PlayerCard(BaseModel):
         self._large_icon: Optional[str] = data['largeArt']
         self._theme_uuid: Optional[str] = data['themeUuid']
         self.asset_path: str = data['assetPath']
-        self._price = data.get('price', 0)
+        self._price = self._client.get_item_price(self.uuid)
 
     def __str__(self) -> str:
         return self.display_name
@@ -113,11 +113,6 @@ class PlayerCard(BaseModel):
     @price.setter
     def price(self, value: int) -> None:
         self._price = value
-
-    @property
-    def currency_id(self) -> str:
-        """:class: `str` Returns the currency id."""
-        return self._currency_id
 
     def is_hidden_if_not_owned(self) -> bool:
         """:class: `bool` Returns whether the buddy is hidden if not owned."""

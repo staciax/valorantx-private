@@ -166,28 +166,6 @@ class VoiceLineLocalization:
         self.zh_CN: VoiceLine = VoiceLine(self.untranslated.get('zh-CN')) if self.untranslated.get('zh-CN') else None
         self.zh_TW: VoiceLine = VoiceLine(self.untranslated.get('zh-TW')) if self.untranslated.get('zh-TW') else None
 
-        # locale language
-        self.arabic: VoiceLine = self.ar_AE
-        self.german: VoiceLine = self.de_DE
-        self.english: VoiceLine = self.en_US
-        self.american_english: VoiceLine = self.en_US
-        self.british_english: VoiceLine = self.en_US
-        self.spanish: VoiceLine = self.es_ES
-        self.spanish_mexican: VoiceLine = self.es_MX
-        self.french: VoiceLine = self.fr_FR
-        self.indonesian: VoiceLine = self.id_ID
-        self.italian: VoiceLine = self.it_IT
-        self.japanese: VoiceLine = self.ja_JP
-        self.korean: VoiceLine = self.ko_KR
-        self.polish: VoiceLine = self.pl_PL
-        self.portuguese_brazil: VoiceLine = self.pt_BR
-        self.russian: VoiceLine = self.ru_RU
-        self.thai: VoiceLine = self.th_TH
-        self.turkish: VoiceLine = self.tr_TR
-        self.vietnamese: VoiceLine = self.vi_VN
-        self.chinese_simplified: VoiceLine = self.zh_CN
-        self.chinese_traditional: VoiceLine = self.zh_TW
-
     def __repr__(self) -> str:
         attrs = [
             ('ar_AE', self.ar_AE),
@@ -220,6 +198,106 @@ class VoiceLineLocalization:
 
     def __hash__(self) -> int:
         return hash(self.untranslated)
+
+    @property
+    def arabic(self) -> VoiceLine:
+        """:class:`str`: Returns the Arabic locale."""
+        return self.ar_AE
+
+    @property
+    def german(self) -> VoiceLine:
+        """:class:`str`: Returns the German locale."""
+        return self.de_DE
+
+    @property
+    def english(self) -> VoiceLine:
+        """:class:`str`: Returns the English locale."""
+        return self.en_US
+
+    @property
+    def american_english(self) -> VoiceLine:
+        """:class:`str`: Returns the American English locale."""
+        return self.en_US
+
+    @property
+    def british_english(self) -> VoiceLine:
+        """:class:`str`: Returns the British English locale."""
+        return self.en_US
+
+    @property
+    def spanish(self) -> VoiceLine:
+        """:class:`str`: Returns the Spanish locale."""
+        return self.es_ES
+
+    @property
+    def spanish_mexican(self) -> VoiceLine:
+        """:class:`str`: Returns the Spanish Mexican locale."""
+        return self.es_MX
+
+    @property
+    def french(self) -> VoiceLine:
+        """:class:`str`: Returns the French locale."""
+        return self.fr_FR
+
+    @property
+    def indonesian(self) -> VoiceLine:
+        """:class:`str`: Returns the Indonesian locale."""
+        return self.id_ID
+
+    @property
+    def italian(self) -> VoiceLine:
+        """:class:`str`: Returns the Italian locale."""
+        return self.it_IT
+
+    @property
+    def japanese(self) -> VoiceLine:
+        """:class:`str`: Returns the Japanese locale."""
+        return self.ja_JP
+
+    @property
+    def korean(self) -> VoiceLine:
+        """:class:`str`: Returns the Korean locale."""
+        return self.ko_KR
+
+    @property
+    def polish(self) -> VoiceLine:
+        """:class:`str`: Returns the Polish locale."""
+        return self.pl_PL
+
+    @property
+    def portuguese_brazil(self) -> VoiceLine:
+        """:class:`str`: Returns the Portuguese Brazil locale."""
+        return self.pt_BR
+
+    @property
+    def russian(self) -> VoiceLine:
+        """:class:`str`: Returns the Russian locale."""
+        return self.ru_RU
+
+    @property
+    def thai(self) -> VoiceLine:
+        """:class:`str`: Returns the Thai locale."""
+        return self.th_TH
+
+    @property
+    def turkish(self) -> VoiceLine:
+        """:class:`str`: Returns the Turkish locale."""
+        return self.tr_TR
+
+    @property
+    def vietnamese(self) -> VoiceLine:
+        """:class:`str`: Returns the Vietnamese locale."""
+        return self.vi_VN
+
+    @property
+    def chinese_simplified(self) -> VoiceLine:
+        """:class:`str`: Returns the Chinese Simplified locale."""
+        return self.zh_CN
+
+    @property
+    def chinese_traditional(self) -> VoiceLine:
+        """:class:`str`: Returns the Chinese Traditional locale."""
+        return self.zh_TW
 
 
 class Agent(BaseModel):

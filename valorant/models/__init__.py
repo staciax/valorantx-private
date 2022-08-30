@@ -23,6 +23,7 @@ from .map import *
 from .match import *
 from .mission import *
 from .party import *
+from .patchnote import *
 from .player import *
 from .player_card import *
 from .player_title import *

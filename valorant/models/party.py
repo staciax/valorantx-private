@@ -33,7 +33,11 @@ if TYPE_CHECKING:
         from ..client import Client
         from ..types.party import PlayerParty as PlayerPartyPayload
 
-__all__ = ('PlayerParty',)
+# fmt: off
+__all__ = (
+    'PlayerParty',
+)
+# fmt: on
 
 
 class PlayerParty(BasePlayer):
@@ -89,5 +93,5 @@ class PlayerParty(BasePlayer):
         return f"{server_name}-{server_number}"
 
     @property
-    def pings(self) -> List[str]:
+    def pings(self) -> List[str]:  # TODO: object
         return [f"{self.__get_server_ping(ping['GamePodID'])}: {ping['Ping']}" for ping in self._pings]

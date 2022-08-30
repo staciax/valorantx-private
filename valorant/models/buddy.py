@@ -48,7 +48,7 @@ class Buddy(BaseModel):
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
         self._levels: List[Dict[str, Any]] = data['levels']
-        self._price: int = data.get('price', 0)
+        self._price: int = 0
 
     def __str__(self) -> str:
         return self.display_name
@@ -88,7 +88,14 @@ class Buddy(BaseModel):
     @property
     def price(self) -> int:
         """:class: `int` Returns the buddy's price."""
+        if self._price == 0:
+            if len(self.levels) > 0:
+                self._price = self.levels[0].price
         return self._price
+
+    @price.setter
+    def price(self, value: int) -> None:
+        self._price = value
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -106,7 +113,7 @@ class BuddyLevel(BaseModel):
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
-        self._price: int = data.get('price', 0)
+        self._price: int = self._client.get_item_price(self.uuid)
 
     def __str__(self) -> str:
         return self.display_name

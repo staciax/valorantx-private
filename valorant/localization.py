@@ -38,8 +38,6 @@ class Localization:
     ) -> None:
         self.untranslated = untranslated
         self._locale = locale
-
-        # locale code
         self.ar_AE: str = self.untranslated.get('ar-AE', self.default)
         self.de_DE: str = self.untranslated.get('de-DE', self.default)
         self.en_US: str = self.untranslated.get('en-US', self.default)
@@ -59,28 +57,6 @@ class Localization:
         self.zh_CN: str = self.untranslated.get('zh-CN', self.default)
         self.zh_TW: str = self.untranslated.get('zh-TW', self.default)
 
-        # locale language
-        self.arabic: str = self.ar_AE
-        self.german: str = self.de_DE
-        self.english: str = self.en_US
-        self.american_english: str = self.en_US
-        self.british_english: str = self.en_US
-        self.spanish: str = self.es_ES
-        self.spanish_mexican: str = self.es_MX
-        self.french: str = self.fr_FR
-        self.indonesian: str = self.id_ID
-        self.italian: str = self.it_IT
-        self.japanese: str = self.ja_JP
-        self.korean: str = self.ko_KR
-        self.polish: str = self.pl_PL
-        self.portuguese_brazil: str = self.pt_BR
-        self.russian: str = self.ru_RU
-        self.thai: str = self.th_TH
-        self.turkish: str = self.tr_TR
-        self.vietnamese: str = self.vi_VN
-        self.chinese_simplified: str = self.zh_CN
-        self.chinese_traditional: str = self.zh_TW
-
     def __repr__(self) -> str:
         return f'<Translator untranslated={self.untranslated!r}>'
 
@@ -96,6 +72,106 @@ class Localization:
 
     def __hash__(self) -> int:
         return hash(self.untranslated)
+
+    @property
+    def arabic(self) -> str:
+        """:class:`str`: Returns the Arabic locale."""
+        return self.ar_AE
+
+    @property
+    def german(self) -> str:
+        """:class:`str`: Returns the German locale."""
+        return self.de_DE
+
+    @property
+    def english(self) -> str:
+        """:class:`str`: Returns the English locale."""
+        return self.en_US
+
+    @property
+    def american_english(self) -> str:
+        """:class:`str`: Returns the American English locale."""
+        return self.en_US
+
+    @property
+    def british_english(self) -> str:
+        """:class:`str`: Returns the British English locale."""
+        return self.en_US
+
+    @property
+    def spanish(self) -> str:
+        """:class:`str`: Returns the Spanish locale."""
+        return self.es_ES
+
+    @property
+    def spanish_mexican(self) -> str:
+        """:class:`str`: Returns the Spanish Mexican locale."""
+        return self.es_MX
+
+    @property
+    def french(self) -> str:
+        """:class:`str`: Returns the French locale."""
+        return self.fr_FR
+
+    @property
+    def indonesian(self) -> str:
+        """:class:`str`: Returns the Indonesian locale."""
+        return self.id_ID
+
+    @property
+    def italian(self) -> str:
+        """:class:`str`: Returns the Italian locale."""
+        return self.it_IT
+
+    @property
+    def japanese(self) -> str:
+        """:class:`str`: Returns the Japanese locale."""
+        return self.ja_JP
+
+    @property
+    def korean(self) -> str:
+        """:class:`str`: Returns the Korean locale."""
+        return self.ko_KR
+
+    @property
+    def polish(self) -> str:
+        """:class:`str`: Returns the Polish locale."""
+        return self.pl_PL
+
+    @property
+    def portuguese_brazil(self) -> str:
+        """:class:`str`: Returns the Portuguese Brazil locale."""
+        return self.pt_BR
+
+    @property
+    def russian(self) -> str:
+        """:class:`str`: Returns the Russian locale."""
+        return self.ru_RU
+
+    @property
+    def thai(self) -> str:
+        """:class:`str`: Returns the Thai locale."""
+        return self.th_TH
+
+    @property
+    def turkish(self) -> str:
+        """:class:`str`: Returns the Turkish locale."""
+        return self.tr_TR
+
+    @property
+    def vietnamese(self) -> str:
+        """:class:`str`: Returns the Vietnamese locale."""
+        return self.vi_VN
+
+    @property
+    def chinese_simplified(self) -> str:
+        """:class:`str`: Returns the Chinese Simplified locale."""
+        return self.zh_CN
+
+    @property
+    def chinese_traditional(self) -> str:
+        """:class:`str`: Returns the Chinese Traditional locale."""
+        return self.zh_TW
 
     @property
     def default(self) -> str:

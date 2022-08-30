@@ -26,6 +26,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
+from ..enums import CurrencyID
 from .bundle import FeaturedBundle
 from .weapons import Skin, SkinNightMarket
 
@@ -36,8 +37,12 @@ if TYPE_CHECKING:
         BonusStoreOffer as BonusStoreOfferPayload,
         Bundle as BundlePayload,
         FeaturedBundle as FeaturedBundlePayload,
+        Offer as OfferPayload,
+        Offers as OffersPayload,
+        Reward as RewardPayload,
         SkinsPanelLayout as SkinsPanelLayoutPayload,
         StoreFront as StoreFrontPayload,
+        UpgradeCurrencyOffer as UpgradeCurrencyOfferPayload,
         Wallet as WalletPayload,
     )
 
@@ -46,6 +51,8 @@ __all__ = (
     'StoreOffer',
     'NightMarket',
     'Wallet',
+    'Offers',
+    'Offer',
 )
 
 
@@ -174,3 +181,45 @@ class Wallet:
     def radiant_points(self) -> int:
         """Returns the radiant points for the wallet"""
         return self.balances.get('e59aa87c-4cbf-517a-5983-6e81511be9b7', 0)
+
+
+class Reward:
+    def __init__(self, data: RewardPayload) -> None:
+        self.item_type_id: str = data['ItemTypeID']
+        self.item_id: str = data['ItemID']
+        self.quantity: int = data['Quantity']
+
+
+class Offer:
+    def __init__(self, data: OfferPayload) -> None:
+        self.id: str = data['OfferID']
+        self.is_direct_purchase: bool = data['IsDirectPurchase']
+        self.cost: int = data['Cost'][str(CurrencyID.valorant_point)]
+        self.rewards: List[Reward] = [Reward(reward) for reward in data['Rewards']]
+
+    def __repr__(self) -> str:
+        return f'<Offer offer_id={self.id!r}>'
+
+    def __int__(self) -> int:
+        return self.cost
+
+
+class UpgradeCurrencyOffer:
+    def __init__(self, data: UpgradeCurrencyOfferPayload) -> None:
+        self.offer_id: str = data['OfferID']
+        self.store_front_item_id: str = data['StorefrontItemID']
+
+    def __repr__(self) -> str:
+        return f'<UpgradeCurrencyOffer offer_id={self.offer_id!r}>'
+
+
+class Offers:
+    def __init__(self, data: OffersPayload) -> None:
+        self.offers: List[Offer] = [Offer(offer) for offer in data['Offers']]
+        self.upgrade_currency_offer: List[UpgradeCurrencyOffer] = [
+            UpgradeCurrencyOffer(offer) for offer in data['UpgradeCurrencyOffers']
+        ]
+        self.raw: OffersPayload = data
+
+    def __repr__(self) -> str:
+        return f'<Offers offers={self.offers!r}>'

@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Any, Coroutine, Iterator, Mapping, Optional, T
 
 from . import utils
 from .assets import Assets
-from .enums import Locale, QueueID, try_enum
+from .enums import ItemType, Locale, QueueID, try_enum
 from .errors import AuthRequired
 from .http import HTTPClient
 from .models import (
@@ -55,6 +55,8 @@ from .models import (
     MatchDetails,
     MatchHistory,
     Mission,
+    Offers,
+    PatchNotes,
     PlayerCard,
     PlayerTitle,
     Season,
@@ -69,7 +71,6 @@ from .models import (
     Wallet,
     Weapon,
 )
-from .models.patchnote import PatchNotes
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -87,6 +88,22 @@ _log = logging.getLogger(__name__)
 MISSING: Any = utils.MISSING
 
 
+class _LoopSentinel:
+    __slots__ = ()
+
+    def __getattr__(self, attr: str) -> None:
+        msg = (
+            'loop attribute cannot be accessed in non-async contexts. '
+            'Consider using either an asynchronous main function and passing it to asyncio.run or '
+        )
+        raise AttributeError(msg)
+
+
+_loop: Any = _LoopSentinel()
+# source: discord.py
+# link: https://github.com/Rapptz/discord.py/blob/9ea6ee8887b65f21ccc0bcf013786f4ea61ba608/discord/client.py#L111
+
+
 def _authorize_required(func):
     def wrapper(self: Optional[Client] = MISSING, *args: Any, **kwargs: Any) -> Any:
         if not self.is_authorized():
@@ -98,16 +115,19 @@ def _authorize_required(func):
 
 
 class Client:
-    def __init__(self, *, locale: Union[Locale, str] = Locale.american_english, auto_fetch_assets: bool = True) -> None:
+    def __init__(self, *, locale: Union[Locale, str] = Locale.american_english, **kwargs: Any) -> None:
 
         self._locale: Union[Locale, str] = locale
-        self._auto_fetch_assets: bool = auto_fetch_assets
+        self._auto_fetch_assets: bool = kwargs.get('auto_fetch_assets', False)
+        self._auto_reload_assets: bool = kwargs.get('auto_reload_assets', False)
+
+        self.loop: asyncio.AbstractEventLoop = _loop
 
         # config
         self._closed: bool = False
         self._ready: bool = False
-        self._version: Optional[Version] = None
-        self._season: Optional[Season] = None
+        self._version: Version = MISSING
+        self._season: Season = MISSING
 
         self._is_authorized: bool = False
 
@@ -115,12 +135,18 @@ class Client:
         self._http: HTTPClient = HTTPClient()
 
         # assets
-        self.assets: Assets = Assets(client=self, locale=locale)
+        self.assets: Assets = Assets(client=self, auto_reload=self._auto_reload_assets)
 
     async def __aenter__(self) -> Self:
         # do something
         loop = asyncio.get_running_loop()
         self.loop = loop
+        if self.version is MISSING:
+            self.version = await self.get_valorant_version()
+
+        if self._auto_fetch_assets:
+            await self.assets.fetch_assets()
+
         return self
 
     async def __aexit__(
@@ -200,8 +226,13 @@ class Client:
 
     # assets
 
-    async def fetch_all_assets(self, force: bool = False) -> None:
-        await self.assets.fetch_all_assets(force=force)
+    def fetch_assets(
+        self, force: bool = False, with_price: bool = False, *, reload: bool = True
+    ) -> Coroutine[Any, Any, Any]:
+        return self.assets.fetch_assets(force=force, with_price=with_price, reload_asset=reload)
+
+    def reload_assets(self, with_price: bool = False) -> None:
+        self.assets.reload_assets(with_price=with_price)
 
     def get_agent(self, uuid: str, **kwargs) -> Optional[Agent]:
         """Get an agent by UUID or Display Name."""
@@ -338,6 +369,10 @@ class Client:
         for item in data.values():
             yield Bundle(client=self, data=item)
 
+    def get_item_price(self, uuid: str) -> int:
+        """Get the price of an item by UUID."""
+        return self.assets.get_item_price(uuid)
+
     async def get_valorant_version(self) -> Version:
         data = await self.http.asset_valorant_version()
         return Version(client=self, data=data)
@@ -386,6 +421,7 @@ class Client:
         data = await self.http.fetch_mmr(puuid)
         return MMR(client=self, data=data)
 
+    @_authorize_required
     async def fetch_match_history(
         self,
         puuid: Optional[str] = None,
@@ -408,6 +444,11 @@ class Client:
     # store endpoints
 
     @_authorize_required
+    async def fetch_offers(self) -> Offers:
+        data = await self.http.store_fetch_offers()
+        return Offers(data=data)
+
+    @_authorize_required
     async def fetch_store_front(self) -> StoreFront:
         data = await self.http.store_fetch_storefront()
         return StoreFront(client=self, data=data)
@@ -416,3 +457,13 @@ class Client:
     async def fetch_wallet(self) -> Wallet:
         data = await self.http.store_fetch_wallet()
         return Wallet(client=self, data=data)
+
+    @_authorize_required
+    def fetch_order(self, order_id: str) -> Any:
+        data = self.http.store_fetch_order(order_id)
+        # return Order(client=self, data=data)
+
+    @_authorize_required
+    def fetch_entitlements(self, item_type: Union[str, ItemType] = ItemType.skin) -> Any:
+        data = self.http.store_fetch_entitlements(item_type)
+        # return Entitlements(client=self, data=data)

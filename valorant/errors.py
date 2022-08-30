@@ -154,6 +154,14 @@ class RiotServerError(HTTPException):
     pass
 
 
+class ValorantAPIServerError(HTTPException):
+    """Exception that's raised for when a 500 range status code occurs.
+    Subclass of :exc:`HTTPException`.
+    """
+
+    pass
+
+
 class RiotAuthError(Exception):
     """Base class for RiotAuth errors."""
 

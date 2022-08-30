@@ -35,7 +35,7 @@ import urllib3
 from . import __version__, utils
 from .auth import RiotAuth
 from .enums import ItemType, Locale, QueueID, Region, try_enum
-from .errors import Forbidden, HTTPException, NotFound, RiotServerError
+from .errors import Forbidden, HTTPException, NotFound, RiotServerError, ValorantAPIServerError
 
 MISSING = utils.MISSING
 
@@ -102,18 +102,24 @@ class HTTPClient:
         self._session: aiohttp.ClientSession = MISSING
         self._puuid: str = MISSING
         self._headers: Dict[str, str] = {}
-        self._client_platform = 'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9'  # noqa: E501 ignore PyPEP8
+        self._client_platform = 'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9'  # noqa: E501
+
         # TODO: to base 64
         self._riot_auth: RiotAuth = RiotAuth()
 
-        user_agent = 'valorant-diff.py (https://github.com/staciax/valorant-diff.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'  # noqa: E501 ignore PyPEP8
+        user_agent = 'valorantx (https://github.com/staciax/valorantx {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
 
-    async def request(self, route: Route, **kwargs: Any) -> Any:
+    async def request(self, route: Route, asset_endpoint: bool = False, **kwargs: Any) -> Any:
         method = route.method
         url = route.url
 
-        kwargs['headers'] = self._headers
+        if not asset_endpoint:
+            kwargs['headers'] = self._headers
+        else:
+            kwargs['headers'] = {
+                'User-Agent': self.user_agent,
+            }
 
         exceptions = kwargs.pop('exceptions', None)
 
@@ -155,7 +161,10 @@ class HTTPClient:
                             raise NotFound(response, exceptions)
                         raise NotFound(response, data)
                     elif response.status >= 500:
-                        raise RiotServerError(response, data)
+                        if not asset_endpoint:
+                            raise RiotServerError(response, data)
+                        else:
+                            raise ValorantAPIServerError(response, data)
                     else:
                         raise HTTPException(response, data)
 
@@ -199,75 +208,76 @@ class HTTPClient:
     # valorant-api.com
 
     def asset_valorant_version(self) -> Response[version.Version]:
-        return self.request(Route("GET", "/version", "valorant_api"))
+        return self.request(Route("GET", "/version", "valorant_api"), asset_endpoint=True)
 
     def asset_get_agents(self) -> Response[Any]:
-        return self.request(Route('GET', '/agents', 'valorant_api', isPlayableCharacter=True, language='all'))
+        r = Route('GET', '/agents', 'valorant_api', isPlayableCharacter=True, language='all')
+        return self.request(r, asset_endpoint=True)
 
     def asset_get_buddies(self) -> Response[Any]:
-        return self.request(Route('GET', '/buddies', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/buddies', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_bundles(self) -> Response[Any]:
-        return self.request(Route('GET', '/bundles', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/bundles', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_ceremonies(self) -> Response[Any]:
-        return self.request(Route('GET', '/ceremonies', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/ceremonies', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_events(self) -> Response[Any]:
-        return self.request(Route('GET', '/events', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/events', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_competitive_tiers(self) -> Response[Any]:
-        return self.request(Route('GET', '/competitivetiers', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/competitivetiers', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_content_tiers(self) -> Response[Any]:
-        return self.request(Route('GET', '/contenttiers', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/contenttiers', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_contracts(self) -> Response[Any]:
-        return self.request(Route('GET', '/contracts', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/contracts', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_currencies(self) -> Response[Any]:
-        return self.request(Route('GET', '/currencies', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/currencies', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_game_modes(self) -> Response[Any]:
-        return self.request(Route('GET', '/gamemodes', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/gamemodes', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_game_modes_equippables(self) -> Response[Any]:
-        return self.request(Route('GET', '/gamemodes/equippables', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/gamemodes/equippables', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_gear(self) -> Response[Any]:
-        return self.request(Route('GET', '/gear', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/gear', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_level_borders(self) -> Response[Any]:
-        return self.request(Route('GET', '/levelborders', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/levelborders', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_maps(self) -> Response[Any]:
-        return self.request(Route('GET', '/maps', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/maps', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_missions(self) -> Response[Any]:
-        return self.request(Route('GET', '/missions', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/missions', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_player_cards(self) -> Response[Any]:
-        return self.request(Route('GET', '/playercards', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/playercards', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_player_titles(self) -> Response[Any]:
-        return self.request(Route('GET', '/playertitles', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/playertitles', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_seasons(self) -> Response[Any]:
-        return self.request(Route('GET', '/seasons', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/seasons', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_sprays(self) -> Response[Any]:
-        return self.request(Route('GET', '/sprays', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/sprays', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_themes(self) -> Response[Any]:
-        return self.request(Route('GET', '/themes', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/themes', 'valorant_api', language='all'), asset_endpoint=True)
 
     def asset_get_weapons(self) -> Response[Any]:
-        return self.request(Route('GET', '/weapons', 'valorant_api', language='all'))
+        return self.request(Route('GET', '/weapons', 'valorant_api', language='all'), asset_endpoint=True)
 
     # valtracker endpoint
 
     def asset_get_bundle_items(self) -> Response[Any]:
-        return self.request(Route('GET', '/bundles', 'valtracker_gg'))
+        return self.request(Route('GET', '/bundles', 'valtracker_gg'), asset_endpoint=True)
 
     # play valorant endpoints
 
@@ -281,7 +291,7 @@ class HTTPClient:
 
     # PVP endpoints
 
-    def fetch_content(self) -> Response[None]:
+    def fetch_content(self) -> Response[Any]:
         """
         Content_FetchContent
         Get names and ids for game content such as agents, maps, guns, etc.
@@ -302,7 +312,7 @@ class HTTPClient:
         """
         return self.request(Route('GET', f'/personalization/v2/players/{self._puuid}/playerloadout', 'pd'))
 
-    def put_player_loadout(self, loadout: Mapping) -> Response[None]:
+    def put_player_loadout(self, loadout: Mapping) -> Response[Any]:
         """
         playerLoadoutUpdate
         Use the values from self._fetch_player_loadout() excluding properties like subject and version.
@@ -311,7 +321,7 @@ class HTTPClient:
         r = Route('PUT', f'/personalization/v2/players/{self._puuid}/playerloadout', 'pd')
         return self.request(r, json=loadout)
 
-    def fetch_mmr(self, puuid: Optional[str] = None) -> Response[None]:
+    def fetch_mmr(self, puuid: Optional[str] = None) -> Response[Any]:
         """
         MMR_FetchPlayer
         Get the match making rating for a player
@@ -360,7 +370,7 @@ class HTTPClient:
         start_index: int = 0,
         end_index: int = 15,
         queue_id: Union[str, QueueID] = QueueID.competitive,
-    ) -> Response[None]:
+    ) -> Response[Any]:
         """
         MMR_FetchCompetitiveUpdates
         Get recent games and how they changed ranking
@@ -405,14 +415,14 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def fetch_player_restrictions(self) -> Response[None]:
+    def fetch_player_restrictions(self) -> Response[Any]:
         """
         Restrictions_FetchPlayerRestrictionsV3
         Checks for any gameplay penalties on the account
         """
         return self.request(Route('GET', '/restrictions/v3/penalties', 'pd'))
 
-    def fetch_item_progression_definitions(self) -> Response[None]:
+    def fetch_item_progression_definitions(self) -> Response[Any]:
         """
         ItemProgressionDefinitionsV2_Fetch
         Get details for item upgrades
@@ -426,7 +436,7 @@ class HTTPClient:
         """
         return self.request(Route('GET', '/v1/config/{region}', 'shared'))
 
-    def fetch_name_by_puuid(self, puuid: Optional[List[str]] = None) -> Response[None]:
+    def fetch_name_by_puuid(self, puuid: Optional[List[str]] = None) -> Response[Any]:
         """
         Name_service
         get player name tag by puuid
@@ -439,7 +449,7 @@ class HTTPClient:
 
     # contract endpoints
 
-    def contract_fetch_definitions(self) -> Response[None]:
+    def contract_fetch_definitions(self) -> Response[Any]:
         """
         ContractDefinitions_Fetch
         Get names and descriptions for contracts
@@ -448,7 +458,7 @@ class HTTPClient:
 
     # store endpoints
 
-    def store_fetch_offers(self) -> Response[None]:
+    def store_fetch_offers(self) -> Response[store.Offers]:
         """
         Store_GetOffers
         Get prices for all store items
@@ -471,14 +481,14 @@ class HTTPClient:
         """
         return self.request(Route('GET', f'/store/v1/wallet/{self._puuid}', 'pd'))
 
-    def store_fetch_order(self, order_id: str) -> Response[None]:
+    def store_fetch_order(self, order_id: str) -> Response[Any]:
         """
         Store_GetOrder
         {order id}: The ID of the order. Can be obtained when creating an order.
         """
         return self.request(Route('GET', f'/store/v1/order/{order_id}', 'pd'))
 
-    def store_fetch_entitlements(self, item_type: Union[str, ItemType] = ItemType.skin) -> Response[None]:
+    def store_fetch_entitlements(self, item_type: Union[str, ItemType] = ItemType.skin) -> Response[Any]:
         """
         Store_GetEntitlements
         List what the player owns (agents, skins, buddies, ect.)
