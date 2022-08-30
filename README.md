@@ -1,5 +1,5 @@
-# valorant-diff.py?
- An API wrapper for Valorant written in Python.
+# valorant-x
+ An Asynchronous Unofficial Valorant API Wrapper for Python.
  
 ## Assets
 
