@@ -19,16 +19,16 @@ with open('README.md') as f:
 packages = ['valorant', 'valorant.models', 'valorant.types']
 
 setup(
-    name='valorant-diff.py',
+    name='valorantx',
     author='xStacia',
-    url='https://github.com/staciax/valorant-diff.py',
+    url='https://github.com/staciax/valorantx',
     project_urls={
-        "Issue tracker": "https://github.com/staciax/valorant-diff.py/issues",
+        "Issue tracker": "https://github.com/staciax/valorantx/issues",
     },
     version=version,
     packages=packages,
     license='MIT',
-    description='An Asynchronous Valorant API Wrapper for Python',
+    description='An Asynchronous Unofficial Valorant API Wrapper for Python',
     long_description=readme,
     include_package_data=True,
     install_requires=requirements,

@@ -6,7 +6,7 @@ A basic wrapper for the Valorant API.
 :license: MIT, see LICENSE for more details.
 """
 
-__title__ = 'valorant-diff.py'
+__title__ = 'valorantx'
 __author__ = 'xStacia'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2022-present xStacia'
