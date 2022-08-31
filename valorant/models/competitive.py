@@ -205,10 +205,13 @@ class SeasonalInfo:
     def tier(self) -> Optional[Tier]:
         """:class: `Tier` Returns the tier."""
         ss_com = self._client.get_season_competitive(seasonUuid=self.season_id)
-        com_tiers = ss_com.competitive_tiers
-        for tier in com_tiers.tiers:
-            if tier.tier == self.competitive_tier_number:
-                return tier
+        if ss_com:
+            com_tiers = ss_com.competitive_tiers
+            for tier in com_tiers.tiers:
+                if tier.tier == self.competitive_tier_number:
+                    return tier
+        else:
+            return None
 
 
 class QueueSkill:

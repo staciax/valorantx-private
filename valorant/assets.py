@@ -117,9 +117,9 @@ def finder():
                                         if kwargs[k] == vv or vv.startswith(kwargs[k]):
                                             kwargs.clear()
                                             kwargs['uuid'] = key
-                                            return function(self, **kwargs)
+                                            return function(self, *args, **kwargs)
 
-            return function(self, **kwargs)
+            return function(self, *args, **kwargs)
 
         return wrapper
 
@@ -151,164 +151,164 @@ class Assets:
                 raise KeyError(f"Asset {key!r} not found")
 
     @finder()
-    def get_agent(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_agent(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """agents, Get an agent by UUID."""
         data = self.get_asset('agents')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_buddy(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_buddy(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """buddies, Get a buddy by UUID."""
         data = self.get_asset('buddies')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_buddy_level(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_buddy_level(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """buddies_levels, Get a buddy level by UUID."""
         data = self.get_asset('buddies_levels')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_bundle(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_bundle(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """bundles, Get a bundle by UUID."""
         data = self.get_asset('bundles')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_ceremony(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_ceremony(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """ceremonies, Get a ceremony by UUID."""
         data = self.get_asset('ceremonies')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_competitive_tier(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_competitive_tier(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """competitive_tiers, Get a competitive tier by UUID."""
         data = self.get_asset('competitive_tiers')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_content_tier(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_content_tier(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """content_tiers, Get a content tier by UUID."""
         data = self.get_asset('content_tiers')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_contract(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_contract(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """contracts, Get a contract by UUID."""
         data = self.get_asset('contracts')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_currency(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_currency(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """currencies, Get a currency by UUID."""
         data = self.get_asset('currencies')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_event(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_event(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """events, Get an event by UUID."""
         data = self.get_asset('events')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_game_mode(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_game_mode(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """game_modes, Get a game mode by UUID."""
         data = self.get_asset('game_modes')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_game_mode_equippable(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_game_mode_equippable(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """game_modes_equippables, Get a game mode equippable by UUID."""
         data = self.get_asset('game_modes_equippables')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_gear(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_gear(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """gear, Get a gear by UUID."""
         data = self.get_asset('gear')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_level_border(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_level_border(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """level_borders, Get a level border by UUID."""
         data = self.get_asset('level_borders')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_map(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_map(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """maps, Get a map by UUID."""
         data = self.get_asset('maps')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_mission(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_mission(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """missions, Get a mission by UUID."""
         data = self.get_asset('missions')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_player_card(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_player_card(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """player_cards, Get a player card by UUID."""
         data = self.get_asset('player_cards')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_player_title(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_player_title(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """player_titles, Get a player title by UUID."""
         data = self.get_asset('player_titles')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_season(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_season(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """seasons, Get a season by UUID."""
         data = self.get_asset('seasons')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_season_competitive(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_season_competitive(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """seasons_competitive, Get a season competitive by UUID."""
         data = self.get_asset('seasons_competitive')
         return data.get(kwargs.get('uuid'))
         # return data.get(uuid)
 
     @finder()
-    def get_spray(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_spray(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """sprays, Get a spray by UUID."""
         data = self.get_asset('sprays')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_spray_level(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_spray_level(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """sprays_levels, Get a spray level by UUID."""
         data = self.get_asset('sprays_levels')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_theme(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_theme(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """themes, Get a theme by UUID."""
         data = self.get_asset('themes')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_weapon(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_weapon(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """weapons, Get a weapon by UUID."""
         data = self.get_asset('weapons')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_skin(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_skin(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """weapon_skins, Get a weapon skin by UUID."""
         data = self.get_asset('weapon_skins')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_skin_level(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_skin_level(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """weapon_skins_levels, Get a weapon skin level by UUID."""
         data = self.get_asset('weapon_skins_levels')
         return data.get(kwargs.get('uuid'))
 
     @finder()
-    def get_skin_chroma(self, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_skin_chroma(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
         """weapon_skins_chromas, Get a weapon skin chroma by UUID."""
         data = self.get_asset('weapon_skins_chromas')
         return data.get(kwargs.get('uuid'))
