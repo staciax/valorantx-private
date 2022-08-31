@@ -42,9 +42,6 @@ if TYPE_CHECKING:
         xpModification as xpModificationPayload,
     )
     from ..types.player import (
-        AccountXP as AccXPPayload,
-        AccountXPHistory as AccXPHistoryPayload,
-        AccountXPProgress as AccXPProgressPayload,
         PartialPlayer as PartialPlayerPayload,
         Player as PlayerPayload,
         PlayerMatch as PlayerMatchPayload,
@@ -53,44 +50,12 @@ if TYPE_CHECKING:
 
 # fmt: off
 __all__ = (
-    'AccountXP',
     'BasePlayer',
     'MatchPlayer',
     'ClientPlayer',
 
 )
 # fmt: on
-
-
-class AccountXP:
-    def __init__(self, client: Client, data: AccXPPayload) -> None:
-        self._client = client
-        self.version: int = data['Version']
-        self.subject: str = data['Subject']
-        self._progress: AccXPProgressPayload = data['Progress']
-        self.xp: int = self._progress['XP']
-        self.level: int = self._progress['Level']
-        self._history: List[AccXPHistoryPayload] = data['History']  # TODO: Objectify this
-        self._last_time_granted_first_win_iso: Optional[str, datetime.datetime] = data['LastTimeGrantedFirstWin']
-        self._next_time_first_win_available_iso: Optional[str, datetime.datetime] = data['NextTimeFirstWinAvailable']
-
-    def __repr__(self) -> str:
-        return f'<AccountXP version={self.version!r} subject={self.subject!r}>'
-
-    @property
-    def last_time_granted_first_win(self) -> datetime.datetime:
-        """
-        :class: `datetime.datetime` Returns the last time the player was granted the first win.
-        """
-        return utils.parse_iso_datetime(self._last_time_granted_first_win_iso)
-
-    @property
-    def next_time_first_win_available(self) -> datetime.datetime:
-        """
-        :class: `datetime.datetime`
-        Returns the next time the player can be granted the first win.
-        """
-        return utils.parse_iso_datetime(self._next_time_first_win_available_iso)
 
 
 class _PlayerTag:

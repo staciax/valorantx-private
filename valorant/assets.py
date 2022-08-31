@@ -73,43 +73,53 @@ def validate_uuid(func):
     return decorator
 
 
-def maybe_uuid():  # TODO: rework this
+def finder():
     def decorator(function):
         @wraps(function)
-        def wrapper(uuid: str, *args, **kwargs) -> Any:
+        def wrapper(self, *args, **kwargs) -> Any:
+            if not args and not kwargs:
+                return function(self, *args, **kwargs)
 
-            # TODO: kwargs search key optimization
+            kwargs = dict((key.lower(), value.lower()) for key, value in kwargs.items())
+            finder_keys = [x for x in list(kwargs.keys())]
+            # inspred by https://github.com/MinshuG/valorant-api/blob/b739850d2722247b56b9e4d12caa8b3c326ce141/valorant_api/base_list.py#L17  # noqa: E501
 
-            if not isinstance(uuid, str):
-                try:
-                    may_be_uuid = args[0]
-                except IndexError:
-                    return function(uuid, *args)
-            else:
-                may_be_uuid = uuid
+            if len(finder_keys) == 0:
+                may_be_uuid = args[0]
+                if isinstance(may_be_uuid, str):
+                    may_be_uuid = may_be_uuid.lower()
 
-            if not is_uuid(str(may_be_uuid)) and not may_be_uuid == '':
+                if not is_uuid(str(may_be_uuid)) and not may_be_uuid == '':
+                    kwargs['displayname'] = may_be_uuid
+                    finder_keys.append('displayname')
+                else:
+                    kwargs['uuid'] = may_be_uuid
+                    finder_keys.append('uuid')
 
-                get_key = function.__doc__.split(',')[0].strip()
-                data = Assets.ASSET_CACHE.get(get_key, {})
+            get_key = function.__doc__.split(',')[0].strip()
+            data = Assets.ASSET_CACHE.get(get_key, {})
 
-                for value in data.values():
-                    display_names = value.get('displayName')
-                    if display_names is not None:
-                        try:
-                            for display_name in display_names.values():
-                                if may_be_uuid.lower() == display_name.lower() or display_name.lower().startswith(
-                                    may_be_uuid.lower()
-                                ):
-                                    args = (value['uuid'],)
-                                    return function(uuid, *args)
+            for key, value in data.items():
+                if isinstance(value, dict):
+                    for k, v in value.items():
+                        k = k.lower()
+                        if k in finder_keys:
+                            if isinstance(v, str):
+                                if kwargs[k] == v:
+                                    kwargs.clear()
+                                    kwargs['uuid'] = key
+                                    return function(self, **kwargs)
 
-                        except AttributeError:
-                            pass
+                            elif isinstance(v, dict):
+                                for kk, vv in v.items():
+                                    if isinstance(vv, str):
+                                        vv = vv.lower()
+                                        if kwargs[k] == vv or vv.startswith(kwargs[k]):
+                                            kwargs.clear()
+                                            kwargs['uuid'] = key
+                                            return function(self, **kwargs)
 
-                raise ValueError('Invalid UUID')
-
-            return function(uuid, *args)
+            return function(self, **kwargs)
 
         return wrapper
 
@@ -140,161 +150,168 @@ class Assets:
             else:
                 raise KeyError(f"Asset {key!r} not found")
 
-    @maybe_uuid()
-    def get_agent(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_agent(self, **kwargs) -> Optional[Dict[str, Any]]:
         """agents, Get an agent by UUID."""
         data = self.get_asset('agents')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_buddy(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_buddy(self, **kwargs) -> Optional[Dict[str, Any]]:
         """buddies, Get a buddy by UUID."""
         data = self.get_asset('buddies')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_buddy_level(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_buddy_level(self, **kwargs) -> Optional[Dict[str, Any]]:
         """buddies_levels, Get a buddy level by UUID."""
         data = self.get_asset('buddies_levels')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_bundle(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_bundle(self, **kwargs) -> Optional[Dict[str, Any]]:
         """bundles, Get a bundle by UUID."""
         data = self.get_asset('bundles')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_ceremony(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_ceremony(self, **kwargs) -> Optional[Dict[str, Any]]:
         """ceremonies, Get a ceremony by UUID."""
         data = self.get_asset('ceremonies')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @validate_uuid
-    def get_competitive_tier(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_competitive_tier(self, **kwargs) -> Optional[Dict[str, Any]]:
         """competitive_tiers, Get a competitive tier by UUID."""
         data = self.get_asset('competitive_tiers')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_content_tier(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_content_tier(self, **kwargs) -> Optional[Dict[str, Any]]:
         """content_tiers, Get a content tier by UUID."""
         data = self.get_asset('content_tiers')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_contract(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_contract(self, **kwargs) -> Optional[Dict[str, Any]]:
         """contracts, Get a contract by UUID."""
         data = self.get_asset('contracts')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_currency(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_currency(self, **kwargs) -> Optional[Dict[str, Any]]:
         """currencies, Get a currency by UUID."""
         data = self.get_asset('currencies')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_event(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_event(self, **kwargs) -> Optional[Dict[str, Any]]:
         """events, Get an event by UUID."""
         data = self.get_asset('events')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_game_mode(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_game_mode(self, **kwargs) -> Optional[Dict[str, Any]]:
         """game_modes, Get a game mode by UUID."""
         data = self.get_asset('game_modes')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_game_mode_equippable(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_game_mode_equippable(self, **kwargs) -> Optional[Dict[str, Any]]:
         """game_modes_equippables, Get a game mode equippable by UUID."""
         data = self.get_asset('game_modes_equippables')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_gear(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_gear(self, **kwargs) -> Optional[Dict[str, Any]]:
         """gear, Get a gear by UUID."""
         data = self.get_asset('gear')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @validate_uuid  # TODO : get by startingLevel
-    def get_level_border(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_level_border(self, **kwargs) -> Optional[Dict[str, Any]]:
         """level_borders, Get a level border by UUID."""
         data = self.get_asset('level_borders')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_map(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_map(self, **kwargs) -> Optional[Dict[str, Any]]:
         """maps, Get a map by UUID."""
         data = self.get_asset('maps')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @validate_uuid
-    def get_mission(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_mission(self, **kwargs) -> Optional[Dict[str, Any]]:
         """missions, Get a mission by UUID."""
         data = self.get_asset('missions')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_player_card(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_player_card(self, **kwargs) -> Optional[Dict[str, Any]]:
         """player_cards, Get a player card by UUID."""
         data = self.get_asset('player_cards')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_player_title(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_player_title(self, **kwargs) -> Optional[Dict[str, Any]]:
         """player_titles, Get a player title by UUID."""
         data = self.get_asset('player_titles')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_season(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_season(self, **kwargs) -> Optional[Dict[str, Any]]:
         """seasons, Get a season by UUID."""
         data = self.get_asset('seasons')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_spray(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_season_competitive(self, **kwargs) -> Optional[Dict[str, Any]]:
+        """seasons_competitive, Get a season competitive by UUID."""
+        data = self.get_asset('seasons_competitive')
+        return data.get(kwargs.get('uuid'))
+        # return data.get(uuid)
+
+    @finder()
+    def get_spray(self, **kwargs) -> Optional[Dict[str, Any]]:
         """sprays, Get a spray by UUID."""
         data = self.get_asset('sprays')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_spray_level(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_spray_level(self, **kwargs) -> Optional[Dict[str, Any]]:
         """sprays_levels, Get a spray level by UUID."""
         data = self.get_asset('sprays_levels')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_theme(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_theme(self, **kwargs) -> Optional[Dict[str, Any]]:
         """themes, Get a theme by UUID."""
         data = self.get_asset('themes')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_weapon(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_weapon(self, **kwargs) -> Optional[Dict[str, Any]]:
         """weapons, Get a weapon by UUID."""
         data = self.get_asset('weapons')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_skin(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_skin(self, **kwargs) -> Optional[Dict[str, Any]]:
         """weapon_skins, Get a weapon skin by UUID."""
         data = self.get_asset('weapon_skins')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_skin_level(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_skin_level(self, **kwargs) -> Optional[Dict[str, Any]]:
         """weapon_skins_levels, Get a weapon skin level by UUID."""
         data = self.get_asset('weapon_skins_levels')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
-    @maybe_uuid()
-    def get_skin_chroma(self, uuid: str) -> Optional[Dict[str, Any]]:
+    @finder()
+    def get_skin_chroma(self, **kwargs) -> Optional[Dict[str, Any]]:
         """weapon_skins_chromas, Get a weapon skin chroma by UUID."""
         data = self.get_asset('weapon_skins_chromas')
-        return data.get(uuid)
+        return data.get(kwargs.get('uuid'))
 
     def get_item_price(self, uuid: str) -> int:
         return self.OFFER_CACHE.get(uuid, 0)
@@ -336,6 +353,7 @@ class Assets:
             'player_cards',
             'player_titles',
             'seasons',
+            'seasons_competitive',
             'sprays',
             'themes',
             'weapons',
@@ -391,6 +409,7 @@ class Assets:
                 asyncio.ensure_future(self._client.http.asset_get_player_cards()),
                 asyncio.ensure_future(self._client.http.asset_get_player_titles()),
                 asyncio.ensure_future(self._client.http.asset_get_seasons()),
+                asyncio.ensure_future(self._client.http.asset_get_seasons_competitive()),
                 asyncio.ensure_future(self._client.http.asset_get_sprays()),
                 asyncio.ensure_future(self._client.http.asset_get_themes()),
                 asyncio.ensure_future(self._client.http.asset_get_weapons()),
@@ -436,12 +455,14 @@ class Assets:
                 elif index == 18:
                     self._dump(asset, 'seasons')
                 elif index == 19:
-                    self._dump(asset, 'sprays')
+                    self._dump(asset, 'seasons_competitive')
                 elif index == 20:
-                    self._dump(asset, 'themes')
+                    self._dump(asset, 'sprays')
                 elif index == 21:
-                    self._dump(asset, 'weapons')
+                    self._dump(asset, 'themes')
                 elif index == 22:
+                    self._dump(asset, 'weapons')
+                elif index == 23:
                     self._dump(asset, '_bundle_items')
                 else:
                     print(f"Unknown asset type: {index}")
@@ -538,7 +559,8 @@ class Assets:
                     _log.error(f'Failed to create asset directory')
                     return
 
-    def __customize_asset_cache_format(self, filename: str, data: Any) -> None:
+    @staticmethod
+    def __customize_asset_cache_format(filename: str, data: Any) -> None:
         """Customize the asset assets format."""
 
         # TODO: additional asset weapons
@@ -596,7 +618,9 @@ class Assets:
                         if kwargs['base_price'] is None:
                             kwargs['base_price'] = -1
                         return dict(
-                            Item=dict(ItemTypeID=kwargs['item_type_id'], ItemID=kwargs['item_id'], Amount=kwargs['amount']),
+                            Item=dict(
+                                ItemTypeID=kwargs['item_type_id'], ItemID=kwargs['item_id'], Amount=kwargs['amount']
+                            ),  # noqa: E501
                             BasePrice=kwargs['base_price'],
                             CurrencyID=str(CurrencyID.valorant_point),
                             DiscountPercent=0,

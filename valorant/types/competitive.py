@@ -20,3 +20,69 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Dict, TypedDict, Union
+
+if TYPE_CHECKING:
+    import datetime
+
+
+class SeasonalInfo(TypedDict):
+    SeasonID: str
+    NumberOfWins: int
+    NumberOfWinsWithPlacements: int
+    NumberOfGames: int
+    Rank: int
+    CapstoneWins: int
+    LeaderboardRank: int
+    CompetitiveTier: int
+    RankedRating: int
+    WinsByTier: Dict[str, int]
+    GamesNeededForRating: int
+    TotalWinsNeededForRank: int
+
+
+class QueueSkill(TypedDict):
+    TotalGamesNeededForRating: int
+    TotalGamesNeededForLeaderboard: int
+    CurrentSeasonGamesNeededForRating: int
+    SeasonalInfoBySeasonID: Dict[str, SeasonalInfo]
+
+
+class QueueSkills(TypedDict):
+    competitive: QueueSkill
+    custom: QueueSkill
+    deathmatch: QueueSkill
+    ggteam: QueueSkill
+    newmap: QueueSkill
+    onefa: QueueSkill
+    seeding: QueueSkill
+    snowball: QueueSkill
+    spikerush: QueueSkill
+    unrated: QueueSkill
+
+
+class LatestCompetitiveUpdate(TypedDict):
+    MatchID: str
+    MapID: str
+    SeasonID: str
+    MatchStartTime: Union[datetime.datetime, int]
+    TierAfterUpdate: int
+    TierBeforeUpdate: int
+    RankedRatingAfterUpdate: int
+    RankedRatingBeforeUpdate: int
+    RankedRatingEarned: int
+    RankedRatingPerformanceBonus: int
+    CompetitiveMovement: str
+    AFKPenalty: int
+
+
+class MMR_(TypedDict):
+    Version: int
+    Subject: str
+    NewPlayerExperienceFinished: bool
+    QueueSkills: QueueSkills
+    LatestCompetitiveUpdate: LatestCompetitiveUpdate
+    IsLeaderboardAnonymized: bool
+    IsActRankBadgeHidden: bool

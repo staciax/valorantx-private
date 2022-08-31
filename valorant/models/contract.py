@@ -24,58 +24,60 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
+import logging
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .. import utils
 from ..asset import Asset
+from ..enums import RelationType, try_enum
+from ..errors import InvalidContractType, InvalidRelationType
 from ..localization import Localization
+from .agent import Agent
 from .base import BaseModel
+from .event import Event
+from .mission import MissionMeta, MissionU
+from .season import Season
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..client import Client
+    from ..types.contract import (
+        Contract as ContractUPayload,
+        Contracts as ContractsPayload,
+        ProcessedMatch as ProcessedMatchPayload,
+    )
 
-# fmt: off
-__all__ = (
-    'Contract',
-)
-# fmt: on
+__all__ = ('Contract', 'ContractU', 'Contracts')
+
+_log = logging.getLogger(__name__)
+
+# A = Asset
+# U = User
 
 
 class Contract(BaseModel):
-    def __init__(self, client: Client, data: Optional[Dict[str, Any]], user_contract: Any = None) -> None:
-        super().__init__(client=client, data=data, user_contract=user_contract)
+    def __init__(self, client: Client, data: Dict[str, Any]) -> None:
+        super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
         self._ship_it: bool = data.get('shipIt', False)
         self.free_reward_schedule_uuid: str = data['freeRewardScheduleUuid']
         self.asset_path: str = data['assetPath']
-
-        # content
         self._content: Dict[Any, Any] = data['content']
-        self._relation_type: Optional[str] = self._content['relationType']
-        self._relation_uuid: Optional[str] = self._content['relationUuid']
-        self._chapters: List[Dict[Any, Any]] = self._content['chapters']
-        self._premium_reward_schedule_uuid: Optional[str] = self._content['premiumRewardScheduleUuid']
-        self._premium_vp_cost: int = self._content['premiumVPCost']
-
-        self._complete: bool = False
-        self._objectives: Dict[str, Any] = {}
-        self._expiration_time: Optional[datetime.datetime] = None
-
-        if self._extras.get('user_contract'):
-            self._user_contract: Dict[Any, Any] = self._extras.get('user_contract')
-            self._complete = self._user_contract.get('complete')
-            self._objectives = self._user_contract.get('contract_objectives')
-            self._expiration_time_iso = self._user_contract.get('expiration_time')
 
     def __str__(self) -> str:
         return self.display_name
 
     def __repr__(self) -> str:
         return f'<Contract display_name={self.display_name!r}>'
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Union[ContractU, Contract]) and self.uuid == other.uuid
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
     @property
     def name_localizations(self) -> Localization:
@@ -97,45 +99,9 @@ class Contract(BaseModel):
         return self._ship_it
 
     @property
-    def relation_type(self) -> Optional[str]:
-        """:class: `str` Returns the contract's relation type."""
-        return self._relation_type
-
-    @property
-    def relation_uuid(self) -> Optional[str]:
-        """:class: `str` Returns the contract's relation uuid."""
-        return self._relation_uuid
-
-    @property
-    def chapters(self) -> List[Dict[Any, Any]]:  # https://dash.valorant-api.com/endpoints/contracts
-        """:class: `list` Returns the contract's chapters."""
-        return self._chapters
-
-    @property
-    def premium_reward_schedule_uuid(self) -> Optional[str]:
-        """:class: `str` Returns the contract's premium reward schedule uuid."""
-        return self._premium_reward_schedule_uuid
-
-    @property
-    def premium_vp_cost(self) -> int:
-        """:class: `int` Returns the contract's premium vp cost."""
-        return self._premium_vp_cost
-
-    # user contract
-
-    def complete(self) -> bool:
-        """:class: `bool` Returns whether the contract is complete."""
-        return self._complete
-
-    @property
-    def objectives(self) -> Dict[str, Any]:
-        """:class: `dict` Returns the contract's objectives."""
-        return self._objectives
-
-    @property
-    def expiration_time(self) -> Optional[datetime.datetime]:
-        """:class: `datetime.datetime` Returns the contract's expiration time."""
-        return utils.parse_iso_datetime(self._expiration_time_iso) if self._expiration_time_iso else None
+    def content(self) -> Content:
+        """:class: `Content` Returns the contract's content."""
+        return Content(client=self._client, data=self._content)
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -144,7 +110,179 @@ class Contract(BaseModel):
         return cls(client=client, data=data) if data else None
 
 
-# class MissionMeta(NamedTuple):
-#     NPECompleted: bool
-#     WeeklyCheckpoint: str
-#     WeeklyRefillTime: str
+class ContractU(Contract):
+    def __init__(self, client: Client, data: Dict[str, Any], contract: ContractUPayload) -> None:
+        super().__init__(client=client, data=data)
+        self.total_progression_earned: int = contract['ContractProgression']['TotalProgressionEarned']
+        self.highest_rewarded_level: int = contract['ContractProgression']['HighestRewardedLevel'][
+            self.free_reward_schedule_uuid
+        ]
+        self.progression_level_reached: int = contract['ProgressionLevelReached']
+        self.progression_towards_next_level: int = contract['ProgressionTowardsNextLevel']
+
+    def __repr__(self) -> str:
+        return f'<ContractU display_name={self.display_name!r}>'
+
+    @classmethod
+    def _from_contract(cls, client: Client, contract: ContractUPayload) -> Self:
+        data = client.assets.get_contract(contract['ContractDefinitionID'])
+        return cls(client=client, data=data, contract=contract)
+
+
+class ProcessedMatch:
+    def __init__(self, data: ProcessedMatchPayload) -> None:
+        self.id: str = data['ID']
+        self._start_time: Union[datetime.datetime, str] = data['StartTime']
+        self.xp_grants: Optional[Any] = data['XPGrants']
+        self.reward_grants: Optional[Any] = data['RewardGrants']
+        self.mission_deltas: Optional[Any] = data['MissionDeltas']
+        self.contract_deltas: Optional[Any] = data['ContractDeltas']
+        self._could_progress_missions: bool = data['CouldProgressMissions']
+
+    def __repr__(self) -> str:
+        return f'<ProcessedMatch id={self.id!r}>'
+
+    def __bool__(self) -> bool:
+        return self._could_progress_missions
+
+    @property
+    def start_time(self) -> datetime.datetime:
+        """:class: `datetime.datetime` Returns the match's start time."""
+        return utils.parse_iso_datetime(self._start_time)
+
+    def could_progress_missions(self) -> bool:
+        """:class: `bool` Returns whether the match could progress missions."""
+        return self._could_progress_missions
+
+
+class Contracts(BaseModel):
+    def __init__(self, client: Client, data: ContractsPayload) -> None:
+        super().__init__(client=client, data=data)
+
+    def __repr__(self) -> str:
+        return f'<Contracts version={self.version!r} subject={self.subject!r}>'
+
+    def _update(self, data: ContractsPayload) -> None:
+        self.version: int = data['Version']
+        self.subject: str = data['Subject']
+        self.contracts: List[ContractU] = [
+            ContractU._from_contract(self._client, contract) for contract in data['Contracts']
+        ]
+        self.processed_matches: List[ProcessedMatch] = [ProcessedMatch(match) for match in data['ProcessedMatches']]
+        self.active_special_contract_id: Optional[str] = data.get('ActiveSpecialContract')
+        self.missions: List[MissionU] = [MissionU._from_mission(self._client, mission) for mission in data['Missions']]
+        self.mission_metadata: MissionMeta = MissionMeta(data['MissionMetadata'])
+
+    @property
+    def active_special_contract(self) -> Optional[ContractU]:
+        """:class: `ContractA` Returns the active special contract."""
+        for contract in self.contracts:
+            if contract.uuid == self.active_special_contract_id:
+                return contract
+
+    def get_latest_contract(self, relation_type: Optional[Union[RelationType, str]] = None) -> Optional[Contract]:
+        """:class: `ContractA` Returns the latest contract."""
+        if relation_type is not None:
+            relation_type = RelationType(relation_type) if isinstance(relation_type, str) else relation_type
+            contract_list = [contract for contract in self.contracts if contract.content.relation_type == relation_type]
+            return contract_list[len(contract_list) - 1] if contract_list else None
+        return self.contracts[len(self.contracts) - 1] if len(self.contracts) > 0 else None
+
+    async def activate_contract(self, contract: Union[Contract, ContractU, str]) -> Optional[Union[Contract, ContractU]]:
+        """Activates the given contract."""
+
+        if isinstance(contract, str):
+            try_contract = Contract._from_uuid(self._client, contract)
+            if not try_contract:
+                raise InvalidContractType(f'No contract found with uuid {contract!r}')
+            contract = try_contract
+
+        if isinstance(contract, Union[Contract, ContractU]):
+
+            if not isinstance(contract, ContractU):
+                for c in self.contracts:
+                    if c == contract:
+                        contract = c
+
+            if contract.content.relation_type != RelationType.agent:
+                raise InvalidRelationType(f'Contract {contract.display_name!r} is not an agent contract')
+
+            if contract == self.active_special_contract:
+                return contract
+
+            if contract.progression_level_reached == 10:
+                _log.warning(f'Contract {contract.display_name!r} is already at max level')
+                return contract
+        else:
+            raise TypeError(f'Expected ContractA, ContractU, or str, got {type(contract)}')
+
+        # update the active special contract
+        data = await self._client.http.contracts_activate(contract.uuid)
+        self._update(data)
+        return self.active_special_contract
+
+
+class Content:
+    def __init__(self, client: Client, data: Dict[str, Any]) -> None:
+        self._client: Client = client
+        self.relation_type: RelationType = try_enum(RelationType, data['relationType'])
+        self.relation_uuid: Optional[str] = data.get('relationUuid')
+        self.chapters: List[Chapter] = [Chapter(chapter) for chapter in data['chapters']] if data.get('chapters') else []
+        self.premium_reward_schedule_uuid: Optional[str] = data.get('premiumRewardScheduleUuid')
+        self.premium_vp_cost: int = data.get('premiumVPCost')
+
+    def __repr__(self) -> str:
+        return f'<Content relation={self.relation!r}>'
+
+    @property
+    def relation(self) -> Union[Agent, Season, Event]:
+        """:class: `Any` Returns the relation."""
+        if self.relation_type == RelationType.agent:
+            return Agent._from_uuid(self._client, self.relation_uuid)
+        elif self.relation_type == RelationType.season:
+            return Season._from_uuid(self._client, self.relation_uuid)
+        elif self.relation_type == RelationType.event:
+            return Event._from_uuid(self._client, self.relation_uuid)
+        else:
+            _log.warning(f'Unknown relation type {self.relation_type!r} with uuid {self.relation_uuid!r}')
+
+
+class Chapter:
+    def __init__(self, data: Dict[str, Any]) -> None:
+        self._is_epilogue: bool = data.get('isEpilogue', False)
+        self.levels: List[Level] = data.get('levels', [])
+        self.free_rewards: List[Reward] = data.get('freeRewards', [])
+
+    def __repr__(self) -> str:
+        return f'<Chapter is_epilogue={self.is_epilogue()!r}>'
+
+    def is_epilogue(self) -> bool:
+        return self._is_epilogue
+
+
+class Level:
+    def __init__(self, data: Dict[str, Any]) -> None:
+        self.reward: Reward = Reward(data['reward'])
+        self.xp: int = data.get('xp', 0)
+        self.vp_cost: int = data.get('vpCost', 0)
+        self.is_purchasable_with_vp: bool = data.get('isPurchasableWithVP', False)
+
+    def __repr__(self) -> str:
+        return f'<Level reward={self.reward!r}>'
+
+
+class Reward:
+    def __init__(self, data: Dict[str, Any]) -> None:
+        self.type: str = data.get('type')
+        self.uuid: str = data.get('uuid')
+        self.amount: int = data.get('amount', 0)
+        self._is_highlighted: bool = data.get('isHighlighted', False)
+
+    def __repr__(self) -> str:
+        return f'<Reward type={self.type!r} amount={self.amount!r} is_highlighted={self.is_highlighted()!r}>'
+
+    def __bool__(self) -> bool:
+        return self.is_highlighted()
+
+    def is_highlighted(self) -> bool:
+        return self._is_highlighted

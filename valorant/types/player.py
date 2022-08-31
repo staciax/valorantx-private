@@ -49,34 +49,6 @@ class Player(PartialPlayer):
     locale: Optional[str]
 
 
-class AccountXPProgress(TypedDict):
-    Level: int
-    XP: int
-
-
-class AccountXPSources(TypedDict):
-    ID: str
-    Amount: int
-
-
-class AccountXPHistory(TypedDict):
-    ID: str
-    MatchStart: Union[str, datetime.datetime]
-    StartProgress: AccountXPProgress
-    EndProgress: AccountXPProgress
-    XPSources: List[AccountXPSources]
-    XPMultipliers: List[Any]
-
-
-class AccountXP(TypedDict):
-    Version: int
-    Subject: str
-    Progress: AccountXPProgress
-    History: List[AccountXPHistory]
-    LastTimeGrantedFirstWin: Union[str, datetime.datetime]
-    NextTimeFirstWinAvailable: Union[str, datetime.datetime]
-
-
 class PlayerMatch(Player):
     subject: str
     gameName: str

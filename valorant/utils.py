@@ -96,7 +96,7 @@ def parse_iso_datetime(iso: str) -> datetime.datetime:
     return dt.replace(tzinfo=datetime.timezone.utc)  # or None
 
 
-def percent(*args: int) -> Optional[List[Union[int, float]]]:
+def percent(*args: int) -> List[Union[int, float]]:
     """Calculate percent of a list of integers"""
     t = sum(args)
     return [100 * y / t for y in args]

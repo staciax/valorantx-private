@@ -173,6 +173,7 @@ __all__ = (
     'try_enum_key',
     'LevelBorderID',
     'EmptyTitleID',
+    'RelationType',
 )
 
 EmptyTitleID = 'd13e579c-435e-44d4-cec2-6eae5a3c5ed4'  # TODO: Remove this when we have a proper title system
@@ -222,6 +223,15 @@ class ItemType(Enum):
     spray = 'd5f120f8-ff8c-4aac-92ea-f2b5acbe9475'
     player_card = '3f296c07-64c3-494c-923b-fe692a4fa1bd'
     player_title = 'de7caa6b-adf7-4588-bbd1-143831e786c6'
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class RelationType(Enum):
+    agent = 'Agent'
+    event = 'Event'
+    season = 'Season'
 
     def __str__(self) -> str:
         return self.value

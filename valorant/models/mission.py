@@ -34,16 +34,19 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..client import Client
+    from ..types.contract import Mission as MissionUPayload, MissionMeta as MissionMetaPayload
 
 # fmt: off
 __all__ = (
     'Mission',
+    'MissionU',
+    'MissionMeta',
 )
 # fmt: on
 
 
 class Mission(BaseModel):
-    def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
+    def __init__(self, client: Client, data: Dict[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
@@ -54,14 +57,14 @@ class Mission(BaseModel):
         self._activation_date_iso: str = data['activationDate']
         self._expiration_date_iso: str = data['expirationDate']
         self.tags: Optional[List[str]] = data['tags']
-        self.objectives: Optional[Dict[str, Any]] = data['objectives']
+        self.objectives: List[Dict[str, Any]] = data.get('objectives', [])
         self.asset_path: str = data['assetPath']
 
     def __str__(self) -> str:
         return self.title
 
     def __repr__(self) -> str:
-        return f'<Mission name={self.title!r}>'
+        return f'<Mission title={self.title!r}>'
 
     def __int__(self) -> int:
         return self.xp
@@ -101,3 +104,73 @@ class Mission(BaseModel):
         """Returns the mission with the given UUID."""
         data = client.assets.get_mission(uuid)
         return cls(client=client, data=data) if data else None
+
+
+class MissionU(Mission):
+    def __init__(self, client: Client, data: Dict[str, Any], mission: MissionUPayload) -> None:
+        super().__init__(client=client, data=data)
+        self._objectives: Dict[str, int] = mission['Objectives']
+        self._complete: bool = mission['Complete']
+        self._expiration_time_iso: str = mission['ExpirationTime']
+        # current progress
+        self.current_progress: int = 0
+        self.left_progress: int = 0
+        self._mission_update()
+
+    def __repr__(self) -> str:
+        return f'<MissionU title={self.title!r} complete={self.complete()!r}>'
+
+    def _mission_update(self) -> None:
+        if len(self.objectives) > 0:
+            objectives_uuid = self.objectives[0]['objectiveUuid']
+            objectives_value = self.objectives[0]['value']
+
+            # if self.progress_to_complete < objectives_value: # Bugged
+            #     self.current_progress = self._objectives[objectives_uuid]
+
+            self.current_progress = self._objectives[objectives_uuid]
+            self.left_progress = objectives_value - self.current_progress
+
+    def complete(self) -> bool:
+        """:class: `bool` Returns whether the contract is complete."""
+        return self._complete
+
+    @property
+    def expiration_time(self) -> Optional[datetime.datetime]:
+        """:class: `datetime.datetime` Returns the contract's expiration time."""
+        return utils.parse_iso_datetime(self._expiration_time_iso) if self._expiration_time_iso else None
+
+    @classmethod
+    def _from_mission(cls, client: Client, mission: MissionUPayload) -> Optional[Self]:
+        """Returns the mission with the given UUID."""
+        data = client.assets.get_mission(mission['ID'])
+        return cls(client=client, data=data, mission=mission) if data else None
+
+
+class MissionMeta:
+    def __init__(self, data: MissionMetaPayload) -> None:
+        self.NPE_completed: bool = data.get('NPECompleted', False)
+        self._weekly_check_point: Union[datetime, str] = data.get('WeeklyCheckpoint')
+        self._weekly_refill_time: Union[datetime, str] = data.get('WeeklyRefillTime')
+
+    def __bool__(self) -> bool:
+        return self.NPE_completed
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('NPE_completed', self.NPE_completed),
+            ('weekly_check_point', self.weekly_check_point),
+            ('weekly_refill_time', self.weekly_refill_time),
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
+    @property
+    def weekly_check_point(self) -> datetime.datetime:
+        """:class: `datetime.datetime` Returns the weekly check point."""
+        return utils.parse_iso_datetime(self._weekly_check_point)
+
+    @property
+    def weekly_refill_time(self) -> datetime.datetime:
+        """:class: `datetime.datetime` Returns the weekly refill time."""
+        return utils.parse_iso_datetime(self._weekly_refill_time)

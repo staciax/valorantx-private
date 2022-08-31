@@ -20,50 +20,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
-from datetime import datetime
-from typing import Any, Dict, List, Optional, TypedDict, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, List, TypedDict, Union
+
+if TYPE_CHECKING:
+    import datetime
 
 
-class ContractProgression(TypedDict):
-    TotalProgressionEarned: int
-    HighestRewardedLevel: Dict[str, int]  # I don't know what this is
+class AccountXPProgress(TypedDict):
+    Level: int
+    XP: int
 
 
-class Contract(TypedDict):
-    ContractDefinitionID: str
-    ContractProgression: ContractProgression
-    ProgressionLevelReached: int
-    ProgressionTowardsNextLevel: int
-
-
-class ProcessedMatch(TypedDict):
+class AccountXPSources(TypedDict):
     ID: str
-    StartTime: Union[datetime, int]
-    XPGrants: Optional[Any]
-    RewardGrants: Optional[Any]
-    MissionDeltas: Optional[Any]
-    ContractDeltas: Optional[Any]
-    CouldProgressMissions: bool
+    Amount: int
 
 
-class Mission(TypedDict):
+class AccountXPHistory(TypedDict):
     ID: str
-    Objectives: Dict[str, int]
-    Complete: bool
-    ExpirationTime: Union[datetime, str]
+    MatchStart: Union[str, datetime.datetime]
+    StartProgress: AccountXPProgress
+    EndProgress: AccountXPProgress
+    XPDelta: int
+    XPSources: List[AccountXPSources]
+    XPMultipliers: List[Any]
 
 
-class MissionMeta(TypedDict):
-    NPECompleted: bool
-    WeeklyCheckpoint: Union[datetime, str]
-    WeeklyRefillTime: Union[datetime, str]
-
-
-class Contracts(TypedDict):
+class AccountXP(TypedDict):
     Version: int
     Subject: str
-    Contracts: List[Contract]
-    ProcessedMatches: List[ProcessedMatch]
-    ActiveSpecialContract: str
-    Missions: List[Mission]
-    MissionMetadata: MissionMeta
+    Progress: AccountXPProgress
+    History: List[AccountXPHistory]
+    LastTimeGrantedFirstWin: Union[str, datetime.datetime]
+    NextTimeFirstWinAvailable: Union[str, datetime.datetime]

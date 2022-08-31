@@ -42,7 +42,7 @@ MISSING = utils.MISSING
 if TYPE_CHECKING:
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
-    from .types import collection, match, player, store, version
+    from .types import collection, contract, match, player, store, version
 
 
 # disable urllib3 warnings that might arise from making requests to 127.0.0.1
@@ -265,6 +265,9 @@ class HTTPClient:
     def asset_get_seasons(self) -> Response[Any]:
         return self.request(Route('GET', '/seasons', 'valorant_api', language='all'), asset_endpoint=True)
 
+    def asset_get_seasons_competitive(self) -> Response[Any]:
+        return self.request(Route('GET', '/seasons/competitive', 'valorant_api'), asset_endpoint=True)
+
     def asset_get_sprays(self) -> Response[Any]:
         return self.request(Route('GET', '/sprays', 'valorant_api', language='all'), asset_endpoint=True)
 
@@ -402,7 +405,7 @@ class HTTPClient:
         The query parameter query can be added to search for a username.
         """
         if season == '':
-            season = self.__get_live_season()
+            season = self.__get_live_season()  # TODO: fix this
 
         region = try_enum(Region, region, Region.AP)
 
@@ -454,7 +457,45 @@ class HTTPClient:
         ContractDefinitions_Fetch
         Get names and descriptions for contracts
         """
+        return self.request(Route('GET', '/contract-definitions/v3/definitions', 'pd'))
+
+    def contracts_fetch(self) -> Response[contract.Contracts]:
+        """
+        Contracts_Fetch
+        Get a list of contracts and completion status including match history
+        """
+        return self.request(Route('GET', f'/contracts/v1/contracts/{self._puuid}', 'pd'))
+
+    def contracts_activate(self, contract_id: str) -> Response[Any]:
+        """
+        Contracts_Activate
+        Activate a particular contract
+
+        {contract id}: The ID of the contract to activate. Can be found from the ContractDefinitions_Fetch endpoint.
+        """
+        r = Route('POST', f'/contracts/v1/contracts/{self._puuid}/special/{contract_id}', 'pd')
+        return self.request(r)
+
+    def contracts_fetch_active_story(self) -> Response[Any]:
+        """
+        ContractDefinitions_FetchActiveStory
+        Get the battlepass contracts
+        """
+        return self.request(Route('GET', '/contract-definitions/v2/definitions/story', 'pd'))
+
+    def item_progress_fetch_definitions(self) -> Response[Any]:
+        """
+        ItemProgressDefinitionsV2_Fetch
+        Fetch definitions for skin upgrade progressions
+        """
         return self.request(Route('GET', '/contract-definitions/v3/item-upgrades', 'pd'))
+
+    def contracts_unlock_item_progress(self, progression_id: str) -> Response[Any]:
+        """
+        Contracts_UnlockItemProgressV2
+        Unlock an item progression
+        """
+        return self.request(Route('POST', f'/contracts/v2/item-upgrades/{progression_id}/{self._puuid}', 'pd'))
 
     # store endpoints
 

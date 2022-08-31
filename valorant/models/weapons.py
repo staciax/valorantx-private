@@ -331,7 +331,7 @@ class Skin(BaseModel):
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
         self._uuid = data['uuid']
-        self._base_weapon_uuid: str = data['base_weapon_uuid']
+        self._base_weapon_uuid: Optional[str] = data.get('base_weapon_uuid')
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._theme_uuid: str = data['themeUuid']
         self._content_tier_uuid: Optional[str] = data['contentTierUuid']
@@ -390,9 +390,9 @@ class Skin(BaseModel):
         return [SkinLevel(client=self._client, data=data) for data in self._levels]
 
     @property
-    def base_weapon(self) -> Weapon:
+    def base_weapon(self) -> Optional[Weapon]:
         """:class: `Weapon` Returns the skin's base weapon."""
-        return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid)
+        return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
 
     @property
     def price(self) -> int:
@@ -430,8 +430,8 @@ class SkinChroma(BaseModel):
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._base_weapon_uuid: str = data['base_weapon_uuid']
-        self._base_skin_uuid: str = data['base_skin_uuid']
+        self._base_weapon_uuid: Optional[str] = data.get('base_weapon_uuid')
+        self._base_skin_uuid: Optional[str] = data.get('base_skin_uuid')
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: str = data['displayIcon']
         self._full_render: str = data['fullRender']
@@ -481,24 +481,24 @@ class SkinChroma(BaseModel):
         return Asset._from_url(client=self._client, url=self._streamed_video) if self._streamed_video else None
 
     @property
-    def base_weapon(self) -> Weapon:
+    def base_weapon(self) -> Optional[Weapon]:
         """:class: `Weapon` Returns the skin's base weapon."""
-        return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid)
+        return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
 
     @property
-    def base_skin(self) -> Skin:
+    def base_skin(self) -> Optional[Skin]:
         """:class: `Skin` Returns the skin's base skin."""
-        return Skin._from_uuid(client=self._client, uuid=self._base_skin_uuid)
+        return Skin._from_uuid(client=self._client, uuid=self._base_skin_uuid) if self._base_skin_uuid else None
 
     @property
-    def theme(self) -> Theme:
+    def theme(self) -> Optional[Theme]:
         """:class: `Theme` Returns the skin's theme uuid."""
-        return self.base_skin.theme
+        return self.base_skin.theme if self.base_skin else None
 
     @property
     def rarity(self) -> Optional[ContentTier]:
         """:class: `ContentTier` Returns the skin's rarity."""
-        return self.base_skin.rarity
+        return self.base_skin.rarity if self.base_skin else None
 
     @property
     def price(self) -> Optional[int]:
@@ -523,12 +523,12 @@ class SkinLevel(BaseModel):
     def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._base_weapon_uuid: str = data['base_weapon_uuid']
-        self._base_skin_uuid: str = data['base_skin_uuid']
+        self._base_weapon_uuid: Optional[str] = data.get('base_weapon_uuid')
+        self._base_skin_uuid: Optional[str] = data.get('base_skin_uuid')
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._level: Optional[str] = data['levelItem']
+        self._level: str = data.get('levelItem', 'Normal')
         self._display_icon: str = data['displayIcon']
-        self._streamed_video: Optional[str] = data['streamedVideo']
+        self._streamed_video: Optional[str] = data.get('streamedVideo')
         self.asset_path: str = data['assetPath']
         self._price: int = self._client.get_item_price(self.uuid)
 
@@ -565,24 +565,24 @@ class SkinLevel(BaseModel):
         return Asset._from_url(client=self._client, url=self._streamed_video) if self._streamed_video else None
 
     @property
-    def base_weapon(self) -> Weapon:
+    def base_weapon(self) -> Optional[Weapon]:
         """:class: `Weapon` Returns the skin's base weapon."""
-        return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid)
+        return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
 
     @property
-    def base_skin(self) -> Skin:
+    def base_skin(self) -> Optional[Skin]:
         """:class: `Skin` Returns the skin's base skin."""
-        return Skin._from_uuid(client=self._client, uuid=self._base_skin_uuid)
+        return Skin._from_uuid(client=self._client, uuid=self._base_skin_uuid) if self._base_skin_uuid else None
 
     @property
-    def theme(self) -> Theme:
+    def theme(self) -> Optional[Theme]:
         """:class: `Theme` Returns the skin's theme uuid."""
-        return self.base_skin.theme
+        return self.base_skin.theme if self.base_skin else None
 
     @property
     def rarity(self) -> Optional[ContentTier]:
         """:class: `ContentTier` Returns the skin's rarity."""
-        return self.base_skin.rarity
+        return self.base_skin.rarity if self.base_skin else None
 
     @property
     def price(self) -> Optional[int]:

@@ -51,17 +51,8 @@ class BaseModel(_ModelTag):
         self._extras = kwargs
         self._update(data)
 
-    def __str__(self) -> str:
-        return self.uuid or ''
-
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} uuid={self.uuid!r}>"
-
-    def __eq__(self, other: object) -> bool:
-        return isinstance(other, _ModelTag) and other.uuid == self.uuid
-
-    def __ne__(self, other: object) -> bool:
-        return not self.__eq__(other)
 
     def __hash__(self) -> int:
         return hash(self.uuid)

@@ -190,3 +190,18 @@ class AuthRequired(ValorantException):
     """Exception that's raised when the client is not logged in."""
 
     pass
+
+
+# model exceptions
+
+
+class InvalidContractType(ValueError):
+    """Exception that's raised when the contract type is invalid."""
+
+    pass
+
+
+class InvalidRelationType(ValueError):
+    """Exception that's raised when the relation type is invalid."""
+
+    pass

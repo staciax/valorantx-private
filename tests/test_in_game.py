@@ -43,5 +43,6 @@ async def main():
         for skin in loadout.skins:
             print(skin.display_name, skin.display_icon)
 
+
 if __name__ == '__main__':
     asyncio.run(main())
