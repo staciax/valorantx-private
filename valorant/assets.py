@@ -81,12 +81,15 @@ def finder():
             if not args and not kwargs:
                 return function(self, *args, **kwargs)
 
+            new_kwargs = {}
             for key, value in kwargs.items():
                 if isinstance(key, str):
                     key = key.lower()
                 if isinstance(value, str):
                     value = value.lower()
-                kwargs[key] = value
+                new_kwargs[key] = value
+
+            kwargs = new_kwargs
 
             finder_keys = [x for x in list(kwargs.keys())]
             # inspired by https://github.com/MinshuG/valorant-api/blob/b739850d2722247b56b9e4d12caa8b3c326ce141/valorant_api/base_list.py#L17  # noqa: E501
@@ -125,6 +128,7 @@ def finder():
                             k = k.lower()
                         if k in finder_keys:
                             if isinstance(v, str):
+                                v = v.lower()
                                 if kwargs[k] == v:
                                     kwargs.pop(k)
                                     kwargs['uuid'] = key
