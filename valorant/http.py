@@ -315,7 +315,7 @@ class HTTPClient:
         """
         return self.request(Route('GET', f'/personalization/v2/players/{self._puuid}/playerloadout', 'pd'))
 
-    def put_player_loadout(self, loadout: Mapping) -> Response[Any]:
+    def put_player_loadout(self, loadout: Mapping) -> Response[collection.Loadout]:
         """
         playerLoadoutUpdate
         Use the values from self._fetch_player_loadout() excluding properties like subject and version.

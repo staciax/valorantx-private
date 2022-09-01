@@ -412,15 +412,14 @@ class Client:
 
     @_authorize_required
     async def fetch_player_loadout(self, *, fetch_account_xp: bool = True) -> Collection:
-        # ensure
-        # if fetch_account_xp:
-        # account_xp = await self.fetch_account_xp()
-        # self.user._account_level = account_xp.level
+        if fetch_account_xp:
+            account_xp = await self.fetch_account_xp()
+            # self.user._account_level = account_xp.level  # TODO: add to user class
         data = await self.http.fetch_player_loadout()
         return Collection(client=self, data=data)
 
     @_authorize_required
-    def put_player_loadout(self, loadout: Mapping) -> Coroutine[Any, Any, None]:
+    def put_player_loadout(self, loadout: Mapping) -> Any:
         return self.http.put_player_loadout(loadout)
 
     @_authorize_required
@@ -444,12 +443,14 @@ class Client:
             await history.fetch_history()
         return history
 
+    @_authorize_required
     async def fetch_match_details(self, match_id: str) -> Optional[MatchDetails]:
         match_details = await self.http.fetch_match_details(match_id)
         return MatchDetails(client=self, data=match_details)
 
     # contract endpoints
 
+    @_authorize_required
     async def fetch_contracts(self) -> Contracts:
         data = await self.http.contracts_fetch()
         return Contracts(client=self, data=data)

@@ -109,9 +109,11 @@ def finder():
                             if isinstance(v, str):
                                 v = v.lower()
                                 if kwargs[k] == v:
-                                    kwargs.pop(k)
+                                    kwargs.clear()
                                     kwargs['uuid'] = key
                                     return function(self, *args, **kwargs)
+                                elif v.startswith(kwargs[k]):
+                                    maybe.append(key)
 
                             elif isinstance(v, int):
 
@@ -122,12 +124,12 @@ def finder():
                                         next_level += 1
 
                                     if kwargs[k] < next_level:
-                                        kwargs.pop(k)
+                                        kwargs.clear()
                                         kwargs['uuid'] = key
                                         return function(self, *args, **kwargs)
                                 else:
                                     if kwargs[k] == v:
-                                        kwargs.pop(k)
+                                        kwargs.clear()
                                         kwargs['uuid'] = key
                                         return function(self, *args, **kwargs)
 
@@ -136,11 +138,23 @@ def finder():
                                     if isinstance(vv, str):
                                         vv = vv.lower()
                                         if kwargs[k] == vv:
-                                            kwargs.pop(k)
+                                            kwargs.clear()
                                             kwargs['uuid'] = key
                                             return function(self, *args, **kwargs)
                                         elif vv.startswith(kwargs[k]):
                                             maybe.append(key)
+
+                            # EN: Not tested yet
+                            # elif isinstance(v, list):
+                            #     for vv in v:
+                            #         if isinstance(vv, str):
+                            #             vv = vv.lower()
+                            #             if kwargs[k] == vv:
+                            #                 kwargs.clear()
+                            #                 kwargs['uuid'] = key
+                            #                 return function(self, *args, **kwargs)
+                            #             elif vv.startswith(kwargs[k]):
+                            #                 maybe.append(key)
 
             # 1st choice in maybe
             if len(maybe) > 0:
