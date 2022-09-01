@@ -583,8 +583,8 @@ class HTTPClient:
         self._headers['Authorization'] = f"Bearer %s" % self._riot_auth.access_token
         self._headers['X-Riot-Entitlements-JWT'] = self._riot_auth.entitlements_token
         self._headers['X-Riot-ClientPlatform'] = self._client_platform
-        self._headers['X-Riot-ClientVersion'] = await self._get_current_version()  # TODO: from client
+        self._headers['X-Riot-ClientVersion'] = await self._get_current_version()
 
-    async def _get_current_version(self) -> str:
-        resp = await self.asset_valorant_version()  # TODO: objectify response ??
+    async def _get_current_version(self) -> str:  # TODO: get from client?
+        resp = await self.asset_valorant_version()
         return resp['data']['riotClientVersion']

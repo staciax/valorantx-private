@@ -79,10 +79,11 @@ class MatchHistory:
 
 
 class MatchDetails:
+
     def __init__(self, client: Client, data: MatchDetailsPayload) -> None:
         self._client = client
         self._match_info = match_info = data['matchInfo']
-        self.id: str = match_info.get('matchId')  # TODO: format
+        self.id: str = match_info.get('matchId')
         self._map_id: str = match_info.get('mapId')
         self._queue_id: QueueID = try_enum(QueueID, match_info.get('queueID'))
         self._is_ranked: bool = match_info.get('isRanked', False)

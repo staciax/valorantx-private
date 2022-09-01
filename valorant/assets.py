@@ -44,9 +44,6 @@ __all__ = (
     'Assets',
 )
 # fmt: on
-
-# TODO: assert function in get
-# TODO: key error handling
 # TODO: str, repr, eq, ne slots, for all classes
 
 _log = logging.getLogger(__name__)

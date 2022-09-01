@@ -162,8 +162,6 @@ class Client:
 
     async def authorize(self, username: Optional[str], password: Optional[str]) -> None:
         """Authorize the client with the given username and password."""
-        #  TODO: fetch version and season
-
         self._is_authorized = True
         await self.http.static_login(username.strip(), password.strip())
 
