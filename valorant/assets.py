@@ -51,6 +51,7 @@ __all__ = (
 
 _log = logging.getLogger(__name__)
 
+
 def finder():
     def decorator(function):
         @wraps(function)
@@ -177,7 +178,7 @@ class Assets:
                     raise KeyError(f"Asset {key!r} not found")
             except KeyError:
                 self.reload_assets()
-                if _ == tries:
+                if _ >= tries - 1:
                     raise KeyError(f"Asset {key!r} not found")
 
     @finder()
@@ -648,9 +649,7 @@ class Assets:
                         if kwargs['base_price'] is None:
                             kwargs['base_price'] = -1
                         return dict(
-                            Item=dict(
-                                ItemTypeID=kwargs['item_type_id'], ItemID=kwargs['item_id'], Amount=kwargs['amount']
-                            ),
+                            Item=dict(ItemTypeID=kwargs['item_type_id'], ItemID=kwargs['item_id'], Amount=kwargs['amount']),
                             BasePrice=kwargs['base_price'],
                             CurrencyID=str(CurrencyID.valorant_point),
                             DiscountPercent=0,
