@@ -77,48 +77,91 @@ def finder():
     def decorator(function):
         @wraps(function)
         def wrapper(self, *args, **kwargs) -> Any:
+
             if not args and not kwargs:
                 return function(self, *args, **kwargs)
 
-            kwargs = dict((key.lower(), value.lower()) for key, value in kwargs.items())
-            finder_keys = [x for x in list(kwargs.keys())]
-            # inspred by https://github.com/MinshuG/valorant-api/blob/b739850d2722247b56b9e4d12caa8b3c326ce141/valorant_api/base_list.py#L17  # noqa: E501
+            for key, value in kwargs.items():
+                if isinstance(key, str):
+                    key = key.lower()
+                if isinstance(value, str):
+                    value = value.lower()
+                kwargs[key] = value
 
+            finder_keys = [x for x in list(kwargs.keys())]
+            # inspired by https://github.com/MinshuG/valorant-api/blob/b739850d2722247b56b9e4d12caa8b3c326ce141/valorant_api/base_list.py#L17  # noqa: E501
+
+            get_key = function.__doc__.split(',')[0].strip()
+            data = Assets.ASSET_CACHE.get(get_key, {})
+
+            if not data:
+                return function(self, *args, **kwargs)
+
+            is_level_border = False
             if len(finder_keys) == 0:
                 may_be_uuid = args[0]
                 if isinstance(may_be_uuid, str):
                     may_be_uuid = may_be_uuid.lower()
 
                 if not is_uuid(str(may_be_uuid)) and not may_be_uuid == '':
-                    kwargs['displayname'] = may_be_uuid
-                    finder_keys.append('displayname')
+                    if isinstance(may_be_uuid, str):
+                        kwargs['displayname'] = may_be_uuid
+                        finder_keys.append('displayname')
+                    else:
+                        if isinstance(may_be_uuid, int):
+                            if get_key == 'level_borders':
+                                kwargs['startinglevel'] = may_be_uuid
+                                finder_keys.append('startinglevel')
+                                is_level_border = True
                 else:
                     kwargs['uuid'] = may_be_uuid
-                    finder_keys.append('uuid')
+                    return function(self, *args, **kwargs)
 
-            get_key = function.__doc__.split(',')[0].strip()
-            data = Assets.ASSET_CACHE.get(get_key, {})
-
+            maybe = []
             for key, value in data.items():
                 if isinstance(value, dict):
                     for k, v in value.items():
-                        k = k.lower()
+                        if isinstance(k, str):
+                            k = k.lower()
                         if k in finder_keys:
                             if isinstance(v, str):
                                 if kwargs[k] == v:
-                                    kwargs.clear()
+                                    kwargs.pop(k)
                                     kwargs['uuid'] = key
-                                    return function(self, **kwargs)
+                                    return function(self, *args, **kwargs)
+
+                            elif isinstance(v, int):
+
+                                if is_level_border:
+                                    next_level = v + 19
+
+                                    if kwargs[k] > 20:
+                                        next_level += 1
+
+                                    if kwargs[k] < next_level:
+                                        kwargs.pop(k)
+                                        kwargs['uuid'] = key
+                                        return function(self, *args, **kwargs)
+                                else:
+                                    if kwargs[k] == v:
+                                        kwargs.pop(k)
+                                        kwargs['uuid'] = key
+                                        return function(self, *args, **kwargs)
 
                             elif isinstance(v, dict):
                                 for kk, vv in v.items():
                                     if isinstance(vv, str):
                                         vv = vv.lower()
-                                        if kwargs[k] == vv or vv.startswith(kwargs[k]):
-                                            kwargs.clear()
+                                        if kwargs[k] == vv:
+                                            kwargs.pop(k)
                                             kwargs['uuid'] = key
                                             return function(self, *args, **kwargs)
+                                        elif vv.startswith(kwargs[k]):
+                                            maybe.append(key)
 
+            # 1st choice in maybe
+            if len(maybe) > 0:
+                kwargs['uuid'] = maybe[0]
             return function(self, *args, **kwargs)
 
         return wrapper
