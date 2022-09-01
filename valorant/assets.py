@@ -51,28 +51,6 @@ __all__ = (
 
 _log = logging.getLogger(__name__)
 
-
-def check_uuid(value: str):
-    assert value is not None
-    if not is_uuid(str(value)):
-        raise ValueError('Invalid UUID')
-
-
-def validate_uuid(func):
-    @wraps(func)
-    def decorator(uuid, *args) -> Any:
-
-        if isinstance(uuid, str):
-            check_uuid(uuid)
-            return func(uuid, *args)
-        else:
-            for arg in args:
-                check_uuid(arg)
-            return func(uuid, *args)
-
-    return decorator
-
-
 def finder():
     def decorator(function):
         @wraps(function)
@@ -185,17 +163,22 @@ class Assets:
         if auto_reload:
             self.reload_assets()
 
-    def get_asset(self, key: str, tries: int = 1) -> Optional[Dict[str, Any]]:
+    def get_asset(self, key: str, tries: int = 3) -> Optional[Dict[str, Any]]:
         """Get an asset."""
         if key in self.ASSET_CACHE:
             return self.ASSET_CACHE[key]
 
         for _ in range(tries):
-            self.reload_assets()
-            if key in self.ASSET_CACHE:
-                return self.ASSET_CACHE[key]
-            else:
-                raise KeyError(f"Asset {key!r} not found")
+            try:
+                if key in self.ASSET_CACHE:
+                    return self.ASSET_CACHE[key]
+                else:
+                    _log.warning(f'Asset {key} not found')
+                    raise KeyError(f"Asset {key!r} not found")
+            except KeyError:
+                self.reload_assets()
+                if _ == tries:
+                    raise KeyError(f"Asset {key!r} not found")
 
     @finder()
     def get_agent(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
@@ -667,7 +650,7 @@ class Assets:
                         return dict(
                             Item=dict(
                                 ItemTypeID=kwargs['item_type_id'], ItemID=kwargs['item_id'], Amount=kwargs['amount']
-                            ),  # noqa: E501
+                            ),
                             BasePrice=kwargs['base_price'],
                             CurrencyID=str(CurrencyID.valorant_point),
                             DiscountPercent=0,
