@@ -80,6 +80,11 @@ class Contract(BaseModel):
         return not self.__eq__(other)
 
     @property
+    def id(self) -> str:
+        """:class: `str` Returns the contract id."""
+        return self.uuid
+
+    @property
     def name_localizations(self) -> Localization:
         """:class: `Localization` Returns the contract's names."""
         return Localization(self._display_name, locale=self._client.locale)
