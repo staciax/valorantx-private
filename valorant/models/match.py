@@ -79,7 +79,6 @@ class MatchHistory:
 
 
 class MatchDetails:
-
     def __init__(self, client: Client, data: MatchDetailsPayload) -> None:
         self._client = client
         self._match_info = match_info = data['matchInfo']

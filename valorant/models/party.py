@@ -22,7 +22,7 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any, List, Dict
 
 from .player import BasePlayer
 
@@ -39,6 +39,19 @@ __all__ = (
 )
 # fmt: on
 
+class Ping:
+
+    def __init__(self, data: Dict[str, Any]) -> None:
+        self.game_pod_id: str = data['GamePodID']
+        self.ping: Any = data['Ping']
+
+    # @staticmethod
+    # def __get_server_ping(game_pod_id: str) -> str:
+    #     server_name = game_pod_id.split('-')[5]
+    #     server_number = game_pod_id.split('-')[6]
+    #     return f"{server_name}-{server_number}"
+
+    # TODO: function strip out the ping data and return it as a string
 
 class PlayerParty(BasePlayer):
     """
@@ -86,12 +99,6 @@ class PlayerParty(BasePlayer):
         """
         return self._is_ready
 
-    @staticmethod
-    def __get_server_ping(game_pod_id: str) -> str:
-        server_name = game_pod_id.split('-')[5]
-        server_number = game_pod_id.split('-')[6]
-        return f"{server_name}-{server_number}"
-
     @property
-    def pings(self) -> List[str]:  # TODO: object
-        return [f"{self.__get_server_ping(ping['GamePodID'])}: {ping['Ping']}" for ping in self._pings]
+    def pings(self) -> List[Ping]:
+        return [Ping(ping) for ping in self._pings]

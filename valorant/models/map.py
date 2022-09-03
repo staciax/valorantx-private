@@ -40,6 +40,50 @@ __all__ = (
 )
 # fmt: on
 
+class Location:
+
+    def __init__(self, data: Dict[str, float]) -> None:
+        self.x: float = data['x']
+        self.y: float = data['y']
+
+    def __repr__(self) -> str:
+        return f'<Location x={self.x} y={self.y}>'
+
+class Callout:
+    def __init__(self, data: Dict[str, Any]) -> None:
+        self._region_name: Union[str, Dict[str, str]] = data['regionName']
+        self._super_region_name: Union[str, Dict[str, str]] = data['superRegionName']
+        self.location: Location = Location(data['location'])
+
+    def __str__(self) -> str:
+        return self.region_name
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('region_name', self.region_name),
+            ('super_region_name', self.super_region_name),
+            ('location', self.location),
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
+    @property
+    def region_name_localizations(self) -> Localization:
+        """:class:`Localization`: The name of the region."""
+        return Localization(self._region_name)
+
+    @property
+    def super_region_name_localizations(self) -> Localization:
+        """:class:`Localization`: The name of the super region."""
+        return Localization(self._super_region_name)
+
+    @property
+    def super_region_name(self) -> str:
+        return self.super_region_name_localizations.american_english
+
+    @property
+    def region_name(self) -> str:
+        return self.region_name_localizations.american_english
 
 class Map(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
@@ -55,7 +99,7 @@ class Map(BaseModel):
         self.y_multiplier: float = data['yMultiplier']
         self.x_scalar_to_add: float = data['xScalarToAdd']
         self.y_scalar_to_add: float = data['yScalarToAdd']
-        self._callouts: List[Dict[str, Any]] = data['callouts']  # TODO: Callout object
+        self.callouts: List[Callout] = [Callout(callout) for callout in data['callouts']]
 
     def __str__(self) -> str:
         return self.display_name
@@ -96,11 +140,6 @@ class Map(BaseModel):
         if self._splash is None:
             return None
         return Asset._from_url(client=self._client, url=self._splash)
-
-    @property
-    def callouts(self) -> List[Dict[str, Any]]:
-        """:class: `List[Dict[str, Any]]` Returns the mission's callouts."""
-        return self._callouts
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

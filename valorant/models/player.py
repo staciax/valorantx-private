@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import contextlib
 import datetime
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Union, Any
 
 from .. import utils
 from ..enums import LevelBorderID
@@ -162,13 +162,35 @@ class BasePlayer(_PlayerTag):
 
 
 class ClientPlayer(BasePlayer):
-    def __init__(self, *, client: Client, data: PlayerPayload) -> None:
+    def __init__(self, *, client: Client, data: Union[PlayerPayload, Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
         self.locale: str = data.get('locale', None)
 
     def __repr__(self) -> str:
         return f'<ClientPlayer puuid={self.puuid!r} name={self.name!r} tagline={self.tagline!r} region={self.region!r}'
 
+class Platform:
+
+    def __init__(self, data: Dict[str, str]):
+        self.type: str = data['platformType']
+        self.os: str = data['platformOS']
+        self.os_version: str = data['platformOSVersion']
+        self.chipset: str = data['platformChipset']
+
+    def __repr__(self) -> str:
+        return f'<Platform type={self.type!r} os={self.os!r} os_version={self.os_version!r} chipset={self.chipset!r}>'
+
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, Platform)
+            and other.type == self.type
+            and other.os == self.os
+            and other.os_version == self.os_version
+            # and other.chipset == self.chipset
+        )
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
 class MatchPlayer(BasePlayer):
 
@@ -187,12 +209,7 @@ class MatchPlayer(BasePlayer):
         self._player_title_id: str = data['playerCard']
         self._level_border_id: str = data.get('preferredLevelBorder', str(LevelBorderID._1))
         self._competitive_rank: int = data['competitiveTier']
-
-        # platform info   # TODO: Objectify this
-        self.platform_type: str = data['platformInfo']['platformType']
-        self.platform_os: str = data['platformInfo']['platformOS']
-        self.platform_os_version: str = data['platformInfo']['platformOSVersion']
-        self.platform_chipset: str = data['platformInfo']['platformChipset']
+        self.platform: Platform = Platform(data['platformInfo'])
 
         # stats
         self.round_damage: List[RoundDamagePayload] = data['roundDamage']
