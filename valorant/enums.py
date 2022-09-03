@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import types
 from collections import namedtuple
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Mapping, Optional, Tuple, Type, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Mapping, Optional, Tuple, Type, TypeVar, Final
 
 # -- https://github.com/Rapptz/discord.py/blob/master/discord/enums.py
 
@@ -176,8 +176,7 @@ __all__ = (
     'RelationType',
 )
 
-EmptyTitleID = 'd13e579c-435e-44d4-cec2-6eae5a3c5ed4'  # TODO: Remove this when we have a proper title system
-
+EmptyTitleID: Final[str] = 'd13e579c-435e-44d4-cec2-6eae5a3c5ed4'
 
 class Region(Enum):
     NA = 'na'

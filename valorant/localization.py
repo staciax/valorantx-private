@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Dict, Union
+from typing import Optional, Union, Dict
 
 from .enums import Locale
 
@@ -33,36 +33,40 @@ __all__ = ("Localization",)
 class Localization:
     def __init__(
         self,
-        untranslated: Union[str, Dict[str, str]],
+        untranslated: Optional[Union[str, Dict[str, str]]],
         locale: Union[str, Locale] = None,
     ) -> None:
         self.untranslated = untranslated
         self._locale = locale
-        self.ar_AE: str = self.untranslated.get('ar-AE', self.default)
-        self.de_DE: str = self.untranslated.get('de-DE', self.default)
-        self.en_US: str = self.untranslated.get('en-US', self.default)
-        self.es_ES: str = self.untranslated.get('es-ES', self.default)
-        self.es_MX: str = self.untranslated.get('es-MX', self.default)
-        self.fr_FR: str = self.untranslated.get('fr-FR', self.default)
-        self.id_ID: str = self.untranslated.get('id-ID', self.default)
-        self.it_IT: str = self.untranslated.get('it-IT', self.default)
-        self.ja_JP: str = self.untranslated.get('ja-JP', self.default)
-        self.ko_KR: str = self.untranslated.get('ko-KR', self.default)
-        self.pl_PL: str = self.untranslated.get('pl-PL', self.default)
-        self.pt_BR: str = self.untranslated.get('pt-BR', self.default)
-        self.ru_RU: str = self.untranslated.get('ru-RU', self.default)
-        self.th_TH: str = self.untranslated.get('th-TH', self.default)
-        self.tr_TR: str = self.untranslated.get('tr-TR', self.default)
-        self.vi_VN: str = self.untranslated.get('vi-VN', self.default)
-        self.zh_CN: str = self.untranslated.get('zh-CN', self.default)
-        self.zh_TW: str = self.untranslated.get('zh-TW', self.default)
+        if self.untranslated is None:
+            self.untranslated = {}
+        self.ar_AE: str = self.untranslated.get('ar-AE', self.untranslated)
+        self.de_DE: str = self.untranslated.get('de-DE', self.untranslated)
+        self.en_US: str = self.untranslated.get('en-US', self.untranslated)
+        self.es_ES: str = self.untranslated.get('es-ES', self.untranslated)
+        self.es_MX: str = self.untranslated.get('es-MX', self.untranslated)
+        self.fr_FR: str = self.untranslated.get('fr-FR', self.untranslated)
+        self.id_ID: str = self.untranslated.get('id-ID', self.untranslated)
+        self.it_IT: str = self.untranslated.get('it-IT', self.untranslated)
+        self.ja_JP: str = self.untranslated.get('ja-JP', self.untranslated)
+        self.ko_KR: str = self.untranslated.get('ko-KR', self.untranslated)
+        self.pl_PL: str = self.untranslated.get('pl-PL', self.untranslated)
+        self.pt_BR: str = self.untranslated.get('pt-BR', self.untranslated)
+        self.ru_RU: str = self.untranslated.get('ru-RU', self.untranslated)
+        self.th_TH: str = self.untranslated.get('th-TH', self.untranslated)
+        self.tr_TR: str = self.untranslated.get('tr-TR', self.untranslated)
+        self.vi_VN: str = self.untranslated.get('vi-VN', self.untranslated)
+        self.zh_CN: str = self.untranslated.get('zh-CN', self.untranslated)
+        self.zh_TW: str = self.untranslated.get('zh-TW', self.untranslated)
 
     def __repr__(self) -> str:
-        return f'<Translator untranslated={self.untranslated!r}>'
+        if self.default is None:
+            return ''
+        return f'<Translator default={self.default!r}>'
 
     def __str__(self) -> str:
         """Returns the default locale."""
-        return self.locale
+        return self.locale or ''
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Localization) and self.untranslated == other.untranslated

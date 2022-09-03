@@ -71,8 +71,9 @@ from .models import (
     Version,
     Wallet,
     Weapon,
+    ClientPlayer,
+    AccountXP
 )
-from .models.xp import AccountXP
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -124,6 +125,7 @@ class Client:
         self._auto_reload_assets: bool = kwargs.get('auto_reload_assets', False)
 
         self.loop: asyncio.AbstractEventLoop = _loop
+        self.user: ClientPlayer = MISSING
 
         # config
         self._closed: bool = False
@@ -145,6 +147,7 @@ class Client:
         self.loop = loop
         if self.version is MISSING:
             self.version = await self.get_valorant_version()
+        self.http._riot_client_version = self.version.riot_client_version
 
         if self._auto_fetch_assets:
             await self.assets.fetch_assets()
@@ -163,7 +166,14 @@ class Client:
     async def authorize(self, username: Optional[str], password: Optional[str]) -> None:
         """Authorize the client with the given username and password."""
         self._is_authorized = True
-        await self.http.static_login(username.strip(), password.strip())
+        riot_auth = await self.http.static_login(username.strip(), password.strip())
+        payload = dict(
+            puuid=riot_auth.user_id,
+            username=riot_auth.name,
+            tagline=riot_auth.tag,
+            region=riot_auth.region,
+        )
+        self.user = ClientPlayer(client=self, data=payload)
 
     def is_authorized(self) -> bool:
         """Check if the client is authorized."""
@@ -410,11 +420,15 @@ class Client:
 
     @_authorize_required
     async def fetch_player_loadout(self, *, fetch_account_xp: bool = True) -> Collection:
+
+        data = await self.http.fetch_player_loadout()
+        collection = Collection(client=self, data=data)
         if fetch_account_xp:
             account_xp = await self.fetch_account_xp()
-            # self.user._account_level = account_xp.level  # TODO: add to user class
-        data = await self.http.fetch_player_loadout()
-        return Collection(client=self, data=data)
+            self.user.account_level = account_xp.level
+            collection.identity.account_level = account_xp.level
+
+        return collection
 
     @_authorize_required
     def put_player_loadout(self, loadout: Mapping) -> Any:

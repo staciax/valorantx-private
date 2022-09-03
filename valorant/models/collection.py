@@ -24,9 +24,9 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import uuid
-from typing import TYPE_CHECKING, Any, Iterator, List, Optional, TypeAlias, Union
+from typing import TYPE_CHECKING, Any, Iterator, List, Optional, TypeAlias, Union, Dict
 
-from ..enums import LevelBorderID
+from ..enums import EmptyTitleID
 from .base import BaseModel
 from .level_border import LevelBorder
 from .player_card import PlayerCard
@@ -37,7 +37,6 @@ from .weapons import SkinChromaLoadout, SkinLevelLoadout, SkinLoadout
 if TYPE_CHECKING:
     from ..client import Client
     from ..types.collection import (
-        IdentityLoadout as IdentityLoadoutPayload,
         Loadout as LoadoutPayload,
         SkinLoadout as SkinLoadoutPayload,
         SprayLoadout as SprayLoadoutPayload,
@@ -52,6 +51,38 @@ __all__ = (
     'SprayCollection',
 )
 
+class Identity:
+
+    def __init__(self, client: Client, data: Dict[str, Any]) -> None:
+        self._client = client
+        self._player_card: Optional[str] = data.get('PlayerCardID')
+        self._player_title: Optional[str] = data.get('PlayerTitleID')
+        self._level_border: Optional[str] = data.get('PreferredLevelBorderID')
+        self._account_level: int = 0
+        self._hide_account_level: bool = data.get('HideAccountLevel', False)
+
+    @property
+    def player_card(self) -> Optional[PlayerCard]:
+        return self._client.get_player_card(self._player_card)
+
+    @property
+    def player_title(self) -> Optional[PlayerTitle]:
+        if not (uuid.UUID(self._player_title) == uuid.UUID(str(EmptyTitleID))):
+            return self._client.get_player_title(self._player_title)
+        return None
+
+    @property
+    def level_border(self) -> Optional[LevelBorder]:
+        # return self._client.get_level_border(self._level_border) # v1
+        return self._client.get_level_border(self._account_level)
+
+    @property
+    def account_level(self) -> int:
+        return self._account_level
+
+    @account_level.setter
+    def account_level(self, value: int) -> None:
+        self._account_level = value
 
 class Collection(BaseModel):
 
@@ -81,16 +112,12 @@ class Collection(BaseModel):
     def __init__(self, client: Client, data: LoadoutPayload, **kwargs: Any) -> None:
         super().__init__(client, data, **kwargs)
         # self.user = client.user
-        self._level_border_uuid = 'ebc736cd-4b6a-137b-e2b0-1486e31312c9'
         self._uuid: str = data['Subject']
         self.version: int = data['Version']
         self._incognito: bool = data['Incognito']
-        self._identity: IdentityLoadoutPayload = data['Identity']
+        self.identity: Identity = Identity(client, data['Identity'])
         self._skins_loadout: List[SkinLoadoutPayload] = data['Guns']
         self._sprays_loadout: List[SprayLoadoutPayload] = data['Sprays']
-        self._player_card_uuid: str = self._identity['PlayerCardID']
-        self._player_title_uuid: str = self._identity['PlayerTitleID']
-        self._level_border_uuid: str = self._identity['PreferredLevelBorderID']
 
     def __repr__(self) -> str:
         return f'<Loadout skins={self.skins!r} version={self.version!r} incognito={self.incognito()!r}>'
@@ -142,27 +169,8 @@ class Collection(BaseModel):
         return SkinCollection(skin_loadout)
 
     # @property
-    # def level(self) -> int:
-    #     return self._client.user.account_level
-
-    @property
-    def level_border(self) -> LevelBorder:
-        if self._level_border_uuid == str(uuid.UUID(int=0)) or not self._level_border_uuid:
-            self._level_border_uuid = str(LevelBorderID._1)
-        return LevelBorder._from_uuid(client=self._client, uuid=self._level_border_uuid)
-
-    @property
-    def player_card(self) -> PlayerTitle:
-        return PlayerCard._from_uuid(client=self._client, uuid=self._player_card_uuid)
-
-    @property
-    def player_title(self) -> PlayerTitle:
-        return PlayerTitle._from_uuid(client=self._client, uuid=self._player_title_uuid)
-
-    # @property
     # def player_name(self) -> str:
     #     return self._client.user.name
-
 
 class SkinCollection:
 
