@@ -116,7 +116,6 @@ class RiotAuth:
         self.expires_at: int = 0
         self.user_id: Optional[str] = None
         self.entitlements_token: Optional[str] = None
-        self.puuid: Optional[str] = None
         self.name: Optional[str] = None
         self.tag: Optional[str] = None
         self.region: Optional[str] = None
