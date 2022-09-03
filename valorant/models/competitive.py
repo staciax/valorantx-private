@@ -194,7 +194,7 @@ class SeasonalInfo:
         self.total_wins_needed_for_rank: int = data['TotalWinsNeededForRank']
 
     def __repr__(self) -> str:
-        return f'<SeasonalInfo>'
+        return f'<SeasonalInfo season={self.season!r}>'
 
     @property
     def season(self) -> Season:
@@ -220,10 +220,18 @@ class QueueSkill:
         self.total_games_needed_for_rating: int = data['TotalGamesNeededForRating']
         self.total_games_needed_for_leaderboard: int = data['TotalGamesNeededForLeaderboard']
         self.current_season_games_needed_for_rating: int = data['CurrentSeasonGamesNeededForRating']
-        self._seasonal_info_by_season_id: Dict[str, SeasonalInfo_] = data['SeasonalInfoBySeasonID']
+        self.seasonal_info: List[SeasonalInfo] = (
+            [SeasonalInfo(client=self._client, data=seasonal_info) for seasonal_info in data['SeasonalInfoBySeasonID'].values()]
+        )
 
     def __repr__(self) -> str:
-        return f'<QueueSkill>'
+        attrs = [
+            ('total_games_needed_for_rating', self.total_games_needed_for_rating),
+            ('total_games_needed_for_leaderboard', self.total_games_needed_for_leaderboard),
+            ('current_season_games_needed_for_rating', self.current_season_games_needed_for_rating),
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
 
     @property
     def seasonal_info_by_season_id(self) -> List[SeasonalInfo]:
@@ -246,7 +254,20 @@ class QueueSkills:
         self.unrated: QueueSkill = QueueSkill(client=self._client, data=data['unrated'])
 
     def __repr__(self) -> str:
-        return f'<QueueSkills>'
+        attrs = [
+            ('competitive', self.competitive),
+            ('custom', self.custom),
+            ('deathmatch', self.deathmatch),
+            ('ggteam', self.ggteam),
+            ('newmap', self.newmap),
+            ('onefa', self.onefa),
+            ('seeding', self.seeding),
+            ('snowball', self.snowball),
+            ('spikerush', self.spikerush),
+            ('unrated', self.unrated)
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
 
 
 class MMR(BaseModel):
@@ -260,8 +281,6 @@ class MMR(BaseModel):
         self._is_act_rank_badge_hidden: bool = data.get('IsActRankBadgeHidden', False)
         self.latest_competitive_update: Optional[LatestCompetitiveUpdate] = (
             LatestCompetitiveUpdate(client=self._client, data=data['LatestCompetitiveUpdate'])
-            if data.get('LatestCompetitiveUpdate') in data
-            else None
         )
 
     def __repr__(self) -> str:

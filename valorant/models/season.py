@@ -59,7 +59,7 @@ class Season(BaseModel):
         return self.display_name
 
     def __repr__(self) -> str:
-        attrs = [('id', self.uuid), ('display_name', self.display_name), ('type', self.type)]
+        attrs = [('display_name', self.display_name), ('type', self.type)]
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
 
