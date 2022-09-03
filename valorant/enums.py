@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import types
 from collections import namedtuple
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Final, Iterator, List, Mapping, Optional, Tuple, Type, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Mapping, Optional, Tuple, Type, TypeVar
 
 # -- https://github.com/Rapptz/discord.py/blob/master/discord/enums.py
 
