@@ -103,9 +103,8 @@ class HTTPClient:
         self._puuid: str = MISSING
         self._headers: Dict[str, str] = {}
         self._client_platform = 'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9'  # noqa: E501
-
-        # TODO: to base 64
         self._riot_auth: RiotAuth = RiotAuth()
+        self._riot_client_version: str = ''
 
         user_agent = 'valorantx (https://github.com/staciax/valorantx {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
@@ -143,6 +142,9 @@ class HTTPClient:
 
                     # if response.status == 400:
                     #     raise PhaseError(response, data)
+
+                    # handle refresh headers
+                    # await self.__build_headers()
 
                     # we are being rate limited
                     if response.status == 429:
@@ -188,11 +190,12 @@ class HTTPClient:
         if self._session:
             await self._session.close()
 
-    async def static_login(self, username: str, password: str) -> None:
+    async def static_login(self, username: str, password: str) -> RiotAuth:
         """Riot Auth login."""
         await self._riot_auth.authorize(username, password)
         self._puuid = self._riot_auth.puuid
         await self.__build_headers()
+        return self._riot_auth
 
     async def read_from_url(self, url: str) -> bytes:
         async with self._session.get(url) as resp:
@@ -580,11 +583,15 @@ class HTTPClient:
         return self._puuid if puuid is None else puuid
 
     async def __build_headers(self) -> None:
+
+        if self._riot_client_version == '':
+            self._riot_client_version = await self._get_current_version()
+
         self._headers['Authorization'] = f"Bearer %s" % self._riot_auth.access_token
         self._headers['X-Riot-Entitlements-JWT'] = self._riot_auth.entitlements_token
         self._headers['X-Riot-ClientPlatform'] = self._client_platform
-        self._headers['X-Riot-ClientVersion'] = await self._get_current_version()
+        self._headers['X-Riot-ClientVersion'] = self._riot_client_version
 
-    async def _get_current_version(self) -> str:  # TODO: get from client?
+    async def _get_current_version(self) -> str:
         resp = await self.asset_valorant_version()
         return resp['data']['riotClientVersion']
