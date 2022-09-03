@@ -49,9 +49,6 @@ class LevelBorder(BaseModel):
         self._small_player_card_appearance: str = data['smallPlayerCardAppearance']
         self.asset_path: str = data['assetPath']
 
-    def __str__(self) -> str:
-        return str(self.starting_level)
-
     def __repr__(self) -> str:
         return f'<LevelBorder starting_level={self.starting_level!r}>'
 
