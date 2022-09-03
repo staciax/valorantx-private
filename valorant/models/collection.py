@@ -84,6 +84,16 @@ class Identity:
     def account_level(self, value: int) -> None:
         self._account_level = value
 
+    def __repr__(self) -> str:
+        attrs = [
+            ('player_card', self.player_card),
+            ('player_title', self.player_title),
+            ('level_border', self.level_border),
+            ('account_level', self.account_level),
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
 class Collection(BaseModel):
 
     """
