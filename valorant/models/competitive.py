@@ -220,7 +220,7 @@ class QueueSkill:
         self.total_games_needed_for_rating: int = data['TotalGamesNeededForRating']
         self.total_games_needed_for_leaderboard: int = data['TotalGamesNeededForLeaderboard']
         self.current_season_games_needed_for_rating: int = data['CurrentSeasonGamesNeededForRating']
-        self.seasonal_info: List[SeasonalInfo] = (
+        self.seasonal_info_list: List[SeasonalInfo] = (
             [SeasonalInfo(client=self._client, data=seasonal_info) for seasonal_info in data['SeasonalInfoBySeasonID'].values()]
         )
 

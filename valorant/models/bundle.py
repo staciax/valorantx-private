@@ -169,6 +169,15 @@ class Bundle(BaseModel):
         """:class: `List[Union[Buddy, Spray, PlayerCard]]` Returns the bundle's items."""
         return self._items
 
+    @property
+    def price(self) -> int:
+        """:class: `int` Returns the bundle's price."""
+        return self._price
+
+    @price.setter
+    def price(self, value: int) -> None:
+        self._price = value
+
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the bundle with the given uuid."""
