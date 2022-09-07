@@ -100,10 +100,10 @@ class HTTPClient:
     def __init__(self) -> None:
         # self.user: Optional[ClientPlayer] = None
         self._session: aiohttp.ClientSession = MISSING
-        self._puuid: str = MISSING
         self._headers: Dict[str, str] = {}
         self._client_platform = 'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9'  # noqa: E501
         self._riot_auth: RiotAuth = RiotAuth()
+        self._puuid: str = self._riot_auth.user_id
         self._riot_client_version: str = ''
 
         user_agent = 'valorantx (https://github.com/staciax/valorantx {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
