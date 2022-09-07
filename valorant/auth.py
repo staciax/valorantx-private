@@ -120,6 +120,20 @@ class RiotAuth:
         self.tag: Optional[str] = None
         self.region: Optional[str] = None
 
+    @property
+    def puuid(self) -> Optional[str]:
+        return self.user_id
+
+    @puuid.setter
+    def puuid(self, value: str) -> None:
+        self.user_id = value
+
+    @property
+    def display_name(self) -> str:
+        if self.name is None or self.tag is None:
+            return ''
+        return f'{self.name}#{self.tag}'
+
     @staticmethod
     def create_riot_auth_ssl_ctx() -> ssl.SSLContext:
         ssl_ctx = ssl.create_default_context()
