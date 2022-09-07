@@ -41,9 +41,8 @@ if TYPE_CHECKING:
         SkinLoadout as SkinLoadoutPayload,
         SprayLoadout as SprayLoadoutPayload,
     )
-
-SprayL: TypeAlias = Union[SprayLoadout, SprayLevelLoadout]
-SkinL: TypeAlias = Union[SkinLoadout, SkinLevelLoadout, SkinChromaLoadout]
+    SprayL: TypeAlias = Union[SprayLoadout, SprayLevelLoadout]
+    SkinL: TypeAlias = Union[SkinLoadout, SkinLevelLoadout, SkinChromaLoadout]
 
 __all__ = (
     'Collection',
