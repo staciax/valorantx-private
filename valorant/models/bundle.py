@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
+import datetime
 from ..asset import Asset
 from ..enums import ItemType
 from ..localization import Localization
@@ -188,14 +189,24 @@ class Bundle(BaseModel):
 class FeaturedBundle(Bundle):
     def __init__(self, client: Client, data: Dict[str, Any], bundle: Dict[str, Any]) -> None:
         super().__init__(client, data, is_featured_bundle=True)
-        self._items = []
+        self._items: List[Union[SkinBundle, SprayBundle, BuddyBundle, PlayerCardBundle]] = []
         self.duration: int = bundle.get('DurationRemainingInSeconds', 0)
         self._whole_sale_only: bool = bundle.get('WholesaleOnly', False)
         self._bundle_items(bundle['Items'])
 
+    @property
+    def items(self) -> List[Union[SkinBundle, SprayBundle, BuddyBundle, PlayerCardBundle]]:
+        """:class: `List[Union[SkinBundle, SprayBundle, BuddyBundle, PlayerCardBundle]]` Returns the bundle's items."""
+        return self._items
+
     def whole_sale_only(self) -> bool:
         """:class: `bool` Returns the bundle's wholesale only."""
         return self._whole_sale_only
+
+    @property
+    def expires_at(self) -> datetime.datetime:
+        """:class: `datetime` Returns the bundle's expiration date."""
+        return datetime.datetime.utcnow() + datetime.timedelta(seconds=self.duration)
 
     @property
     def price(self) -> int:

@@ -644,6 +644,7 @@ class SkinBundle(SkinLevel, BaseFeaturedBundleItem):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]], bundle: Dict[str, Any]) -> None:
         SkinLevel.__init__(self, client=client, data=data)
         BaseFeaturedBundleItem.__init__(self, bundle=bundle)
+        self.discounted_price = bundle.get('DiscountedPrice') or self.price
 
     def __repr__(self) -> str:
         attrs = [('display_name', self.display_name), ('price', self.price), ('discounted_price', self.discounted_price)]
