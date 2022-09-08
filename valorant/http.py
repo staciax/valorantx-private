@@ -42,7 +42,7 @@ MISSING = utils.MISSING
 if TYPE_CHECKING:
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
-    from .types import collection, contract, match, player, store, version
+    from .types import collection, contract, match, player, store, version, xp
 
 
 # disable urllib3 warnings that might arise from making requests to 127.0.0.1
@@ -109,7 +109,7 @@ class HTTPClient:
         user_agent = 'valorantx (https://github.com/staciax/valorantx {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
 
-    async def request(self, route: Route, asset_endpoint: bool = False, **kwargs: Any) -> Any:
+    async def request(self, route: Route, asset_endpoint: bool = False, re_authorize: bool = True, **kwargs: Any) -> Any:
         method = route.method
         url = route.url
 
@@ -140,11 +140,11 @@ class HTTPClient:
                         _log.debug('%s %s has received %s', method, url, data)
                         return data
 
-                    # if response.status == 400:
-                    #     raise PhaseError(response, data)
-
-                    # handle refresh headers
-                    # await self.__build_headers()
+                    if response.status == 400:
+                        if re_authorize:
+                            await self._riot_auth.reauthorize()
+                            await self.request(route, asset_endpoint, False, **kwargs)
+                        # raise PhaseError(response, data)
 
                     # we are being rate limited
                     if response.status == 429:
@@ -304,7 +304,7 @@ class HTTPClient:
         """
         return self.request(Route('GET', '/content-service/v3/content', 'shared'))
 
-    def fetch_account_xp(self) -> Response[player.AccountXP]:
+    def fetch_account_xp(self) -> Response[xp.AccountXP]:
         """
         AccountXP_GetPlayer
         Get the account level, XP, and XP history for the active player
