@@ -143,7 +143,7 @@ class HTTPClient:
                     if response.status == 400:
                         if re_authorize:
                             await self._riot_auth.reauthorize()
-                            await self.request(route, asset_endpoint, False, **kwargs)
+                            return await self.request(route, asset_endpoint, False, **kwargs)
                         # raise PhaseError(response, data)
 
                     # we are being rate limited
