@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import uuid
-from typing import TYPE_CHECKING, Any, Iterator, List, Optional, TypeAlias, Union, Dict
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, TypeAlias, Union
 
 from ..enums import EmptyTitleID
 from .base import BaseModel
@@ -41,6 +41,7 @@ if TYPE_CHECKING:
         SkinLoadout as SkinLoadoutPayload,
         SprayLoadout as SprayLoadoutPayload,
     )
+
     SprayL: TypeAlias = Union[SprayLoadout, SprayLevelLoadout]
     SkinL: TypeAlias = Union[SkinLoadout, SkinLevelLoadout, SkinChromaLoadout]
 
@@ -50,8 +51,8 @@ __all__ = (
     'SprayCollection',
 )
 
-class Identity:
 
+class Identity:
     def __init__(self, client: Client, data: Dict[str, Any]) -> None:
         self._client = client
         self._player_card: Optional[str] = data.get('PlayerCardID')
@@ -92,6 +93,7 @@ class Identity:
         ]
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
+
 
 class Collection(BaseModel):
 
@@ -180,6 +182,7 @@ class Collection(BaseModel):
     # @property
     # def player_name(self) -> str:
     #     return self._client.user.name
+
 
 class SkinCollection:
 

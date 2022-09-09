@@ -220,9 +220,10 @@ class QueueSkill:
         self.total_games_needed_for_rating: int = data['TotalGamesNeededForRating']
         self.total_games_needed_for_leaderboard: int = data['TotalGamesNeededForLeaderboard']
         self.current_season_games_needed_for_rating: int = data['CurrentSeasonGamesNeededForRating']
-        self.seasonal_info_list: List[SeasonalInfo] = (
-            [SeasonalInfo(client=self._client, data=seasonal_info) for seasonal_info in data['SeasonalInfoBySeasonID'].values()]
-        )
+        self.seasonal_info_list: List[SeasonalInfo] = [
+            SeasonalInfo(client=self._client, data=seasonal_info)
+            for seasonal_info in data['SeasonalInfoBySeasonID'].values()
+        ]
 
     def __repr__(self) -> str:
         attrs = [
@@ -264,7 +265,7 @@ class QueueSkills:
             ('seeding', self.seeding),
             ('snowball', self.snowball),
             ('spikerush', self.spikerush),
-            ('unrated', self.unrated)
+            ('unrated', self.unrated),
         ]
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
@@ -279,8 +280,8 @@ class MMR(BaseModel):
         self._new_player_experience_finished: bool = data.get('NewPlayerExperienceFinished', False)
         self._is_leaderboard_anonymized: bool = data.get('IsLeaderboardAnonymized', False)
         self._is_act_rank_badge_hidden: bool = data.get('IsActRankBadgeHidden', False)
-        self.latest_competitive_update: Optional[LatestCompetitiveUpdate] = (
-            LatestCompetitiveUpdate(client=self._client, data=data['LatestCompetitiveUpdate'])
+        self.latest_competitive_update: Optional[LatestCompetitiveUpdate] = LatestCompetitiveUpdate(
+            client=self._client, data=data['LatestCompetitiveUpdate']
         )
 
     def __repr__(self) -> str:

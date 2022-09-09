@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Optional, Union, Dict
+from typing import Dict, Optional, Union
 
 from .enums import Locale
 

@@ -40,14 +40,15 @@ __all__ = (
 )
 # fmt: on
 
-class Location:
 
+class Location:
     def __init__(self, data: Dict[str, float]) -> None:
         self.x: float = data['x']
         self.y: float = data['y']
 
     def __repr__(self) -> str:
         return f'<Location x={self.x} y={self.y}>'
+
 
 class Callout:
     def __init__(self, data: Dict[str, Any]) -> None:
@@ -84,6 +85,7 @@ class Callout:
     @property
     def region_name(self) -> str:
         return self.region_name_localizations.american_english
+
 
 class Map(BaseModel):
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:

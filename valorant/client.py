@@ -34,11 +34,13 @@ from .errors import AuthRequired
 from .http import HTTPClient
 from .models import (
     MMR,
+    AccountXP,
     Agent,
     Buddy,
     BuddyLevel,
     Bundle,
     Ceremony,
+    ClientPlayer,
     Collection,
     CompetitiveTier,
     Content,
@@ -71,8 +73,6 @@ from .models import (
     Version,
     Wallet,
     Weapon,
-    ClientPlayer,
-    AccountXP
 )
 
 if TYPE_CHECKING:

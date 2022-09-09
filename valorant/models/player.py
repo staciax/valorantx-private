@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import contextlib
 import datetime
-from typing import TYPE_CHECKING, Dict, List, Optional, Union, Any
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .. import utils
 from ..enums import LevelBorderID
@@ -169,8 +169,8 @@ class ClientPlayer(BasePlayer):
     def __repr__(self) -> str:
         return f'<ClientPlayer puuid={self.puuid!r} name={self.name!r} tagline={self.tagline!r} region={self.region!r}'
 
-class Platform:
 
+class Platform:
     def __init__(self, data: Dict[str, str]):
         self.type: str = data['platformType']
         self.os: str = data['platformOS']
@@ -191,6 +191,7 @@ class Platform:
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
+
 
 class MatchPlayer(BasePlayer):
 

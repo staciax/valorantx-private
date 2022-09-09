@@ -23,9 +23,9 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-import datetime
 from ..asset import Asset
 from ..enums import ItemType
 from ..localization import Localization
