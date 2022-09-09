@@ -191,7 +191,8 @@ class Localization:
 
     def from_locale_code(self, value: str):
         """:class:`str`: Returns the locale from the locale code."""
-        locale = getattr(self, value.lower())
-        if locale is None:
-            raise ValueError("Unknown locale.")
+        try:
+            locale = getattr(self, value.replace('-', '_'))
+        except AttributeError:
+            locale = self.untranslated.get(value, self.default)
         return locale
