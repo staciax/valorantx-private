@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
+import json
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 from .. import utils
@@ -36,48 +37,86 @@ if TYPE_CHECKING:
 __all__ = ('PatchNotes', 'PatchNote')
 
 
+class PageData:
+    def __init__(self, data: Dict[str, Any]) -> None:
+        self.locales: Dict[str, Any] = data['locales']
+        self.locale_edges: List[Dict[str, Any]] = self.locales['edges']
+        self.title: str = data['tag']['title']
+        self.articles: Dict[str, Any] = data['articles']
+        self.article_nodes: List[Dict[str, Any]] = self.articles['nodes']
+        self.config: Dict[str, Any] = data['config']
+        self.config_nodes: List[Dict[str, Any]] = self.config['nodes']
+
+    def __repr__(self) -> str:
+        return f'<PageData title={self.title!r}>'
+
+
+class Result:
+    def __init__(self, data: Dict[str, Any]) -> None:
+        self.page_data: PageData = PageData(data['data'])
+        self.page_context: PageContext = PageContext(data=data['pageContext'])
+
+    def __repr__(self) -> str:
+        return f'<Result page_context={self.page_context!r}>'
+
+
+class PageContext:
+    def __init__(self, data: Dict[str, Any]) -> None:
+        self.uid: str = data['uid']
+        self.environment: str = data['environment']
+        self.locale: str = data['locale']
+        self.language: str = data['language']
+        self.original_path: str = 'https://playvalorant.com' + data['originalPath']
+        self.bcp47locale: str = data['bcp47locale']
+        self.localized_routes: Dict[str, str] = data['localizedRoutes']
+        self.i18n: Dict[str, Any] = data['i18n']
+
+    def __repr__(self) -> str:
+        return f'<PageContext locale={self.locale!r}>'
+
+
 class PatchNotes:
     def __init__(self, *, client: Client, data: Any, locale: Union[str, Locale]) -> None:
         self._client: Client = client
         self.locale: Union[str, Locale] = locale
         self.component_chunk_name: str = data['componentChunkName']
         self.path: str = data['path']
-        self._result: Dict[str, Any] = data['result']
-        self._result_data: Dict[str, Any] = self._result['data']
-        self._articles: List[Dict[str, Any]] = self._result_data['articles']['nodes']
-        self._page_context: Dict[str, Any] = self._result['pageContext']
+        self.result: Result = Result(data=data['result'])
         self._static_query_hashes: List[str] = data['staticQueryHashes']
 
     def __repr__(self) -> str:
         return f'<PatchNotes title={self.title!r} patch_notes={self.patch_notes!r}>'
 
     def __iter__(self) -> Iterator[PatchNote]:
-        for article in self._articles:
-            yield PatchNote(client=self._client, data=article, locale=self.locale)
+        for node in self.result.page_data.article_nodes:
+            yield PatchNote(client=self._client, data=node, locale=self.locale)
 
     @property
     def see_article_title(self) -> str:
-        return self.page_context['localization']['news']['seeArticle']
+        try:
+            for edge in self.result.page_data.locale_edges:
+                if edge['node']['ns'] == 'home':
+                    data = edge['node']['data']
+                    to_dict = json.loads(data)
+                    return to_dict.get('news.seeArticle', 'See Article')
+        except (KeyError, TypeError):
+            return 'See Article'
 
     @property
     def title(self) -> str:
-        return self._result_data['tag']['title']
-
-    @property
-    def _config(self) -> List[Dict[str, Any]]:
-        return self._result_data['config']['nodes']
-
-    @property
-    def page_context(self) -> Dict[str, Any]:
-        return self._page_context
+        return self.result.page_data.title
 
     @property
     def patch_notes(self) -> List[PatchNote]:
-        return [PatchNote(client=self._client, data=article, locale=self.locale) for article in self._articles]
+        return [
+            PatchNote(client=self._client, data=node, locale=self.locale) for node in self.result.page_data.article_nodes
+        ]
 
     @property
-    def latest(self) -> PatchNote:
-        return PatchNote(client=self._client, data=self._articles[0], locale=self.locale)
+    def latest(self) -> Optional[PatchNote]:
+        if len(self.result.page_data.article_nodes) > 0:
+            return PatchNote(client=self._client, data=self.result.page_data.article_nodes[0], locale=self.locale)
+        return None
 
 
 class PatchNote:
@@ -102,7 +141,7 @@ class PatchNote:
         self._banner_filename: str = self._banner['filename']
         self.article_type: str = data['article_type']
         self._date_iso: str = data['date']
-        self._category_title: str = data['category']
+        self._category_title: List[Dict[str, str]] = data['category']
 
     def __repr__(self) -> str:
         return f'<PatchNote title={self.title!r} locale={self.locale!r}>'
@@ -135,4 +174,4 @@ class PatchNote:
     @property
     def category_title(self) -> Optional[str]:
         if len(self._category_title) > 0:
-            return self._category_title[0]
+            return self._category_title[0]['title']
