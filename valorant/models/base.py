@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Union
+from ..enums import MeleeWeaponID
 
 if TYPE_CHECKING:
     from ..client import Client
@@ -47,7 +48,7 @@ class BaseModel(_ModelTag):
 
     def __init__(self, client: Client, data: Union[Any, Any], **kwargs: Any) -> None:
         self._client = client
-        self._uuid: str = data.get('uuid')
+        self._uuid: str = data.get('uuid') if data is not None else ''
         self._extras = kwargs
         self._update(data)
 
@@ -78,6 +79,19 @@ class BaseFeaturedBundleItem:
         self._currency_id: str = bundle.get('CurrencyID')
         self.discount_percent: float = bundle.get('DiscountPercent', 0.0)
         self.amount: int = bundle['Item']['Amount']
+
+        # special case for featured bundles
+        self._is_melee: bool = False
+        self.__melee_check()
+
+    def __melee_check(self) -> None:
+        if hasattr(self, 'base_weapon'):
+            if self.base_weapon.uuid == str(MeleeWeaponID):
+                self._is_melee = True
+
+    def is_melee(self) -> bool:
+        """:class: `bool` Returns whether the bundle is a melee."""
+        return self._is_melee
 
     def is_promo(self) -> bool:
         """:class: `bool` Returns whether the bundle is a promo."""

@@ -67,7 +67,7 @@ class Identity:
 
     @property
     def player_title(self) -> Optional[PlayerTitle]:
-        if not (uuid.UUID(self._player_title) == uuid.UUID(str(EmptyTitleID))):
+        if not self._player_title == str(EmptyTitleID):  # TODO: Fix this
             return self._client.get_player_title(self._player_title)
         return None
 
