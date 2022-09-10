@@ -72,8 +72,6 @@ class Bundle(BaseModel):
         if not is_featured_bundle:
             if data.get('Items') is not None:
                 self._bundle_items(data['Items'])
-        else:
-            print(self.uuid)
 
     def _bundle_items(self, items: List[Dict[str, Any]]) -> None:
         for item in items:
