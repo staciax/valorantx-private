@@ -127,23 +127,31 @@ class Bundle(BaseModel):
         return self.description_localizations.american_english
 
     @property
-    def description_extra_localizations(self) -> Localization:
+    def description_extra_localizations(self) -> Optional[Localization]:
         """:class: `Localization` Returns the bundle's description extra localizations."""
+        if self._description_extra is None:
+            return None
         return Localization(self._description_extra, locale=self._client.locale)
 
     @property
-    def description_extra(self) -> str:
+    def description_extra(self) -> Optional[str]:
         """:class: `str` Returns the bundle's description extra localizations."""
+        if self._description_extra is None:
+            return None
         return self.description_extra_localizations.american_english
 
     @property
-    def description_promo_localizations(self) -> Localization:
+    def description_promo_localizations(self) -> Optional[Localization]:
         """:class: `Localization` Returns the bundle's description promo localizations."""
+        if self._description_promo is None:
+            return None
         return Localization(self._description_promo, locale=self._client.locale)
 
     @property
-    def description_promo(self) -> str:
+    def description_promo(self) -> Optional[str]:
         """:class: `str` Returns the bundle's description promo."""
+        if self._description_promo is None:
+            return None
         return self.description_promo_localizations.american_english
 
     @property
