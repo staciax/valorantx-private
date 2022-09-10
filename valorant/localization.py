@@ -66,7 +66,7 @@ class Localization:
 
     def __str__(self) -> str:
         """Returns the default locale."""
-        return self.locale or ''
+        return self.locale or self.default
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Localization) and self.untranslated == other.untranslated
@@ -182,7 +182,10 @@ class Localization:
         """:class:`str`: Returns the english locale is default."""
         if isinstance(self.untranslated, str):
             return self.untranslated
-        return self.untranslated.get('en-US')
+        elif isinstance(self.untranslated, dict):
+            return self.untranslated.get('en-US')
+        else:
+            return ''
 
     @property
     def locale(self) -> str:
