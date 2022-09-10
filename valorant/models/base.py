@@ -72,12 +72,19 @@ class BaseFeaturedBundleItem:
         price: int
 
     def __init__(self, bundle: Dict[str, Any]) -> None:
-        self.price: int = bundle.get('BasePrice', self.price)
-        self.discounted_price: int = bundle.get('DiscountedPrice', self.price)
+        self.price: int = bundle.get('BasePrice')
+        self._discounted_price: int = bundle.get('DiscountedPrice')
         self._is_promo: bool = bundle.get('IsPromoItem', False)
         self._currency_id: str = bundle.get('CurrencyID')
         self.discount_percent: float = bundle.get('DiscountPercent', 0.0)
         self.amount: int = bundle['Item']['Amount']
+
+    @property
+    def discounted_price(self) -> int:
+        """:class:`int`: The discounted price of the bundle."""
+        if self.discount_percent == 0:
+            return 0
+        return self._discounted_price
 
     def is_promo(self) -> bool:
         """:class: `bool` Returns whether the bundle is a promo."""
