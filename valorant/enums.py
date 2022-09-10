@@ -27,10 +27,10 @@ Enums functions: https://github.com/Rapptz/discord.py/blob/master/discord/enums.
 
 from __future__ import annotations
 
-import uuid
 import types
+import uuid
 from collections import namedtuple
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Final, Iterator, List, Mapping, Optional, Tuple, Type, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Mapping, Optional, Tuple, Type, TypeVar
 
 # -- https://github.com/Rapptz/discord.py/blob/master/discord/enums.py
 
@@ -180,6 +180,7 @@ __all__ = (
 
 EmptyTitleID: uuid.UUID = uuid.UUID('d13e579c-435e-44d4-cec2-6eae5a3c5ed4')
 MeleeWeaponID: uuid.UUID = uuid.UUID('2f59173c-4bed-b6c3-2191-dea9b58be9c7')
+
 
 class Region(Enum):
     NA = 'na'
