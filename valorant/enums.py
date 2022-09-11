@@ -176,6 +176,7 @@ __all__ = (
     'EmptyTitleID',
     'RelationType',
     'MeleeWeaponID',
+    'ContractRewardType',
 )
 
 EmptyTitleID: uuid.UUID = uuid.UUID('d13e579c-435e-44d4-cec2-6eae5a3c5ed4')
@@ -386,6 +387,16 @@ class SpraySlotID(Enum):
 
         raise ValueError(f'Unknown slot id: {slot_id}')
 
+class ContractRewardType(Enum):
+    skin_level = 'EquippableSkinLevel'
+    buddy_level = 'EquippableCharmLevel'
+    currency = 'Currency'
+    player_card = 'PlayerCard'
+    player_title = 'Title'
+    spray = 'Spray'
+
+    def __str__(self) -> str:
+        return str(self.value)
 
 class Locale(Enum):
     arabic = 'ar-AE'
