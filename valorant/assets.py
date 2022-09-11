@@ -44,7 +44,6 @@ __all__ = (
     'Assets',
 )
 # fmt: on
-# TODO: str, repr, eq, ne slots, for all classes
 
 _log = logging.getLogger(__name__)
 
@@ -174,6 +173,20 @@ class Assets:
         self._client = client
         if auto_reload:
             self.reload_assets()
+
+    @staticmethod
+    def clear_asset_cache() -> None:
+        Assets.ASSET_CACHE.clear()
+
+    @staticmethod
+    def clear_offer_cache() -> None:
+        Assets.OFFER_CACHE.clear()
+
+    @staticmethod
+    def clear_all_cache() -> None:
+        Assets.clear_asset_cache()
+        Assets.clear_offer_cache()
+
 
     def get_asset(self, key: str, tries: int = 3) -> Optional[Dict[str, Any]]:
         """Get an asset."""
@@ -552,6 +565,11 @@ class Assets:
         """Get the asset directory."""
         return os.path.join(Assets._cache_dir, self._client.version.version)
 
+    @staticmethod
+    def _get_asset_special_dir() -> str:
+        """Get the asset special directory."""
+        return os.path.join(Assets._cache_dir, 'special')
+
     def __mkdir_cache_dir(self) -> bool:
         """Make the assets' directory."""
         if not os.path.exists(self._cache_dir):
@@ -600,6 +618,14 @@ class Assets:
                 if tries == 3:
                     _log.error(f'Failed to create asset directory')
                     return
+
+    def __special_weapons(self) -> None:
+        listdir = os.listdir(self._get_asset_special_dir())
+        for file in listdir:
+            if file.endswith('.json'):
+                with open(os.path.join(self._get_asset_special_dir(), file), encoding='utf-8') as f:
+                    to_dict = json.load(f)
+                    print(to_dict)
 
     @staticmethod
     def __customize_asset_cache_format(filename: str, data: Any) -> None:
