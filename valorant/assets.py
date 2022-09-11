@@ -187,7 +187,6 @@ class Assets:
         Assets.clear_asset_cache()
         Assets.clear_offer_cache()
 
-
     def get_asset(self, key: str, tries: int = 3) -> Optional[Dict[str, Any]]:
         """Get an asset."""
         if key in self.ASSET_CACHE:
@@ -438,7 +437,8 @@ class Assets:
                 self._dump(new_dict, '_offers')
         else:
             if self._client.is_authorized():
-                _log.warning('You can fetch items prices by calling `client.fetch_offers(with_price=True)`')
+                if not self.OFFER_CACHE:
+                    _log.info('You can fetch items prices by calling `client.fetch_offers(with_price=True)`')
             else:
                 _log.info('Skipping fetching items prices')
 
