@@ -25,24 +25,24 @@ from __future__ import annotations
 
 import datetime
 import logging
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Iterator
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 from .. import utils
 from ..asset import Asset
-from ..enums import RelationType, try_enum, ContractRewardType as RewardType
+from ..enums import ContractRewardType as RewardType, RelationType, try_enum
 from ..errors import InvalidContractType, InvalidRelationType
 from ..localization import Localization
 from .agent import Agent
 from .base import BaseModel
+from .buddy import BuddyLevel
+from .currency import Currency
 from .event import Event
 from .mission import MissionMeta, MissionU
+from .player_card import PlayerCard
+from .player_title import PlayerTitle
 from .season import Season
 from .spray import Spray
 from .weapons import SkinLevel
-from .buddy import BuddyLevel
-from .player_card import PlayerCard
-from .player_title import PlayerTitle
-from .currency import Currency
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -60,6 +60,7 @@ _log = logging.getLogger(__name__)
 
 # A = Asset
 # U = User
+
 
 class Contract(BaseModel):
     def __init__(self, client: Client, data: Dict[str, Any]) -> None:
@@ -121,7 +122,6 @@ class Contract(BaseModel):
 
 
 class ContractU(Contract):
-
     def __init__(self, client: Client, data: Dict[str, Any], contract: ContractUPayload) -> None:
         super().__init__(client=client, data=data)
         self.total_progression_earned: int = contract['ContractProgression']['TotalProgressionEarned']
@@ -200,7 +200,7 @@ class ContractU(Contract):
                 chapter = self.content.chapters[i]
                 if i <= self.chapter:
                     if i == self.chapter:
-                        yield from chapter.rewards[:self.chapter_reward_index]
+                        yield from chapter.rewards[: self.chapter_reward_index]
                     else:
                         yield from chapter.rewards
 
@@ -208,6 +208,7 @@ class ContractU(Contract):
     def _from_contract(cls, client: Client, contract: ContractUPayload) -> Self:
         data = client.assets.get_contract(contract['ContractDefinitionID'])
         return cls(client=client, data=data, contract=contract)
+
 
 class ProcessedMatch:
     def __init__(self, data: ProcessedMatchPayload) -> None:
@@ -342,9 +343,11 @@ class Chapter:
         self.index: int = index
         self._is_epilogue: bool = data.get('isEpilogue', False)
         self.levels: List[Level] = [Level(client=client, data=level, chapter_index=index) for level in data['levels']]
-        self.free_rewards: List[Reward] = [
-            Reward(client=client, data=reward, is_free=True, index=index) for reward in data['freeRewards']
-        ] if data.get('freeRewards') is not None else []
+        self.free_rewards: List[Reward] = (
+            [Reward(client=client, data=reward, is_free=True, index=index) for reward in data['freeRewards']]
+            if data.get('freeRewards') is not None
+            else []
+        )
 
     def __repr__(self) -> str:
         return f'<Chapter is_epilogue={self.is_epilogue()!r}>'
@@ -370,7 +373,6 @@ class Level:
 
 
 class Reward:
-
     def __init__(self, client: Client, data: Dict[str, Any], is_free: bool = False, index: int = 0) -> None:
         self._client: Client = client
         self.type: str = data.get('type')
@@ -395,9 +397,7 @@ class Reward:
     # special case for the free rewards
 
     @property
-    def reward(self) -> Optional[
-        Union[SkinLevel, PlayerCard, PlayerTitle, Spray, Currency]
-    ]:
+    def reward(self) -> Optional[Union[SkinLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
         if self.type == str(RewardType.skin_level):
             return SkinLevel._from_uuid(client=self._client, uuid=self.uuid)
         elif self.type == str(RewardType.buddy_level):

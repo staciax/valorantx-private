@@ -101,7 +101,9 @@ def percent(*args: int) -> List[Union[int, float]]:
     t = sum(args)
     return [100 * y / t for y in args]
 
+
 # -- source idea by https://github.com/giorgi-o
+
 
 def calculate_level_xp(level: int) -> int:
     """Returns the xp required for the given level."""
@@ -112,5 +114,6 @@ def calculate_level_xp(level: int) -> int:
         return 36500
     else:
         return 0
+
 
 # --

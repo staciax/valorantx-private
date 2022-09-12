@@ -387,6 +387,7 @@ class SpraySlotID(Enum):
 
         raise ValueError(f'Unknown slot id: {slot_id}')
 
+
 class ContractRewardType(Enum):
     skin_level = 'EquippableSkinLevel'
     buddy_level = 'EquippableCharmLevel'
@@ -397,6 +398,7 @@ class ContractRewardType(Enum):
 
     def __str__(self) -> str:
         return str(self.value)
+
 
 class Locale(Enum):
     arabic = 'ar-AE'
