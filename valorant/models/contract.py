@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import datetime
 import logging
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Iterator
 
 from .. import utils
 from ..asset import Asset
@@ -129,6 +129,8 @@ class ContractU(Contract):
         ]
         self.progression_level_reached: int = contract['ProgressionLevelReached']
         self.progression_towards_next_level: int = contract['ProgressionTowardsNextLevel']
+        self.chapter: int = self.progression_level_reached // 5
+        self.chapter_reward_index: int = self.progression_level_reached % 5
 
     def __repr__(self) -> str:
         return f'<ContractU display_name={self.display_name!r}>'
@@ -158,32 +160,41 @@ class ContractU(Contract):
         return self.current_tier_needed_xp - self.xp
 
     @property
-    def my_rewards(self) -> List[Reward]:
-        """:class: `List[Reward]` Returns the contract's rewards."""
-
-        find_chapter = self.current_tier // 5
-        reward_index = self.current_tier % 5
-
-        for i in range(0, len(self.content.chapters)):
-            chapter = self.content.chapters[i]
-            if i <= find_chapter:
-                yield from chapter.rewards[reward_index:]
-
-    @property
     def next_tier_reward(self) -> Optional[Reward]:
         """:class: `Optional[Reward]` Returns the contract's next tier reward."""
 
         if self.current_tier >= 55:
             return None
 
-        find_chapter = self.current_tier // 5
-        reward_index = self.current_tier % 5
-
         try:
-            chapter = self.content.chapters[find_chapter]
-            return chapter.rewards[reward_index]
+            chapter = self.content.chapters[self.chapter]
+            return chapter.rewards[self.chapter_reward_index]
         except IndexError:
             return None
+
+    @property
+    def latest_tier_reward(self) -> Optional[Reward]:
+        """:class: `Optional[Reward]` Returns the contract's latest tier reward."""
+
+        try:
+            chapter = self.content.chapters[self.chapter - (1 if self.chapter_reward_index == 0 else 0)]
+            return chapter.rewards[self.chapter_reward_index - 1]
+        except IndexError:
+            return None
+
+    @property
+    def my_rewards(self) -> Iterator[Reward]:
+        """:class: `Iterator[Reward]` Returns the contract's rewards."""
+
+        if self.current_tier >= 55 and self.next_tier_remaining_xp == 0:
+            for chapter in self.content.chapters:
+                for reward in chapter.rewards:
+                    yield reward
+        else:
+            for i in range(0, len(self.content.chapters)):
+                chapter = self.content.chapters[i]
+                if i <= self.chapter:
+                    yield from chapter.rewards[self.chapter_reward_index:]
 
     @classmethod
     def _from_contract(cls, client: Client, contract: ContractUPayload) -> Self:
