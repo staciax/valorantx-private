@@ -129,8 +129,10 @@ class ContractU(Contract):
         ]
         self.progression_level_reached: int = contract['ProgressionLevelReached']
         self.progression_towards_next_level: int = contract['ProgressionTowardsNextLevel']
-        self.chapter: int = self.progression_level_reached // 5
-        self.chapter_reward_index: int = self.progression_level_reached % 5
+        self.reward_per_chapter: int = min(len(chapter.rewards) for chapter in self.content.chapters)
+        self.total_chapters: int = len(self.content.chapters)
+        self.chapter: int = self.progression_level_reached // self.reward_per_chapter
+        self.chapter_reward_index: int = self.progression_level_reached % self.reward_per_chapter
 
     def __repr__(self) -> str:
         return f'<ContractU display_name={self.display_name!r}>'
@@ -186,15 +188,19 @@ class ContractU(Contract):
     def my_rewards(self) -> Iterator[Reward]:
         """:class: `Iterator[Reward]` Returns the contract's rewards."""
 
-        if self.current_tier >= 55 and self.next_tier_remaining_xp == 0:
+        total_rewards = sum(len(chapter.rewards) for chapter in self.content.chapters)
+
+        if total_rewards <= self.current_tier == self.highest_rewarded_level:
             for chapter in self.content.chapters:
-                for reward in chapter.rewards:
-                    yield reward
+                yield from chapter.rewards
         else:
             for i in range(0, len(self.content.chapters)):
                 chapter = self.content.chapters[i]
                 if i <= self.chapter:
-                    yield from chapter.rewards[self.chapter_reward_index:]
+                    if i == self.chapter:
+                        yield from chapter.rewards[:self.chapter_reward_index]
+                    else:
+                        yield from chapter.rewards
 
     @classmethod
     def _from_contract(cls, client: Client, contract: ContractUPayload) -> Self:
