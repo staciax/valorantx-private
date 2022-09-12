@@ -121,6 +121,7 @@ class Contract(BaseModel):
 
 
 class ContractU(Contract):
+
     def __init__(self, client: Client, data: Dict[str, Any], contract: ContractUPayload) -> None:
         super().__init__(client=client, data=data)
         self.total_progression_earned: int = contract['ContractProgression']['TotalProgressionEarned']
@@ -131,6 +132,9 @@ class ContractU(Contract):
         self.progression_towards_next_level: int = contract['ProgressionTowardsNextLevel']
         self.reward_per_chapter: int = min(len(chapter.rewards) for chapter in self.content.chapters)
         self.total_chapters: int = len(self.content.chapters)
+        self.maximum_tier: int = sum(len(chapter.rewards) for chapter in self.content.chapters)
+
+        # TODO: new algorithm {'chapter': len(rewards), 'chapter': len(rewards), ...} for accuracy
         self.chapter: int = self.progression_level_reached // self.reward_per_chapter
         self.chapter_reward_index: int = self.progression_level_reached % self.reward_per_chapter
 
@@ -165,7 +169,7 @@ class ContractU(Contract):
     def next_tier_reward(self) -> Optional[Reward]:
         """:class: `Optional[Reward]` Returns the contract's next tier reward."""
 
-        if self.current_tier >= 55:
+        if self.current_tier >= self.maximum_tier:
             return None
 
         try:
@@ -188,9 +192,7 @@ class ContractU(Contract):
     def my_rewards(self) -> Iterator[Reward]:
         """:class: `Iterator[Reward]` Returns the contract's rewards."""
 
-        total_rewards = sum(len(chapter.rewards) for chapter in self.content.chapters)
-
-        if total_rewards <= self.current_tier == self.highest_rewarded_level:
+        if self.maximum_tier <= self.current_tier == self.highest_rewarded_level:
             for chapter in self.content.chapters:
                 yield from chapter.rewards
         else:
