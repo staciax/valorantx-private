@@ -460,7 +460,7 @@ class BundleID(Enum):
     BlastX = 'a31f7d1f-89d8-47ae-875b-1ae2117655c2'
     Celestial = '473e694c-4940-078b-fb49-e994dff766cf'
     Champions_2021 = 'bf987f36-4a33-45e4-3c49-1ab9a2502607'
-    Champions_2022 = '...'
+    Champions_2022 = 'f99e5b38-48c7-1146-acfa-9baaf773b844'
     Doodle_Buds = '2ed936df-4959-acc7-9aca-358d34a50619'
     Ego = '2d6ec1d9-4152-8a43-5f7f-ff96b29c857f'
     Elderflame = '1ba50cf0-46dd-848f-13a9-dc92fb0a3e3b'
@@ -474,6 +474,7 @@ class BundleID(Enum):
     Horizon = 'abba1438-4900-ce9b-8b81-38b6975a419f'
     Infantry = '9be3549b-4124-7fc2-aa79-8d817f728a18'
     Ion = '693d675e-4ed2-c00a-5e38-6b859b275565'
+    Kuhaku_And_Matsuba = '31827d9c-4ccb-8687-a5c1-69991ad1ec98'
     Luxe = '1703b166-4e32-63da-9d16-a7a144aab574'
     Magepunk = '338cabdb-473f-1f37-fa35-47a3d994517f'
     Magepunk_2 = 'a981af4a-4d81-9668-8923-9c84c43da3d3'
@@ -494,13 +495,13 @@ class BundleID(Enum):
     RGX_11z_Pro_2 = 'd958b181-4e7b-dc60-7c3c-e3a3a376a8d2'
     Radiant_Crisis_001 = '3a824027-4414-5a08-64f0-c8905a2aaa66'
     Reaver = '81d85522-4651-4f66-72de-5fa057b3514c'
-    Reaver_2 = '...'
+    Reaver_2 = 'f7dcf7e1-485e-0524-ec82-0d97b2c8b40b'
     Recon = 'b6b1b7ea-4a10-f810-a416-03adbb69d379'
     Ruination = 'ae0c9cc4-4c03-f8d6-745c-84953db684fc'
     Run_It_Back = '332d705c-4852-11e5-c590-88b1f6e47f72'
     Run_It_Back_2 = 'bcdd8956-4588-f586-fda8-fd991c593449'
-    Run_It_Back_3 = '...'
-    Sarmad = '...'
+    Run_It_Back_3 = 'a6fa35c6-4205-d5bc-dd65-3b92aeaac412'
+    Sarmad = '83e78a53-435b-f891-9e04-a9b59ed8fa44'
     Sakura = '49d7951e-4e5d-304c-31a0-589b79096d5a'
     Sensation = '54cbf45c-4b92-5cd9-07ab-3d98175fafa6'
     Sentinels_of_Light = '13d427c1-49d7-44f9-6576-27a9c83d787f'
@@ -523,7 +524,7 @@ class BundleID(Enum):
     Xenohunter = '3941ad01-4e3b-46e0-ba3a-ab94f7c67f98'
 
     def __str__(self) -> str:
-        return self.value
+        return str(self.value)
 
 
 # from discord.py
