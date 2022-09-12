@@ -16,6 +16,10 @@ readme = ''
 with open('README.md') as f:
     readme = f.read()
 
+extras_require = {
+    'local': ['urllib3>=1.26.12,<1.27'],
+}
+
 packages = ['valorant', 'valorant.models', 'valorant.types']
 
 setup(
@@ -32,6 +36,7 @@ setup(
     long_description=readme,
     include_package_data=True,
     install_requires=requirements,
+    extras_require=extras_require,
     python_requires='>=3.8.0',
     classifiers=[
         'License :: OSI Approved :: MIT License',

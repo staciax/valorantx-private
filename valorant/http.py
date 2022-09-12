@@ -1,6 +1,8 @@
 """
 The MIT License (MIT)
 
+Copyright (c) 2021 colinh (valclient)
+Copyright (c) 2015-present Rapptz(discord.py)
 Copyright (c) 2022-present xStacia
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -30,7 +32,11 @@ from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, List, Mapping,
 from urllib.parse import urlencode
 
 import aiohttp
-import urllib3
+
+try:
+    import urllib3
+except ImportError:
+    urllib3 = None
 
 from . import __version__, utils
 from .auth import RiotAuth
@@ -42,11 +48,11 @@ MISSING = utils.MISSING
 if TYPE_CHECKING:
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
-    from .types import collection, contract, match, player, store, version, xp
+    from .types import collection, contract, match, store, version, xp
 
-
-# disable urllib3 warnings that might arise from making requests to 127.0.0.1
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+if urllib3 is not None:
+    # disable urllib3 warnings that might arise from making requests to 127.0.0.1
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 _log = logging.getLogger(__name__)
 
@@ -109,18 +115,19 @@ class HTTPClient:
         user_agent = 'valorantx (https://github.com/staciax/valorantx {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
 
-    async def request(self, route: Route, asset_endpoint: bool = False, re_authorize: bool = True, **kwargs: Any) -> Any:
+    async def request(self, route: Route, **kwargs: Any) -> Any:
         method = route.method
         url = route.url
+        asset_endpoint = kwargs.pop('asset_endpoint', False)
+        re_authorize = kwargs.pop('re_authorize', True)
+        extra_exceptions = kwargs.pop('exceptions', None)
 
-        if not asset_endpoint:
+        if not kwargs.get('asset_endpoint', False):
             kwargs['headers'] = self._headers
         else:
             kwargs['headers'] = {
                 'User-Agent': self.user_agent,
             }
-
-        exceptions = kwargs.pop('exceptions', None)
 
         response: Optional[aiohttp.ClientResponse] = None
         data: Optional[Union[Dict[str, Any], str]] = None
@@ -144,7 +151,7 @@ class HTTPClient:
                         if re_authorize:
                             await self._riot_auth.reauthorize()
                             await self.__build_headers()
-                            return await self.request(route, asset_endpoint, False, **kwargs)
+                            return await self.request(route, asset_endpoint=asset_endpoint, re_authorize=False, **kwargs)
                         # raise PhaseError(response, data)
 
                     # we are being rate limited
@@ -160,8 +167,8 @@ class HTTPClient:
                     if response.status == 403:
                         raise Forbidden(response, data)
                     elif response.status == 404:
-                        if exceptions is not None:
-                            raise NotFound(response, exceptions)
+                        if extra_exceptions is not None:
+                            raise NotFound(response, extra_exceptions)
                         raise NotFound(response, data)
                     elif response.status >= 500:
                         if not asset_endpoint:
@@ -288,7 +295,7 @@ class HTTPClient:
 
     # play valorant endpoints
 
-    def fetch_patch_notes(self, locale: Union[str, Locale] = Locale.american_english) -> Response[None]:
+    def fetch_patch_notes(self, locale: Union[str, Locale] = Locale.american_english) -> Response[Any]:
         """
         FetchPatchNote
         Get the latest patch note
@@ -398,24 +405,24 @@ class HTTPClient:
 
     def fetch_leaderboard(
         self,
-        season: str,
+        season_id: Optional[str],
         start_index: int = 0,
         size: int = 25,
         region: Union[str, Region] = Region.AP,
-    ) -> Response[None]:
+    ) -> Response[Any]:
         """
         MMR_FetchLeaderboard
         Get the competitive leaderboard for a given season
         The query parameter query can be added to search for a username.
         """
-        if season == '':
-            season = self.__get_live_season()  # TODO: fix this
+        if season_id is None:
+            raise ValueError('Season cannot be empty')
 
         region = try_enum(Region, region, Region.AP)
 
         r = Route(
             'GET',
-            f'/mmr/v1/leaderboards/affinity/{str(region)}/queue/competitive/season/{season}',
+            f'/mmr/v1/leaderboards/affinity/{str(region)}/queue/competitive/season/{season_id}',
             'pd',
             startIndex=start_index,
             size=size,
@@ -436,7 +443,7 @@ class HTTPClient:
         """
         return self.request(Route('GET', '/contract-definitions/v3/item-upgrades', 'pd'))
 
-    def fetch_config(self) -> Response[None]:
+    def fetch_config(self) -> Response[Any]:
         """
         Config_FetchConfig
         Get various internal game configuration settings set by Riot
@@ -550,6 +557,8 @@ class HTTPClient:
         """
         r = Route('GET', f'/store/v1/entitlements/{self._puuid}/{str(item_type)}', 'pd')
         return self.request(r)
+
+    # local endpoints
 
     # utils
 
