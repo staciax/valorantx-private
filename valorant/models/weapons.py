@@ -526,7 +526,7 @@ class SkinLevel(BaseModel):
         self._base_weapon_uuid: Optional[str] = data.get('base_weapon_uuid')
         self._base_skin_uuid: Optional[str] = data.get('base_skin_uuid')
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._level: str = data.get('levelItem', 'Normal')
+        self._level: Optional[str] = data.get('levelItem')
         self._display_icon: str = data['displayIcon']
         self._streamed_video: Optional[str] = data.get('streamedVideo')
         self.asset_path: str = data['assetPath']
@@ -549,9 +549,11 @@ class SkinLevel(BaseModel):
         return self.name_localizations.american_english
 
     @property
-    def level(self) -> Optional[str]:
+    def level(self) -> str:
         """:class: `str` Returns the skin's level."""
-        return self._level.removeprefix('EEquippableSkinLevelItem::') if self._level else None
+        if self._level is None:
+            return 'Normal'
+        return self._level.removeprefix('EEquippableSkinLevelItem::')
 
     @property
     def display_icon(self) -> Optional[Asset]:
