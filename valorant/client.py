@@ -175,6 +175,8 @@ class Client:
         )
         self.user = ClientPlayer(client=self, data=payload)
 
+        # TODO: fetch seasons
+
     def is_authorized(self) -> bool:
         """Check if the client is authorized."""
         return self._is_authorized
@@ -252,7 +254,7 @@ class Client:
     def get_buddy(self, *args: Any, **kwargs: Any) -> Optional[Union[Buddy, BuddyLevel]]:
         """Get a buddy by UUID or Display Name."""
         data = self.assets.get_buddy(*args, **kwargs)
-        return Buddy(client=self, data=data) if data else self.get_buddy_level(**kwargs)
+        return Buddy(client=self, data=data) if data else self.get_buddy_level(*args, **kwargs)
 
     def get_buddy_level(self, *args: Any, **kwargs: Any) -> Optional[BuddyLevel]:
         """Get a buddy level by UUID or Display Name."""
@@ -347,7 +349,7 @@ class Client:
     def get_spray(self, *args: Any, **kwargs: Any) -> Optional[Union[Spray, SprayLevel]]:
         """Get a spray by UUID."""
         data = self.assets.get_spray(*args, **kwargs)
-        return Spray(client=self, data=data) if data else self.get_spray_level(**kwargs)
+        return Spray(client=self, data=data) if data else self.get_spray_level(*args, **kwargs)
 
     def get_spray_level(self, *args: Any, **kwargs: Any) -> Optional[SprayLevel]:
         """Get a spray level by UUID."""
@@ -367,7 +369,11 @@ class Client:
     def get_skin(self, *args: Any, **kwargs: Any) -> Optional[Union[Skin, SkinLevel, SkinChroma]]:
         """weapon_skins, Get a weapon skin by UUID."""
         data = self.assets.get_skin(*args, **kwargs)
-        return Skin(client=self, data=data) if data else self.get_skin_level(**kwargs) or self.get_skin_chroma(**kwargs)
+        return (
+            Skin(client=self, data=data)
+            if data
+            else self.get_skin_level(*args, **kwargs) or self.get_skin_chroma(*args, **kwargs)
+        )
 
     def get_skin_level(self, *args: Any, **kwargs: Any) -> Optional[SkinLevel]:
         """weapon_skins_levels, Get a weapon skin level by UUID."""

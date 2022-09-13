@@ -30,7 +30,7 @@ import os
 import shutil
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Callable, Concatenate, Dict, Optional, ParamSpec, TypeVar, Union
 
 from .enums import CurrencyID, ItemType
 from .errors import AuthRequired
@@ -45,16 +45,46 @@ __all__ = (
 )
 # fmt: on
 
+P = ParamSpec('P')
+R = TypeVar('R')
+
 _log = logging.getLogger(__name__)
 
 
+def find(value_1: Any, value_2: Any) -> bool:
+    if isinstance(value_1, list) and isinstance(value_2, list):
+        return value_2 in value_1
+    elif isinstance(value_1, str) and isinstance(value_2, str):
+        value_1 = value_1.lower()
+        value_2 = value_2.lower()
+        return value_1 == value_2
+    elif isinstance(value_1, Union[int, float]) and isinstance(value_2, Union[int, float]):
+        return value_1 == value_2
+    elif isinstance(value_1, bool) and isinstance(value_2, bool):
+        return value_1 == value_2
+    elif isinstance(value_1, str) and isinstance(value_2, dict):
+        for dict_value in value_2.values():
+            if find(value_1, dict_value):
+                return True
+    elif isinstance(value_1, dict) and isinstance(value_2, str):
+        for dict_value in value_1.values():
+            if find(dict_value, value_2):
+                return True
+    elif isinstance(value_1, dict) and isinstance(value_2, dict):
+        for dict_value in value_2.values():
+            if find(value_1, dict_value):
+                return True
+    else:
+        return False
+
+
 def finder():
-    def decorator(function):
+    def decorator(function: Callable[Concatenate[Assets, P], R]) -> Callable[P, R]:
         @wraps(function)
-        def wrapper(self, *args, **kwargs) -> Any:
+        def wrapper(self: Assets, *args: ParamSpec.args, **kwargs: ParamSpec.kwargs) -> Any:
 
             if not args and not kwargs:
-                return function(self, *args, **kwargs)
+                return function(self, uuid=None)
 
             new_kwargs = {}
             for key, value in kwargs.items():
@@ -75,39 +105,33 @@ def finder():
             if not data:
                 return function(self, *args, **kwargs)
 
-            is_level_border = False
+            is_level_border = True
             if len(finder_keys) == 0:
                 may_be_uuid = args[0]
                 if isinstance(may_be_uuid, str):
                     may_be_uuid = may_be_uuid.lower()
 
                 if not is_uuid(str(may_be_uuid)) and not may_be_uuid == '':
-                    if isinstance(may_be_uuid, str):
-                        kwargs['displayname'] = may_be_uuid
-                        finder_keys.append('displayname')
-                    else:
-                        if isinstance(may_be_uuid, int):
-                            if get_key == 'level_borders':
-                                kwargs['startinglevel'] = may_be_uuid
-                                finder_keys.append('startinglevel')
-                                is_level_border = True
-                else:
-                    kwargs['uuid'] = may_be_uuid
-                    return function(self, *args, **kwargs)
+                    if isinstance(may_be_uuid, int):
+                        if get_key == 'level_borders':
+                            kwargs['startinglevel'] = may_be_uuid
+                            finder_keys.append('startinglevel')
+                            is_level_border = True
 
             maybe = []
             for key, value in data.items():
+
                 if isinstance(value, dict):
                     for k, v in value.items():
+
                         if isinstance(k, str):
                             k = k.lower()
+
                         if k in finder_keys:
+
                             if isinstance(v, str):
-                                v = v.lower()
-                                if kwargs[k] == v:
-                                    kwargs.clear()
-                                    kwargs['uuid'] = key
-                                    return function(self, *args, **kwargs)
+                                if find(v, kwargs[k]):
+                                    return function(self, key)
                                 elif v.startswith(kwargs[k]):
                                     maybe.append(key)
 
@@ -120,42 +144,59 @@ def finder():
                                         next_level += 1
 
                                     if kwargs[k] < next_level:
-                                        kwargs.clear()
-                                        kwargs['uuid'] = key
-                                        return function(self, *args, **kwargs)
+                                        return function(self, key)
+
                                 else:
-                                    if kwargs[k] == v:
-                                        kwargs.clear()
-                                        kwargs['uuid'] = key
-                                        return function(self, *args, **kwargs)
+                                    if find(v, kwargs[k]):
+                                        return function(self, key)
 
                             elif isinstance(v, dict):
                                 for kk, vv in v.items():
+                                    if find(vv, kwargs[k]):
+                                        return function(self, key)
+                                    elif vv.startswith(kwargs[k]):
+                                        maybe.append(key)
+
+                            # EN: Not tested yet
+                            elif isinstance(v, list):
+                                for vv in v:
                                     if isinstance(vv, str):
-                                        vv = vv.lower()
-                                        if kwargs[k] == vv:
-                                            kwargs.clear()
-                                            kwargs['uuid'] = key
-                                            return function(self, *args, **kwargs)
+                                        if find(vv, kwargs[k]):
+                                            return function(self, key)
                                         elif vv.startswith(kwargs[k]):
                                             maybe.append(key)
 
-                            # EN: Not tested yet
-                            # elif isinstance(v, list):
-                            #     for vv in v:
-                            #         if isinstance(vv, str):
-                            #             vv = vv.lower()
-                            #             if kwargs[k] == vv:
-                            #                 kwargs.clear()
-                            #                 kwargs['uuid'] = key
-                            #                 return function(self, *args, **kwargs)
-                            #             elif vv.startswith(kwargs[k]):
-                            #                 maybe.append(key)
+                        else:
+                            for arg in args:
+                                if isinstance(arg, str):
+                                    arg = arg.lower()
+                                if isinstance(key, str):
+                                    key = key.lower()
+                                if arg == key:
+                                    return function(self, key)
+
+            # 2nd loop
+            for key, value in data.items():
+                if isinstance(value, dict):
+                    for v_ in value.values():
+                        for arg in args:
+                            if find(v_, arg):
+                                return function(self, key)
+
+                            if isinstance(value, dict):
+                                for v_find in value.values():
+                                    if isinstance(v_find, dict):
+                                        for vv_find in v_find.values():
+                                            if isinstance(vv_find, str) and isinstance(arg, str):
+                                                vv_find = vv_find.lower()
+                                                arg = arg.lower()
+                                                if vv_find.startswith(arg):
+                                                    maybe.append(key)
 
             # 1st choice in maybe
             if len(maybe) > 0:
-                kwargs['uuid'] = maybe[0]
-            return function(self, *args, **kwargs)
+                return function(self, maybe[0])
+            return function(self, uuid=None)
 
         return wrapper
 
@@ -205,167 +246,167 @@ class Assets:
                     raise KeyError(f"Asset {key!r} not found")
 
     @finder()
-    def get_agent(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_agent(self, uuid: str) -> Optional[Dict[str, Any]]:
         """agents, Get an agent by UUID."""
         data = self.get_asset('agents')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_buddy(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_buddy(self, uuid: str) -> Optional[Dict[str, Any]]:
         """buddies, Get a buddy by UUID."""
         data = self.get_asset('buddies')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_buddy_level(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_buddy_level(self, uuid: str) -> Optional[Dict[str, Any]]:
         """buddies_levels, Get a buddy level by UUID."""
         data = self.get_asset('buddies_levels')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_bundle(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_bundle(self, uuid: str) -> Optional[Dict[str, Any]]:
         """bundles, Get a bundle by UUID."""
         data = self.get_asset('bundles')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_ceremony(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_ceremony(self, uuid: str) -> Optional[Dict[str, Any]]:
         """ceremonies, Get a ceremony by UUID."""
         data = self.get_asset('ceremonies')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_competitive_tier(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_competitive_tier(self, uuid: str) -> Optional[Dict[str, Any]]:
         """competitive_tiers, Get a competitive tier by UUID."""
         data = self.get_asset('competitive_tiers')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_content_tier(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_content_tier(self, uuid: str) -> Optional[Dict[str, Any]]:
         """content_tiers, Get a content tier by UUID."""
         data = self.get_asset('content_tiers')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_contract(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_contract(self, uuid: str) -> Optional[Dict[str, Any]]:
         """contracts, Get a contract by UUID."""
         data = self.get_asset('contracts')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_currency(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_currency(self, uuid: str) -> Optional[Dict[str, Any]]:
         """currencies, Get a currency by UUID."""
         data = self.get_asset('currencies')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_event(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_event(self, uuid: str) -> Optional[Dict[str, Any]]:
         """events, Get an event by UUID."""
         data = self.get_asset('events')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_game_mode(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_game_mode(self, uuid: str) -> Optional[Dict[str, Any]]:
         """game_modes, Get a game mode by UUID."""
         data = self.get_asset('game_modes')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_game_mode_equippable(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_game_mode_equippable(self, uuid: str) -> Optional[Dict[str, Any]]:
         """game_modes_equippables, Get a game mode equippable by UUID."""
         data = self.get_asset('game_modes_equippables')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_gear(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_gear(self, uuid: str) -> Optional[Dict[str, Any]]:
         """gear, Get a gear by UUID."""
         data = self.get_asset('gear')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_level_border(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_level_border(self, uuid: str) -> Optional[Dict[str, Any]]:
         """level_borders, Get a level border by UUID."""
         data = self.get_asset('level_borders')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_map(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_map(self, uuid: str) -> Optional[Dict[str, Any]]:
         """maps, Get a map by UUID."""
         data = self.get_asset('maps')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_mission(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_mission(self, uuid: str) -> Optional[Dict[str, Any]]:
         """missions, Get a mission by UUID."""
         data = self.get_asset('missions')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_player_card(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_player_card(self, uuid: str) -> Optional[Dict[str, Any]]:
         """player_cards, Get a player card by UUID."""
         data = self.get_asset('player_cards')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_player_title(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_player_title(self, uuid: str) -> Optional[Dict[str, Any]]:
         """player_titles, Get a player title by UUID."""
         data = self.get_asset('player_titles')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_season(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_season(self, uuid: str) -> Optional[Dict[str, Any]]:
         """seasons, Get a season by UUID."""
         data = self.get_asset('seasons')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_season_competitive(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_season_competitive(self, uuid: str) -> Optional[Dict[str, Any]]:
         """seasons_competitive, Get a season competitive by UUID."""
         data = self.get_asset('seasons_competitive')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
         # return data.get(uuid)
 
     @finder()
-    def get_spray(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_spray(self, uuid: str) -> Optional[Dict[str, Any]]:
         """sprays, Get a spray by UUID."""
         data = self.get_asset('sprays')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_spray_level(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_spray_level(self, uuid: str) -> Optional[Dict[str, Any]]:
         """sprays_levels, Get a spray level by UUID."""
         data = self.get_asset('sprays_levels')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_theme(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_theme(self, uuid: str) -> Optional[Dict[str, Any]]:
         """themes, Get a theme by UUID."""
         data = self.get_asset('themes')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_weapon(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_weapon(self, uuid: str) -> Optional[Dict[str, Any]]:
         """weapons, Get a weapon by UUID."""
         data = self.get_asset('weapons')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_skin(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_skin(self, uuid: str) -> Optional[Dict[str, Any]]:
         """weapon_skins, Get a weapon skin by UUID."""
         data = self.get_asset('weapon_skins')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_skin_level(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_skin_level(self, uuid: str) -> Optional[Dict[str, Any]]:
         """weapon_skins_levels, Get a weapon skin level by UUID."""
         data = self.get_asset('weapon_skins_levels')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     @finder()
-    def get_skin_chroma(self, *args, **kwargs) -> Optional[Dict[str, Any]]:
+    def get_skin_chroma(self, uuid: str) -> Optional[Dict[str, Any]]:
         """weapon_skins_chromas, Get a weapon skin chroma by UUID."""
         data = self.get_asset('weapon_skins_chromas')
-        return data.get(kwargs.get('uuid'))
+        return data.get(uuid)
 
     def get_item_price(self, uuid: str) -> int:
         return self.OFFER_CACHE.get(uuid, 0)

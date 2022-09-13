@@ -20,7 +20,7 @@ async def main():
         agent = client.get_agent('Killjoy')
         print(repr(agent))
 
-        buddy = client.get_buddy('f2f07eae-4518-15eb-546b-018961e0dd60')
+        buddy = client.get_buddy({"ar-AE": "ملحق فرقة العمليات 809"})
         print(repr(buddy))
 
         bundle = client.get_bundle('Champions 2022')
@@ -91,6 +91,9 @@ async def main():
         print(repr(event))
 
         level_border = client.get_level_border('ebc736cd-4b6a-137b-e2b0-1486e31312c9')
+        print(repr(level_border))
+
+        level_border = client.get_level_border(20)
         print(repr(level_border))
 
         map_ = client.get_map('ascent')
