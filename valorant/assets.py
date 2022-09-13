@@ -71,9 +71,7 @@ def find(value_1: Any, value_2: Any) -> bool:
             if find(dict_value, value_2):
                 return True
     elif isinstance(value_1, dict) and isinstance(value_2, dict):
-        for dict_value in value_2.values():
-            if find(value_1, dict_value):
-                return True
+        return value_1 == value_2
     else:
         return False
 
