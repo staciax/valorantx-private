@@ -51,27 +51,33 @@ R = TypeVar('R')
 _log = logging.getLogger(__name__)
 
 
-def find(value_1: Any, value_2: Any) -> bool:
-    if isinstance(value_1, list) and isinstance(value_2, list):
-        return value_2 in value_1
-    elif isinstance(value_1, str) and isinstance(value_2, str):
-        value_1 = value_1.lower()
-        value_2 = value_2.lower()
-        return value_1 == value_2
-    elif isinstance(value_1, Union[int, float]) and isinstance(value_2, Union[int, float]):
-        return value_1 == value_2
-    elif isinstance(value_1, bool) and isinstance(value_2, bool):
-        return value_1 == value_2
-    elif isinstance(value_1, str) and isinstance(value_2, dict):
-        for dict_value in value_2.values():
-            if find(value_1, dict_value):
+def find(value: Any, key: Any) -> bool:
+    if isinstance(value, list) and isinstance(key, list):
+        return key in value
+    elif isinstance(value, str) and isinstance(key, str):
+        value = value.lower()
+        key = key.lower()
+        return value == key
+    elif isinstance(value, Union[int, float]) and isinstance(key, Union[int, float]):
+        return value == key
+    elif isinstance(value, bool) and isinstance(key, bool):
+        return value == key
+    elif isinstance(value, str) and isinstance(key, dict):
+        for key_value in key.values():
+            if find(value, key_value):
                 return True
-    elif isinstance(value_1, dict) and isinstance(value_2, str):
-        for dict_value in value_1.values():
-            if find(dict_value, value_2):
+    elif isinstance(value, dict) and isinstance(key, str):
+        for value_value in value.values():
+            if find(value_value, key):
                 return True
-    elif isinstance(value_1, dict) and isinstance(value_2, dict):
-        return value_1 == value_2
+    elif isinstance(value, dict) and isinstance(key, dict):
+        for key_value in key.values():
+            if find(value, key_value):
+                return True
+    elif isinstance(value, list) and isinstance(key, str):
+        for list_value in value:
+            if find(list_value, key):
+                return True
     else:
         return False
 
