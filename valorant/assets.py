@@ -368,7 +368,6 @@ class Assets:
         """seasons_competitive, Get a season competitive by UUID."""
         data = self.get_asset('seasons_competitive')
         return data.get(uuid)
-        # return data.get(uuid)
 
     @finder()
     def get_spray(self, uuid: str) -> Optional[Dict[str, Any]]:
@@ -432,7 +431,7 @@ class Assets:
         self.__mkdir_assets_dir()
         asset_path = self._get_asset_dir()
 
-        filelist = (
+        file_list = (
             'agents',
             'buddies',
             'bundles',
@@ -462,7 +461,7 @@ class Assets:
         # verify files exist
 
         list_dir = os.listdir(asset_path)
-        for filename in filelist:
+        for filename in file_list:
             if (filename + '.json') not in list_dir:
                 force = True
                 if len(list_dir) > 0:
