@@ -406,12 +406,12 @@ class Client:
         for item in data.values():
             yield Buddy(client=self, data=item)
 
-    def get_all_player_title(self) -> Iterator[PlayerTitle]:
+    def get_all_player_titles(self) -> Iterator[PlayerTitle]:
         data = self.assets.get_asset('player_titles')
         for item in data.values():
             yield PlayerTitle(client=self, data=item)
 
-    def get_all_player_card(self) -> Iterator[PlayerCard]:
+    def get_all_player_cards(self) -> Iterator[PlayerCard]:
         data = self.assets.get_asset('player_cards')
         for item in data.values():
             yield PlayerCard(client=self, data=item)
