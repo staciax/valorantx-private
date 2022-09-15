@@ -436,7 +436,7 @@ class Client:
         for item in data.values():
             yield Spray(client=self, data=item)
 
-    def get_all_weapon(self) -> Iterator[Weapon]:
+    def get_all_weapons(self) -> Iterator[Weapon]:
         data = self.assets.get_asset('weapons')
         for item in data.values():
             yield Weapon(client=self, data=item)
