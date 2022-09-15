@@ -366,13 +366,17 @@ class Client:
         data = self.assets.get_weapon(*args, **kwargs)
         return Weapon(client=self, data=data) if data else None
 
-    def get_skin(self, *args: Any, **kwargs: Any) -> Optional[Union[Skin, SkinLevel, SkinChroma]]:
+    def get_skin(self, level: bool = True, chroma: bool = True, *args: Any, **kwargs: Any) -> Optional[Union[Skin, SkinLevel, SkinChroma]]:
         """weapon_skins, Get a weapon skin by UUID."""
         data = self.assets.get_skin(*args, **kwargs)
         return (
             Skin(client=self, data=data)
             if data
-            else self.get_skin_level(*args, **kwargs) or self.get_skin_chroma(*args, **kwargs)
+            else (
+                self.get_skin_level(*args, **kwargs) if level else (
+                    self.get_skin_chroma(*args, **kwargs) if chroma else None
+                )
+            )
         )
 
     def get_skin_level(self, *args: Any, **kwargs: Any) -> Optional[SkinLevel]:
@@ -385,10 +389,57 @@ class Client:
         data = self.assets.get_skin_chroma(*args, **kwargs)
         return SkinChroma(client=self, data=data) if data else None
 
+    # get all
+
+    def get_all_agents(self) -> Iterator[Agent]:
+        data = self.assets.get_asset('agents')
+        for item in data.values():
+            yield Agent(client=self, data=item)
+
     def get_all_bundles(self) -> Iterator[Bundle]:
         data = self.assets.get_asset('bundles')
         for item in data.values():
             yield Bundle(client=self, data=item)
+
+    def get_all_buddies(self) -> Iterator[Buddy]:
+        data = self.assets.get_asset('buddies')
+        for item in data.values():
+            yield Buddy(client=self, data=item)
+
+    def get_all_player_title(self) -> Iterator[PlayerTitle]:
+        data = self.assets.get_asset('player_titles')
+        for item in data.values():
+            yield PlayerTitle(client=self, data=item)
+
+    def get_all_player_card(self) -> Iterator[PlayerCard]:
+        data = self.assets.get_asset('player_cards')
+        for item in data.values():
+            yield PlayerCard(client=self, data=item)
+
+    def get_all_skins(self) -> Iterator[Skin]:
+        data = self.assets.get_asset('weapon_skins')
+        for item in data.values():
+            yield Skin(client=self, data=item)
+
+    def get_all_skin_levels(self) -> Iterator[SkinLevel]:
+        data = self.assets.get_asset('weapon_skins_levels')
+        for item in data.values():
+            yield SkinLevel(client=self, data=item)
+
+    def get_all_skin_chromas(self) -> Iterator[SkinChroma]:
+        data = self.assets.get_asset('weapon_skins_chromas')
+        for item in data.values():
+            yield SkinChroma(client=self, data=item)
+
+    def get_all_sprays(self) -> Iterator[Spray]:
+        data = self.assets.get_asset('sprays')
+        for item in data.values():
+            yield Spray(client=self, data=item)
+
+    def get_all_weapon(self) -> Iterator[Weapon]:
+        data = self.assets.get_asset('weapons')
+        for item in data.values():
+            yield Weapon(client=self, data=item)
 
     def get_item_price(self, uuid: str) -> int:
         """Get the price of an item by UUID."""
