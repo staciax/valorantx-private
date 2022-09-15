@@ -255,11 +255,12 @@ class Contracts(BaseModel):
         self.mission_metadata: MissionMeta = MissionMeta(data['MissionMetadata'])
 
     @property
-    def active_special_contract(self) -> Optional[ContractU]:
+    def special_contract(self) -> Optional[ContractU]:
         """:class: `ContractA` Returns the active special contract."""
         for contract in self.contracts:
             if contract.uuid == self.active_special_contract_id:
                 return contract
+        return None
 
     def get_latest_contract(self, relation_type: Optional[Union[RelationType, str]] = None) -> Optional[ContractU]:
         """:class: `ContractA` Returns the latest contract."""
