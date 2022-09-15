@@ -254,7 +254,6 @@ class Contracts(BaseModel):
         self.missions: List[MissionU] = [MissionU._from_mission(self._client, mission) for mission in data['Missions']]
         self.mission_metadata: MissionMeta = MissionMeta(data['MissionMetadata'])
 
-    @property
     def special_contract(self) -> Optional[ContractU]:
         """:class: `ContractA` Returns the active special contract."""
         for contract in self.contracts:
@@ -289,7 +288,7 @@ class Contracts(BaseModel):
             if contract.content.relation_type != RelationType.agent:
                 raise InvalidRelationType(f'Contract {contract.display_name!r} is not an agent contract')
 
-            if contract == self.active_special_contract:
+            if contract == self.special_contract():
                 return contract
 
             if contract.progression_level_reached == 10:
@@ -301,7 +300,19 @@ class Contracts(BaseModel):
         # update the active special contract
         data = await self._client.http.contracts_activate(contract.uuid)
         self._update(data)
-        return self.active_special_contract
+        return self.special_contract()
+
+    def get_all_seasonal_contracts(self) -> List[ContractU]:
+        """:class: `List[ContractU]` Returns all seasonal contracts."""
+        return [contract for contract in self.contracts if contract.content.relation_type == RelationType.season]
+
+    def get_all_agent_contracts(self) -> List[ContractU]:
+        """:class: `List[ContractU]` Returns all agent contracts."""
+        return [contract for contract in self.contracts if contract.content.relation_type == RelationType.agent]
+
+    def get_all_event_contracts(self) -> List[ContractU]:
+        """:class: `List[ContractU]` Returns all event contracts."""
+        return [contract for contract in self.contracts if contract.content.relation_type == RelationType.event]
 
 
 class Content:
