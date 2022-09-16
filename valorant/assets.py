@@ -30,7 +30,7 @@ import os
 import shutil
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Concatenate, Dict, Optional, ParamSpec, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, Concatenate, Dict, Optional, ParamSpec, TypeVar, Union, Mapping
 
 from .enums import CurrencyID, ItemType
 from .errors import AuthRequired
@@ -50,8 +50,7 @@ R = TypeVar('R')
 
 _log = logging.getLogger(__name__)
 
-
-def find(value: Any, key: Any) -> bool:
+def _find(value: Any, key: Any) -> bool:
     if isinstance(value, list) and isinstance(key, list):
         return key in value
     elif isinstance(value, str) and isinstance(key, str):
@@ -64,25 +63,25 @@ def find(value: Any, key: Any) -> bool:
         return value == key
     elif isinstance(value, str) and isinstance(key, dict):
         for key_value in key.values():
-            if find(value, key_value):
+            if _find(value, key_value):
                 return True
     elif isinstance(value, dict) and isinstance(key, str):
         for value_value in value.values():
-            if find(value_value, key):
+            if _find(value_value, key):
                 return True
     elif isinstance(value, dict) and isinstance(key, dict):
         for key_value in key.values():
-            if find(value, key_value):
+            if _find(value, key_value):
                 return True
     elif isinstance(value, list) and isinstance(key, str):
         for list_value in value:
-            if find(list_value, key):
+            if _find(list_value, key):
                 return True
     else:
         return False
 
 
-def finder():
+def _finder():
     def decorator(function: Callable[Concatenate[Assets, P], R]) -> Callable[P, R]:
         @wraps(function)
         def wrapper(self: Assets, *args: ParamSpec.args, **kwargs: ParamSpec.kwargs) -> Any:
@@ -134,7 +133,7 @@ def finder():
                         if k in finder_keys:
 
                             if isinstance(v, str):
-                                if find(v, kwargs[k]):
+                                if _find(v, kwargs[k]):
                                     return function(self, key)
                                 elif v.startswith(kwargs[k]):
                                     maybe.append(key)
@@ -151,12 +150,12 @@ def finder():
                                         return function(self, key)
 
                                 else:
-                                    if find(v, kwargs[k]):
+                                    if _find(v, kwargs[k]):
                                         return function(self, key)
 
                             elif isinstance(v, dict):
                                 for kk, vv in v.items():
-                                    if find(vv, kwargs[k]):
+                                    if _find(vv, kwargs[k]):
                                         return function(self, key)
                                     elif vv.startswith(kwargs[k]):
                                         maybe.append(key)
@@ -165,7 +164,7 @@ def finder():
                             elif isinstance(v, list):
                                 for vv in v:
                                     if isinstance(vv, str):
-                                        if find(vv, kwargs[k]):
+                                        if _find(vv, kwargs[k]):
                                             return function(self, key)
                                         elif vv.startswith(kwargs[k]):
                                             maybe.append(key)
@@ -184,7 +183,7 @@ def finder():
                 if isinstance(value, dict):
                     for v_ in value.values():
                         for arg in args:
-                            if find(v_, arg):
+                            if _find(v_, arg):
                                 return function(self, key)
 
                             if isinstance(value, dict):
@@ -249,163 +248,163 @@ class Assets:
                 if _ >= tries - 1:
                     raise KeyError(f"Asset {key!r} not found")
 
-    @finder()
+    @_finder()
     def get_agent(self, uuid: str) -> Optional[Dict[str, Any]]:
         """agents, Get an agent by UUID."""
         data = self.get_asset('agents')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_buddy(self, uuid: str) -> Optional[Dict[str, Any]]:
         """buddies, Get a buddy by UUID."""
         data = self.get_asset('buddies')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_buddy_level(self, uuid: str) -> Optional[Dict[str, Any]]:
         """buddies_levels, Get a buddy level by UUID."""
         data = self.get_asset('buddies_levels')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_bundle(self, uuid: str) -> Optional[Dict[str, Any]]:
         """bundles, Get a bundle by UUID."""
         data = self.get_asset('bundles')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_ceremony(self, uuid: str) -> Optional[Dict[str, Any]]:
         """ceremonies, Get a ceremony by UUID."""
         data = self.get_asset('ceremonies')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_competitive_tier(self, uuid: str) -> Optional[Dict[str, Any]]:
         """competitive_tiers, Get a competitive tier by UUID."""
         data = self.get_asset('competitive_tiers')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_content_tier(self, uuid: str) -> Optional[Dict[str, Any]]:
         """content_tiers, Get a content tier by UUID."""
         data = self.get_asset('content_tiers')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_contract(self, uuid: str) -> Optional[Dict[str, Any]]:
         """contracts, Get a contract by UUID."""
         data = self.get_asset('contracts')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_currency(self, uuid: str) -> Optional[Dict[str, Any]]:
         """currencies, Get a currency by UUID."""
         data = self.get_asset('currencies')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_event(self, uuid: str) -> Optional[Dict[str, Any]]:
         """events, Get an event by UUID."""
         data = self.get_asset('events')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_game_mode(self, uuid: str) -> Optional[Dict[str, Any]]:
         """game_modes, Get a game mode by UUID."""
         data = self.get_asset('game_modes')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_game_mode_equippable(self, uuid: str) -> Optional[Dict[str, Any]]:
         """game_modes_equippables, Get a game mode equippable by UUID."""
         data = self.get_asset('game_modes_equippables')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_gear(self, uuid: str) -> Optional[Dict[str, Any]]:
         """gear, Get a gear by UUID."""
         data = self.get_asset('gear')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_level_border(self, uuid: str) -> Optional[Dict[str, Any]]:
         """level_borders, Get a level border by UUID."""
         data = self.get_asset('level_borders')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_map(self, uuid: str) -> Optional[Dict[str, Any]]:
         """maps, Get a map by UUID."""
         data = self.get_asset('maps')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_mission(self, uuid: str) -> Optional[Dict[str, Any]]:
         """missions, Get a mission by UUID."""
         data = self.get_asset('missions')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_player_card(self, uuid: str) -> Optional[Dict[str, Any]]:
         """player_cards, Get a player card by UUID."""
         data = self.get_asset('player_cards')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_player_title(self, uuid: str) -> Optional[Dict[str, Any]]:
         """player_titles, Get a player title by UUID."""
         data = self.get_asset('player_titles')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_season(self, uuid: str) -> Optional[Dict[str, Any]]:
         """seasons, Get a season by UUID."""
         data = self.get_asset('seasons')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_season_competitive(self, uuid: str) -> Optional[Dict[str, Any]]:
         """seasons_competitive, Get a season competitive by UUID."""
         data = self.get_asset('seasons_competitive')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_spray(self, uuid: str) -> Optional[Dict[str, Any]]:
         """sprays, Get a spray by UUID."""
         data = self.get_asset('sprays')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_spray_level(self, uuid: str) -> Optional[Dict[str, Any]]:
         """sprays_levels, Get a spray level by UUID."""
         data = self.get_asset('sprays_levels')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_theme(self, uuid: str) -> Optional[Dict[str, Any]]:
         """themes, Get a theme by UUID."""
         data = self.get_asset('themes')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_weapon(self, uuid: str) -> Optional[Dict[str, Any]]:
         """weapons, Get a weapon by UUID."""
         data = self.get_asset('weapons')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_skin(self, uuid: str) -> Optional[Dict[str, Any]]:
         """weapon_skins, Get a weapon skin by UUID."""
         data = self.get_asset('weapon_skins')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_skin_level(self, uuid: str) -> Optional[Dict[str, Any]]:
         """weapon_skins_levels, Get a weapon skin level by UUID."""
         data = self.get_asset('weapon_skins_levels')
         return data.get(uuid)
 
-    @finder()
+    @_finder()
     def get_skin_chroma(self, uuid: str) -> Optional[Dict[str, Any]]:
         """weapon_skins_chromas, Get a weapon skin chroma by UUID."""
         data = self.get_asset('weapon_skins_chromas')
@@ -431,7 +430,7 @@ class Assets:
         self.__mkdir_assets_dir()
         asset_path = self._get_asset_dir()
 
-        file_list = (
+        file_list = (  # TODO: something...
             'agents',
             'buddies',
             'bundles',
@@ -569,7 +568,7 @@ class Assets:
         if reload_asset:
             self.reload_assets(with_price=with_price)
 
-    def reload_assets(self, with_price=False):
+    def reload_assets(self, with_price: bool = False):
         """
         Reload assets from disk.
         """
@@ -647,7 +646,7 @@ class Assets:
             with open(gitignore_path, 'w', encoding='utf-8') as f:
                 f.write(msg)
 
-    def _dump(self, data: Any, filename: str) -> None:
+    def _dump(self, data: Mapping[str, Any], filename: str) -> None:
         """Dump data to a file."""
         asset_path = self._get_asset_dir()
         file_path = os.path.join(asset_path, f'{filename}.json')
@@ -672,7 +671,7 @@ class Assets:
                     print(to_dict)
 
     @staticmethod
-    def __customize_asset_cache_format(filename: str, data: Any) -> None:
+    def __customize_asset_cache_format(filename: str, data: Mapping[str, Any]) -> None:
         """Customize the asset assets format."""
 
         # TODO: additional asset weapons
@@ -730,7 +729,7 @@ class Assets:
                         if kwargs['base_price'] is None:
                             kwargs['base_price'] = -1
                         return dict(
-                            Item=dict(ItemTypeID=kwargs['item_type_id'], ItemID=kwargs['item_id'], Amount=kwargs['amount']),
+                            Item=dict(ItemTypeID=kwargs['item_type_id'], ItemID=kwargs['item_id'], Amount=kwargs['amount']),  # noqa: E501
                             BasePrice=kwargs['base_price'],
                             CurrencyID=str(CurrencyID.valorant_point),
                             DiscountPercent=0,
