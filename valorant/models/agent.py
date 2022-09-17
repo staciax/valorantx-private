@@ -314,7 +314,7 @@ class Agent(BaseModel):
         self._full_portrait: Optional[str] = data['fullPortrait']
         self._full_portrait_v2: Optional[str] = data['fullPortraitV2']
         self._killfeed_portrait: str = data['killfeedPortrait']
-        self.background: Optional[str] = data['background']
+        self._background: Optional[str] = data['background']
         self.background_gradient_colors: List[str] = data['backgroundGradientColors']
         self._is_full_portrait_right_facing: bool = data['isFullPortraitRightFacing']
         self._is_playable_character: bool = data['isPlayableCharacter']
@@ -379,6 +379,11 @@ class Agent(BaseModel):
     def killfeed_portrait(self) -> Asset:
         """:class: `Asset` Returns the agent's killfeed portrait."""
         return Asset._from_url(client=self._client, url=self._killfeed_portrait)
+
+    @property
+    def background(self) -> Optional[Asset]:
+        """:class: `Asset` Returns the agent's background."""
+        return Asset._from_url(client=self._client, url=self._background) if self._background else None
 
     @property
     def role(self) -> Role:
