@@ -366,16 +366,18 @@ class Client:
         data = self.assets.get_weapon(*args, **kwargs)
         return Weapon(client=self, data=data) if data else None
 
-    def get_skin(self, level: bool = True, chroma: bool = True, *args: Any, **kwargs: Any) -> Optional[Union[Skin, SkinLevel, SkinChroma]]:
+    def get_skin(
+        self, level: bool = True, chroma: bool = True, *args: Any, **kwargs: Any
+    ) -> Optional[Union[Skin, SkinLevel, SkinChroma]]:
         """weapon_skins, Get a weapon skin by UUID."""
         data = self.assets.get_skin(*args, **kwargs)
         return (
             Skin(client=self, data=data)
             if data
             else (
-                self.get_skin_level(*args, **kwargs) if level else (
-                    self.get_skin_chroma(*args, **kwargs) if chroma else None
-                )
+                self.get_skin_level(*args, **kwargs)
+                if level
+                else (self.get_skin_chroma(*args, **kwargs) if chroma else None)
             )
         )
 
@@ -406,6 +408,11 @@ class Client:
         for item in data.values():
             yield Buddy(client=self, data=item)
 
+    def get_all_buddy_levels(self) -> Iterator[BuddyLevel]:
+        data = self.assets.get_asset('buddies_levels')
+        for item in data.values():
+            yield BuddyLevel(client=self, data=item)
+
     def get_all_player_titles(self) -> Iterator[PlayerTitle]:
         data = self.assets.get_asset('player_titles')
         for item in data.values():
@@ -435,6 +442,11 @@ class Client:
         data = self.assets.get_asset('sprays')
         for item in data.values():
             yield Spray(client=self, data=item)
+
+    def get_all_spray_levels(self) -> Iterator[SprayLevel]:
+        data = self.assets.get_asset('sprays_levels')
+        for item in data.values():
+            yield SprayLevel(client=self, data=item)
 
     def get_all_weapons(self) -> Iterator[Weapon]:
         data = self.assets.get_asset('weapons')
