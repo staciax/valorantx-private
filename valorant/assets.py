@@ -30,7 +30,7 @@ import os
 import shutil
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Concatenate, Dict, Optional, ParamSpec, TypeVar, Union, Mapping
+from typing import TYPE_CHECKING, Any, Callable, Concatenate, Dict, Mapping, Optional, ParamSpec, TypeVar, Union
 
 from .enums import CurrencyID, ItemType
 from .errors import AuthRequired
@@ -49,6 +49,7 @@ P = ParamSpec('P')
 R = TypeVar('R')
 
 _log = logging.getLogger(__name__)
+
 
 def _find(value: Any, key: Any) -> bool:
     if isinstance(value, list) and isinstance(key, list):
@@ -729,7 +730,9 @@ class Assets:
                         if kwargs['base_price'] is None:
                             kwargs['base_price'] = -1
                         return dict(
-                            Item=dict(ItemTypeID=kwargs['item_type_id'], ItemID=kwargs['item_id'], Amount=kwargs['amount']),  # noqa: E501
+                            Item=dict(
+                                ItemTypeID=kwargs['item_type_id'], ItemID=kwargs['item_id'], Amount=kwargs['amount']
+                            ),  # noqa: E501
                             BasePrice=kwargs['base_price'],
                             CurrencyID=str(CurrencyID.valorant_point),
                             DiscountPercent=0,
