@@ -36,6 +36,7 @@ from .weapons import SkinChromaLoadout, SkinLevelLoadout, SkinLoadout
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
+
     from ..client import Client
     from ..types.collection import (
         Loadout as LoadoutPayload,

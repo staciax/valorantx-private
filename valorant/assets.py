@@ -31,7 +31,8 @@ import shutil
 from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, Mapping, Optional, TypeVar, Union
-from typing_extensions import ParamSpec, Concatenate
+
+from typing_extensions import Concatenate, ParamSpec
 
 from .enums import CurrencyID, ItemType
 from .errors import AuthRequired
