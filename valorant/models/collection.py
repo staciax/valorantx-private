@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import uuid
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, TypeAlias, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 from ..enums import EmptyTitleID
 from .base import BaseModel
@@ -35,6 +35,7 @@ from .spray import SprayLevelLoadout, SprayLoadout
 from .weapons import SkinChromaLoadout, SkinLevelLoadout, SkinLoadout
 
 if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
     from ..client import Client
     from ..types.collection import (
         Loadout as LoadoutPayload,
