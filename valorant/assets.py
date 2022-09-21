@@ -459,7 +459,7 @@ class Assets:
             'sprays',
             'themes',
             'weapons',
-            '_bundle_items',
+            'bundles_2nd',
         )
 
         # verify files exist
@@ -566,7 +566,7 @@ class Assets:
                 elif index == 22:
                     self._dump(asset, 'weapons')
                 elif index == 23:
-                    self._dump(asset, '_bundle_items')
+                    self._dump(asset, 'bundles_2nd')
                 else:
                     print(f"Unknown asset type: {index}")
 
@@ -590,7 +590,7 @@ class Assets:
             maybe_asset_dir = os.path.join(self._cache_dir, maybe_dir)
             if os.path.isdir(maybe_asset_dir) and str(maybe_dir).startswith('0'):
                 if not to_remove_dir:
-                    for filename in sorted(os.listdir(maybe_asset_dir), reverse=True):
+                    for filename in sorted(os.listdir(maybe_asset_dir)):
                         if isinstance(filename, str) and filename.endswith('.json'):
                             file_path = os.path.join(str(maybe_asset_dir), filename)
                             with open(file_path, encoding='utf-8') as f:
@@ -725,7 +725,7 @@ class Assets:
 
                     Assets.ASSET_CACHE['weapon_skins'] = skin_dict
 
-                elif filename.startswith('_bundle_items'):
+                elif filename.startswith('bundles_2nd'):
                     bundle = Assets.ASSET_CACHE['bundles'][uuid]
                     bundle['price'] = item['price']
                     bundle_items = []

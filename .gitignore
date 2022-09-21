@@ -154,3 +154,4 @@ cython_debug/
 # custom
 test__*.py
 valorant/assets/0*
+/venv_dev/
