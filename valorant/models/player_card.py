@@ -28,6 +28,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 from ..asset import Asset
 from ..localization import Localization
 from .base import BaseFeaturedBundleItem, BaseModel
+from .theme import Theme
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -101,9 +102,9 @@ class PlayerCard(BaseModel):
         return Asset._from_url(client=self._client, url=self._large_icon)
 
     @property
-    def theme_uuid(self) -> Optional[str]:
-        """:class: `str` Returns the buddy's theme uuid."""
-        return self._theme_uuid
+    def theme(self) -> Optional[Theme]:
+        """:class: `Theme` Returns the buddy's theme."""
+        return Theme._from_uuid(client=self._client, uuid=self._theme_uuid)
 
     @property
     def price(self) -> int:
