@@ -196,7 +196,9 @@ class RiotAuth:
         data = dict(parse_qsl(result))
         self.__update(extract_jwt=True, **data)
 
-    async def authorize(self, username: str, password: str, use_query_response_mode: bool = False) -> None:
+    async def authorize(
+        self, username: str, password: str, use_query_response_mode: bool = False, remember: bool = False
+    ) -> None:
         """
         Authenticate using username and password.
         """
@@ -244,7 +246,7 @@ class RiotAuth:
                     "language": "en_US",
                     "password": password,
                     "region": None,
-                    "remember": False,
+                    "remember": remember,
                     "type": "auth",
                     "username": username,
                 }
