@@ -29,6 +29,7 @@ from ..asset import Asset
 from ..enums import SpraySlotID
 from ..localization import Localization
 from .base import BaseFeaturedBundleItem, BaseModel
+from .theme import Theme
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -45,7 +46,7 @@ class Spray(BaseModel):
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._category: Optional[str] = data['category']
-        self._theme_uuid: str = data['themeUuid']
+        self._theme_uuid: Optional[str] = data['themeUuid']
         self._display_icon: Optional[str] = data['displayIcon']
         self._full_icon: Optional[str] = data['fullIcon']
         self._full_transparent_icon: Optional[str] = data['fullTransparentIcon']
@@ -75,6 +76,12 @@ class Spray(BaseModel):
     def category(self) -> Optional[str]:
         """:class: `str` Returns the skin's category."""
         return self._category.removeprefix('EAresSprayCategory::') if self._category else None
+
+    @property
+    def theme(self) -> Optional[Theme]:
+        if self._theme_uuid is None:
+            return None
+        return Theme._from_uuid(self._client, self._theme_uuid)
 
     @property
     def display_icon(self) -> Optional[Asset]:
