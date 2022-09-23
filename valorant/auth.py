@@ -119,6 +119,9 @@ class RiotAuth:
         self.name: Optional[str] = None
         self.tag: Optional[str] = None
         self.region: Optional[str] = None
+        # multi-factor
+        self.__waif_for_2fa: bool = False
+        self.multi_factor_email: Optional[str] = None
 
     @property
     def puuid(self) -> Optional[str]:
@@ -270,6 +273,10 @@ class RiotAuth:
                         else:
                             raise RiotUnknownErrorTypeError(f"Got unknown error `{err}` during authentication.")
                     elif resp_type == "multifactor":
+                        if self.__waif_for_2fa:
+                            if 'method' in data['multifactor']:
+                                if data['multifactor']['method'] == 'email':
+                                    self.multi_factor_email = data['multifactor']['email']
                         raise RiotMultifactorError("Multi-factor authentication is not currently supported.")
                     else:
                         raise RiotUnknownResponseTypeError(f"Got unknown response type `{resp_type}` during authentication.")
