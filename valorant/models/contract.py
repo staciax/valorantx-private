@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 from .. import utils
 from ..asset import Asset
-from ..enums import ContractRewardType as RewardType, RelationType, try_enum
+from ..enums import ContractRewardType as RewardType, RelationType, try_enum, MissionType
 from ..errors import InvalidContractType, InvalidRelationType
 from ..localization import Localization
 from .agent import Agent
@@ -314,6 +314,33 @@ class Contracts(BaseModel):
         """:class: `List[ContractU]` Returns all event contracts."""
         return [contract for contract in self.contracts if contract.content.relation_type == RelationType.event]
 
+    @property
+    def daily_mission(self) -> Iterator[MissionU]:
+        """:class: `MissionU` Returns the daily mission."""
+        for mission in self.missions:
+            if mission.type == MissionType.daily:
+                yield mission
+
+    @property
+    def weekly_mission(self) -> Iterator[MissionU]:
+        """:class: `MissionU` Returns the weekly mission."""
+        for mission in self.missions:
+            if mission.type == MissionType.weekly:
+                yield mission
+
+    @property
+    def tutorial_mission(self) -> Iterator[MissionU]:
+        """:class: `MissionU` Returns the tutorial mission."""
+        for mission in self.missions:
+            if mission.type == MissionType.tutorial:
+                yield mission
+
+    @property
+    def npe_mission(self) -> Iterator[MissionU]:
+        """:class: `MissionU` Returns the npe mission."""
+        for mission in self.missions:
+            if mission.type == MissionType.npe:
+                yield mission
 
 class Content:
     def __init__(self, client: Client, data: Dict[str, Any]) -> None:
