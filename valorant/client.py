@@ -366,9 +366,7 @@ class Client:
         data = self.assets.get_weapon(*args, **kwargs)
         return Weapon(client=self, data=data) if data else None
 
-    def get_skin(
-        self, *args: Any, **kwargs: Any
-    ) -> Optional[Union[Skin, SkinLevel, SkinChroma]]:
+    def get_skin(self, *args: Any, **kwargs: Any) -> Optional[Union[Skin, SkinLevel, SkinChroma]]:
         """weapon_skins, Get a weapon skin by UUID."""
         level = kwargs.get('level', True)
         chroma = kwargs.get('chroma', True)
