@@ -202,7 +202,7 @@ class Region(Enum):
     def _region_shard_override(self) -> str:
         if self.shard is self.PBE.value:
             return self.NA.value
-        return self.value
+        return str(self.value)
 
 
 class Shard(Enum):
@@ -215,7 +215,7 @@ class Shard(Enum):
     PBE = 'pbe'
 
     def __str__(self) -> str:
-        return self.value
+        return str(self.value)
 
 
 class ItemType(Enum):
@@ -229,7 +229,7 @@ class ItemType(Enum):
     player_title = 'de7caa6b-adf7-4588-bbd1-143831e786c6'
 
     def __str__(self) -> str:
-        return self.value
+        return str(self.value)
 
 
 class RelationType(Enum):
@@ -238,7 +238,7 @@ class RelationType(Enum):
     season = 'Season'
 
     def __str__(self) -> str:
-        return self.value
+        return str(self.value)
 
 
 class AgentID(Enum):
@@ -263,7 +263,7 @@ class AgentID(Enum):
     yoru = '7f94d92c-4234-0a36-9646-3a87eb8b5c89'
 
     def __str__(self) -> str:
-        return self.value
+        return str(self.value)
 
 
 class QueueID(Enum):
@@ -277,8 +277,8 @@ class QueueID(Enum):
     replication = 'onefa'
     newMap = 'newmap'
 
-    def __str__(self) -> None:
-        return self.value
+    def __str__(self) -> str:
+        return str(self.value)
 
     @classmethod
     def values(cls) -> List[str]:
@@ -297,7 +297,7 @@ class MapID(Enum):
     the_range = 'ee613ee9-28b7-4beb-9666-08db13bb2244'
 
     def __str__(self) -> str:
-        return self.value
+        return str(self.value)
 
     @property
     def url(self) -> str:
@@ -307,7 +307,7 @@ class MapID(Enum):
     def url_to_uuid(cls, url: str) -> str:
         for x in cls:
             if x.url == url:
-                return x.value
+                return str(x.value)
         raise ValueError(f'No map found for url {url}')
 
 
@@ -330,7 +330,7 @@ class MapURL(Enum):
     def uuid_to_url(cls, uuid: str) -> str:
         for x in cls:
             if x.uuid == uuid:
-                return x.value
+                return str(x.value)
         raise ValueError(f'No map found for uuid {uuid}')
 
 
@@ -355,7 +355,7 @@ class WeaponID(Enum):
     vandal = '9c82e19d-4575-0200-1a81-3eacf00cf872'
 
     def __str__(self) -> str:
-        return self.value
+        return str(self.value)
 
 
 class CurrencyID(Enum):
@@ -364,7 +364,7 @@ class CurrencyID(Enum):
     free_agent = 'f08d4ae3-939c-4576-ab26-09ce1f23bb37'
 
     def __str__(self) -> str:
-        return self.value
+        return str(self.value)
 
 
 class SpraySlotID(Enum):
@@ -373,7 +373,7 @@ class SpraySlotID(Enum):
     slot_3 = '5863985e-43ac-b05d-cb2d-139e72970014'
 
     def __str__(self) -> str:
-        return self.value
+        return str(self.value)
 
     @classmethod
     def _from_id(cls, slot_id: str) -> int:
@@ -399,6 +399,18 @@ class ContractRewardType(Enum):
     def __str__(self) -> str:
         return str(self.value)
 
+class MissionType(Enum):
+    weekly = 'Weekly'
+    daily = 'Daily'
+    tutorial = 'Tutorial'
+    npe = 'NPE'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    @property
+    def full(self) -> str:
+        return f'AresMissionType::{self.value}'
 
 class Locale(Enum):
     arabic = 'ar-AE'
