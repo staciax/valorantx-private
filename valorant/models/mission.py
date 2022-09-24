@@ -27,6 +27,7 @@ import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .. import utils
+from ..enums import MissionType, try_enum
 from ..localization import Localization
 from .base import BaseModel
 
@@ -51,7 +52,7 @@ class Mission(BaseModel):
         self._uuid: str = data['uuid']
         self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
         self._title: Optional[Union[str, Dict[str, str]]] = data['title']
-        self.type: Optional[str] = data['type']
+        self._type: Optional[str] = data['type']
         self.xp: int = data['xpGrant']
         self.progress_to_complete: int = data['progressToComplete']
         self._activation_date_iso: str = data['activationDate']
@@ -88,6 +89,14 @@ class Mission(BaseModel):
     def title(self) -> str:
         """:class: `str` Returns the mission's title."""
         return self.title_localizations.american_english
+
+    @property
+    def type(self) -> Optional[MissionType]:
+        """Optional[:class: `MissionType`] Returns the mission's type."""
+        if self._type is None:
+            return None
+        type_strip = self._type.removeprefix('EAresMissionType::')
+        return try_enum(MissionType, type_strip)
 
     @property
     def activation_date(self) -> datetime.datetime:

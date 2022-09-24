@@ -181,6 +181,7 @@ __all__ = (
     'RelationType',
     'MeleeWeaponID',
     'ContractRewardType',
+    'MissionType',
 )
 
 EmptyTitleID: uuid.UUID = uuid.UUID('d13e579c-435e-44d4-cec2-6eae5a3c5ed4')
@@ -403,6 +404,7 @@ class ContractRewardType(Enum):
     def __str__(self) -> str:
         return str(self.value)
 
+
 class MissionType(Enum):
     weekly = 'Weekly'
     daily = 'Daily'
@@ -415,6 +417,7 @@ class MissionType(Enum):
     @property
     def full(self) -> str:
         return f'AresMissionType::{self.value}'
+
 
 class Locale(Enum):
     arabic = 'ar-AE'
@@ -471,6 +474,7 @@ class LevelBorderID(Enum):
 
     def __str__(self) -> str:
         return str(self.value)
+
 
 class BundleID(Enum):
     Arcane = '2270b116-4255-8a14-4486-db9de4979b89'
