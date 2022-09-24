@@ -521,7 +521,7 @@ class Client:
     ) -> Optional[MatchHistory]:
         data = await self.http.fetch_match_history(puuid, start_index, end_index, queue_id)
         history = MatchHistory(client=self, data=data) if data else None
-        if fetch_match_details and history:
+        if fetch_match_details and history is not None:
             await history.fetch_history()
         return history
 

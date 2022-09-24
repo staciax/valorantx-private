@@ -123,10 +123,11 @@ class MissionU(Mission):
         self._expiration_time_iso: str = mission['ExpirationTime']
         self.current_progress: int = 0
         self.left_progress: int = 0
+        self.total_progress: int = 0
         self._mission_update()
 
     def __repr__(self) -> str:
-        return f'<MissionU title={self.title!r} complete={self.is_complete()!r}>'
+        return f'<MissionU title={self.title!r} complete={self.is_completed()!r}>'
 
     def _mission_update(self) -> None:
         if len(self.objectives) > 0:
@@ -138,6 +139,7 @@ class MissionU(Mission):
 
             self.current_progress = self._objectives[objectives_uuid]
             self.left_progress = objectives_value - self.current_progress
+            self.total_progress = objectives_value
 
     @property
     def progress(self) -> int:
@@ -147,9 +149,9 @@ class MissionU(Mission):
     @property
     def target(self) -> int:
         """:class: `int` Returns the mission's target."""
-        return self.left_progress
+        return self.total_progress
 
-    def is_complete(self) -> bool:
+    def is_completed(self) -> bool:
         """:class: `bool` Returns whether the mission is complete."""
         return self._complete
 

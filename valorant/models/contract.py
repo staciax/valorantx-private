@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 from .. import utils
 from ..asset import Asset
-from ..enums import ContractRewardType as RewardType, RelationType, try_enum, MissionType
+from ..enums import ContractRewardType as RewardType, MissionType, RelationType, try_enum
 from ..errors import InvalidContractType, InvalidRelationType
 from ..localization import Localization
 from .agent import Agent
@@ -252,7 +252,9 @@ class Contracts(BaseModel):
         self.processed_matches: List[ProcessedMatch] = [ProcessedMatch(match) for match in data['ProcessedMatches']]
         self.active_special_contract_id: Optional[str] = data.get('ActiveSpecialContract')
         self.missions: List[MissionU] = [MissionU._from_mission(self._client, mission) for mission in data['Missions']]
-        self.mission_metadata: MissionMeta = MissionMeta(data['MissionMetadata'])
+        self.mission_metadata: Optional[MissionMeta] = (
+            MissionMeta(data['MissionMetadata']) if data.get('MissionMetadata') else None
+        )
 
     def special_contract(self) -> Optional[ContractU]:
         """:class: `ContractA` Returns the active special contract."""
@@ -341,6 +343,7 @@ class Contracts(BaseModel):
         for mission in self.missions:
             if mission.type == MissionType.npe:
                 yield mission
+
 
 class Content:
     def __init__(self, client: Client, data: Dict[str, Any]) -> None:

@@ -26,7 +26,7 @@ import asyncio
 import datetime
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
 
-from ..enums import QueueID, try_enum
+from ..enums import MapID, QueueID, try_enum
 from .map import Map
 from .player import MatchPlayer
 
@@ -63,6 +63,9 @@ class MatchHistory:
     def __iter__(self) -> Iterator[MatchDetails]:
         return iter(self.match_details)
 
+    def __len__(self) -> int:
+        return len(self.match_details)
+
     async def fetch_history(self) -> List[MatchDetails]:
 
         future_tasks = []
@@ -83,7 +86,7 @@ class MatchDetails:
         self._client = client
         self._match_info = match_info = data['matchInfo']
         self.id: str = match_info.get('matchId')
-        self._map_id: str = match_info.get('mapId')
+        self._map_url: str = match_info.get('mapId')
         self._queue_id: QueueID = try_enum(QueueID, match_info.get('queueID'))
         self._is_ranked: bool = match_info.get('isRanked', False)
         self._is_match_sampled: bool = match_info.get('isMatchSampled')
@@ -133,8 +136,10 @@ class MatchDetails:
     def is_ranked(self) -> bool:
         return self._is_ranked
 
+    @property
     def map(self) -> Map:
-        return Map._from_uuid(client=self._client, uuid=self._map_id)
+        to_uuid = MapID.url_to_uuid(self._map_url)
+        return Map._from_uuid(client=self._client, uuid=to_uuid)
 
     def my_team(self) -> str:
         return self._my_team
@@ -180,6 +185,14 @@ class MatchDetails:
     def kills(self) -> List[Dict[str, Any]]:
         """:class:`List[Dict[str, Any]]`: Returns a list of kills in the match"""
         return self._kills
+
+    @property
+    def me(self) -> Optional[MatchPlayer]:
+        """Returns the :class:`MatchPlayer` object for the current user"""
+        for player in self.players:
+            if player.puuid == self._client.user.puuid:
+                return player
+        return None
 
 
 class MatchContract(MatchDetails):

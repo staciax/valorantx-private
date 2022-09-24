@@ -242,7 +242,7 @@ class MatchPlayer(BasePlayer):
         self.stayed_in_spawn_rounds: int = data['behaviorFactors']['stayedInSpawnRounds']
 
         # other info
-        self.session_playtime_minutes: int = data['sessionPlaytimeMinutes']
+        self.session_playtime_minutes: int = data.get('sessionPlaytimeMinutes', 0)
         self.xpModifications: List[xpModificationPayload] = data.get('xpModifications', [])
 
         # new player
@@ -282,13 +282,15 @@ class MatchPlayer(BasePlayer):
     def is_winner(self) -> bool:
         return self._is_winner
 
+    @property
     def agent(self) -> Agent:
         """player's agent"""
         return Agent._from_uuid(client=self._client, uuid=self._character_id)
 
+    @property
     def character(self) -> Agent:
         """player's character"""
-        return self.agent()
+        return self.agent
 
     @property
     def party_members(self) -> List[Optional[MatchPlayer]]:
