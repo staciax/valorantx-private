@@ -83,12 +83,16 @@ class EnumMeta(type):
                 continue
 
             try:
-                new_value = value_mapping[value] or string_key_mapping[value]
+                new_value = value_mapping[value]
             except KeyError:
-                new_value = value_cls(name=key, value=value)
+                new_value = value_cls(name=key, value=value)  # type: ignore
                 value_mapping[value] = new_value
-                string_key_mapping[str(key)] = value_cls(name=key, value=value)
                 member_names.append(key)
+
+            try:
+                string_key_mapping[value]
+            except KeyError:
+                string_key_mapping[str(key)] = value_cls(name=key, value=value)  # type: ignore
 
             member_mapping[key] = new_value
             attrs[key] = new_value
@@ -434,7 +438,7 @@ class Locale(Enum):
     chinese_traditional = 'zh-TW'
 
     def __str__(self) -> str:
-        return self.value
+        return str(self.value)
 
 
 class LevelBorderID(Enum):
@@ -465,6 +469,8 @@ class LevelBorderID(Enum):
     _460 = '08ab72f1-4fce-ddb5-5fd5-22abd3bc9d49'
     _480 = '6694d7f7-4ab9-8545-5921-35a9ea8cec24'
 
+    def __str__(self) -> str:
+        return str(self.value)
 
 class BundleID(Enum):
     Arcane = '2270b116-4255-8a14-4486-db9de4979b89'
