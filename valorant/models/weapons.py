@@ -659,16 +659,20 @@ class SkinBundle(SkinLevel, BaseFeaturedBundleItem):
         return cls(client=client, data=data, bundle=bundle) if data else None
 
 
-class BuddySkinLoadout:
+class BaseLoadout:
 
     if TYPE_CHECKING:
         _client: Client
         _buddy_uuid: str
         _buddy_level_uuid: str
+        _is_random: bool
+        _is_favorite: bool
 
     def _update_loadout(self, loadout: SkinLoadoutPayload) -> None:
         self._buddy_uuid = loadout.get('CharmID')
         self._buddy_level_uuid = loadout.get('CharmLevelID')
+        self._is_favorite = loadout.get('IsFavorite?', False)  # feature not implemented yet
+        self._is_random = loadout.get('IsRandom?', False)  # feature not implemented yet
 
     @property
     def buddy(self) -> Optional[Buddy]:
@@ -680,8 +684,18 @@ class BuddySkinLoadout:
         """Returns the buddy level for this skin"""
         return BuddyLevel._from_uuid(client=self._client, uuid=self._buddy_level_uuid) if self._buddy_level_uuid else None
 
+    def is_favorite(self) -> bool:
+        """:class: `bool` Returns whether the skin is favorite."""
+        return self._is_favorite
 
-class SkinLoadout(Skin, BuddySkinLoadout):
+    def is_random(self) -> bool:
+        """:class: `bool` Returns whether the skin is random."""
+        return self._is_random
+
+class LoadoutRandomFilter:
+    pass
+
+class SkinLoadout(Skin, BaseLoadout):
     def __init__(self, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
         super().__init__(client=client, data=data)
         self._update_loadout(loadout)
@@ -695,7 +709,7 @@ class SkinLoadout(Skin, BuddySkinLoadout):
         return cls(client=client, data=data, loadout=loadout) if data else None
 
 
-class SkinLevelLoadout(SkinLevel, BuddySkinLoadout):
+class SkinLevelLoadout(SkinLevel, BaseLoadout):
     def __init__(self, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
         super().__init__(client=client, data=data)
         self._update_loadout(loadout)
@@ -709,7 +723,7 @@ class SkinLevelLoadout(SkinLevel, BuddySkinLoadout):
         return cls(client=client, data=data, loadout=loadout)
 
 
-class SkinChromaLoadout(SkinChroma, BuddySkinLoadout):
+class SkinChromaLoadout(SkinChroma, BaseLoadout):
     def __init__(self, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
         super().__init__(client=client, data=data)
         self._update_loadout(loadout)
