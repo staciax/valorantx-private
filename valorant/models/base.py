@@ -26,7 +26,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from ..enums import MeleeWeaponID
-from .currency import Currency
 
 if TYPE_CHECKING:
     from ..client import Client
@@ -102,5 +101,6 @@ class BaseFeaturedBundleItem:
     @property
     def currency(self) -> Optional[Currency]:
         if hasattr(self, '_client'):
+            from .Currency import Currency
             return Currency._from_uuid(self._client, self._currency_id)
         return None
