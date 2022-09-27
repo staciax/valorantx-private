@@ -692,8 +692,10 @@ class BaseLoadout:
         """:class: `bool` Returns whether the skin is random."""
         return self._is_random
 
+
 class LoadoutRandomFilter:
     pass
+
 
 class SkinLoadout(Skin, BaseLoadout):
     def __init__(self, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
