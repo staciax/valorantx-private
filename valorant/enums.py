@@ -280,7 +280,7 @@ class QueueID(Enum):
     spikerush = 'spikerush'
     unrated = 'unrated'
     replication = 'onefa'
-    newMap = 'newmap'
+    new_map = 'newmap'
 
     def __str__(self) -> str:
         return str(self.value)
@@ -309,7 +309,7 @@ class MapID(Enum):
         return getattr(MapURL, self.name).value
 
     @classmethod
-    def url_to_uuid(cls, url: str) -> str:
+    def from_url(cls, url: str) -> str:
         for x in cls:
             if x.url == url:
                 return str(x.value)
@@ -332,7 +332,7 @@ class MapURL(Enum):
         return getattr(MapID, self.name).value
 
     @classmethod
-    def uuid_to_url(cls, uuid: str) -> str:
+    def from_uuid(cls, uuid: str) -> str:
         for x in cls:
             if x.uuid == uuid:
                 return str(x.value)

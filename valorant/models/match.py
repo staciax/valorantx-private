@@ -138,7 +138,7 @@ class MatchDetails:
 
     @property
     def map(self) -> Map:
-        to_uuid = MapID.url_to_uuid(self._map_url)
+        to_uuid = MapID.from_url(self._map_url)
         return Map._from_uuid(client=self._client, uuid=to_uuid)
 
     def my_team(self) -> str:
