@@ -26,12 +26,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, List, Optional, TypedDict, Union
 
 from valorant.types.match import (
+    BehaviorFactors,
     MatchPlayerPlatformInfo,
     MatchPlayerStats,
+    NewPlayerExperienceDetails,
     RoundDamage,
-    behaviorFactors,
-    newPlayerExperienceDetails,
-    xpModification,
+    XpModification,
 )
 
 if TYPE_CHECKING:
@@ -65,6 +65,6 @@ class PlayerMatch(Player):
     preferredLevelBorder: str
     accountLevel: int
     sessionPlaytimeMinutes: int
-    xpModifications: List[xpModification]
-    behaviorFactors: behaviorFactors
-    newPlayerExperienceDetails: newPlayerExperienceDetails
+    xpModifications: List[XpModification]
+    behaviorFactors: BehaviorFactors
+    newPlayerExperienceDetails: NewPlayerExperienceDetails

@@ -78,14 +78,14 @@ class RoundDamage(TypedDict):
     damage: int
 
 
-class abilityCasts(TypedDict):
+class AbilityCasts(TypedDict):
     grenadeCasts: int
     ability1Casts: int
     ability2Casts: int
     ultimateCasts: int
 
 
-class abilityEffect(TypedDict):
+class AbilityEffect(TypedDict):
     ability1Effect: Optional[Any]
     ability2Effect: Optional[Any]
     ultimateEffect: Optional[Any]
@@ -98,61 +98,61 @@ class MatchPlayerStats(TypedDict):
     deaths: int
     assists: int
     playtimeMillis: int
-    abilityCasts: abilityCasts
+    abilityCasts: AbilityCasts
 
 
-class xpModification(TypedDict):
+class XpModification(TypedDict):
     Value: float
     ID: str
 
 
-class basicNewPlayer(TypedDict):
+class BasicNewPlayer(TypedDict):
     idleTimeMillis: int
     objectiveCompleteTimeMillis: int
 
 
-class basicMovement(basicNewPlayer):
+class BasicMovement(BasicNewPlayer):
     pass
 
 
-class basicGunSkill(basicNewPlayer):
+class BasicGunSkill(BasicNewPlayer):
     pass
 
 
-class adaptiveBots(basicNewPlayer):
+class AdaptiveBots(BasicNewPlayer):
     adaptiveBotAverageDurationMillisAllAttempts: int
     adaptiveBotAverageDurationMillisFirstAttempt: int
     killDetailsFirstAttempt: Optional[Any]
 
 
-class ability(basicNewPlayer):
+class Ability(BasicNewPlayer):
     pass
 
 
-class bombPlant(basicNewPlayer):
+class BombPlant(BasicNewPlayer):
     pass
 
 
-class defendBombSite(basicNewPlayer):
+class DefendBombSite(BasicNewPlayer):
     success: bool
 
 
-class settingStatus(TypedDict):
+class SettingStatus(TypedDict):
     isMouseSensitivityDefault: bool
     isCrosshairDefault: bool
 
 
-class newPlayerExperienceDetails:
-    basicMovement: basicMovement
-    basicGunSkill: basicGunSkill
-    adaptiveBots: adaptiveBots
-    ability: ability
-    bombPlant: bombPlant
-    defendBombSite: defendBombSite
-    settingStatus: settingStatus
+class NewPlayerExperienceDetails:
+    basicMovement: BasicMovement
+    basicGunSkill: BasicGunSkill
+    adaptiveBots: AdaptiveBots
+    ability: Ability
+    bombPlant: BombPlant
+    defendBombSite: DefendBombSite
+    settingStatus: SettingStatus
 
 
-class behaviorFactors(TypedDict):
+class BehaviorFactors(TypedDict):
     afkRounds: int
     collisions: float
     damageParticipationOutgoing: int
@@ -175,13 +175,13 @@ class Location(TypedDict):
     y: int
 
 
-class playerLocation(TypedDict):
+class PlayerLocation(TypedDict):
     subject: str
     viewRadians: float
     location: Location
 
 
-class finishingDamage(TypedDict):
+class FinishingDamage(TypedDict):
     damageType: str
     damageItem: str
     isSecondaryFireMode: bool
@@ -195,8 +195,8 @@ class MatchKill(TypedDict):
     victim: str
     victimLocation: Location
     assistants: List[str]
-    playerLocations: List[playerLocation]
-    finishingDamage: finishingDamage
+    playerLocations: List[PlayerLocation]
+    finishingDamage: FinishingDamage
 
 
 class Economy(TypedDict):
@@ -207,27 +207,27 @@ class Economy(TypedDict):
     spent: int
 
 
-class playerEconomy(Economy):
+class PlayerEconomy(Economy):
     subject: str
 
 
-class playerScore(TypedDict):
+class PlayerScore(TypedDict):
     subject: str
     score: int
 
 
-class playerStatKill(TypedDict):
+class PlayerStatKill(TypedDict):
     gameTime: int
     roundTime: int
     killer: str
     victim: str
     victimLocation: Location
     assistants: List[str]
-    playerLocations: playerLocation
-    finishingDamage: finishingDamage
+    playerLocations: PlayerLocation
+    finishingDamage: FinishingDamage
 
 
-class playerDamage(TypedDict):
+class PlayerDamage(TypedDict):
     receiver: str
     damage: int
     legshots: int
@@ -237,8 +237,8 @@ class playerDamage(TypedDict):
 
 class MatchRoundPlayerStats(TypedDict):
     subject: str
-    kills: List[playerStatKill]
-    damage: List[playerDamage]
+    kills: List[PlayerStatKill]
+    damage: List[PlayerDamage]
     score: int
     economy: Economy
     ability: Dict[Any, Any]
@@ -253,16 +253,16 @@ class MatchRoundResult(TypedDict, total=False):
     roundCeremony: str
     winningTeam: str
     plantRoundTime: int
-    plantPlayerLocations: Optional[Any]
+    plantPlayerLocations: Optional[List[PlayerLocation]]
     plantLocation: Location
     plantSite: str
     defuseRoundTime: int
-    defusePlayerLocations: Optional[List[playerLocation]]
+    defusePlayerLocations: Optional[List[PlayerLocation]]
     defuseLocation: Location
     playerStats: List[MatchRoundPlayerStats]
     roundResultCode: str
-    playerEconomies: List[playerEconomy]
-    playerScores: List[playerScore]
+    playerEconomies: List[PlayerEconomy]
+    playerScores: List[PlayerScore]
 
 
 class MatchDetails(TypedDict):
