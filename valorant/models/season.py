@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..client import Client
+    from .competitive import CompetitiveTier
 
 __all__ = (
     'Season',
@@ -122,10 +123,6 @@ class Border:
 
 
 class SeasonCompetitive:
-
-    if TYPE_CHECKING:
-        from .competitive import CompetitiveTier
-
     def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
         self._client = client
         self._uuid: str = data['uuid']
@@ -161,6 +158,4 @@ class SeasonCompetitive:
     @property
     def competitive_tiers(self) -> Optional[CompetitiveTier]:
         """:class: `CompetitiveTier` Returns the competitive tiers."""
-        from .competitive import CompetitiveTier
-
-        return CompetitiveTier._from_uuid(client=self._client, uuid=self._competitive_tiers_uuid)
+        return self._client.get_competitive_tier(uuid=self._competitive_tiers_uuid)
