@@ -23,14 +23,13 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import os
 import shutil
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, Mapping, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Mapping, Optional, TypeVar
 
 from typing_extensions import Concatenate, ParamSpec
 
@@ -435,42 +434,12 @@ class Assets:
         self.__mkdir_assets_dir()
         asset_path = self._get_asset_dir()
 
-        file_list = (  # TODO: something...
-            'agents',
-            'buddies',
-            'bundles',
-            'ceremonies',
-            'currencies',
-            'competitive_tiers',
-            'content_tiers',
-            'contracts',
-            'currencies',
-            'events',
-            'game_modes',
-            'game_modes_equippables',
-            'gear',
-            'level_borders',
-            'maps',
-            'missions',
-            'player_cards',
-            'player_titles',
-            'seasons',
-            'seasons_competitive',
-            'sprays',
-            'themes',
-            'weapons',
-            'bundles_2nd',
-        )
-
         # verify files exist
-
         list_dir = os.listdir(asset_path)
-        for filename in file_list:
-            if (filename + '.json') not in list_dir:
-                force = True
-                if len(list_dir) > 0:
-                    _log.warning('some assets are missing, forcing update')
-                break
+        if len([filename for filename in list_dir if filename.endswith('.json') and not filename.startswith('_')]) < 23:
+            force = True
+            if len(list_dir) > 0:
+                _log.warning('some assets are missing, forcing update')
 
         # fetch offer/price of items
 
@@ -493,82 +462,29 @@ class Assets:
         if not asset_path.endswith(get_version.version) or len(os.listdir(self._get_asset_dir())) == 0 or force:
             _log.info(f"Fetching assets for version {get_version.version!r}")
 
-            async_tasks = [
-                asyncio.ensure_future(self._client.http.asset_get_agents()),
-                asyncio.ensure_future(self._client.http.asset_get_buddies()),
-                asyncio.ensure_future(self._client.http.asset_get_bundles()),
-                asyncio.ensure_future(self._client.http.asset_get_ceremonies()),
-                asyncio.ensure_future(self._client.http.asset_get_competitive_tiers()),
-                asyncio.ensure_future(self._client.http.asset_get_content_tiers()),
-                asyncio.ensure_future(self._client.http.asset_get_contracts()),
-                asyncio.ensure_future(self._client.http.asset_get_currencies()),
-                asyncio.ensure_future(self._client.http.asset_get_events()),
-                asyncio.ensure_future(self._client.http.asset_get_game_modes()),
-                asyncio.ensure_future(self._client.http.asset_get_game_modes_equippables()),
-                asyncio.ensure_future(self._client.http.asset_get_gear()),
-                asyncio.ensure_future(self._client.http.asset_get_level_borders()),
-                asyncio.ensure_future(self._client.http.asset_get_maps()),
-                asyncio.ensure_future(self._client.http.asset_get_missions()),
-                asyncio.ensure_future(self._client.http.asset_get_player_cards()),
-                asyncio.ensure_future(self._client.http.asset_get_player_titles()),
-                asyncio.ensure_future(self._client.http.asset_get_seasons()),
-                asyncio.ensure_future(self._client.http.asset_get_seasons_competitive()),
-                asyncio.ensure_future(self._client.http.asset_get_sprays()),
-                asyncio.ensure_future(self._client.http.asset_get_themes()),
-                asyncio.ensure_future(self._client.http.asset_get_weapons()),
-                # bundle items
-                asyncio.ensure_future(self._client.http.asset_get_bundle_items()),
-            ]
-            assets = await asyncio.gather(*async_tasks)
-            for index, asset in enumerate(assets, start=1):
-                if index == 1:
-                    self._dump(asset, 'agents')
-                elif index == 2:
-                    self._dump(asset, 'buddies')
-                elif index == 3:
-                    self._dump(asset, 'bundles')
-                elif index == 4:
-                    self._dump(asset, 'ceremonies')
-                elif index == 5:
-                    self._dump(asset, 'competitive_tiers')
-                elif index == 6:
-                    self._dump(asset, 'content_tiers')
-                elif index == 7:
-                    self._dump(asset, 'contracts')
-                elif index == 8:
-                    self._dump(asset, 'currencies')
-                elif index == 9:
-                    self._dump(asset, 'events')
-                elif index == 10:
-                    self._dump(asset, 'game_modes')
-                elif index == 11:
-                    self._dump(asset, 'game_modes_equippables')
-                elif index == 12:
-                    self._dump(asset, 'gear')
-                elif index == 13:
-                    self._dump(asset, 'level_borders')
-                elif index == 14:
-                    self._dump(asset, 'maps')
-                elif index == 15:
-                    self._dump(asset, 'missions')
-                elif index == 16:
-                    self._dump(asset, 'player_cards')
-                elif index == 17:
-                    self._dump(asset, 'player_titles')
-                elif index == 18:
-                    self._dump(asset, 'seasons')
-                elif index == 19:
-                    self._dump(asset, 'seasons_competitive')
-                elif index == 20:
-                    self._dump(asset, 'sprays')
-                elif index == 21:
-                    self._dump(asset, 'themes')
-                elif index == 22:
-                    self._dump(asset, 'weapons')
-                elif index == 23:
-                    self._dump(asset, 'bundles_2nd')
-                else:
-                    print(f"Unknown asset type: {index}")
+            self._dump(await self._client.http.asset_get_agents(), 'agents')
+            self._dump(await self._client.http.asset_get_buddies(), 'buddies')
+            self._dump(await self._client.http.asset_get_bundles(), 'bundles')
+            self._dump(await self._client.http.asset_get_ceremonies(), 'ceremonies')
+            self._dump(await self._client.http.asset_get_competitive_tiers(), 'competitive_tiers')
+            self._dump(await self._client.http.asset_get_content_tiers(), 'content_tiers')
+            self._dump(await self._client.http.asset_get_contracts(), 'contracts')
+            self._dump(await self._client.http.asset_get_currencies(), 'currencies')
+            self._dump(await self._client.http.asset_get_events(), 'events')
+            self._dump(await self._client.http.asset_get_game_modes(), 'game_modes')
+            self._dump(await self._client.http.asset_get_game_modes_equippables(), 'game_modes_equippables')
+            self._dump(await self._client.http.asset_get_gear(), 'gear')
+            self._dump(await self._client.http.asset_get_level_borders(), 'level_borders')
+            self._dump(await self._client.http.asset_get_maps(), 'maps')
+            self._dump(await self._client.http.asset_get_missions(), 'missions')
+            self._dump(await self._client.http.asset_get_player_cards(), 'player_cards')
+            self._dump(await self._client.http.asset_get_player_titles(), 'player_titles')
+            self._dump(await self._client.http.asset_get_seasons(), 'seasons')
+            self._dump(await self._client.http.asset_get_seasons_competitive(), 'seasons_competitive')
+            self._dump(await self._client.http.asset_get_sprays(), 'sprays')
+            self._dump(await self._client.http.asset_get_themes(), 'themes')
+            self._dump(await self._client.http.asset_get_weapons(), 'weapons')
+            self._dump(await self._client.http.asset_get_bundle_items(), 'bundles_2nd')
 
         if reload_asset:
             self.reload_assets(with_price=with_price)
