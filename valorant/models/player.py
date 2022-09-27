@@ -37,9 +37,9 @@ from .player_title import PlayerTitle
 if TYPE_CHECKING:
     from ..client import Client
     from ..types.match import (
+        NewPlayerExperienceDetails as newPlayerExperienceDetailsPayload,
         RoundDamage as RoundDamagePayload,
-        newPlayerExperienceDetails as newPlayerExperienceDetailsPayload,
-        xpModification as xpModificationPayload,
+        XpModification as xpModificationPayload,
     )
     from ..types.player import (
         PartialPlayer as PartialPlayerPayload,

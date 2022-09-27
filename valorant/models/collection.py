@@ -292,11 +292,11 @@ class SprayCollection:
 
     def _update(self, loadout: List[SprayLoadout]) -> None:
         for spray in loadout:
-            if spray.slot == 1:
+            if spray.slot_number == 1:
                 self._slot_1 = spray
-            elif spray.slot == 2:
+            elif spray.slot_number == 2:
                 self._slot_2 = spray
-            elif spray.slot == 3:
+            elif spray.slot_number == 3:
                 self._slot_3 = spray
 
     @property
