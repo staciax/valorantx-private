@@ -226,13 +226,13 @@ class SprayBundle(Spray, BaseFeaturedBundleItem):
 class SprayLoadout(Spray):
     def __init__(self, client: Client, data: Any, loadout: SprayLoadoutPayload) -> None:
         super().__init__(client=client, data=data)
-        self._slot = SpraySlotID._from_id(loadout['EquipSlotID'])
+        self._slot = SpraySlotID.slot_number(loadout['EquipSlotID'])
 
     def __repr__(self) -> str:
-        return f'<SprayLoadout display_name={self.display_name!r}>'
+        return f'<SprayLoadout display_name={self.display_name!r} slot_number={self.slot_number!r}>'
 
     @property
-    def slot(self) -> int:
+    def slot_number(self) -> int:
         """:class: `int` Returns the slot number."""
         return self._slot
 
@@ -245,14 +245,14 @@ class SprayLoadout(Spray):
 class SprayLevelLoadout(SprayLevel):
     def __init__(self, client: Client, data: Any, loadout: SprayLoadoutPayload) -> None:
         super().__init__(client=client, data=data)
-        self._slot = SpraySlotID._from_id(loadout['EquipSlotID'])
+        self._slot = SpraySlotID.slot_number(loadout['EquipSlotID'])
 
     def __repr__(self) -> str:
         return f'<SprayLevelLoadout display_name={self.display_name!r} base={self.base_spray!r}>'
 
     @property
     def slot(self) -> int:
-        """:class: `int` Returns the slot number."""
+        """:class: `int` Returns the slot_number number."""
         return self._slot
 
     @classmethod

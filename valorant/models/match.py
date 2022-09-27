@@ -26,20 +26,25 @@ import asyncio
 import datetime
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
 
-from ..enums import MapID, QueueID, try_enum
+from ..enums import MapID, QueueID, RoundResultCode, RoundResultType, try_enum
 from .map import Map
 from .player import MatchPlayer
 
 if TYPE_CHECKING:
     from ..client import Client
     from ..types.match import (
+        Location as MatchLocationPayload,
         MatchDetails as MatchDetailsPayload,
         MatchHistory as MatchHistoryPayload,
         MatchHistoryList as MatchHistoryListPayload,
         MatchKill as MatchKillPayload,
         MatchRoundResult as MatchRoundResultPayload,
+        PlayerEconomy as MatchPlayerEconomyPayload,
+        PlayerLocation as MatchPlayerLocationPayload,
         Team as MatchTeamPayload,
     )
+    from .gear import Gear
+    from .weapons import Weapon
 
 __all__ = (
     'MatchHistory',
@@ -79,6 +84,147 @@ class MatchHistory:
             self.match_details.append(future)
 
         return self.match_details
+
+
+class Team:
+    def __init__(self, data: MatchTeamPayload) -> None:
+        self.id: str = data.get('teamId')
+        self._is_won: bool = data.get('won', False)
+        self.round_played: int = data.get('roundsPlayed', 0)
+        self.rounds_won: int = data.get('roundsWon', 0)
+        self.number_points: int = data.get('numPoints', 0)
+
+    def is_won(self) -> bool:
+        return self._is_won
+
+    def __repr__(self) -> str:
+        return f"<Team id={self.id!r} is_won={self.is_won()!r}>"
+
+    def __bool__(self) -> bool:
+        return self.is_won()
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, MatchDetails) and self.id == other.id
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+
+class Location:
+    def __init__(self, data: MatchLocationPayload):
+        self.x: int = data.get('x', 0)
+        self.y: int = data.get('y', 0)
+
+    def __repr__(self) -> str:
+        return f"<Location x={self.x!r} y={self.y!r}>"
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Location) and self.x == other.x and self.y == other.y
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+
+class PlayerEconomy:
+    def __init__(self, match: MatchDetails, data: MatchPlayerEconomyPayload):
+        self.match: MatchDetails = match
+        self.subject: str = data.get('subject')
+        self.player: Optional[MatchPlayer] = match.get_player(self.subject)
+        self.loadout_value: int = data.get('loadoutValue', 0)
+        self._weapon: Optional[str] = data.get('weapon') if data.get('weapon') == '' else None
+        self._armor: Optional[str] = data.get('armor') if data.get('armor') == '' else None
+        self.remaining: int = data.get('remaining', 0)
+        self.spent: int = data.get('spent', 0)
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('player', self.player),
+            ('loadout_value', self.loadout_value),
+            ('weapon', self.weapon),
+            ('armor', self.armor),
+            ('remaining', self.remaining),
+            ('spent', self.spent),
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, PlayerEconomy) and (
+            self.subject == other.subject
+            and self.loadout_value == other.loadout_value
+            and self.weapon == other.weapon
+            and self.armor == other.armor
+            and self.remaining == other.remaining
+            and self.spent == other.spent
+        )
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    @property
+    def weapon(self) -> Optional[Weapon]:
+        if self._weapon is None:
+            return None
+        return self.match._client.get_weapon(uuid=self._weapon.lower())
+
+    @property
+    def armor(self) -> Optional[Gear]:
+        if self._armor is None:
+            return None
+        return self.match._client.get_gear(uuid=self._armor.lower())
+
+
+class MatchPlayerLocation:
+    def __init__(self, data: MatchPlayerLocationPayload) -> None:
+        self.subject: str = data.get('subject')
+        self.view_radians: float = data.get('viewRadians', 0.0)
+        self.location: Location = Location(data.get('location', {}))
+
+    def __repr__(self) -> str:
+        return (
+            f"<MatchPlayerLocation subject={self.subject!r} view_radians={self.view_radians!r} location={self.location!r}>"
+        )
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, MatchPlayerLocation) and (
+            self.subject == other.subject and self.view_radians == other.view_radians and self.location == other.location
+        )
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+
+class RoundResult:
+    def __init__(self, match: MatchDetails, data: MatchRoundResultPayload) -> None:
+        self.match: MatchDetails = match
+        self.round_number: int = data.get('roundNum', 0)
+        self.result: RoundResultType = try_enum(RoundResultType, data.get('roundResult'))
+        self.winning_team: Team = ...
+        # TODO: plant object
+        # TODO: defuse object
+        self.plant_player_locations: List[MatchPlayerLocation] = (
+            [MatchPlayerLocation(x) for x in data['plantPlayerLocations']] if data.get('plantPlayerLocations') else []
+        )
+        self.plant_location: Optional[Location] = Location(data['plantLocation']) if data.get('plantLocation') else None
+        self.plant_site: Optional[str] = data.get('plantSite', None)
+        self.defuse_round_time: int = data.get('defuseRoundTime', 0)
+        self.defuse_player_Locations: List[MatchPlayerLocation] = (
+            [MatchPlayerLocation(x) for x in data['defusePlayerLocations']] if data.get('defusePlayerLocations') else []
+        )
+        self.defuse_location: Optional[Location] = Location(data['defuseLocation']) if data.get('defuseLocation') else None
+        self.result_code: RoundResultCode = try_enum(RoundResultCode, data.get('roundResultCode', ''))
+        self._ceremony: Optional[str] = data.get('roundCeremony', None)
+        self.player_economies: List[PlayerEconomy] = (
+            [PlayerEconomy(match, economy) for economy in data['playerEconomies']] if data.get('playerEconomies') else []
+        )
+        self.player_scores: List[Any] = data.get('playerScores', [])
+        self.player_stats: List[Any] = data.get('playerStats', [])
+
+    def __int__(self) -> int:
+        return self.round_number
+
+    def __bool__(self) -> bool:
+        return self.match.me == self.winning_team
 
 
 class MatchDetails:
@@ -194,9 +340,14 @@ class MatchDetails:
                 return player
         return None
 
+    def get_player(self, uuid: str) -> Optional[MatchPlayer]:
+        for player in self.players:
+            if player.puuid == uuid:
+                return player
+        return None
+
 
 class MatchContract(MatchDetails):
-
     __slot__ = ('xp_grants', 'reward_grants', 'mission_deltas', 'contract_deltas', 'could_progress_missions')
 
     def __init__(self, client: Client, data: Any) -> None:

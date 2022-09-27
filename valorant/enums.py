@@ -182,7 +182,10 @@ __all__ = (
     'MeleeWeaponID',
     'ContractRewardType',
     'MissionType',
+    'RoundResultCode',
+    'RoundResultType',
 )
+# TODO: sorted __all__
 
 EmptyTitleID: uuid.UUID = uuid.UUID('d13e579c-435e-44d4-cec2-6eae5a3c5ed4')
 MeleeWeaponID: uuid.UUID = uuid.UUID('2f59173c-4bed-b6c3-2191-dea9b58be9c7')
@@ -198,13 +201,13 @@ class Region(Enum):
     PBE = 'pbe'
 
     def __str__(self) -> str:
-        return self._region_shard_override()
+        return self.region_shard_override()
 
     @property
     def shard(self) -> str:
         return getattr(Shard, self.value.upper())
 
-    def _region_shard_override(self) -> str:
+    def region_shard_override(self) -> str:
         if self.shard is self.PBE.value:
             return self.NA.value
         return str(self.value)
@@ -381,7 +384,7 @@ class SpraySlotID(Enum):
         return str(self.value)
 
     @classmethod
-    def _from_id(cls, slot_id: str) -> int:
+    def slot_number(cls, slot_id: str) -> int:
 
         if slot_id == cls.slot_1.value:
             return 1
@@ -545,6 +548,27 @@ class BundleID(Enum):
     Wasteland = '4e3a244b-4482-0541-3eab-b8912cdb72d6'
     Winterwunderland = '79d2f4b9-4066-8b5b-884f-1d95b33d2ac5'
     Xenohunter = '3941ad01-4e3b-46e0-ba3a-ab94f7c67f98'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+
+class RoundResultType(Enum):
+    eliminated = 'Eliminated'
+    bomb_defused = 'Bomb defused'
+    bomb_detonated = 'Bomb detonated'
+    timer_expired = 'Round timer expired'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+
+class RoundResultCode(Enum):
+    surrendered = 'Surrendered'
+    elimination = 'Elimination'
+    detonate = 'Detonate'
+    defuse = 'Defuse'
+    null = ''
 
     def __str__(self) -> str:
         return str(self.value)
