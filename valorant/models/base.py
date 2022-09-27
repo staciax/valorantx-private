@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import abc
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from ..enums import MeleeWeaponID
@@ -36,7 +37,7 @@ class _ModelTag:
     uuid: str
 
 
-class BaseModel(_ModelTag):
+class BaseModel(_ModelTag, abc.ABC):
     __slots__ = (
         '_uuid',
         '_client',
@@ -68,10 +69,11 @@ class BaseModel(_ModelTag):
         return self._uuid
 
 
-class BaseFeaturedBundleItem:
+class BaseFeaturedBundleItem(abc.ABC):
 
     if TYPE_CHECKING:
         price: int
+        from .currency import Currency
 
     def __init__(self, bundle: Dict[str, Any]) -> None:
         self.price: int = bundle.get('BasePrice')
@@ -101,6 +103,5 @@ class BaseFeaturedBundleItem:
     @property
     def currency(self) -> Optional[Currency]:
         if hasattr(self, '_client'):
-            from .Currency import Currency
-            return Currency._from_uuid(self._client, self._currency_id)
+            return self._client.get_currency(uuid=self._currency_id)
         return None
