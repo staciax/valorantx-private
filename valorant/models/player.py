@@ -23,37 +23,22 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import contextlib
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
-from .. import utils
 from ..enums import LevelBorderID
-from .agent import Agent
-from .level_border import LevelBorder
-from .player_card import PlayerCard
-from .player_title import PlayerTitle
 
 if TYPE_CHECKING:
     from ..client import Client
-    from ..types.match import (
-        NewPlayerExperienceDetails as newPlayerExperienceDetailsPayload,
-        RoundDamage as RoundDamagePayload,
-        XpModification as xpModificationPayload,
-    )
-    from ..types.player import (
-        PartialPlayer as PartialPlayerPayload,
-        Player as PlayerPayload,
-        PlayerMatch as PlayerMatchPayload,
-    )
-    from .match import MatchDetails
+    from ..types.player import PartialPlayer as PartialPlayerPayload, Player as PlayerPayload
+    from .level_border import LevelBorder
+    from .player_card import PlayerCard
+    from .player_title import PlayerTitle
 
 # fmt: off
 __all__ = (
     'BasePlayer',
-    'MatchPlayer',
     'ClientPlayer',
-
 )
 # fmt: on
 
@@ -136,21 +121,17 @@ class BasePlayer(_PlayerTag):
 
     @property
     def player_card(self) -> Optional[PlayerCard]:
-        if hasattr(self, '_player_card'):
-            return PlayerCard._from_uuid(self._client, self._player_card_id) if self._player_card_id else None
-        return None
+        return self._client.get_player_card(uuid=self._player_card_id)
 
     @property
     def player_title(self) -> Optional[PlayerTitle]:
-        if hasattr(self, '_player_title_id'):
-            return PlayerTitle._from_uuid(self._client, self._player_title_id) if self._player_title_id else None
-        return None
+        return self._client.get_player_title(uuid=self._player_title_id)
 
     @property
-    def level_border(self) -> LevelBorder:
-        if hasattr(self, '_level_border_id'):
-            return LevelBorder._from_uuid(self._client, self._level_border_id)
-        return LevelBorder._from_uuid(self._client, LevelBorderID._1)
+    def level_border(self) -> Optional[LevelBorder]:
+        return self._client.get_level_border(uuid=self._level_border_id) or self._client.get_level_border(
+            uuid=str(LevelBorderID._1)
+        )
 
     @property
     def mmr(self) -> int:
@@ -168,168 +149,3 @@ class ClientPlayer(BasePlayer):
 
     def __repr__(self) -> str:
         return f'<ClientPlayer puuid={self.puuid!r} name={self.name!r} tagline={self.tagline!r} region={self.region!r}'
-
-
-class Platform:
-    def __init__(self, data: Dict[str, str]):
-        self.type: str = data['platformType']
-        self.os: str = data['platformOS']
-        self.os_version: str = data['platformOSVersion']
-        self.chipset: str = data['platformChipset']
-
-    def __repr__(self) -> str:
-        return f'<Platform type={self.type!r} os={self.os!r} os_version={self.os_version!r} chipset={self.chipset!r}>'
-
-    def __eq__(self, other: object) -> bool:
-        return (
-            isinstance(other, Platform)
-            and other.type == self.type
-            and other.os == self.os
-            and other.os_version == self.os_version
-            # and other.chipset == self.chipset
-        )
-
-    def __ne__(self, other: object) -> bool:
-        return not self.__eq__(other)
-
-
-class MatchPlayer(BasePlayer):
-
-    # https://github.com/staciax/reinabot/blob/master/cogs/valorant/embeds.py
-
-    def __init__(self, *, client: Client, data: PlayerMatchPayload, match_details: MatchDetails) -> None:
-        super().__init__(client=client, data=data)
-        self.match_details = match_details
-        self._character_id: str = data['characterId']
-        self.team: str = data['teamId']
-        self.party_id: str = data['partyId']
-        self._is_winner: bool = False
-        self.play_time_seconds: float = data['stats']['playtimeMillis'] / 1000
-        self.account_level: int = data['accountLevel']
-        self._player_card_id: str = data['playerCard']
-        self._player_title_id: str = data['playerCard']
-        self._level_border_id: str = data.get('preferredLevelBorder', str(LevelBorderID._1))
-        self._competitive_rank: int = data['competitiveTier']
-        self.platform: Platform = Platform(data['platformInfo'])
-
-        # stats
-        self.round_damage: List[RoundDamagePayload] = data['roundDamage']
-        self.score: int = 0
-        self.kills: int = 0
-        self.deaths: int = 0
-        self.assists: int = 0
-        self.rounds_played: int = 0
-        self.first_blood: int = 0
-        self.first_death: int = 0
-        self.plants: int = 0
-        self.defuses: int = 0
-        self.damages: int = 0
-        self.head_shots: int = 0
-        self.body_shots: int = 0
-        self.leg_shots: int = 0
-        self.headshot_percent: float = 0
-        self.body_shot_percent: float = 0
-        self.leg_shot_percent: float = 0
-        self.clutchs: int = 0
-
-        # behavior
-        self.afk_rounds: int = data['behaviorFactors']['afkRounds']
-        self.collisions: float = data['behaviorFactors']['collisions']
-        self.damage_participation_out_going: int = data['behaviorFactors']['damageParticipationOutgoing']
-        self.friendly_fire_in_coming: int = data['behaviorFactors']['friendlyFireIncoming']
-        self.friendly_fire_out_going: int = data['behaviorFactors']['friendlyFireOutgoing']
-        self.mouse_movement: int = data['behaviorFactors']['mouseMovement']
-        self.stayed_in_spawn_rounds: int = data['behaviorFactors']['stayedInSpawnRounds']
-
-        # other info
-        self.session_playtime_minutes: int = data.get('sessionPlaytimeMinutes', 0)
-        self.xpModifications: List[xpModificationPayload] = data.get('xpModifications', [])
-
-        # new player
-        self.new_player_exp_details: newPlayerExperienceDetailsPayload = data['newPlayerExperienceDetails']
-
-        self.__fill_match_data()
-
-    def __repr__(self) -> str:
-        return f'<PlayerMatch uuid={self.puuid!r} name={self.name!r} tagline={self.tagline!r} region={self.region!r}>'
-
-    def __fill_match_data(self) -> None:
-
-        for round_result in self.match_details.round_results:
-            death_on_round = []
-            for stat in round_result['playerStats']:
-                for kill in stat['kills']:
-                    death_on_round.append(dict(killer=kill['killer'], victim=kill['victim'], round_time=kill['roundTime']))
-
-                if stat['subject'] == self.puuid:
-                    for dmg in stat['damage']:
-                        self.head_shots += dmg['headshots']
-                        self.body_shots += dmg['bodyshots']
-                        self.leg_shots += dmg['legshots']
-
-            if death_on_round:
-                first_blood = sorted(death_on_round, key=lambda x: x['round_time'])[0]
-                if first_blood['killer'] == self.puuid:
-                    self.first_blood += 1
-
-                if first_blood['victim'] == self.puuid:
-                    self.first_death += 1
-
-        with contextlib.suppress(ZeroDivisionError):
-            hs_percent, bs_percent, ls_percent = utils.percent(self.head_shots, self.body_shots, self.leg_shots)
-            self.headshot_percent, self.bodyshot_percent, self.legshot_percent = hs_percent, bs_percent, ls_percent
-
-    def is_winner(self) -> bool:
-        return self._is_winner
-
-    @property
-    def agent(self) -> Agent:
-        """player's agent"""
-        return Agent._from_uuid(client=self._client, uuid=self._character_id)
-
-    @property
-    def character(self) -> Agent:
-        """player's character"""
-        return self.agent
-
-    @property
-    def party_members(self) -> List[Optional[MatchPlayer]]:
-        return [
-            MatchPlayer(client=self._client, data=player, match_details=self.match_details)
-            for player in self.match_details.players
-            if player.party_id == self.party_id and player.puuid != self.puuid
-        ]
-
-    def ability_casts(self) -> None:
-        """in designer"""
-        return None
-
-    @property
-    def average_combat_score(self):
-        with contextlib.suppress(ZeroDivisionError):
-            return self.score / self.rounds_played
-        return 0
-
-    @property
-    def kd_ratio(self) -> float:
-        with contextlib.suppress(ZeroDivisionError):
-            return self.kills / self.deaths
-        return 0
-
-    @property
-    def kda_ratio(self) -> float:
-        with contextlib.suppress(ZeroDivisionError):
-            return self.kills / self.deaths / self.assists
-        return 0
-
-    @property
-    def damage_per_round(self) -> float:
-        with contextlib.suppress(ZeroDivisionError):
-            return self.damages / self.rounds_played
-        return 0
-
-    # alias
-    @property
-    def acs(self):
-        """alias for average_combat_score"""
-        return self.average_combat_score
