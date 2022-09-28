@@ -392,7 +392,7 @@ class Skin(BaseModel):
     @property
     def base_weapon(self) -> Optional[Weapon]:
         """:class: `Weapon` Returns the skin's base weapon."""
-        return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
+        return self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
 
     @property
     def price(self) -> int:
@@ -483,12 +483,12 @@ class SkinChroma(BaseModel):
     @property
     def base_weapon(self) -> Optional[Weapon]:
         """:class: `Weapon` Returns the skin's base weapon."""
-        return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
+        return self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
 
     @property
     def base_skin(self) -> Optional[Skin]:
         """:class: `Skin` Returns the skin's base skin."""
-        return Skin._from_uuid(client=self._client, uuid=self._base_skin_uuid) if self._base_skin_uuid else None
+        return self._client.get_skin(uuid=self._base_skin_uuid) if self._base_skin_uuid else None
 
     @property
     def theme(self) -> Optional[Theme]:
@@ -569,12 +569,12 @@ class SkinLevel(BaseModel):
     @property
     def base_weapon(self) -> Optional[Weapon]:
         """:class: `Weapon` Returns the skin's base weapon."""
-        return Weapon._from_uuid(client=self._client, uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
+        return self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
 
     @property
     def base_skin(self) -> Optional[Skin]:
         """:class: `Skin` Returns the skin's base skin."""
-        return Skin._from_uuid(client=self._client, uuid=self._base_skin_uuid) if self._base_skin_uuid else None
+        return self._client.get_skin(uuid=self._base_skin_uuid) if self._base_skin_uuid else None
 
     @property
     def theme(self) -> Optional[Theme]:
