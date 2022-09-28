@@ -28,12 +28,12 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from ..asset import Asset
 from ..localization import Localization
 from .base import BaseFeaturedBundleItem, BaseModel
-from .theme import Theme
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..client import Client
+    from .theme import Theme
 
 __all__ = ('Buddy', 'BuddyLevel', 'BuddyBundle')
 
@@ -69,7 +69,7 @@ class Buddy(BaseModel):
     @property
     def theme(self) -> Theme:
         """:class: `Theme` Returns the buddy's theme."""
-        return Theme._from_uuid(self._client, self._theme_uuid)
+        return self._client.get_theme(uuid=self._theme_uuid)
 
     @property
     def display_icon(self) -> Asset:

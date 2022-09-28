@@ -32,17 +32,8 @@ from ..asset import Asset
 from ..enums import ContractRewardType as RewardType, MissionType, RelationType, try_enum
 from ..errors import InvalidContractType, InvalidRelationType
 from ..localization import Localization
-from .agent import Agent
 from .base import BaseModel
-from .buddy import BuddyLevel
-from .currency import Currency
-from .event import Event
 from .mission import MissionMeta, MissionU
-from .player_card import PlayerCard
-from .player_title import PlayerTitle
-from .season import Season
-from .spray import Spray
-from .weapons import SkinLevel
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -53,6 +44,15 @@ if TYPE_CHECKING:
         Contracts as ContractsPayload,
         ProcessedMatch as ProcessedMatchPayload,
     )
+    from .agent import Agent
+    from .buddy import BuddyLevel
+    from .currency import Currency
+    from .event import Event
+    from .player_card import PlayerCard
+    from .player_title import PlayerTitle
+    from .season import Season
+    from .spray import Spray
+    from .weapons import SkinLevel
 
 __all__ = ('Contract', 'ContractU', 'Contracts')
 
@@ -370,11 +370,11 @@ class Content:
     def relation(self) -> Union[Agent, Season, Event]:
         """:class: `Any` Returns the relation."""
         if self.relation_type == RelationType.agent:
-            return Agent._from_uuid(self._client, self.relation_uuid)
+            return self._client.get_agent(uuid=self.relation_uuid)
         elif self.relation_type == RelationType.season:
-            return Season._from_uuid(self._client, self.relation_uuid)
+            return self._client.get_season(uuid=self.relation_uuid)
         elif self.relation_type == RelationType.event:
-            return Event._from_uuid(self._client, self.relation_uuid)
+            return self._client.get_event(uuid=self.relation_uuid)
         else:
             _log.warning(f'Unknown relation type {self.relation_type!r} with uuid {self.relation_uuid!r}')
 
@@ -439,19 +439,19 @@ class Reward:
     # special case for the free rewards
 
     @property
-    def reward(self) -> Optional[Union[SkinLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
+    def reward(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
         if self.type == str(RewardType.skin_level):
-            return SkinLevel._from_uuid(client=self._client, uuid=self.uuid)
+            return self._client.get_skin_level(uuid=self.uuid)
         elif self.type == str(RewardType.buddy_level):
-            return BuddyLevel._from_uuid(client=self._client, uuid=self.uuid)
+            return self._client.get_buddy_level(uuid=self.uuid)
         elif self.type == str(RewardType.player_card):
-            return PlayerCard._from_uuid(client=self._client, uuid=self.uuid)
+            return self._client.get_player_card(uuid=self.uuid)
         elif self.type == str(RewardType.player_title):
-            return PlayerTitle._from_uuid(client=self._client, uuid=self.uuid)
+            return self._client.get_player_title(uuid=self.uuid)
         elif self.type == str(RewardType.spray):
-            return Spray._from_uuid(client=self._client, uuid=self.uuid)
+            return self._client.get_spray(uuid=self.uuid)
         elif self.type == str(RewardType.currency):
-            return Currency._from_uuid(client=self._client, uuid=self.uuid)
+            return self._client.get_currency(uuid=self.uuid)
         else:
             _log.warning(f'Unknown contract reward type {self.type!r} with uuid {self.uuid!r}')
             return None

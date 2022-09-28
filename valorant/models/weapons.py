@@ -30,9 +30,6 @@ from ..asset import Asset
 from ..enums import CurrencyID
 from ..localization import Localization
 from .base import BaseFeaturedBundleItem, BaseModel
-from .buddy import Buddy, BuddyLevel
-from .content import ContentTier
-from .theme import Theme
 
 if TYPE_CHECKING:
     import datetime
@@ -41,6 +38,9 @@ if TYPE_CHECKING:
 
     from ..client import Client
     from ..types.collection import SkinLoadout as SkinLoadoutPayload
+    from .buddy import Buddy, BuddyLevel
+    from .content import ContentTier
+    from .theme import Theme
 
 __all__ = (
     'Weapon',
@@ -361,12 +361,12 @@ class Skin(BaseModel):
     @property
     def theme(self) -> Theme:
         """:class: `Theme` Returns the skin's theme uuid."""
-        return Theme._from_uuid(client=self._client, uuid=self._theme_uuid)
+        return self._client.get_theme(uuid=self._theme_uuid)
 
     @property
     def rarity(self) -> Optional[ContentTier]:
         """:class: `ContentTier` Returns the skin's rarity."""
-        return ContentTier._from_uuid(client=self._client, uuid=self._content_tier_uuid) if self._content_tier_uuid else None
+        return self._client.get_content_tier(uuid=self._content_tier_uuid) if self._content_tier_uuid else None
 
     @property
     def display_icon(self) -> Optional[Asset]:
@@ -677,12 +677,12 @@ class BaseLoadout:
     @property
     def buddy(self) -> Optional[Buddy]:
         """Returns the buddy for this skin"""
-        return Buddy._from_uuid(client=self._client, uuid=self._buddy_uuid) if self._buddy_uuid else None
+        return self._client.get_buddy(uuid=self._buddy_uuid) if self._buddy_uuid else None
 
     @property
     def buddy_level(self) -> Optional[BuddyLevel]:
         """Returns the buddy level for this skin"""
-        return BuddyLevel._from_uuid(client=self._client, uuid=self._buddy_level_uuid) if self._buddy_level_uuid else None
+        return self._client.get_buddy_level(uuid=self._buddy_level_uuid) if self._buddy_level_uuid else None
 
     def is_favorite(self) -> bool:
         """:class: `bool` Returns whether the skin is favorite."""

@@ -23,14 +23,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import uuid
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 from ..enums import EmptyTitleID
 from .base import BaseModel
-from .level_border import LevelBorder
-from .player_card import PlayerCard
-from .player_title import PlayerTitle
 from .spray import SprayLevelLoadout, SprayLoadout
 from .weapons import SkinChromaLoadout, SkinLevelLoadout, SkinLoadout
 
@@ -43,6 +39,9 @@ if TYPE_CHECKING:
         SkinLoadout as SkinLoadoutPayload,
         SprayLoadout as SprayLoadoutPayload,
     )
+    from .level_border import LevelBorder
+    from .player_card import PlayerCard
+    from .player_title import PlayerTitle
 
     SprayL: TypeAlias = Union[SprayLoadout, SprayLevelLoadout]
     SkinL: TypeAlias = Union[SkinLoadout, SkinLevelLoadout, SkinChromaLoadout]

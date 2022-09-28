@@ -29,13 +29,13 @@ from ..asset import Asset
 from ..enums import SpraySlotID
 from ..localization import Localization
 from .base import BaseFeaturedBundleItem, BaseModel
-from .theme import Theme
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..client import Client
     from ..types.collection import SprayLoadout as SprayLoadoutPayload
+    from .theme import Theme
 
 __all__ = ('Spray', 'SprayLevel', 'SprayLoadout', 'SprayLevelLoadout', 'SprayBundle')
 
@@ -81,7 +81,7 @@ class Spray(BaseModel):
     def theme(self) -> Optional[Theme]:
         if self._theme_uuid is None:
             return None
-        return Theme._from_uuid(self._client, self._theme_uuid)
+        return self._client.get_theme(self._theme_uuid)
 
     @property
     def display_icon(self) -> Optional[Asset]:

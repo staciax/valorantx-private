@@ -28,8 +28,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from ..asset import Asset
 from ..localization import Localization
 from .base import BaseModel
-from .map import Map
-from .season import Season
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -41,7 +39,9 @@ if TYPE_CHECKING:
         QueueSkills as QueueSkills_,
         SeasonalInfo as SeasonalInfo_,
     )
+    from .map import Map
     from .match import MatchDetails
+    from .season import Season
 
 __all__ = ('CompetitiveTier', 'MMR')
 
@@ -165,13 +165,13 @@ class LatestCompetitiveUpdate:
     def __repr__(self) -> str:
         return f'<LatestCompetitiveUpdate>'
 
-    def map(self) -> Map:
+    def map(self) -> Map:  # TODO: map id or url?
         """:class: `Map` Returns the map."""
-        return Map._from_uuid(self._client, self._map_id)
+        return self._client.get_map(self._map_id)
 
     def season(self) -> Season:
         """:class: `Season` Returns the season."""
-        return Season._from_uuid(self._client, self._season_id)
+        return self._client.get_season(uuid=self._season_id)
 
     async def fetch_match_details(self) -> MatchDetails:
         """coro :class: `MatchDetails` Returns the match details."""
@@ -199,7 +199,7 @@ class SeasonalInfo:
     @property
     def season(self) -> Season:
         """:class: `Season` Returns the season."""
-        return Season._from_uuid(self._client, self.season_id)
+        return self._client.get_season(uuid=self.season_id)
 
     @property
     def tier(self) -> Optional[Tier]:
@@ -233,11 +233,6 @@ class QueueSkill:
         ]
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
-
-    @property
-    def seasonal_info_by_season_id(self) -> List[SeasonalInfo]:
-        """:class: `list` Returns the seasonal info by season id."""
-        return [SeasonalInfo(client=self._client, data=si) for si in self._seasonal_info_by_season_id.values()]
 
 
 class QueueSkills:
