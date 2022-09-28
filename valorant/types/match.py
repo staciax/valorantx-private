@@ -188,8 +188,8 @@ class FinishingDamage(TypedDict):
 
 
 class MatchKill(TypedDict):
-    gameTime: str
-    roundTime: str
+    gameTime: int
+    roundTime: int
     round: int
     killer: str
     victim: str
@@ -223,7 +223,7 @@ class PlayerStatKill(TypedDict):
     victim: str
     victimLocation: Location
     assistants: List[str]
-    playerLocations: PlayerLocation
+    playerLocations: Optional[List[PlayerLocation]]
     finishingDamage: FinishingDamage
 
 
