@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
 from ..enums import CurrencyID
 from .bundle import FeaturedBundle
-from .weapons import Skin, SkinNightMarket
+from .weapons import SkinNightMarket
 
 if TYPE_CHECKING:
     from ..client import Client
@@ -45,6 +45,7 @@ if TYPE_CHECKING:
         UpgradeCurrencyOffer as UpgradeCurrencyOfferPayload,
         Wallet as WalletPayload,
     )
+    from .weapons import Skin
 
 __all__ = (
     'StoreFront',
@@ -68,29 +69,29 @@ class StoreFront:
         self._skins_panel_layout: SkinsPanelLayoutPayload = data['SkinsPanelLayout']
         self._bonus_store: BonusStorePayload = data.get('BonusStore')
 
-    def __str__(self) -> str:
-        return self.__repr__()
-
     def __repr__(self) -> str:
-        return f'<StoreFront bundles={self.bundles} store={self.store} nightmarket={self.nightmarket}>'
+        attrs = [
+            ('bundle', self.get_bundle()),
+            ('bundles', self.get_bundles()),
+            ('store', self.get_store()),
+            ('nightmarket', self.get_nightmarket()),
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
 
-    @property
-    def bundle(self) -> FeaturedBundle:
+    def get_bundle(self) -> FeaturedBundle:
         """:class:`.models.Bundle`: The bundle in the featured panel."""
         return FeaturedBundle._from_store(client=self._client, bundle=self._bundle)
 
-    @property
-    def bundles(self) -> Union[List[FeaturedBundle]]:
+    def get_bundles(self) -> Union[List[FeaturedBundle]]:
         """:class:`.models.Bundle`: The list of bundles in the featured panel."""
         return [FeaturedBundle._from_store(client=self._client, bundle=bundle) for bundle in self._bundles]
 
-    @property
-    def store(self) -> StoreOffer:
+    def get_store(self) -> StoreOffer:
         """:class:`.models.StoreOffer`: The store offer in the featured panel."""
         return StoreOffer(client=self._client, data=self._skins_panel_layout)
 
-    @property
-    def nightmarket(self) -> Optional[NightMarket]:
+    def get_nightmarket(self) -> Optional[NightMarket]:
         """:class:`.models.NightMarketOffer`: The nightmarket offer in the featured panel."""
         return NightMarket(client=self._client, data=self._bonus_store) if self._bonus_store is not None else None
 
@@ -116,7 +117,7 @@ class StoreOffer:
     @property
     def skins(self) -> List[Skin]:
         """:class:`.models.Skin`: The list of skins in the store offer."""
-        return [Skin._from_uuid(client=self._client, uuid=uuid, all_type=True) for uuid in self._skin_offers]
+        return [self._client.get_skin(uuid=uuid) for uuid in self._skin_offers]
 
     @property
     def duration(self) -> float:
@@ -189,11 +190,14 @@ class Reward:
         self.item_id: str = data['ItemID']
         self.quantity: int = data['Quantity']
 
+    def __repr__(self) -> str:
+        return f'<Reward item_type_id={self.item_type_id!r} item_id={self.item_id!r} quantity={self.quantity!r}>'
+
 
 class Offer:
     def __init__(self, data: OfferPayload) -> None:
         self.id: str = data['OfferID']
-        self.is_direct_purchase: bool = data['IsDirectPurchase']
+        self._is_direct_purchase: bool = data['IsDirectPurchase']
         self.cost: int = data['Cost'][str(CurrencyID.valorant_point)]
         self.rewards: List[Reward] = [Reward(reward) for reward in data['Rewards']]
 
@@ -202,6 +206,15 @@ class Offer:
 
     def __int__(self) -> int:
         return self.cost
+
+    def __bool__(self) -> bool:
+        return self.is_direct_purchase()
+
+    def is_direct_purchase(self) -> bool:
+        """Returns if the offer is a direct purchase"""
+        return self._is_direct_purchase
+
+    # TODO: somethings wrong here
 
 
 class UpgradeCurrencyOffer:
