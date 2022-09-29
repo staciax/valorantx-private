@@ -28,7 +28,7 @@ import datetime
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
 
 from .. import utils
-from ..enums import LevelBorderID, MapID, QueueID, RoundResultCode, RoundResultType, try_enum
+from ..enums import MapID, QueueID, RoundResultCode, RoundResultType, try_enum
 from .player import BasePlayer
 
 if TYPE_CHECKING:
@@ -49,7 +49,7 @@ if TYPE_CHECKING:
         PlayerLocation as PlayerLocationPayload,
         PlayerScore as PlayerScorePayload,
         PlayerStatKill as PlayerStatKillPayload,
-        RoundDamage as RoundDamagePayload,
+        # RoundDamage as RoundDamagePayload,
         Team as MatchTeamPayload,
         XpModification as xpModificationPayload,
     )
@@ -308,17 +308,17 @@ class Damage:
         self.match: MatchDetails = match
         self._receiver_uuid: str = data.get('receiver')
         self.damage: int = data.get('damage', 0)
-        self.headshots: int = data.get('headshots', 0)
-        self.bodyshots: int = data.get('bodyshots', 0)
-        self.legshots: int = data.get('legshots', 0)
+        self.head_shots: int = data.get('headshots', 0)
+        self.body_shots: int = data.get('bodyshots', 0)
+        self.leg_shots: int = data.get('legshots', 0)
 
     def __repr__(self) -> str:
         attrs = [
             ('receiver', self.receiver),
             ('damage', self.damage),
-            ('headshots', self.headshots),
-            ('bodyshots', self.bodyshots),
-            ('legshots', self.legshots),
+            ('head_shots', self.head_shots),
+            ('body_shots', self.body_shots),
+            ('leg_shots', self.leg_shots),
         ]
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
@@ -436,6 +436,8 @@ class RoundResult:
         self.round_number: int = data.get('roundNum', 0)
         self.result: RoundResultType = try_enum(RoundResultType, data.get('roundResult'))
         self._winning_team: str = data.get('winningTeam')
+        self._bomb_planter: Optional[str] = data.get('bombPlanter', None)
+        self._bomb_defuser: Optional[str] = data.get('bombDefuser', None)
         self.plant: Optional[SpikePlant] = SpikePlant(data) if data.get('plantSite') != '' else None
         self.defuse: Optional[SpikeDefuse] = SpikeDefuse(data) if data.get('defuseRoundTime') != 0 else None
         self.result_code: RoundResultCode = try_enum(RoundResultCode, data.get('roundResultCode', ''))
@@ -458,6 +460,20 @@ class RoundResult:
                 return team
         return None
 
+    @property
+    def bomb_planter(self) -> Optional[MatchPlayer]:
+        """Returns the player that planted the spike."""
+        if self._bomb_planter is None:
+            return None
+        return self.match.get_player(self._bomb_planter)
+
+    @property
+    def bomb_defuser(self) -> Optional[MatchPlayer]:
+        """Returns the player that defused the spike."""
+        if self._bomb_defuser is None:
+            return None
+        return self.match.get_player(self._bomb_defuser)
+
 
 class Platform:
     def __init__(self, data: Dict[str, str]):
@@ -467,7 +483,7 @@ class Platform:
         self.chipset: str = data['platformChipset']
 
     def __repr__(self) -> str:
-        return f'<Platform type={self.type!r} os={self.os!r} os_version={self.os_version!r} chipset={self.chipset!r}>'
+        return f'<Platform type={self.type!r} os={self.os!r} os_version={self.os_version!r}>'
 
     def __eq__(self, other: object) -> bool:
         return (
@@ -481,34 +497,58 @@ class Platform:
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
+class Party:
+
+    def __init__(self, data: PlayerMatchPayload, match: MatchDetails):
+        self.match: MatchDetails = match
+        self.id: str = data['partyId']
+
+    def __repr__(self) -> str:
+        return f'<Party id={self.id!r}>'
+
+    def __str__(self) -> str:
+        return self.id
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Party) and other.id == self.id
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash(self.id)
+
+    def get_members(self) -> List[MatchPlayer]:
+        return [player for player in self.match.players if player.party == self]
 
 class MatchPlayer(BasePlayer):
 
     # https://github.com/staciax/reinabot/blob/master/cogs/valorant/embeds.py
 
-    def __init__(self, *, client: Client, data: PlayerMatchPayload, match_details: MatchDetails) -> None:
+    def __init__(self, *, client: Client, data: PlayerMatchPayload, match: MatchDetails) -> None:
         super().__init__(client=client, data=data)
-        self.match_details = match_details
+        self.match = match
         self._character_id: str = data['characterId']
         self._team_id: str = data['teamId']
+        self.party: Party = Party(data, match)
         self.party_id: str = data['partyId']
         self._is_winner: bool = False
         self.play_time_seconds: float = data['stats']['playtimeMillis'] / 1000
-        self.account_level: int = data['accountLevel']
+        self.account_level: int = data.get('accountLevel', 1)
         self._player_card_id: str = data['playerCard']
         self._player_title_id: str = data['playerCard']
-        self._level_border_id: str = data.get('preferredLevelBorder', str(LevelBorderID._1))
+        self._level_border_id: str = data.get('preferredLevelBorder')
         self._competitive_rank: int = data['competitiveTier']
         self.platform: Platform = Platform(data['platformInfo'])
 
         # stats
-        self.round_damage: List[RoundDamagePayload] = data['roundDamage']
-        self.score: int = 0
-        self.kills: int = 0
-        self.deaths: int = 0
-        self.assists: int = 0
-        self.rounds_played: int = 0
-        self.first_blood: int = 0
+        # self.round_damage: List[RoundDamagePayload] = data['roundDamage']
+        self.score: int = data['stats']['score']
+        self.kills: int = data['stats']['kills']
+        self.deaths: int = data['stats']['deaths']
+        self.assists: int = data['stats']['assists']
+        self.rounds_played: int = data['stats']['roundsPlayed']
+        self.first_kill: int = 0
         self.first_death: int = 0
         self.plants: int = 0
         self.defuses: int = 0
@@ -516,10 +556,23 @@ class MatchPlayer(BasePlayer):
         self.head_shots: int = 0
         self.body_shots: int = 0
         self.leg_shots: int = 0
-        self.headshot_percent: float = 0
+        self.head_shot_percent: float = 0
         self.body_shot_percent: float = 0
         self.leg_shot_percent: float = 0
         self.clutchs: int = 0
+        self.afk_time: int = 0
+        self.penalized_time: int = 0
+        self.stayed_in_spawn: int = 0
+
+        # stats plus
+        self.multi_kills: int = 0  # kill more than 3 enemies in a round
+        self.ace: int = 0  # kill all enemies in a round
+        self.head_shot_percent: float = 0
+        self.body_shot_percent: float = 0
+        self.leg_shot_percent: float = 0
+        # self.weapon_stats: Dict[str, Any] = {}
+        # self.agent_stats: Dict[str, Any] = {}
+        # self.opponents: Dict[MatchPlayer, Any] = []
 
         # behavior
         self.afk_rounds: int = data['behaviorFactors']['afkRounds']
@@ -537,14 +590,20 @@ class MatchPlayer(BasePlayer):
         # new player
         self.new_player_exp_details: NewPlayerExperienceDetailsPayload = data['newPlayerExperienceDetails']
 
-        self.__fill_match_data()
-
     def __repr__(self) -> str:
-        return f'<PlayerMatch uuid={self.puuid!r} name={self.name!r} tagline={self.tagline!r} region={self.region!r}>'
+        return f'<PlayerMatch display_name={self.display_name!r} agent={self.agent!r} team={self.team!r}>'
 
-    def __fill_match_data(self) -> None:
+    def fill_player_stats(self) -> None:
 
-        for round_result in self.match_details.round_results:
+        for round_result in self.match.round_results:
+
+            # spikes
+            if round_result.bomb_planter == self:
+                self.plants += 1
+
+            if round_result.bomb_defuser == self:
+                self.defuses += 1
+
             death_on_round = []
             for stat in round_result.player_stats:
                 for kill in stat.kills:
@@ -552,43 +611,50 @@ class MatchPlayer(BasePlayer):
 
                 if stat.player == self:
                     for dmg in stat.damage:
-                        self.head_shots += dmg.headshots
-                        self.body_shots += dmg.bodyshots
-                        self.leg_shots += dmg.legshots
+                        self.head_shots += dmg.head_shots
+                        self.body_shots += dmg.body_shots
+                        self.leg_shots += dmg.leg_shots
+                        self.damages += dmg.damage
 
-            if len(death_on_round) > 0:
-                first_blood = sorted(death_on_round, key=lambda x: x.round_time)[0]
-                if first_blood.killer == self:
-                    self.first_blood += 1
+                    # kills
+                    if len(stat.kills) > 3:
+                        self.multi_kills += 1
 
-                if first_blood.victim == self:
+                    if len(stat.kills) == 5:
+                        self.ace += 1
+
+                    # score
+                    self.score += stat.score
+
+                    # behavior
+                    if stat.was_afk():
+                        self.afk_time += 1
+
+                    if stat.was_penalized():
+                        self.penalized_time += 1
+
+                    if stat.stayed_in_spawn():
+                        self.stayed_in_spawn += 1
+
+            # find first blood and first death
+            for player_death in sorted(death_on_round, key=lambda x: x.round_time):
+                if player_death.killer == self:
+                    self.first_kill += 1
+                if player_death.victim == self:
                     self.first_death += 1
+                break
 
         with contextlib.suppress(ZeroDivisionError):
             hs_percent, bs_percent, ls_percent = utils.percent(self.head_shots, self.body_shots, self.leg_shots)
-            self.headshot_percent, self.bodyshot_percent, self.legshot_percent = hs_percent, bs_percent, ls_percent
+            self.head_shot_percent, self.body_shot_percent, self.leg_shot_percent = hs_percent, bs_percent, ls_percent
 
     def is_winner(self) -> bool:
         return self._is_winner
 
     @property
     def team(self) -> Optional[Team]:
-        for team in self.match_details.teams:
+        for team in self.match.teams:
             if team.id == self._team_id:
-                return team
-        return None
-
-    @property
-    def team_blue(self) -> Optional[Team]:
-        for team in self.match_details.teams:
-            if team.id == 'Blue':
-                return team
-        return None
-
-    @property
-    def team_red(self) -> Optional[Team]:
-        for team in self.match_details.teams:
-            if team.id == 'Red':
                 return team
         return None
 
@@ -604,11 +670,7 @@ class MatchPlayer(BasePlayer):
 
     @property
     def party_members(self) -> List[Optional[MatchPlayer]]:
-        return [
-            MatchPlayer(client=self._client, data=player, match_details=self.match_details)
-            for player in self.match_details.players
-            if player.party_id == self.party_id and player.puuid != self.puuid
-        ]
+        return [player for player in self.match.players if player.party_id == self.party_id and player.puuid != self.puuid]
 
     def ability_casts(self) -> None:
         """in designer"""
@@ -649,6 +711,10 @@ class MatchDetails:
     def __init__(self, client: Client, data: MatchDetailsPayload) -> None:
         self._client = client
         self._match_info = match_info = data['matchInfo']
+        self.players: List[MatchPlayer] = [
+            MatchPlayer(client=self._client, data=player, match=self) for player in data['players']
+        ]
+        self._round_results: List[MatchRoundResultPayload] = data['roundResults']
         self.id: str = match_info.get('matchId')
         self._map_url: str = match_info.get('mapId')
         self._queue_id: QueueID = try_enum(QueueID, match_info.get('queueID'))
@@ -660,7 +726,6 @@ class MatchDetails:
         self._coaches: List[Dict[str, Any]] = data['coaches']
         self._bots: List[Dict[str, Any]] = data['bots']
         self._kills: List[MatchKillPayload] = data['kills']
-        self._round_results: List[MatchRoundResultPayload] = data['roundResults']
         self._teams: List[MatchTeamPayload] = data['teams']
 
         self._completion_state: str = match_info.get('completionState')
@@ -670,9 +735,10 @@ class MatchDetails:
         self._should_match_disable_penalties: bool = match_info.get('shouldMatchDisablePenalties')
         self._provisioning_FlowID: str = match_info.get('provisioningFlowID')
         self._game_start_millis: int = match_info.get('gameStartMillis')
-        self._players: List[Dict[str, Any]] = data['players']
         self._game_length: int = match_info.get('gameLengthMillis')
         self._is_won: bool = False
+
+        self.__fill_player_stats()
 
     def __repr__(self) -> str:
         attrs = [
@@ -691,6 +757,10 @@ class MatchDetails:
 
     def __bool__(self) -> bool:
         return self.is_won()
+
+    def __fill_player_stats(self):
+        for player in self.players:
+            player.fill_player_stats()
 
     @property
     def user(self) -> Any:
@@ -720,9 +790,11 @@ class MatchDetails:
     def queue(self) -> QueueID:
         return self._queue_id
 
-    @property
-    def players(self) -> Optional[List[MatchPlayer]]:
-        return [MatchPlayer(client=self._client, data=player, match_details=self) for player in self._players]
+    # @property
+    # def players(self) -> Optional[List[MatchPlayer]]:
+    #     # for player in self._players:
+    #     #     yield MatchPlayer(client=self._client, data=player, match=self)
+    #     return [MatchPlayer(client=self._client, data=player, match=self) for player in self._players]
 
     @property
     def bots(self) -> List[Any]:
@@ -755,6 +827,20 @@ class MatchDetails:
         for player in self.players:
             if player.puuid == self._client.user.puuid:
                 return player
+        return None
+
+    @property
+    def team_blue(self) -> Optional[Team]:
+        for team in self.teams:
+            if team.id.lower() == 'blue':
+                return team
+        return None
+
+    @property
+    def team_red(self) -> Optional[Team]:
+        for team in self.teams:
+            if team.id.lower() == 'red':
+                return team
         return None
 
     def get_player(self, uuid: str) -> Optional[MatchPlayer]:

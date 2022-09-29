@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, TypedDict
+from typing_extensions import NotRequired
 
 from .player import PlayerMatch
 
@@ -252,6 +253,8 @@ class MatchRoundResult(TypedDict, total=False):
     roundResult: str
     roundCeremony: str
     winningTeam: str
+    bombPlanter: NotRequired[str]
+    bombDefuser: NotRequired[str]
     plantRoundTime: int
     plantPlayerLocations: Optional[List[PlayerLocation]]
     plantLocation: Location
