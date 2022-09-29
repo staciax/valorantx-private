@@ -129,9 +129,9 @@ class BasePlayer(_PlayerTag):
 
     @property
     def level_border(self) -> Optional[LevelBorder]:
-        return self._client.get_level_border(uuid=self._level_border_id) or self._client.get_level_border(
-            uuid=str(LevelBorderID._1)
-        )
+        if self._level_border_id is None:
+            return None
+        return self._client.get_level_border(uuid=self._level_border_id)
 
     @property
     def mmr(self) -> int:
