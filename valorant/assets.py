@@ -99,10 +99,11 @@ def _finder():
                     key = key.lower()
                 if isinstance(value, str):
                     value = value.lower()
+                if value is None:
+                    value = 'null'
                 new_kwargs[key] = value
 
             kwargs = new_kwargs
-
             finder_keys = [x for x in list(kwargs.keys())]
             # inspired by https://github.com/MinshuG/valorant-api/blob/b739850d2722247b56b9e4d12caa8b3c326ce141/valorant_api/base_list.py#L17  # noqa: E501
 
