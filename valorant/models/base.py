@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional
 
 from ..enums import MeleeWeaponID
 
@@ -32,12 +32,7 @@ if TYPE_CHECKING:
     from ..client import Client
 
 
-class _ModelTag:
-    __slots__ = ()
-    uuid: str
-
-
-class BaseModel(_ModelTag, abc.ABC):
+class BaseModel(abc.ABC):
     __slots__ = (
         '_uuid',
         '_client',
@@ -47,12 +42,12 @@ class BaseModel(_ModelTag, abc.ABC):
     if TYPE_CHECKING:
         uuid: str
         _client: Client
+        _extras: Optional[Mapping[str, Any]]
 
-    def __init__(self, client: Client, data: Union[Any, Any], **kwargs: Any) -> None:
+    def __init__(self, client: Client, data: Optional[Mapping[str, Any]], **kwargs: Any) -> None:
         self._client = client
         self._uuid: str = data.get('uuid') if data is not None else ''
         self._extras = kwargs
-        self._update(data)
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} uuid={self.uuid!r}>"
@@ -60,16 +55,13 @@ class BaseModel(_ModelTag, abc.ABC):
     def __hash__(self) -> int:
         return hash(self.uuid)
 
-    def _update(self, data: Union[Any, Any]) -> None:
-        pass
-
     @property
     def uuid(self) -> str:
         """:class:`str`: The uuid of the object."""
         return self._uuid
 
 
-class BaseFeaturedBundleItem(abc.ABC):
+class BaseFeaturedBundleItem:
 
     if TYPE_CHECKING:
         price: int
@@ -82,7 +74,6 @@ class BaseFeaturedBundleItem(abc.ABC):
         self._currency_id: str = bundle.get('CurrencyID')
         self.discount_percent: float = bundle.get('DiscountPercent', 0.0)
         self.amount: int = bundle['Item']['Amount']
-
         # special case for featured bundles
         self._is_melee: bool = False
         self.__melee_check()
@@ -102,6 +93,5 @@ class BaseFeaturedBundleItem(abc.ABC):
 
     @property
     def currency(self) -> Optional[Currency]:
-        if hasattr(self, '_client'):
-            return self._client.get_currency(uuid=self._currency_id)
-        return None
+        """:class:`Currency`: The currency of the bundles."""
+        return self._client.get_currency(uuid=self._currency_id)  # type: ignore

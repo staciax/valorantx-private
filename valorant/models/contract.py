@@ -239,6 +239,7 @@ class ProcessedMatch:
 class Contracts(BaseModel):
     def __init__(self, client: Client, data: ContractsPayload) -> None:
         super().__init__(client=client, data=data)
+        self._update(data)
 
     def __repr__(self) -> str:
         return f'<Contracts version={self.version!r} subject={self.subject!r}>'
