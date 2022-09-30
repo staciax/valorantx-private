@@ -100,7 +100,7 @@ def _finder():
                 if isinstance(value, str):
                     value = value.lower()
                 if value is None:
-                    value = 'null'
+                    value = ''
                 new_kwargs[key] = value
 
             kwargs = new_kwargs
@@ -664,7 +664,7 @@ class Assets:
                     for weapon in item['weapons']:
                         bundle_items.append(
                             bundle_item_payload(
-                                item_type_id=str(ItemType.skin),
+                                item_type_id=str(ItemType.skin_level),
                                 item_id=weapon['levels'][0]['uuid'],
                                 amount=1,
                                 base_price=weapon.get('price', 0),
@@ -673,7 +673,7 @@ class Assets:
                     for buddy in item['buddies']:
                         bundle_items.append(
                             bundle_item_payload(
-                                item_type_id=str(ItemType.buddy),
+                                item_type_id=str(ItemType.buddy_level),
                                 item_id=buddy['levels'][0]['uuid'],
                                 amount=2,
                                 base_price=buddy.get('price', 0),

@@ -81,11 +81,11 @@ class Bundle(BaseModel):
             self._price += item.get('BasePrice', 0)
             self._discount_price += item.get('DiscountedPrice', 0)
 
-            if item_type == ItemType.skin.value:
+            if item_type == ItemType.skin_level.value:
                 self._items.append(SkinBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))
             elif item_type == ItemType.spray.value:
                 self._items.append(SprayBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))
-            elif item_type == ItemType.buddy.value:
+            elif item_type == ItemType.buddy_level.value:
                 self._items.append(BuddyBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))
             elif item_type == ItemType.player_card.value:
                 self._items.append(PlayerCardBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))
