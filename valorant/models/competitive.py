@@ -35,9 +35,9 @@ if TYPE_CHECKING:
     from ..client import Client
     from ..types.competitive import (
         MMR_,
-        QueueSkill as QueueSkill_,
-        QueueSkills as QueueSkills_,
-        SeasonalInfo as SeasonalInfo_,
+        QueueSkill as QueueSkillPayload,
+        QueueSkills as QueueSkillsPayload,
+        SeasonalInfo as SeasonalInfoPayload,
     )
     from .map import Map
     from .match import MatchDetails
@@ -179,7 +179,7 @@ class LatestCompetitiveUpdate:
 
 
 class SeasonalInfo:
-    def __init__(self, client: Client, data: SeasonalInfo_) -> None:
+    def __init__(self, client: Client, data: SeasonalInfoPayload) -> None:
         self._client: Client = client
         self.season_id: str = data['SeasonID']
         self.number_of_wins: int = data['NumberOfWins']
@@ -215,15 +215,16 @@ class SeasonalInfo:
 
 
 class QueueSkill:
-    def __init__(self, client: Client, data: QueueSkill_) -> None:
+    def __init__(self, client: Client, data: QueueSkillPayload) -> None:
         self._client: Client = client
         self.total_games_needed_for_rating: int = data['TotalGamesNeededForRating']
         self.total_games_needed_for_leaderboard: int = data['TotalGamesNeededForLeaderboard']
         self.current_season_games_needed_for_rating: int = data['CurrentSeasonGamesNeededForRating']
-        self.seasonal_info_list: List[SeasonalInfo] = [
-            SeasonalInfo(client=self._client, data=seasonal_info)
-            for seasonal_info in data['SeasonalInfoBySeasonID'].values()
-        ]
+        self._seasonal_info_list: SeasonalInfoPayload = data['SeasonalInfoBySeasonID']
+        # self.seasonal_info_list: List[SeasonalInfo] = [
+        #     SeasonalInfo(client=self._client, data=seasonal_info)
+        #     for seasonal_info in data['SeasonalInfoBySeasonID'].values()
+        # ]
 
     def __repr__(self) -> str:
         attrs = [
@@ -234,9 +235,12 @@ class QueueSkill:
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
 
+    def get_seasonal_info(self) -> List[SeasonalInfo]:
+        """:class: `list` Returns the seasonal info."""
+        return [SeasonalInfo(client=self._client, data=seasonal_info) for seasonal_info in self._seasonal_info_list.values()]
 
 class QueueSkills:
-    def __init__(self, client: Client, data: QueueSkills_) -> None:
+    def __init__(self, client: Client, data: QueueSkillsPayload) -> None:
         self._client: Client = client
         self.competitive: QueueSkill = QueueSkill(client=self._client, data=data['competitive'])
         self.custom: QueueSkill = QueueSkill(client=self._client, data=data['custom'])
@@ -296,3 +300,14 @@ class MMR(BaseModel):
     def is_act_rank_badge_hidden(self) -> bool:
         """:class: `bool` Returns whether the act rank badge is hidden."""
         return self._is_act_rank_badge_hidden
+
+    async def get_last_rank_tier(self) -> Optional[Tier]:
+        """coro :class: `Tier` Returns the last rank tier."""
+        content = await self._client.fetch_content()
+        seasonal_info = self.queue_skills.competitive.get_seasonal_info()
+        for season in content.seasons:
+            if season.is_active():
+                for info in seasonal_info:
+                    if info.season_id == season.id:
+                        return info.tier
+        return None
