@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from typing import List, TypedDict, Union
 
-from typing_extensions import NotRequired
+from typing_extensions import NotRequired, TypeAlias
 
 
 class Item(TypedDict):
@@ -131,3 +131,18 @@ class UpgradeCurrencyOffer(TypedDict):
 class Offers(TypedDict):
     Offers: List[Offer]
     UpgradeCurrencyOffers: List[UpgradeCurrencyOffer]
+
+
+class Entitlement(TypedDict):
+    TypeID: str
+    ItemID: str
+    InstanceID: NotRequired[str]
+
+
+class Entitlements(TypedDict):
+    ItemTypeID: str
+    Entitlements: List[Entitlement]
+
+
+class EntitlementsByTypes(TypedDict):
+    EntitlementsByTypes: List[Entitlements]

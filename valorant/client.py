@@ -48,6 +48,7 @@ from .models import (
     Contract,
     Contracts,
     Currency,
+    Entitlements,
     Event,
     GameMode,
     GameModeEquippable,
@@ -489,7 +490,7 @@ class Client:
         return AccountXP(client=self, data=data)
 
     @_authorize_required
-    async def fetch_player_loadout(self, *, fetch_account_xp: bool = True) -> Collection:
+    async def fetch_loadout(self, *, fetch_account_xp: bool = True) -> Collection:
 
         data = await self.http.fetch_player_loadout()
         collection = Collection(client=self, data=data)
@@ -501,11 +502,11 @@ class Client:
         return collection
 
     @_authorize_required
-    def put_player_loadout(self, loadout: Mapping) -> Any:
+    def put_loadout(self, loadout: Mapping) -> Any:
         return self.http.put_player_loadout(loadout)
 
     @_authorize_required
-    async def fetch_player_mmr(self, puuid: Optional[str] = None) -> MMR:
+    async def fetch_mmr(self, puuid: Optional[str] = None) -> MMR:
         data = await self.http.fetch_mmr(puuid)
         return MMR(client=self, data=data)
 
@@ -555,11 +556,11 @@ class Client:
         return Wallet(client=self, data=data)
 
     @_authorize_required
-    def fetch_order(self, order_id: str) -> Any:
-        data = self.http.store_fetch_order(order_id)
+    async def fetch_order(self, order_id: str) -> Any:
+        data = await self.http.store_fetch_order(order_id)
         # return Order(client=self, data=data)
 
     @_authorize_required
-    def fetch_entitlements(self, item_type: Union[str, ItemType] = ItemType.skin) -> Any:
-        data = self.http.store_fetch_entitlements(item_type)
-        # return Entitlements(client=self, data=data)
+    async def fetch_entitlements(self, item_type: Optional[Union[str, ItemType]] = None) -> Any:
+        data = await self.http.store_fetch_entitlements(item_type)
+        return Entitlements(client=self, data=data)

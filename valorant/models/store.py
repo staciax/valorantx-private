@@ -26,7 +26,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
-from ..enums import CurrencyID
+from ..enums import CurrencyID, ItemType
 from .bundle import FeaturedBundle
 from .weapons import SkinNightMarket
 
@@ -36,6 +36,9 @@ if TYPE_CHECKING:
         BonusStore as BonusStorePayload,
         BonusStoreOffer as BonusStoreOfferPayload,
         Bundle as BundlePayload,
+        Entitlement as EntitlementPayload,
+        Entitlements as EntitlementsPayload,
+        EntitlementsByTypes as EntitlementsByTypesPayload,
         FeaturedBundle as FeaturedBundlePayload,
         Offer as OfferPayload,
         Offers as OffersPayload,
@@ -45,7 +48,13 @@ if TYPE_CHECKING:
         UpgradeCurrencyOffer as UpgradeCurrencyOfferPayload,
         Wallet as WalletPayload,
     )
-    from .weapons import Skin
+    from .agent import Agent
+    from .buddy import BuddyLevel
+    from .contract import Contract
+    from .player_card import PlayerCard
+    from .player_title import PlayerTitle
+    from .spray import Spray
+    from .weapons import Skin, SkinChroma, SkinLevel
 
 __all__ = (
     'StoreFront',
@@ -54,6 +63,7 @@ __all__ = (
     'Wallet',
     'Offers',
     'Offer',
+    'Entitlements',
 )
 
 
@@ -236,3 +246,60 @@ class Offers:
 
     def __repr__(self) -> str:
         return f'<Offers offers={self.offers!r}>'
+
+
+class Entitlements:
+    def __init__(self, client: Client, data: EntitlementsByTypesPayload) -> None:
+        self._client = client
+        self._data = data.get('EntitlementsByTypes', [])
+
+    def __repr__(self) -> str:
+        return f'<Entitlements>'
+
+    def get_by_type(self, item_type: ItemType) -> List[EntitlementPayload]:
+        """Returns the entitlements by type"""
+        for entitlement in self._data:
+            if entitlement['ItemTypeID'].lower() == str(item_type).lower():
+                return entitlement['Entitlements']
+        raise ValueError(f'No entitlements found for {item_type}')
+
+    def get_agents(self) -> List[Agent]:
+        """:class:`.models.Agent`: Returns a list of agents."""
+        items = self.get_by_type(ItemType.agent)
+        return [self._client.get_agent(uuid=item.get('ItemID')) for item in items]
+
+    def get_skin_levels(self) -> List[SkinLevel]:
+        """:class:`.models.SkinLevel`: Returns a list of skin levels."""
+        items = self.get_by_type(ItemType.skin_level)
+        return [self._client.get_skin_level(uuid=item.get('ItemID')) for item in items]
+
+    def get_skin_chromas(self) -> List[SkinChroma]:
+        """:class:`.models.SkinChroma`: Returns a list of skin chromas."""
+        items = self.get_by_type(ItemType.skin_chroma)
+        return [self._client.get_skin_chroma(uuid=item.get('ItemID')) for item in items]
+
+    def get_buddy_levels(self) -> List[BuddyLevel]:
+        """:class:`.models.BuddyLevel`: Returns a list of buddy levels."""
+        items = self.get_by_type(ItemType.buddy_level)
+        # instance_id = item.get('InstanceID')  # What is this?
+        return [self._client.get_buddy_level(uuid=item.get('ItemID')) for item in items]
+
+    def get_sprays(self) -> List[Spray]:
+        """:class:`.models.Spray`: Returns a list of sprays."""
+        items = self.get_by_type(ItemType.spray)
+        return [self._client.get_spray(uuid=item.get('ItemID')) for item in items]
+
+    def get_player_cards(self) -> List[PlayerCard]:
+        """:class:`.models.PlayerCard`: Returns a list of player cards."""
+        items = self.get_by_type(ItemType.player_card)
+        return [self._client.get_player_card(uuid=item.get('ItemID')) for item in items]
+
+    def get_player_titles(self) -> List[PlayerTitle]:
+        """:class:`.models.PlayerTitle`: Returns a list of player titles."""
+        items = self.get_by_type(ItemType.player_title)
+        return [self._client.get_player_title(uuid=item.get('ItemID')) for item in items]
+
+    def get_contracts(self) -> List[Contract]:
+        """:class:`.models.Contract`: Returns a list of contracts."""
+        items = self.get_by_type(ItemType.contract)
+        return [self._client.get_contract(uuid=item.get('ItemID')) for item in items]

@@ -540,7 +540,7 @@ class HTTPClient:
         """
         return self.request(Route('GET', f'/store/v1/order/{order_id}', 'pd'))
 
-    def store_fetch_entitlements(self, item_type: Union[str, ItemType] = ItemType.skin) -> Response[Any]:
+    def store_fetch_entitlements(self, item_type: Optional[Union[str, ItemType]] = None) -> Response[Any]:
         """
         Store_GetEntitlements
         List what the player owns (agents, skins, buddies, ect.)
@@ -555,7 +555,10 @@ class HTTPClient:
         "3f296c07-64c3-494c-923b-fe692a4fa1bd": "player_card",
         "de7caa6b-adf7-4588-bbd1-143831e786c6": "player_title",
         """
-        r = Route('GET', f'/store/v1/entitlements/{self._puuid}/{str(item_type)}', 'pd')
+
+        r = Route(
+            'GET', f'/store/v1/entitlements/{self._puuid}' + (f'/{str(item_type)}' if item_type is not None else ''), 'pd'
+        )
         return self.request(r)
 
     # local endpoints
@@ -569,7 +572,7 @@ class HTTPClient:
     # content = self.fetch_content()
     # season_id = [season["ID"] for season in content["Seasons"] if season["IsActive"] and season["Type"] == "act"]
     #     if not season_id:
-    #         return self.fetch_player_mmr()["LatestCompetitiveUpdate"]["SeasonID"]
+    #         return self.fetch_mmr()["LatestCompetitiveUpdate"]["SeasonID"]
     #     return season_id[0]
 
     # def __check_party_id(self, party_id: str) -> str:
