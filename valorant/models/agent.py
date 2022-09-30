@@ -26,7 +26,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from ..asset import Asset
-from ..enums import Locale
+from ..enums import AbilityType, Locale, try_enum
 from ..localization import Localization
 from .base import BaseModel
 
@@ -83,7 +83,7 @@ class Role:
 class Ability:
     def __init__(self, client: Client, data: Dict[str, Any]) -> None:
         self._client = client
-        self.slot: str
+        self.slot: AbilityType = try_enum(AbilityType, data['slot'])
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._description: Union[str, Dict[str, str]] = data['description']
         self._display_icon: str = data['displayIcon']
