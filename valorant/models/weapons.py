@@ -531,6 +531,7 @@ class SkinLevel(BaseModel):
         self._streamed_video: Optional[str] = data.get('streamedVideo')
         self.asset_path: str = data['assetPath']
         self._price: int = self._client.get_item_price(self.uuid)
+        self._is_level_one: bool = data['isLevelOne']
 
     def __str__(self) -> str:
         return self.display_name
@@ -594,6 +595,10 @@ class SkinLevel(BaseModel):
     @price.setter
     def price(self, value: int) -> None:
         self._price = value
+
+    def is_level_one(self) -> bool:
+        """:class: `bool` Returns whether the skin is level one."""
+        return self._is_level_one
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

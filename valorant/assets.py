@@ -635,9 +635,10 @@ class Assets:
                             skin_chroma_dict[skin_chroma['uuid']] = skin_chroma
                         Assets.ASSET_CACHE['weapon_skins_chromas'] = skin_chroma_dict
 
-                        for skin_level in skin['levels']:
+                        for index, skin_level in enumerate(skin['levels']):
                             skin_level['base_weapon_uuid'] = uuid
                             skin_level['base_skin_uuid'] = skin['uuid']
+                            skin_level['isLevelOne'] = index == 0
                             skin_level_dict[skin_level['uuid']] = skin_level
                         Assets.ASSET_CACHE['weapon_skins_levels'] = skin_level_dict
 

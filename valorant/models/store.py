@@ -269,10 +269,18 @@ class Entitlements:
         items = self.get_by_type(ItemType.agent)
         return [self._client.get_agent(uuid=item.get('ItemID')) for item in items]
 
-    def get_skin_levels(self) -> List[SkinLevel]:
+    def get_skin_levels(self, level_one: bool = True) -> List[SkinLevel]:
         """:class:`.models.SkinLevel`: Returns a list of skin levels."""
         items = self.get_by_type(ItemType.skin_level)
-        return [self._client.get_skin_level(uuid=item.get('ItemID')) for item in items]
+        skins = []
+        for item in items:
+            skin = self._client.get_skin_level(uuid=item.get('ItemID'))
+            if level_one:
+                if skin.is_level_one():
+                    skins.append(skin)
+            else:
+                skins.append(skin)
+        return skins
 
     def get_skin_chromas(self) -> List[SkinChroma]:
         """:class:`.models.SkinChroma`: Returns a list of skin chromas."""
