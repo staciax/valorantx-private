@@ -164,29 +164,28 @@ else:
 # --
 
 __all__ = (
-    'Region',
-    'Shard',
-    'ItemType',
+    'AbilityType',
     'AgentID',
-    'QueueID',
-    'MapID',
-    'WeaponID',
-    'CurrencyID',
-    'SpraySlotID',
-    'Locale',
-    'try_enum',
-    'try_enum_key',
-    'LevelBorderID',
-    'EmptyTitleID',
-    'RelationType',
-    'MeleeWeaponID',
     'ContractRewardType',
+    'CurrencyID',
+    'EmptyTitleID',
+    'ItemType',
+    'LevelBorderID',
+    'Locale',
+    'MapID',
+    'MeleeWeaponID',
     'MissionType',
+    'QueueID',
+    'Region',
+    'RelationType',
     'RoundResultCode',
     'RoundResultType',
-    'AbilityType',
+    'Shard',
+    'SpraySlotID',
+    'WeaponID',
+    'try_enum',
+    'try_enum_key',
 )
-# TODO: sorted __all__
 
 EmptyTitleID: uuid.UUID = uuid.UUID('d13e579c-435e-44d4-cec2-6eae5a3c5ed4')
 MeleeWeaponID: uuid.UUID = uuid.UUID('2f59173c-4bed-b6c3-2191-dea9b58be9c7')

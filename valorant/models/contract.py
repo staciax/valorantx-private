@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import datetime
 import logging
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union, Mapping
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Mapping, Optional, Union
 
 from .. import utils
 from ..asset import Asset

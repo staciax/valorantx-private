@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union, Mapping
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
 
 from ..localization import Localization
 from .base import BaseModel

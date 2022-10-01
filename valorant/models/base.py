@@ -31,6 +31,11 @@ from ..enums import MeleeWeaponID
 if TYPE_CHECKING:
     from ..client import Client
 
+__all__ = (
+    'BaseModel',
+    'BaseFeaturedBundleItem',
+)
+
 
 class BaseModel(abc.ABC):
     __slots__ = (

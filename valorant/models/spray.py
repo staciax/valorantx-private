@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Mapping
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from ..asset import Asset
 from ..enums import SpraySlotID
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from ..types.collection import SprayLoadout as SprayLoadoutPayload
     from .theme import Theme
 
-__all__ = ('Spray', 'SprayLevel', 'SprayLoadout', 'SprayLevelLoadout', 'SprayBundle')
+__all__ = ('Spray', 'SprayBundle', 'SprayLevel', 'SprayLevelLoadout', 'SprayLoadout')
 
 
 class Spray(BaseModel):

@@ -37,7 +37,6 @@ if TYPE_CHECKING:
         BonusStoreOffer as BonusStoreOfferPayload,
         Bundle as BundlePayload,
         Entitlement as EntitlementPayload,
-        Entitlements as EntitlementsPayload,
         EntitlementsByTypes as EntitlementsByTypesPayload,
         FeaturedBundle as FeaturedBundlePayload,
         Offer as OfferPayload,
@@ -57,13 +56,13 @@ if TYPE_CHECKING:
     from .weapons import Skin, SkinChroma, SkinLevel
 
 __all__ = (
+    'Entitlements',
+    'NightMarket',
+    'Offer',
+    'Offers',
     'StoreFront',
     'StoreOffer',
-    'NightMarket',
     'Wallet',
-    'Offers',
-    'Offer',
-    'Entitlements',
 )
 
 
@@ -224,6 +223,8 @@ class Offer:
         """Returns if the offer is a direct purchase"""
         return self._is_direct_purchase
 
+    # def item(self) -> Any:
+    #     return self._client.get_
     # TODO: somethings wrong here
 
 

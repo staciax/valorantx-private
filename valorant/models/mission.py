@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Mapping
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from .. import utils
 from ..enums import MissionType, try_enum
@@ -37,13 +37,7 @@ if TYPE_CHECKING:
     from ..client import Client
     from ..types.contract import Mission as MissionUPayload, MissionMeta as MissionMetaPayload
 
-# fmt: off
-__all__ = (
-    'Mission',
-    'MissionU',
-    'MissionMeta',
-)
-# fmt: on
+__all__ = ('Mission', 'MissionMeta', 'MissionU')
 
 
 class Mission(BaseModel):

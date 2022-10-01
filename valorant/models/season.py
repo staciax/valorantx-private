@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from locale import str
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Mapping
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from .. import utils
 from ..asset import Asset
@@ -63,6 +63,16 @@ class Season(BaseModel):
         attrs = [('display_name', self.display_name), ('type', self.type)]
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Season) and other.uuid == self.uuid
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    @property
+    def id(self) -> str:
+        return self._uuid
 
     @property
     def name_localizations(self) -> Localization:
@@ -153,8 +163,7 @@ class SeasonCompetitive:
     @property
     def season(self) -> Optional[Season]:
         """:class: `Season` Returns the season."""
-        # TODO: get from _client
-        return Season._from_uuid(client=self._client, uuid=self._season_uuid)
+        return self._client.get_season(uuid=self._season_uuid)
 
     @property
     def competitive_tiers(self) -> Optional[CompetitiveTier]:

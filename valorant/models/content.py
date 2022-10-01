@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Mapping
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from .. import utils
 from ..asset import Asset
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
     from ..client import Client
 
-__all__ = ('Content', 'ContentSeason', 'ContentEvent', 'ContentTier')
+__all__ = ('Content', 'ContentEvent', 'ContentSeason', 'ContentTier')
 
 
 class Content:
