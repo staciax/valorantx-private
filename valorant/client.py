@@ -175,8 +175,11 @@ class Client:
             region=riot_auth.region,
         )
         self.user = ClientPlayer(client=self, data=payload)
-
-        # TODO: fetch seasons
+        content = await self.fetch_content()
+        for season in content.seasons:
+            if season.is_active():
+                self._season = self.get_season(uuid=season.id)
+                break
 
     def is_authorized(self) -> bool:
         """Check if the client is authorized."""
@@ -230,7 +233,7 @@ class Client:
         return self._season
 
     @season.setter
-    def season(self, value: Optional[Season]) -> None:
+    def season(self, value: Season) -> None:
         self._season = value
 
     @locale.setter

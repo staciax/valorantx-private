@@ -23,9 +23,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Mapping
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from ..asset import Asset
+from ..enums import MapID
 from ..localization import Localization
 from .base import BaseModel
 
@@ -163,11 +164,13 @@ class LatestCompetitiveUpdate:
         self.afk_penalty: int = data['AFKPenalty']
 
     def __repr__(self) -> str:
-        return f'<LatestCompetitiveUpdate>'
+        return f'<LatestCompetitiveUpdate season={self.season!r} map={self.map!r}>'
 
-    def map(self) -> Map:  # TODO: map id or url?
+    @property
+    def map(self) -> Map:
         """:class: `Map` Returns the map."""
-        return self._client.get_map(self._map_id)
+        to_uuid = MapID.from_url(self._map_id)
+        return self._client.get_map(uuid=to_uuid)
 
     def season(self) -> Season:
         """:class: `Season` Returns the season."""
@@ -235,6 +238,7 @@ class QueueSkill:
         """:class: `list` Returns the seasonal info."""
         return [SeasonalInfo(client=self._client, data=seasonal_info) for seasonal_info in self._seasonal_info_list.values()]
 
+
 class QueueSkills:
     def __init__(self, client: Client, data: QueueSkillsPayload) -> None:
         self._client: Client = client
@@ -275,12 +279,12 @@ class MMR(BaseModel):
         self._new_player_experience_finished: bool = data.get('NewPlayerExperienceFinished', False)
         self._is_leaderboard_anonymized: bool = data.get('IsLeaderboardAnonymized', False)
         self._is_act_rank_badge_hidden: bool = data.get('IsActRankBadgeHidden', False)
-        self.latest_competitive_update: Optional[LatestCompetitiveUpdate] = LatestCompetitiveUpdate(
+        self._latest_competitive_update: Optional[LatestCompetitiveUpdate] = LatestCompetitiveUpdate(
             client=self._client, data=data['LatestCompetitiveUpdate']
         )
 
     def __repr__(self) -> str:
-        return f'<MMR version={self.version!r} latest_competitive_update={self.latest_competitive_update!r}>'
+        return f'<MMR version={self.version!r} latest_competitive_update={self.get_latest_competitive_update()!r}>'
 
     def __hash__(self) -> int:
         return hash(self.uuid)
@@ -297,13 +301,14 @@ class MMR(BaseModel):
         """:class: `bool` Returns whether the act rank badge is hidden."""
         return self._is_act_rank_badge_hidden
 
-    async def get_last_rank_tier(self) -> Optional[Tier]:
-        """coro :class: `Tier` Returns the last rank tier."""
-        content = await self._client.fetch_content()
+    def get_latest_competitive_update(self) -> Optional[LatestCompetitiveUpdate]:
+        """:class: `LatestCompetitiveUpdate` Returns the latest competitive update."""
+        return self._latest_competitive_update
+
+    def get_last_rank_tier(self) -> Optional[Tier]:
+        """:class: `Tier` Returns the last rank tier."""
         seasonal_info = self.queue_skills.competitive.get_seasonal_info()
-        for season in content.seasons:
-            if season.is_active():
-                for info in seasonal_info:
-                    if info.season_id == season.id:
-                        return info.tier
+        for info in seasonal_info:
+            if info.season == self._client.season:
+                return info.tier
         return None
