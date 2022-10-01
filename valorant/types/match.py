@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Optional, TypedDict
 
 from typing_extensions import NotRequired
 
-from .player import PlayerMatch
+from .player import Player
 
 
 class MatchHistoryList(TypedDict):
@@ -277,3 +277,24 @@ class MatchDetails(TypedDict):
     teams: List[Team]
     roundResults: List[MatchRoundResult]
     kills: List[MatchKill]
+
+class PlayerMatch(Player):
+    subject: str
+    gameName: str
+    tagLine: str
+    platformInfo: MatchPlayerPlatformInfo
+    teamId: str
+    partyId: str
+    characterId: str
+    stats: MatchPlayerStats
+    roundDamage: List[RoundDamage]
+    competitiveTier: int
+    playerCard: str
+    playerTitle: str
+    preferredLevelBorder: str
+    accountLevel: int
+    sessionPlaytimeMinutes: int
+    xpModifications: List[XpModification]
+    behaviorFactors: BehaviorFactors
+    newPlayerExperienceDetails: NewPlayerExperienceDetails
+

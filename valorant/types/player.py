@@ -23,19 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Optional, TypedDict, Union
-
-from valorant.types.match import (
-    BehaviorFactors,
-    MatchPlayerPlatformInfo,
-    MatchPlayerStats,
-    NewPlayerExperienceDetails,
-    RoundDamage,
-    XpModification,
-)
-
-if TYPE_CHECKING:
-    import datetime
+from typing import Optional, TypedDict
 
 
 class PartialPlayer(TypedDict):
@@ -47,24 +35,3 @@ class PartialPlayer(TypedDict):
 class Player(PartialPlayer):
     region: str
     locale: Optional[str]
-
-
-class PlayerMatch(Player):
-    subject: str
-    gameName: str
-    tagLine: str
-    platformInfo: MatchPlayerPlatformInfo
-    teamId: str
-    partyId: str
-    characterId: str
-    stats: MatchPlayerStats
-    roundDamage: List[RoundDamage]
-    competitiveTier: int
-    playerCard: str
-    playerTitle: str
-    preferredLevelBorder: str
-    accountLevel: int
-    sessionPlaytimeMinutes: int
-    xpModifications: List[XpModification]
-    behaviorFactors: BehaviorFactors
-    newPlayerExperienceDetails: NewPlayerExperienceDetails
