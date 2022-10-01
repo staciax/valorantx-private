@@ -51,9 +51,10 @@ if TYPE_CHECKING:
         PlayerStatKill as PlayerStatKillPayload,
         Team as MatchTeamPayload,
         XpModification as xpModificationPayload,
+        PlayerMatch as PlayerMatchPayload,
+        RoundDamage as RoundDamagePayload,
         # MatchKill as MatchKillPayload,
     )
-    from ..types.player import PlayerMatch as PlayerMatchPayload
     from .agent import Ability, Agent
     from .gear import Gear
     from .map import Map
@@ -330,6 +331,27 @@ class Damage:
     def receiver(self) -> Optional[MatchPlayer]:
         return self.match.get_player(self._receiver_uuid)
 
+class RoundDamage:
+
+    def __init__(self, match: MatchDetails, data: RoundDamagePayload) -> None:
+        self.match: MatchDetails = match
+        self._receiver_uuid: str = data.get('receiver')
+        self.damage: int = data.get('damage', 0)
+        self.round: int = data.get('round', 0)
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('receiver', self.receiver),
+            ('damage', self.damage),
+            ('round', self.round),
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
+    @property
+    def receiver(self) -> Optional[MatchPlayer]:
+        return self.match.get_player(self._receiver_uuid)
+
 
 class PlayerStat:
     def __init__(self, match: MatchDetails, data: MatchRoundPlayerStatsPayload) -> None:
@@ -484,7 +506,9 @@ class RoundResult:
             [PlayerEconomy(match, economy) for economy in data['playerEconomies']] if data.get('playerEconomies') else []
         )
         self.player_stats: List[PlayerStat] = [PlayerStat(match, player) for player in data.get('playerStats', [])]
-        self.player_scores: List[playerScore] = [playerScore(match, player) for player in data.get('playerScores', [])]
+        self.player_scores: List[playerScore] = [
+            playerScore(match, player) for player in data['playerScores']
+        ] if data.get('playerScores') else []
 
     def __int__(self) -> int:
         return self.round_number
@@ -706,6 +730,7 @@ class MatchPlayer(BasePlayer):
         self._level_border_id: str = data.get('preferredLevelBorder')
         self._competitive_rank: int = data['competitiveTier']
         self.platform: Platform = Platform(data['platformInfo'])
+        self._round_damage: Optional[List[RoundDamagePayload]] = data.get('roundDamage') or []
 
         # stats
         # self.round_damage: List[RoundDamagePayload] = data['roundDamage']
@@ -747,10 +772,10 @@ class MatchPlayer(BasePlayer):
         self.afk_rounds: int = data['behaviorFactors']['afkRounds']
         self.collisions: float = data['behaviorFactors']['collisions']
         self.damage_participation_out_going: int = data['behaviorFactors']['damageParticipationOutgoing']
-        self.friendly_fire_in_coming: int = data['behaviorFactors']['friendlyFireIncoming']
-        self.friendly_fire_out_going: int = data['behaviorFactors']['friendlyFireOutgoing']
+        self.friendly_fire_in_coming: int = data['behaviorFactors'].get('friendlyFireIncoming', 0)
+        self.friendly_fire_out_going: int = data['behaviorFactors'].get('friendlyFireOutgoing', 0)
         self.mouse_movement: int = data['behaviorFactors']['mouseMovement']
-        self.stayed_in_spawn_rounds: int = data['behaviorFactors']['stayedInSpawnRounds']
+        self.stayed_in_spawn_rounds: int = data['behaviorFactors'].get('stayedInSpawnRounds', 0)
 
         # other info
         self.session_playtime_minutes: int = data.get('sessionPlaytimeMinutes', 0)
@@ -843,6 +868,11 @@ class MatchPlayer(BasePlayer):
     def character(self) -> Agent:
         """alias for :meth:`agent`"""
         return self.agent
+
+    @property
+    def round_damage(self) -> List[RoundDamage]:
+        """list of :class:`RoundDamage`"""
+        return [RoundDamage(self.match, data) for data in self._round_damage]
 
     def get_party_members(self) -> List[Optional[MatchPlayer]]:
         return [player for player in self.match.players if player.party_id == self.party_id and player.puuid != self.puuid]
