@@ -261,7 +261,7 @@ class Entitlements:
         for entitlement in self._data:
             if entitlement['ItemTypeID'].lower() == str(item_type).lower():
                 return entitlement['Entitlements']
-        raise ValueError(f'No entitlements found for {item_type}')
+        return []
 
     def get_agents(self) -> List[Agent]:
         """:class:`.models.Agent`: Returns a list of agents."""
