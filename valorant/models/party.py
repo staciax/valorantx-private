@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List
 
-from .player import BasePlayer
+from .player import Player
 
 if TYPE_CHECKING:
     from ..client import Client
@@ -54,7 +54,7 @@ class Ping:
     # TODO: function strip out the ping data and return it as a string
 
 
-class PlayerParty(BasePlayer):
+class PlayerParty(Player):
     """
     A player that is currently in a party.
 

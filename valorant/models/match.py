@@ -29,12 +29,13 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
 
 from .. import utils
 from ..enums import AbilityType, MapID, QueueID, RoundResultCode, RoundResultType, try_enum
-from .player import BasePlayer
+from .player import Player
 
 if TYPE_CHECKING:
     from ..client import Client
-    from ..types.match import (
+    from ..types.match import (  # MatchKill as MatchKillPayload,
         AbilityCasts as AbilityCastsPayload,
+        Coach as CoachPayload,
         Economy as EconomyPayload,
         FinishingDamage as FinishingDamagePayload,
         Location as MatchLocationPayload,
@@ -47,24 +48,22 @@ if TYPE_CHECKING:
         PlayerDamage as PlayerDamagePayload,
         PlayerEconomy as PlayerEconomyPayload,
         PlayerLocation as PlayerLocationPayload,
+        PlayerMatch as PlayerMatchPayload,
         PlayerScore as PlayerScorePayload,
         PlayerStatKill as PlayerStatKillPayload,
+        RoundDamage as RoundDamagePayload,
         Team as MatchTeamPayload,
         XpModification as xpModificationPayload,
-        PlayerMatch as PlayerMatchPayload,
-        RoundDamage as RoundDamagePayload,
-        # MatchKill as MatchKillPayload,
     )
-    from .agent import Ability, Agent
+    from .agent import Ability, Agent  # noqa
     from .gear import Gear
+    from .level_border import LevelBorder
     from .map import Map
+    from .player_card import PlayerCard
+    from .player_title import PlayerTitle
     from .weapons import Weapon
 
-__all__ = (
-    'MatchHistory',
-    'MatchDetails',
-    'MatchPlayer',
-)
+__all__ = ('MatchDetails', 'MatchHistory', 'MatchPlayer')
 
 
 class MatchHistory:
@@ -102,7 +101,6 @@ class MatchHistory:
 
     def get_match_details(self) -> List[MatchDetails]:
         return self._match_details
-
 
 class Team:
     def __init__(self, data: MatchTeamPayload) -> None:
@@ -331,8 +329,8 @@ class Damage:
     def receiver(self) -> Optional[MatchPlayer]:
         return self.match.get_player(self._receiver_uuid)
 
-class RoundDamage:
 
+class RoundDamage:
     def __init__(self, match: MatchDetails, data: RoundDamagePayload) -> None:
         self.match: MatchDetails = match
         self._receiver_uuid: str = data.get('receiver')
@@ -506,9 +504,9 @@ class RoundResult:
             [PlayerEconomy(match, economy) for economy in data['playerEconomies']] if data.get('playerEconomies') else []
         )
         self.player_stats: List[PlayerStat] = [PlayerStat(match, player) for player in data.get('playerStats', [])]
-        self.player_scores: List[playerScore] = [
-            playerScore(match, player) for player in data['playerScores']
-        ] if data.get('playerScores') else []
+        self.player_scores: List[playerScore] = (
+            [playerScore(match, player) for player in data['playerScores']] if data.get('playerScores') else []
+        )
 
     def __int__(self) -> int:
         return self.round_number
@@ -711,7 +709,7 @@ class AbilityCasts:
         return self.get_ability(AbilityType.ultimate)
 
 
-class MatchPlayer(BasePlayer):
+class MatchPlayer(Player):
 
     # https://github.com/staciax/reinabot/blob/master/cogs/valorant/embeds.py
 
@@ -725,15 +723,16 @@ class MatchPlayer(BasePlayer):
         self._is_winner: bool = False
         self.play_time_seconds: float = data['stats']['playtimeMillis'] / 1000
         self.account_level: int = data.get('accountLevel', 1)
-        self._player_card_id: str = data['playerCard']
-        self._player_title_id: str = data['playerCard']
-        self._level_border_id: str = data.get('preferredLevelBorder')
+
+        self.player_card: PlayerCard = client.get_player_card(uuid=data['playerCard'])
+        self.player_title: PlayerTitle = client.get_player_title(uuid=data['playerTitle'])
+        self.level_border: Optional[LevelBorder] = client.get_level_border(uuid=data.get('preferredLevelBorder', None))
+
         self._competitive_rank: int = data['competitiveTier']
         self.platform: Platform = Platform(data['platformInfo'])
         self._round_damage: Optional[List[RoundDamagePayload]] = data.get('roundDamage') or []
 
         # stats
-        # self.round_damage: List[RoundDamagePayload] = data['roundDamage']
         self.score: int = data['stats']['score']
         self.kills: int = data['stats']['kills']
         self.deaths: int = data['stats']['deaths']
@@ -779,11 +778,12 @@ class MatchPlayer(BasePlayer):
 
         # other info
         self.session_playtime_minutes: int = data.get('sessionPlaytimeMinutes', 0)
-        self.xp_modifications: List[xpModificationPayload] = data.get('xpModifications', [])
-        # TODO: xp objectify
 
-        # new player
+        # TODO: Model this
+        self.xp_modifications: List[xpModificationPayload] = data.get('xpModifications', [])
         self.new_player_exp_details: NewPlayerExperienceDetailsPayload = data['newPlayerExperienceDetails']
+
+        self.last_update = match.started_at
 
     def __repr__(self) -> str:
         return f'<PlayerMatch display_name={self.display_name!r} agent={self.agent!r} team={self.team!r}>'
@@ -916,36 +916,54 @@ class MatchPlayer(BasePlayer):
         return self.average_combat_score
 
 
+class Coach(Player):
+    def __init__(self, match: MatchDetails, data: CoachPayload) -> None:
+        super().__init__(client=match._client, data=data)
+        self.match = match
+        self.subject: str = data['subject']
+        self.team_id: str = data['teamId']
+
+    def __repr__(self) -> str:
+        return f'<Coach display_name={self.display_name!r} team_id={self.team_id!r}>'
+
+    @property
+    def team(self) -> Team:
+        return self.match.get_team(self.team_id)
+
+
 class MatchDetails:
     def __init__(self, client: Client, data: MatchDetailsPayload) -> None:
         self._client = client
         self._match_info = match_info = data['matchInfo']
+        self.id: str = match_info.get('matchId')
+        self._map_url: str = match_info.get('mapId')
+        self._game_pod_id: str = match_info.get('gamePodId')
+        self._game_loop_zone: str = match_info.get('gameLoopZone')
+        self._game_server_address: str = match_info.get('gameServerAddress')
+        self._game_version: str = match_info.get('gameVersion')
+        self._game_length: int = match_info.get('gameLengthMillis')
+        self._game_start_millis: int = match_info.get('gameStartMillis')
+        self._provisioning_FlowID: str = match_info.get('provisioningFlowID')
+        self._is_completed: bool = match_info.get('isCompleted')
+        self._custom_game_name: str = match_info.get('customGameName')
+        self._force_post_processing: bool = match_info.get('forcePostProcessing')
+        self._queue_id: QueueID = try_enum(QueueID, match_info.get('queueID'))
+        self._game_mode: str = match_info.get('gameMode')
+        self._is_ranked: bool = match_info.get('isRanked', False)
+        self._is_match_sampled: bool = match_info.get('isMatchSampled')
+        self._season_id: str = match_info.get('seasonId')
+        self._completion_state: str = match_info.get('completionState')
+        self._platform_type: str = match_info.get('platformType')
+        self._should_match_disable_penalties: bool = match_info.get('shouldMatchDisablePenalties')
+        self._is_won: bool = False
         self.players: List[MatchPlayer] = [
             MatchPlayer(client=self._client, data=player, match=self) for player in data['players']
         ]
         self._round_results: List[MatchRoundResultPayload] = data['roundResults']
-        self.id: str = match_info.get('matchId')
-        self._map_url: str = match_info.get('mapId')
-        self._queue_id: QueueID = try_enum(QueueID, match_info.get('queueID'))
-        self._is_ranked: bool = match_info.get('isRanked', False)
-        self._is_match_sampled: bool = match_info.get('isMatchSampled')
-        self._season_id: str = match_info.get('seasonId')
-        self._game_version: str = match_info.get('gameVersion')
-
         self._coaches: List[Dict[str, Any]] = data['coaches']
         self._bots: List[Dict[str, Any]] = data['bots']
         # self._kills: List[MatchKillPayload] = data['kills']
         self._teams: List[MatchTeamPayload] = data['teams']
-
-        self._completion_state: str = match_info.get('completionState')
-        self._game_pod_id: str = match_info.get('gamePodId')
-        self._game_loop_zone: str = match_info.get('gameLoopZone')
-        self._platform_type: str = match_info.get('platformType')
-        self._should_match_disable_penalties: bool = match_info.get('shouldMatchDisablePenalties')
-        self._provisioning_FlowID: str = match_info.get('provisioningFlowID')
-        self._game_start_millis: int = match_info.get('gameStartMillis')
-        self._game_length: int = match_info.get('gameLengthMillis')
-        self._is_won: bool = False
 
         self.__fill_player_stats()
 
@@ -973,21 +991,38 @@ class MatchDetails:
 
     @property
     def user(self) -> Any:
+        """:class:`Any`: The user who fetched this match."""
         return self._client.user
 
     def is_won(self) -> bool:
+        """:class:`bool`: Whether the user won this match."""
         return self._is_won
 
     def is_ranked(self) -> bool:
+        """:class:`bool`: Whether this match was ranked."""
         return self._is_ranked
+
+    def is_completed(self) -> bool:
+        """:class:`bool`: Whether this match was completed."""
+        return self._is_completed
+
+    def is_match_sampled(self) -> bool:
+        """ " :class:`bool`: Whether this match was sampled."""
+        return self._is_match_sampled
+
+    def should_match_disable_penalties(self) -> bool:
+        """:class:`bool`: Whether this match disabled penalties."""
+        return self._should_match_disable_penalties
 
     @property
     def map(self) -> Map:
+        """:class:`Map`: The map this match was played on."""
         to_uuid = MapID.from_url(self._map_url)
         return self._client.get_map(uuid=to_uuid)
 
     @property
     def started_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: The time this match started."""
         return datetime.datetime.fromtimestamp(self._game_start_millis / 1000)
 
     @property
@@ -998,12 +1033,6 @@ class MatchDetails:
     @property
     def queue(self) -> QueueID:
         return self._queue_id
-
-    # @property
-    # def players(self) -> Optional[List[MatchPlayer]]:
-    #     # for player in self._players:
-    #     #     yield MatchPlayer(client=self._client, data=player, match=self)
-    #     return [MatchPlayer(client=self._client, data=player, match=self) for player in self._players]
 
     @property
     def bots(self) -> List[Any]:
@@ -1016,9 +1045,9 @@ class MatchDetails:
         return [Team(data=team) for team in self._teams]
 
     @property
-    def coaches(self) -> List[Any]:
+    def coaches(self) -> List[Coach]:
         """:class:`List[Any]`: Returns a list of coaches in the match"""
-        return self._coaches
+        return [Coach(match=self, data=coach) for coach in self._coaches]
 
     @property
     def round_results(self) -> Iterator[RoundResult]:
@@ -1043,6 +1072,7 @@ class MatchDetails:
 
     @property
     def team_blue(self) -> Optional[Team]:
+        """:class:`Team`: The blue team in this match."""
         for team in self.teams:
             if team.id.lower() == 'blue':
                 return team
@@ -1050,6 +1080,7 @@ class MatchDetails:
 
     @property
     def team_red(self) -> Optional[Team]:
+        """:class:`Team`: The red team in this match."""
         for team in self.teams:
             if team.id.lower() == 'red':
                 return team

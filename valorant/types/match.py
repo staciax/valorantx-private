@@ -55,7 +55,7 @@ class MatchInfo(TypedDict):
     provisioningFlowID: str
     isCompleted: bool
     customGameName: str
-    forcePostProcessing: str
+    forcePostProcessing: bool
     queueID: str
     gameMode: str
     isRanked: bool
@@ -269,14 +269,20 @@ class MatchRoundResult(TypedDict, total=False):
     playerScores: List[PlayerScore]
 
 
+class Coach(TypedDict):
+    subject: str
+    teamId: str
+
+
 class MatchDetails(TypedDict):
     matchInfo: MatchInfo
     players: List[PlayerMatch]
     bots: List[Dict[str, Any]]  # TODO: i dont know what this is
-    coaches: List[Dict[str, Any]]  # TODO: i dont know what this is
+    coaches: List[Coach]
     teams: List[Team]
     roundResults: List[MatchRoundResult]
     kills: List[MatchKill]
+
 
 class PlayerMatch(Player):
     subject: str
@@ -297,4 +303,3 @@ class PlayerMatch(Player):
     xpModifications: List[XpModification]
     behaviorFactors: BehaviorFactors
     newPlayerExperienceDetails: NewPlayerExperienceDetails
-
