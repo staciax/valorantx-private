@@ -100,7 +100,7 @@ def _finder():
                 if isinstance(value, str):
                     value = value.lower()
                 if value is None:
-                    value = ''
+                    value = '...'
                 new_kwargs[key] = value
 
             kwargs = new_kwargs
@@ -113,7 +113,7 @@ def _finder():
             if not data:
                 return function(self, *args, **kwargs)
 
-            is_level_border = True
+            is_level_border = False
             if len(finder_keys) == 0:
                 may_be_uuid = args[0]
                 if isinstance(may_be_uuid, str):
@@ -200,6 +200,7 @@ def _finder():
                                                 arg = arg.lower()
                                                 if vv_find.startswith(arg):
                                                     maybe.append(key)
+
 
             # 1st choice in maybe
             if len(maybe) > 0:
