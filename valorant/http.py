@@ -195,7 +195,7 @@ class HTTPClient:
         raise RuntimeError('Unreachable code in HTTP handling')
 
     async def close(self) -> None:
-        if self._session:
+        if self._session is not MISSING:
             await self._session.close()
 
     async def static_login(self, username: str, password: str) -> RiotAuth:
