@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, overload
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, overload, Mapping
 
 from .. import utils
 from ..asset import Asset
@@ -246,7 +246,7 @@ class ShopData:
 
 
 class Weapon(BaseModel):
-    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
+    def __init__(self, *, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
@@ -328,7 +328,7 @@ class Weapon(BaseModel):
 
 
 class Skin(BaseModel):
-    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
+    def __init__(self, *, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid = data['uuid']
         self._base_weapon_uuid: Optional[str] = data.get('base_weapon_uuid')
@@ -427,7 +427,7 @@ class Skin(BaseModel):
 
 
 class SkinChroma(BaseModel):
-    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
+    def __init__(self, *, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._base_weapon_uuid: Optional[str] = data.get('base_weapon_uuid')
@@ -520,7 +520,7 @@ class SkinChroma(BaseModel):
 
 
 class SkinLevel(BaseModel):
-    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
+    def __init__(self, *, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._base_weapon_uuid: Optional[str] = data.get('base_weapon_uuid')
@@ -603,7 +603,7 @@ class SkinLevel(BaseModel):
 
 
 class SkinNightMarket(SkinLevel):
-    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]], extras: Any) -> None:
+    def __init__(self, *, client: Client, data: Mapping[str, Any], extras: Any) -> None:
         super().__init__(client=client, data=data)
         self.discount_percent: int = extras['DiscountPercent']
         self._price: int = extras['Offer']['Cost'][str(CurrencyID.valorant_point)]
@@ -643,7 +643,7 @@ class SkinNightMarket(SkinLevel):
 
 
 class SkinBundle(SkinLevel, BaseFeaturedBundleItem):
-    def __init__(self, client: Client, data: Optional[Dict[str, Any]], bundle: Dict[str, Any]) -> None:
+    def __init__(self, client: Client, data: Mapping[str, Any], bundle: Dict[str, Any]) -> None:
         SkinLevel.__init__(self, client=client, data=data)
         BaseFeaturedBundleItem.__init__(self, bundle=bundle)
 

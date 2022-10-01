@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from locale import str
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Mapping
 
 from .. import utils
 from ..asset import Asset
@@ -46,7 +46,7 @@ __all__ = (
 
 
 class Season(BaseModel):
-    def __init__(self, client: Client, data: Dict[str, Any]) -> None:
+    def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
@@ -123,7 +123,7 @@ class Border:
 
 
 class SeasonCompetitive:
-    def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
+    def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         self._client = client
         self._uuid: str = data['uuid']
         self._start_time_iso: Union[str, datetime.datetime] = data['startTime']
@@ -153,6 +153,7 @@ class SeasonCompetitive:
     @property
     def season(self) -> Optional[Season]:
         """:class: `Season` Returns the season."""
+        # TODO: get from _client
         return Season._from_uuid(client=self._client, uuid=self._season_uuid)
 
     @property

@@ -26,7 +26,7 @@ from __future__ import annotations
 import datetime
 import json
 import uuid
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Union
 
 if TYPE_CHECKING:
     from aiohttp import ClientResponse
@@ -56,7 +56,7 @@ def _to_dict(text: str) -> dict:
     return json.loads(text)
 
 
-async def json_or_text(response: ClientResponse) -> Union[Dict[str, Any], str]:
+async def json_or_text(response: ClientResponse) -> Union[Mapping[str, Any], Dict[str, Any], str]:
     text = await response.text(encoding='utf-8')
     if 'Content-Type' in response.headers:
         if response.headers['Content-Type'] == 'application/data':

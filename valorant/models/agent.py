@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Mapping
 
 from ..asset import Asset
 from ..enums import AbilityType, Locale, try_enum
@@ -301,7 +301,7 @@ class VoiceLineLocalization:
 
 
 class Agent(BaseModel):
-    def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
+    def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']

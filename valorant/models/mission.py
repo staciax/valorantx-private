@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Mapping
 
 from .. import utils
 from ..enums import MissionType, try_enum
@@ -47,7 +47,7 @@ __all__ = (
 
 
 class Mission(BaseModel):
-    def __init__(self, client: Client, data: Dict[str, Any]) -> None:
+    def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
@@ -116,7 +116,7 @@ class Mission(BaseModel):
 
 
 class MissionU(Mission):
-    def __init__(self, client: Client, data: Dict[str, Any], mission: MissionUPayload) -> None:
+    def __init__(self, client: Client, data: Mapping[str, Any], mission: MissionUPayload) -> None:
         super().__init__(client=client, data=data)
         self._objectives: Dict[str, int] = mission['Objectives']
         self._complete: bool = mission['Complete']

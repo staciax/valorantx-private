@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Mapping
 
 from .. import utils
 from ..asset import Asset
@@ -124,7 +124,7 @@ class ContentEvent:
 
 
 class ContentTier(BaseModel):
-    def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
+    def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']

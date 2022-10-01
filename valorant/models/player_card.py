@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union, Mapping
 
 from ..asset import Asset
 from ..localization import Localization
@@ -44,7 +44,7 @@ __all__ = (
 
 
 class PlayerCard(BaseModel):
-    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]]) -> None:
+    def __init__(self, *, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
@@ -131,7 +131,7 @@ class PlayerCard(BaseModel):
 
 
 class PlayerCardBundle(PlayerCard, BaseFeaturedBundleItem):
-    def __init__(self, client: Client, data: Optional[Dict[str, Any]], bundle: Dict[str, Any]) -> None:
+    def __init__(self, client: Client, data: Mapping[str, Any], bundle: Dict[str, Any]) -> None:
         PlayerCard.__init__(self, client=client, data=data)
         BaseFeaturedBundleItem.__init__(self, bundle=bundle)
 

@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Mapping
 
 from ..asset import Asset
 from ..localization import Localization
@@ -122,7 +122,7 @@ class Tier:
 
 
 class CompetitiveTier(BaseModel):
-    def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
+    def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self.asset_object_name: str = data['assetObjectName']
@@ -221,10 +221,6 @@ class QueueSkill:
         self.total_games_needed_for_leaderboard: int = data['TotalGamesNeededForLeaderboard']
         self.current_season_games_needed_for_rating: int = data['CurrentSeasonGamesNeededForRating']
         self._seasonal_info_list: SeasonalInfoPayload = data['SeasonalInfoBySeasonID']
-        # self.seasonal_info_list: List[SeasonalInfo] = [
-        #     SeasonalInfo(client=self._client, data=seasonal_info)
-        #     for seasonal_info in data['SeasonalInfoBySeasonID'].values()
-        # ]
 
     def __repr__(self) -> str:
         attrs = [

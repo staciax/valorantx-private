@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Mapping
 
 from ..asset import Asset
 from ..enums import ItemType
@@ -53,7 +53,7 @@ __all__ = (
 
 
 class Bundle(BaseModel):
-    def __init__(self, client: Client, data: Optional[Dict[str, Any]], *, is_featured_bundle: bool = False) -> None:
+    def __init__(self, client: Client, data: Mapping[str, Any], *, is_featured_bundle: bool = False) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
@@ -193,7 +193,7 @@ class Bundle(BaseModel):
 
 
 class FeaturedBundle(Bundle):
-    def __init__(self, client: Client, data: Dict[str, Any], bundle: Dict[str, Any]) -> None:
+    def __init__(self, client: Client, data: Mapping[str, Any], bundle: Dict[str, Any]) -> None:
         super().__init__(client, data, is_featured_bundle=True)
         self._items: List[Union[SkinBundle, SprayBundle, BuddyBundle, PlayerCardBundle]] = []
         self.duration: int = bundle.get('DurationRemainingInSeconds', 0)

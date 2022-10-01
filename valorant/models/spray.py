@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Mapping
 
 from ..asset import Asset
 from ..enums import SpraySlotID
@@ -41,7 +41,7 @@ __all__ = ('Spray', 'SprayLevel', 'SprayLoadout', 'SprayLevelLoadout', 'SprayBun
 
 
 class Spray(BaseModel):
-    def __init__(self, *, client: Client, data: Optional[Dict[str, Any]], bundle: Any = None) -> None:
+    def __init__(self, *, client: Client, data: Mapping[str, Any], bundle: Any = None) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
@@ -140,7 +140,7 @@ class Spray(BaseModel):
 
 
 class SprayLevel(BaseModel):
-    def __init__(self, client: Client, data: Optional[Dict[str, Any]]) -> None:
+    def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._base_spray_uuid: Optional[str] = data['base_uuid']
@@ -207,7 +207,7 @@ class SprayLevel(BaseModel):
 
 
 class SprayBundle(Spray, BaseFeaturedBundleItem):
-    def __init__(self, client: Client, data: Optional[Dict[str, Any]], bundle: Dict[str, Any]) -> None:
+    def __init__(self, client: Client, data: Mapping[str, Any], bundle: Dict[str, Any]) -> None:
         Spray.__init__(self, client=client, data=data)
         BaseFeaturedBundleItem.__init__(self, bundle=bundle)
 
