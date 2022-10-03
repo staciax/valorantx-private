@@ -49,6 +49,14 @@ class Content:
     def __repr__(self) -> str:
         return f"<Content season={self.seasons!r}"
 
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Content) and (
+            self.disabled_ids == other.disabled_ids and self.seasons == other.seasons and self.events == other.events
+        )
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
     @property
     def disabled_ids(self) -> List[str]:
         return self._disabled_ids
@@ -73,6 +81,12 @@ class ContentSeason:
 
     def __repr__(self) -> str:
         return f"<ContentSeason name={self.name!r} type={self.type!r} is_active={self.is_active()!r}>"
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, ContentSeason) and self.id == other.id
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
     def is_active(self) -> bool:
         """:class:`bool` Returns whether the season is active."""
@@ -107,6 +121,12 @@ class ContentEvent:
         ]
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, ContentEvent) and self.id == other.id
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
     def is_active(self) -> bool:
         """:class:`bool` Returns whether the event is active."""

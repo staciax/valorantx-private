@@ -60,6 +60,12 @@ class BaseModel(abc.ABC):
     def __hash__(self) -> int:
         return hash(self.uuid)
 
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, BaseModel) and other.uuid == self.uuid
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
     @property
     def uuid(self) -> str:
         """:class:`str`: The uuid of the object."""

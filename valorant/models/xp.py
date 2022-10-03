@@ -52,6 +52,27 @@ class SourceXP:
     def __repr__(self) -> str:
         return f'<SourceXP id={self.id!r} amount={self.amount!r}>'
 
+    def __int__(self) -> int:
+        return self.amount
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, SourceXP) and other.id == self.id
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __lt__(self, other: object) -> bool:
+        return isinstance(other, SourceXP) and self.amount < other.amount
+
+    def __le__(self, other: object) -> bool:
+        return isinstance(other, SourceXP) and self.amount <= other.amount
+
+    def __gt__(self, other: object) -> bool:
+        return isinstance(other, SourceXP) and self.amount > other.amount
+
+    def __ge__(self, other: object) -> bool:
+        return isinstance(other, SourceXP) and self.amount >= other.amount
+
 
 class ProgressXP:
     def __init__(self, data: AccountXPProgressPayload):
@@ -60,6 +81,24 @@ class ProgressXP:
 
     def __repr__(self) -> str:
         return f'<ProgressXP level={self.level!r} xp={self.xp!r}>'
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, ProgressXP) and other.level == self.level and other.xp == self.xp
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __lt__(self, other: object) -> bool:
+        return isinstance(other, ProgressXP) and self.level < other.level and self.xp < other.xp
+
+    def __le__(self, other: object) -> bool:
+        return isinstance(other, ProgressXP) and self.level <= other.level and self.xp <= other.xp
+
+    def __gt__(self, other: object) -> bool:
+        return isinstance(other, ProgressXP) and self.level > other.level and self.xp > other.xp
+
+    def __ge__(self, other: object) -> bool:
+        return isinstance(other, ProgressXP) and self.level >= other.level and self.xp >= other.xp
 
 
 class HistoryXP:
@@ -108,6 +147,12 @@ class AccountXP:
 
     def __repr__(self) -> str:
         return f'<AccountXP version={self.version!r} subject={self.subject!r}>'
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, self.__class__) and self.version == other.version and self.subject == other.subject
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
     @property
     def level(self) -> int:

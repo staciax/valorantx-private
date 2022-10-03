@@ -73,6 +73,12 @@ class Bundle(BaseModel):
             if data.get('Items') is not None:
                 self._bundle_items(data['Items'])
 
+    def __str__(self) -> str:
+        return self.display_name
+
+    def __repr__(self) -> str:
+        return f'<Bundle display_name={self.display_name!r}>'
+
     def _bundle_items(self, items: List[Dict[str, Any]]) -> None:
         for item in items:
             item_type = item['Item']['ItemTypeID']
@@ -89,12 +95,6 @@ class Bundle(BaseModel):
                 self._items.append(BuddyBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))
             elif item_type == ItemType.player_card.value:
                 self._items.append(PlayerCardBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))
-
-    def __str__(self) -> str:
-        return self.display_name
-
-    def __repr__(self) -> str:
-        return f'<Bundle display_name={self.display_name!r}>'
 
     @property
     def name_localizations(self) -> Localization:

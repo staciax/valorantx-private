@@ -76,6 +76,18 @@ class Tier:
     def __ne__(self, other) -> bool:
         return not self.__eq__(other)
 
+    def __lt__(self, other: object) -> bool:
+        return isinstance(other, Tier) and self.tier < other.tier
+
+    def __le__(self, other: object) -> bool:
+        return isinstance(other, Tier) and self.tier <= other.tier
+
+    def __gt__(self, other: object) -> bool:
+        return isinstance(other, Tier) and self.tier > other.tier
+
+    def __ge__(self, other: object) -> bool:
+        return isinstance(other, Tier) and self.tier >= other.tier
+
     @property
     def name_localizations(self) -> Localization:
         """:class: `Localization` Returns the tier's names."""
@@ -166,6 +178,12 @@ class LatestCompetitiveUpdate:
     def __repr__(self) -> str:
         return f'<LatestCompetitiveUpdate season={self.season!r} map={self.map!r}>'
 
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, LatestCompetitiveUpdate) and self.match_id == other.match_id
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
     @property
     def map(self) -> Map:
         """:class: `Map` Returns the map."""
@@ -198,6 +216,12 @@ class SeasonalInfo:
 
     def __repr__(self) -> str:
         return f'<SeasonalInfo season={self.season!r}>'
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, SeasonalInfo) and self.season_id == other.season_id
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
     @property
     def season(self) -> Season:
@@ -285,6 +309,9 @@ class MMR(BaseModel):
 
     def __repr__(self) -> str:
         return f'<MMR version={self.version!r} latest_competitive_update={self.get_latest_competitive_update()!r}>'
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, MMR) and self.uuid == other.uuid and self.version == other.version
 
     def __hash__(self) -> int:
         return hash(self.uuid)

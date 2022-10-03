@@ -52,6 +52,18 @@ class LevelBorder(BaseModel):
     def __repr__(self) -> str:
         return f'<LevelBorder starting_level={self.starting_level!r}>'
 
+    def __lt__(self, other: object) -> bool:
+        return isinstance(other, LevelBorder) and self.starting_level < other.starting_level
+
+    def __le__(self, other: object) -> bool:
+        return isinstance(other, LevelBorder) and self.starting_level <= other.starting_level
+
+    def __gt__(self, other: object) -> bool:
+        return isinstance(other, LevelBorder) and self.starting_level > other.starting_level
+
+    def __ge__(self, other: object) -> bool:
+        return isinstance(other, LevelBorder) and self.starting_level >= other.starting_level
+
     @property
     def starting_level(self) -> int:
         """:class: `int` Returns the starting level of the level border."""

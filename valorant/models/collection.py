@@ -62,29 +62,6 @@ class Identity:
         self._account_level: int = 0
         self._hide_account_level: bool = data.get('HideAccountLevel', False)
 
-    @property
-    def player_card(self) -> Optional[PlayerCard]:
-        return self._client.get_player_card(self._player_card)
-
-    @property
-    def player_title(self) -> Optional[PlayerTitle]:
-        if not self._player_title == str(EmptyTitleID):  # TODO: Fix this
-            return self._client.get_player_title(self._player_title)
-        return None
-
-    @property
-    def level_border(self) -> Optional[LevelBorder]:
-        # return self._client.get_level_border(self._level_border) # v1
-        return self._client.get_level_border(self._account_level)
-
-    @property
-    def account_level(self) -> int:
-        return self._account_level
-
-    @account_level.setter
-    def account_level(self, value: int) -> None:
-        self._account_level = value
-
     def __repr__(self) -> str:
         attrs = [
             ('player_card', self.player_card),
@@ -94,6 +71,49 @@ class Identity:
         ]
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Identity) and (
+            self.player_card == other.player_card
+            and self.player_title == other.player_title
+            and self.level_border == other.level_border
+            and self.account_level == other.account_level
+            and self._hide_account_level == other._hide_account_level
+        )
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    @property
+    def player_card(self) -> Optional[PlayerCard]:
+        """:class:`PlayerCard`: The player card."""
+        return self._client.get_player_card(self._player_card)
+
+    @property
+    def player_title(self) -> Optional[PlayerTitle]:
+        """:class:`PlayerTitle`: The player title."""
+        if not self._player_title == str(EmptyTitleID):  # TODO: Fix this
+            return self._client.get_player_title(self._player_title)
+        return None
+
+    @property
+    def level_border(self) -> Optional[LevelBorder]:
+        """:class:`LevelBorder`: The level border."""
+        # return self._client.get_level_border(self._level_border) # v1
+        return self._client.get_level_border(self._account_level)
+
+    @property
+    def account_level(self) -> int:
+        """:class:`int`: The account level."""
+        return self._account_level
+
+    @account_level.setter
+    def account_level(self, value: int) -> None:
+        self._account_level = value
+
+    def hide_account_level(self) -> bool:
+        """:class:`bool`: Whether the account level is hidden."""
+        return self._hide_account_level
 
 
 class Collection(BaseModel):
@@ -288,6 +308,17 @@ class SprayCollection:
 
     def __iter__(self) -> Iterator[SprayL]:
         return iter([self.slot_1, self.slot_2, self.slot_3])
+
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, SprayCollection)
+            and self.slot_1 == other.slot_1
+            and self.slot_2 == other.slot_2
+            and self.slot_3 == other.slot_3
+        )
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
     def _update(self, loadout: List[SprayLoadout]) -> None:
         for spray in loadout:

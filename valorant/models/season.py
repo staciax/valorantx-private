@@ -65,7 +65,7 @@ class Season(BaseModel):
         return f'<{self.__class__.__name__} {joined}>'
 
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, Season) and other.uuid == self.uuid
+        return isinstance(other, Season) and other.id == self.id
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
@@ -106,10 +106,10 @@ class Season(BaseModel):
         return cls(client=client, data=data) if data else None
 
 
-class Border:
+class Border(BaseModel):
     def __init__(self, client: Client, data: Dict[str, Any]) -> None:
-        self._client = client
-        self.uuid: str = data['uuid']
+        super().__init__(client=client, data=data)
+        self._uuid: str = data['uuid']
         self.level: int = data['level']
         self.wins_required: int = data['winsRequired']
         self._display_icon: Optional[str] = data['displayIcon']
@@ -132,9 +132,9 @@ class Border:
         return Asset._from_url(client=self._client, url=self._small_icon) if self._small_icon else None
 
 
-class SeasonCompetitive:
+class SeasonCompetitive(BaseModel):
     def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
-        self._client = client
+        super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._start_time_iso: Union[str, datetime.datetime] = data['startTime']
         self._end_time_iso: Union[str, datetime.datetime] = data['endTime']

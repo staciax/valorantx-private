@@ -182,6 +182,13 @@ class Wallet:
     def __repr__(self) -> str:
         return f'<Wallet valorant_points={self.valorant_points!r} radiant_points={self.radiant_points!r}>'
 
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, Wallet)
+            and self.valorant_points == other.valorant_points
+            and self.radiant_points == other.radiant_points
+        )
+
     @property
     def valorant_points(self) -> int:
         """Returns the valorant points for the wallet"""
@@ -201,6 +208,12 @@ class Reward:
 
     def __repr__(self) -> str:
         return f'<Reward item_type_id={self.item_type_id!r} item_id={self.item_id!r} quantity={self.quantity!r}>'
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Reward) and self.item_id == other.item_id
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
 
 class Offer:
@@ -291,6 +304,7 @@ class Entitlements:
         """:class:`.models.BuddyLevel`: Returns a list of buddy levels."""
         items = self.get_by_type(ItemType.buddy_level)
         # instance_id = item.get('InstanceID')  # What is this?
+        # TODO: amount buddy levels owned
         return [self._client.get_buddy_level(uuid=item.get('ItemID')) for item in items]
 
     def get_sprays(self) -> List[Spray]:

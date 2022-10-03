@@ -208,6 +208,12 @@ class ShopData:
     def __int__(self) -> int:
         return self.cost
 
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, ShopData) and self._weapon == other._weapon and self.cost == other.cost
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
     @property
     def grid_position(self) -> Optional[GridPosition]:
         return GridPosition(self._grid_position) if self._grid_position else None

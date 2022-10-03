@@ -63,6 +63,9 @@ class Gear(BaseModel):
     def __str__(self) -> str:
         return self.display_name
 
+    def __int__(self) -> int:
+        return self.cost
+
     def __repr__(self) -> str:
         return f'<Gear display_name={self.display_name!r}>'
 

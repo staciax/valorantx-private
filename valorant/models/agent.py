@@ -54,6 +54,15 @@ class Role:
     def __repr__(self) -> str:
         return f'<Role display_name={self.display_name!r}>'
 
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Role) and other.uuid == self.uuid
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash(self.uuid)
+
     @property
     def name_localizations(self) -> Localization:
         """:class: `Localization` Returns the agent role's names."""
@@ -91,6 +100,15 @@ class Ability:
     def __repr__(self) -> str:
         return f'<Ability display_name={self.display_name!r}>'
 
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Ability) and other.slot == self.slot
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    # def __hash__(self) -> int:
+    #     return hash(self.slot)
+
     @property
     def name_localizations(self) -> Localization:
         """:class: `Localization` Returns the agent role's names."""
@@ -126,6 +144,15 @@ class Media:
     def __repr__(self) -> str:
         return f'<Media id={self.id!r} wwise={self.wwise!r} wave={self.wave!r}>'
 
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Media) and other.id == self.id
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash(self.id)
+
 
 class VoiceLine:
     def __init__(self, data: Dict[str, Any]) -> None:
@@ -135,6 +162,19 @@ class VoiceLine:
 
     def __repr__(self) -> str:
         return f'<AgentVoiceLine min_duration={self.min_duration!r} max_duration={self.max_duration!r}>'
+
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, VoiceLine)
+            and other.min_duration == self.min_duration
+            and other.max_duration == self.max_duration
+        )
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash((self.min_duration, self.max_duration))
 
 
 class VoiceLineLocalization:

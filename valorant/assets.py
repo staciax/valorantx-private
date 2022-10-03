@@ -201,7 +201,6 @@ def _finder():
                                                 if vv_find.startswith(arg):
                                                     maybe.append(key)
 
-
             # 1st choice in maybe
             if len(maybe) > 0:
                 return function(self, maybe[0])

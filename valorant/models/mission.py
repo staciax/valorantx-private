@@ -179,6 +179,16 @@ class MissionMeta:
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
 
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, MissionMeta) and (
+            self.NPE_completed == other.NPE_completed
+            and self.weekly_check_point == other.weekly_check_point
+            and self.weekly_refill_time == other.weekly_refill_time
+        )
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
     @property
     def weekly_check_point(self) -> datetime.datetime:
         """:class: `datetime.datetime` Returns the weekly check point."""

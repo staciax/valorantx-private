@@ -74,6 +74,12 @@ class PageContext:
     def __repr__(self) -> str:
         return f'<PageContext locale={self.locale!r}>'
 
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, PageContext) and self.uid == other.uid and self.locale == other.locale
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
 
 class PatchNotes:
     def __init__(self, *, client: Client, data: Any, locale: Union[str, Locale]) -> None:
@@ -90,6 +96,19 @@ class PatchNotes:
     def __iter__(self) -> Iterator[PatchNote]:
         for node in self.result.page_data.article_nodes:
             yield PatchNote(client=self._client, data=node, locale=self.locale)
+
+    def __len__(self) -> int:
+        return len(self.patch_notes)
+
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, PatchNotes)
+            and self._static_query_hashes == other._static_query_hashes
+            and self.locale == other.locale
+        )
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
     @property
     def see_article_title(self) -> str:
@@ -148,6 +167,9 @@ class PatchNote:
 
     def __hash__(self) -> int:
         return hash(self.id)
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, PatchNote) and self.id == other.id and self.locale == other.locale
 
     @property
     def url(self) -> str:

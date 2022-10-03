@@ -49,6 +49,12 @@ class Location:
     def __repr__(self) -> str:
         return f'<Location x={self.x} y={self.y}>'
 
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Location) and self.x == other.x and self.y == other.y
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
 
 class Callout:
     def __init__(self, data: Dict[str, Any]) -> None:
@@ -67,6 +73,9 @@ class Callout:
         ]
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Callout) and self.region_name == other.region_name and self.location == other.location
 
     @property
     def region_name_localizations(self) -> Localization:

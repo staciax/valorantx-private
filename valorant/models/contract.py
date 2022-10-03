@@ -226,6 +226,15 @@ class ProcessedMatch:
     def __bool__(self) -> bool:
         return self._could_progress_missions
 
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, ProcessedMatch) and self.id == other.id
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash(self.id)
+
     @property
     def start_time(self) -> datetime.datetime:
         """:class: `datetime.datetime` Returns the match's start time."""
@@ -358,6 +367,16 @@ class Content:
     def __repr__(self) -> str:
         return f'<Content relation={self.relation!r}>'
 
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, Content)
+            and self.relation_type == other.relation_type
+            and self.relation_uuid == other.relation_uuid
+        )
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
     @property
     def chapters(self) -> List[Chapter]:
         """:class: `List[Chapter]` Returns the chapters."""
@@ -395,6 +414,24 @@ class Chapter:
     def __repr__(self) -> str:
         return f'<Chapter is_epilogue={self.is_epilogue()!r}>'
 
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Chapter) and self.index == other.index
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __lt__(self, other: object) -> bool:
+        return isinstance(other, Chapter) and self.index < other.index
+
+    def __le__(self, other: object) -> bool:
+        return isinstance(other, Chapter) and self.index <= other.index
+
+    def __gt__(self, other: object) -> bool:
+        return isinstance(other, Chapter) and self.index > other.index
+
+    def __ge__(self, other: object) -> bool:
+        return isinstance(other, Chapter) and self.index >= other.index
+
     @property
     def rewards(self) -> List[Reward]:
         """:class: `List[Reward]` Returns the rewards."""
@@ -414,6 +451,12 @@ class Level:
     def __repr__(self) -> str:
         return f'<Level reward={self.reward!r}>'
 
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Level) and self.reward == other.reward
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
 
 class Reward:
     def __init__(self, client: Client, data: Dict[str, Any], is_free: bool = False, index: int = 0) -> None:
@@ -428,13 +471,18 @@ class Reward:
     def __repr__(self) -> str:
         return f'<Reward reward={self.reward!r}>'
 
-    def __bool__(self) -> bool:
-        return self.is_highlighted()
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Reward) and self.uuid == other.uuid
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
     def is_highlighted(self) -> bool:
+        """:class: `bool` Returns whether the reward is highlighted."""
         return self._is_highlighted
 
     def is_free(self) -> bool:
+        """:class: `bool` Returns whether the reward is free."""
         return self._is_free
 
     # special case for the free rewards

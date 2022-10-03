@@ -102,6 +102,7 @@ class MatchHistory:
     def get_match_details(self) -> List[MatchDetails]:
         return self._match_details
 
+
 class Team:
     def __init__(self, data: MatchTeamPayload) -> None:
         self.id: str = data.get('teamId')
