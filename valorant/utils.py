@@ -51,6 +51,20 @@ def is_uuid(value: str) -> bool:
         return False
 
 
+def _unescape(string: str) -> str:
+    string = string.replace(r"\\", "\\")
+    string = string.replace(r"\t", "\t")
+    string = string.replace(r"\r", "\r")
+    string = string.replace(r"\n", "\n")
+    string = string.replace(r"\"", '"')
+    return string
+
+
+def string_escape(string: str) -> str:
+    string = string.encode('raw_unicode_escape').decode('unicode_escape')
+    return string
+
+
 def _to_dict(text: str) -> dict:
     """Convert text to dict"""
     return json.loads(text)

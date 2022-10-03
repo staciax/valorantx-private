@@ -26,6 +26,7 @@ from __future__ import annotations
 from typing import Dict, Optional, Union
 
 from .enums import Locale
+from . import utils
 
 __all__ = ("Localization",)
 
@@ -80,102 +81,102 @@ class Localization:
     @property
     def arabic(self) -> str:
         """:class:`str`: Returns the Arabic locale."""
-        return self.ar_AE
+        return utils.string_escape(self.ar_AE)
 
     @property
     def german(self) -> str:
         """:class:`str`: Returns the German locale."""
-        return self.de_DE
+        return utils.string_escape(self.de_DE)
 
     @property
     def english(self) -> str:
         """:class:`str`: Returns the English locale."""
-        return self.en_US
+        return utils.string_escape(self.en_US)
 
     @property
     def american_english(self) -> str:
         """:class:`str`: Returns the American English locale."""
-        return self.en_US
+        return utils.string_escape(self.en_US)
 
     @property
     def british_english(self) -> str:
         """:class:`str`: Returns the British English locale."""
-        return self.en_US
+        return utils.string_escape(self.en_US)
 
     @property
     def spanish(self) -> str:
         """:class:`str`: Returns the Spanish locale."""
-        return self.es_ES
+        return utils.string_escape(self.es_ES)
 
     @property
     def spanish_mexican(self) -> str:
         """:class:`str`: Returns the Spanish Mexican locale."""
-        return self.es_MX
+        return utils.string_escape(self.es_MX)
 
     @property
     def french(self) -> str:
         """:class:`str`: Returns the French locale."""
-        return self.fr_FR
+        return utils.string_escape(self.fr_FR)
 
     @property
     def indonesian(self) -> str:
         """:class:`str`: Returns the Indonesian locale."""
-        return self.id_ID
+        return utils.string_escape(self.id_ID)
 
     @property
     def italian(self) -> str:
         """:class:`str`: Returns the Italian locale."""
-        return self.it_IT
+        return utils.string_escape(self.it_IT)
 
     @property
     def japanese(self) -> str:
         """:class:`str`: Returns the Japanese locale."""
-        return self.ja_JP
+        return utils.string_escape(self.ja_JP)
 
     @property
     def korean(self) -> str:
         """:class:`str`: Returns the Korean locale."""
-        return self.ko_KR
+        return utils.string_escape(self.ko_KR)
 
     @property
     def polish(self) -> str:
         """:class:`str`: Returns the Polish locale."""
-        return self.pl_PL
+        return utils.string_escape(self.pl_PL)
 
     @property
     def portuguese_brazil(self) -> str:
         """:class:`str`: Returns the Portuguese Brazil locale."""
-        return self.pt_BR
+        return utils.string_escape(self.pt_BR)
 
     @property
     def russian(self) -> str:
         """:class:`str`: Returns the Russian locale."""
-        return self.ru_RU
+        return utils.string_escape(self.ru_RU)
 
     @property
     def thai(self) -> str:
         """:class:`str`: Returns the Thai locale."""
-        return self.th_TH
+        return utils.string_escape(self.th_TH)
 
     @property
     def turkish(self) -> str:
         """:class:`str`: Returns the Turkish locale."""
-        return self.tr_TR
+        return utils.string_escape(self.tr_TR)
 
     @property
     def vietnamese(self) -> str:
         """:class:`str`: Returns the Vietnamese locale."""
-        return self.vi_VN
+        return utils.string_escape(self.vi_VN)
 
     @property
     def chinese_simplified(self) -> str:
         """:class:`str`: Returns the Chinese Simplified locale."""
-        return self.zh_CN
+        return utils.string_escape(self.zh_CN)
 
     @property
     def chinese_traditional(self) -> str:
         """:class:`str`: Returns the Chinese Traditional locale."""
-        return self.zh_TW
+        return utils.string_escape(self.zh_TW)
 
     @property
     def default(self) -> str:
