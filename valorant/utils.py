@@ -61,7 +61,12 @@ def _unescape(string: str) -> str:
 
 
 def string_escape(string: str) -> str:
-    string = string.encode('raw_unicode_escape').decode('unicode_escape')
+    # string = string.encode('raw_unicode_escape').decode('unicode_escape')
+    string = string.replace('\r\n', ' ')
+    string = string.replace('\t', ' ')
+    string = string.replace('\r', ' ')
+    string = string.replace('\n', ' ')
+    string = string.replace('"', '\\"')
     return string
 
 
