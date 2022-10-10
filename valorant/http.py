@@ -26,9 +26,10 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
+import enum
 import logging
 import sys
-from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, List, Mapping, Optional, TypeVar, Union  # NoReturn,
+from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, List, Mapping, Optional, TypeVar, Union  # NoReturn
 from urllib.parse import urlencode
 
 import aiohttp
@@ -57,44 +58,51 @@ if urllib3 is not None:
 _log = logging.getLogger(__name__)
 
 
+class EndpointType(enum.Enum):
+    pd = 0
+    glz = 1
+    shard = 2
+    play_valorant = 3
+    valorant_api = 4
+    valtracker_gg = 5
+
+
 class Route:
 
-    BASE_PD_URL: ClassVar[str] = "https://pd.{shard}.a.pvp.net"
-    BASE_GLZ_URL: ClassVar[str] = "https://glz-{region}-1.{shard}.a.pvp.net"
-    BASE_SHARD_URL: ClassVar[str] = "https://shared.{shard}.a.pvp.net"
-    BASE_PLAY_VALORANT_URL: ClassVar[str] = "https://playvalorant.com"
-    BASE_VALORANT_API_URL: ClassVar[str] = "https://valorant-api.com/v1"
-    BASE_VALTRACKER_GG_URL: ClassVar[str] = "https://api.valtracker.gg"  # add-on bundle items
+    BASE_PD_URL: ClassVar[str] = 'https://pd.{shard}.a.pvp.net'
+    BASE_GLZ_URL: ClassVar[str] = 'https://glz-{region}-1.{shard}.a.pvp.net'
+    BASE_SHARD_URL: ClassVar[str] = 'https://shared.{shard}.a.pvp.net'
+    BASE_PLAY_VALORANT_URL: ClassVar[str] = 'https://playvalorant.com'
+    BASE_VALORANT_API_URL: ClassVar[str] = 'https://valorant-api.com/v1'
+    BASE_VALTRACKER_GG_URL: ClassVar[str] = 'https://api.valtracker.gg'  # add-on bundle items
 
     def __init__(
         self,
         method: str,
         path: str,
-        endpoint: Optional[str] = "pd",
-        region: str = "ap",
+        endpoint: EndpointType = EndpointType.pd,
+        region: Region = Region.AP,
         **parameters: Any,
     ) -> None:
         self.method = method
         self.path = path
         self.endpoint = endpoint
-        self.region: Optional[Region] = getattr(Region, region.upper())
+        self.region: Region = region
         self.parameters = parameters
-
-        self.shard = self.region.shard
 
         url = ''
 
-        if endpoint == 'pd':
-            url = self.BASE_PD_URL.format(shard=self.shard) + path
-        elif endpoint == 'glz':
-            url = self.BASE_GLZ_URL.format(region=self.region, shard=self.region) + path
-        elif endpoint == 'shared':
-            url = self.BASE_SHARD_URL.format(shard=self.shard) + path
-        elif endpoint == 'play_valorant':
+        if endpoint == EndpointType.pd:
+            url = self.BASE_PD_URL.format(shard=str(region.shard)) + path
+        elif endpoint == EndpointType.glz:
+            url = self.BASE_GLZ_URL.format(region=str(region), shard=str(region)) + path
+        elif endpoint == EndpointType.shard:
+            url = self.BASE_SHARD_URL.format(shard=str(region.shard)) + path
+        elif endpoint == EndpointType.play_valorant:
             url = self.BASE_PLAY_VALORANT_URL + path
-        elif endpoint == 'valorant_api':
+        elif endpoint == EndpointType.valorant_api:
             url = self.BASE_VALORANT_API_URL + path
-        elif endpoint == 'valtracker_gg':
+        elif endpoint == EndpointType.valtracker_gg:
             url = self.BASE_VALTRACKER_GG_URL + path
 
         if parameters:
@@ -110,6 +118,7 @@ class HTTPClient:
         self._client_platform = 'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9'  # noqa: E501
         self._riot_auth: RiotAuth = RiotAuth()
         self._puuid: str = self._riot_auth.user_id
+        self._region: Region = try_enum(Region, self._riot_auth.region, Region.AP)
         self._riot_client_version: str = ''
 
         user_agent = 'valorantx (https://github.com/staciax/valorantx {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
@@ -118,11 +127,11 @@ class HTTPClient:
     async def request(self, route: Route, **kwargs: Any) -> Any:
         method = route.method
         url = route.url
-        asset_endpoint = kwargs.pop('asset_endpoint', False)
+        is_asset = kwargs.pop('is_asset', False)
         re_authorize = kwargs.pop('re_authorize', True)
         extra_exceptions = kwargs.pop('exceptions', None)
 
-        if not kwargs.get('asset_endpoint', False):
+        if not kwargs.get('is_asset', False):
             kwargs['headers'] = self._headers
         else:
             kwargs['headers'] = {
@@ -151,7 +160,7 @@ class HTTPClient:
                         if re_authorize:
                             await self._riot_auth.reauthorize()
                             await self.__build_headers()
-                            return await self.request(route, asset_endpoint=asset_endpoint, re_authorize=False, **kwargs)
+                            return await self.request(route, is_asset=is_asset, re_authorize=False, **kwargs)
                         # raise PhaseError(response, data)
 
                     # we are being rate limited
@@ -171,7 +180,7 @@ class HTTPClient:
                             raise NotFound(response, extra_exceptions)
                         raise NotFound(response, data)
                     elif response.status >= 500:
-                        if not asset_endpoint:
+                        if not is_asset:
                             raise RiotServerError(response, data)
                         else:
                             raise ValorantAPIServerError(response, data)
@@ -219,79 +228,79 @@ class HTTPClient:
     # valorant-api.com
 
     def asset_valorant_version(self) -> Response[version.Version]:
-        return self.request(Route("GET", "/version", "valorant_api"), asset_endpoint=True)
+        return self.request(Route('GET', '/version', EndpointType.valorant_api), is_asset=True)
 
     def asset_get_agents(self) -> Response[Any]:
-        r = Route('GET', '/agents', 'valorant_api', isPlayableCharacter=True, language='all')
-        return self.request(r, asset_endpoint=True)
+        r = Route('GET', '/agents', EndpointType.valorant_api, isPlayableCharacter=True, language='all')
+        return self.request(r, is_asset=True)
 
     def asset_get_buddies(self) -> Response[Any]:
-        return self.request(Route('GET', '/buddies', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/buddies', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_bundles(self) -> Response[Any]:
-        return self.request(Route('GET', '/bundles', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/bundles', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_ceremonies(self) -> Response[Any]:
-        return self.request(Route('GET', '/ceremonies', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/ceremonies', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_events(self) -> Response[Any]:
-        return self.request(Route('GET', '/events', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/events', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_competitive_tiers(self) -> Response[Any]:
-        return self.request(Route('GET', '/competitivetiers', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/competitivetiers', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_content_tiers(self) -> Response[Any]:
-        return self.request(Route('GET', '/contenttiers', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/contenttiers', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_contracts(self) -> Response[Any]:
-        return self.request(Route('GET', '/contracts', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/contracts', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_currencies(self) -> Response[Any]:
-        return self.request(Route('GET', '/currencies', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/currencies', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_game_modes(self) -> Response[Any]:
-        return self.request(Route('GET', '/gamemodes', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/gamemodes', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_game_modes_equippables(self) -> Response[Any]:
-        return self.request(Route('GET', '/gamemodes/equippables', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/gamemodes/equippables', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_gear(self) -> Response[Any]:
-        return self.request(Route('GET', '/gear', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/gear', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_level_borders(self) -> Response[Any]:
-        return self.request(Route('GET', '/levelborders', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/levelborders', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_maps(self) -> Response[Any]:
-        return self.request(Route('GET', '/maps', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/maps', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_missions(self) -> Response[Any]:
-        return self.request(Route('GET', '/missions', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/missions', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_player_cards(self) -> Response[Any]:
-        return self.request(Route('GET', '/playercards', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/playercards', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_player_titles(self) -> Response[Any]:
-        return self.request(Route('GET', '/playertitles', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/playertitles', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_seasons(self) -> Response[Any]:
-        return self.request(Route('GET', '/seasons', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/seasons', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_seasons_competitive(self) -> Response[Any]:
-        return self.request(Route('GET', '/seasons/competitive', 'valorant_api'), asset_endpoint=True)
+        return self.request(Route('GET', '/seasons/competitive', EndpointType.valorant_api), is_asset=True)
 
     def asset_get_sprays(self) -> Response[Any]:
-        return self.request(Route('GET', '/sprays', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/sprays', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_themes(self) -> Response[Any]:
-        return self.request(Route('GET', '/themes', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/themes', EndpointType.valorant_api, language='all'), is_asset=True)
 
     def asset_get_weapons(self) -> Response[Any]:
-        return self.request(Route('GET', '/weapons', 'valorant_api', language='all'), asset_endpoint=True)
+        return self.request(Route('GET', '/weapons', EndpointType.valorant_api, language='all'), is_asset=True)
 
     # valtracker endpoint
 
     def asset_get_bundle_items(self) -> Response[Any]:
-        return self.request(Route('GET', '/bundles', 'valtracker_gg'), asset_endpoint=True)
+        return self.request(Route('GET', '/bundles', EndpointType.valtracker_gg), is_asset=True)
 
     # play valorant endpoints
 
@@ -300,31 +309,71 @@ class HTTPClient:
         FetchPatchNote
         Get the latest patch note
         """
-        r = Route("GET", f"/page-data/{str(locale).lower()}/news/tags/patch-notes/page-data.json", "play_valorant")
+        r = Route(
+            'GET',
+            f'/page-data/{str(locale).lower()}/news/tags/patch-notes/page-data.json',
+            EndpointType.play_valorant,
+            self._region,
+        )
         return self.request(r)
 
     # PVP endpoints
+
+    def fetch_favorites(self) -> Response[Any]:
+        """
+        FetchFavorite
+        Get the favorite list of the authenticated user
+        """
+        r = Route('GET', f'/favorites/v1/players/{self._puuid}/favorites', EndpointType.pd, self._region)
+        return self.request(r)
+
+    def post_favorite(self, item_id: str) -> Response[Any]:
+        """
+        PostFavorite
+        Add a player to the favorite list of the authenticated user
+        """
+        payload = {
+            "ItemID": item_id,
+        }
+        r = Route('POST', f'/favorites/v1/players/{self._puuid}/favorites', EndpointType.pd, self._region)
+        return self.request(r, json=payload)
+
+    def delete_favorite(self, item_id: str) -> Response[Any]:
+        """
+        DeleteFavorite
+        Remove a player from the favorite list of the authenticated user
+        """
+        item_id_without_dashes = str(item_id).replace('-', '')
+        r = Route(
+            'DELETE',
+            f'/favorites/v1/players/{self._puuid}/favorites/{item_id_without_dashes}',
+            EndpointType.pd,
+            self._region,
+        )
+        return self.request(r)
 
     def fetch_content(self) -> Response[Any]:
         """
         Content_FetchContent
         Get names and ids for game content such as agents, maps, guns, etc.
         """
-        return self.request(Route('GET', '/content-service/v3/content', 'shared'))
+        return self.request(Route('GET', '/content-service/v3/content', EndpointType.shard, self._region))
 
     def fetch_account_xp(self) -> Response[xp.AccountXP]:
         """
         AccountXP_GetPlayer
         Get the account level, XP, and XP history for the active player
         """
-        return self.request(Route('GET', f'/account-xp/v1/players/{self._puuid}', 'pd'))
+        return self.request(Route('GET', f'/account-xp/v1/players/{self._puuid}', EndpointType.pd, self._region))
 
     def fetch_player_loadout(self) -> Response[collection.Loadout]:
         """
         playerLoadoutUpdate
         Get the player's current loadout
         """
-        return self.request(Route('GET', f'/personalization/v2/players/{self._puuid}/playerloadout', 'pd'))
+        return self.request(
+            Route('GET', f'/personalization/v2/players/{self._puuid}/playerloadout', EndpointType.pd, self._region)
+        )
 
     def put_player_loadout(self, loadout: Mapping) -> Response[collection.Loadout]:
         """
@@ -332,7 +381,7 @@ class HTTPClient:
         Use the values from self._fetch_player_loadout() excluding properties like subject and version.
         Loadout changes take effect when starting a new game
         """
-        r = Route('PUT', f'/personalization/v2/players/{self._puuid}/playerloadout', 'pd')
+        r = Route('PUT', f'/personalization/v2/players/{self._puuid}/playerloadout', EndpointType.pd, self._region)
         return self.request(r, json=loadout)
 
     def fetch_mmr(self, puuid: Optional[str] = None) -> Response[Any]:
@@ -341,7 +390,7 @@ class HTTPClient:
         Get the match making rating for a player
         """
         puuid = self.__check_puuid(puuid)
-        return self.request(Route('GET', f'/mmr/v1/players/{puuid}', 'pd'))
+        return self.request(Route('GET', f'/mmr/v1/players/{puuid}', EndpointType.pd, self._region))
 
     def fetch_match_history(
         self,
@@ -363,7 +412,8 @@ class HTTPClient:
         r = Route(
             'GET',
             f'/match-history/v1/history/{puuid}',
-            'pd',
+            EndpointType.pd,
+            self._region,
             startIndex=start_index,
             endIndex=end_index,
             queue=str(queue_id),
@@ -376,7 +426,7 @@ class HTTPClient:
         Includes everything that the in-game match details screen shows including damage and kill positions,
         same as the official API w/ a production key
         """
-        return self.request(Route("GET", f"/match-details/v1/matches/{match_id}", "pd"))
+        return self.request(Route('GET', f'/match-details/v1/matches/{match_id}', EndpointType.pd, self._region))
 
     def fetch_competitive_updates(
         self,
@@ -394,9 +444,10 @@ class HTTPClient:
         queue_id = try_enum(QueueID, queue_id, QueueID.competitive)
         puuid = self.__check_puuid(puuid)
         r = Route(
-            "GET",
-            f"/mmr/v1/players/{puuid}/competitiveupdates",
-            "pd",
+            'GET',
+            f'/mmr/v1/players/{puuid}/competitiveupdates',
+            EndpointType.pd,
+            self._region,
             startIndex=start_index,
             endIndex=end_index,
             queue=str(queue_id),
@@ -423,7 +474,8 @@ class HTTPClient:
         r = Route(
             'GET',
             f'/mmr/v1/leaderboards/affinity/{str(region)}/queue/competitive/season/{season_id}',
-            'pd',
+            EndpointType.pd,
+            self._region,
             startIndex=start_index,
             size=size,
         )
@@ -434,21 +486,21 @@ class HTTPClient:
         Restrictions_FetchPlayerRestrictionsV3
         Checks for any gameplay penalties on the account
         """
-        return self.request(Route('GET', '/restrictions/v3/penalties', 'pd'))
+        return self.request(Route('GET', '/restrictions/v3/penalties', EndpointType.pd, self._region))
 
     def fetch_item_progression_definitions(self) -> Response[Any]:
         """
         ItemProgressionDefinitionsV2_Fetch
         Get details for item upgrades
         """
-        return self.request(Route('GET', '/contract-definitions/v3/item-upgrades', 'pd'))
+        return self.request(Route('GET', '/contract-definitions/v3/item-upgrades', EndpointType.pd, self._region))
 
     def fetch_config(self) -> Response[Any]:
         """
         Config_FetchConfig
         Get various internal game configuration settings set by Riot
         """
-        return self.request(Route('GET', '/v1/config/{region}', 'shared'))
+        return self.request(Route('GET', '/v1/config/{region}', EndpointType.shard, self._region))
 
     def fetch_name_by_puuid(self, puuid: Optional[List[str]] = None) -> Response[Any]:
         """
@@ -459,7 +511,7 @@ class HTTPClient:
         """
         if puuid is None:
             puuid = []
-        return self.request(Route('PUT', '/name-service/v2/players', 'pd'), json=puuid)
+        return self.request(Route('PUT', '/name-service/v2/players', EndpointType.pd, self._region), json=puuid)
 
     # contract endpoints
 
@@ -468,14 +520,14 @@ class HTTPClient:
         ContractDefinitions_Fetch
         Get names and descriptions for contracts
         """
-        return self.request(Route('GET', '/contract-definitions/v3/definitions', 'pd'))
+        return self.request(Route('GET', '/contract-definitions/v3/definitions', EndpointType.pd, self._region))
 
     def contracts_fetch(self) -> Response[contract.Contracts]:
         """
         Contracts_Fetch
         Get a list of contracts and completion status including match history
         """
-        return self.request(Route('GET', f'/contracts/v1/contracts/{self._puuid}', 'pd'))
+        return self.request(Route('GET', f'/contracts/v1/contracts/{self._puuid}', EndpointType.pd, self._region))
 
     def contracts_activate(self, contract_id: str) -> Response[Any]:
         """
@@ -484,7 +536,7 @@ class HTTPClient:
 
         {contract id}: The ID of the contract to activate. Can be found from the ContractDefinitions_Fetch endpoint.
         """
-        r = Route('POST', f'/contracts/v1/contracts/{self._puuid}/special/{contract_id}', 'pd')
+        r = Route('POST', f'/contracts/v1/contracts/{self._puuid}/special/{contract_id}', EndpointType.pd, self._region)
         return self.request(r)
 
     def contracts_fetch_active_story(self) -> Response[Any]:
@@ -492,21 +544,23 @@ class HTTPClient:
         ContractDefinitions_FetchActiveStory
         Get the battlepass contracts
         """
-        return self.request(Route('GET', '/contract-definitions/v2/definitions/story', 'pd'))
+        return self.request(Route('GET', '/contract-definitions/v2/definitions/story', EndpointType.pd, self._region))
 
     def item_progress_fetch_definitions(self) -> Response[Any]:
         """
         ItemProgressDefinitionsV2_Fetch
         Fetch definitions for skin upgrade progressions
         """
-        return self.request(Route('GET', '/contract-definitions/v3/item-upgrades', 'pd'))
+        return self.request(Route('GET', '/contract-definitions/v3/item-upgrades', EndpointType.pd, self._region))
 
     def contracts_unlock_item_progress(self, progression_id: str) -> Response[Any]:
         """
         Contracts_UnlockItemProgressV2
         Unlock an item progression
         """
-        return self.request(Route('POST', f'/contracts/v2/item-upgrades/{progression_id}/{self._puuid}', 'pd'))
+        return self.request(
+            Route('POST', f'/contracts/v2/item-upgrades/{progression_id}/{self._puuid}', EndpointType.pd, self._region)
+        )
 
     # store endpoints
 
@@ -515,14 +569,14 @@ class HTTPClient:
         Store_GetOffers
         Get prices for all store items
         """
-        return self.request(Route('GET', '/store/v1/offers/', 'pd'))
+        return self.request(Route('GET', '/store/v1/offers/', EndpointType.pd, self._region))
 
     def store_fetch_storefront(self) -> Response[store.StoreFront]:
         """
         Store_GetStorefrontV2
         Get the currently available items in the store
         """
-        return self.request(Route('GET', f'/store/v2/storefront/{self._puuid}', 'pd'))
+        return self.request(Route('GET', f'/store/v2/storefront/{self._puuid}', EndpointType.pd, self._region))
 
     def store_fetch_wallet(self) -> Response[store.Wallet]:
         """
@@ -531,14 +585,14 @@ class HTTPClient:
         Valorant points have the id 85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741
         and Radianite points have the id e59aa87c-4cbf-517a-5983-6e81511be9b7
         """
-        return self.request(Route('GET', f'/store/v1/wallet/{self._puuid}', 'pd'))
+        return self.request(Route('GET', f'/store/v1/wallet/{self._puuid}', EndpointType.pd, self._region))
 
     def store_fetch_order(self, order_id: str) -> Response[Any]:
         """
         Store_GetOrder
         {order id}: The ID of the order. Can be obtained when creating an order.
         """
-        return self.request(Route('GET', f'/store/v1/order/{order_id}', 'pd'))
+        return self.request(Route('GET', f'/store/v1/order/{order_id}', EndpointType.pd, self._region))
 
     def store_fetch_entitlements(self, item_type: Optional[Union[str, ItemType]] = None) -> Response[Any]:
         """
@@ -557,7 +611,10 @@ class HTTPClient:
         """
 
         r = Route(
-            'GET', f'/store/v1/entitlements/{self._puuid}' + (f'/{str(item_type)}' if item_type is not None else ''), 'pd'
+            'GET',
+            f'/store/v1/entitlements/{self._puuid}' + (f'/{str(item_type)}' if item_type is not None else ''),
+            EndpointType.pd,
+            self._region,
         )
         return self.request(r)
 
@@ -600,7 +657,7 @@ class HTTPClient:
         if self._riot_client_version == '':
             self._riot_client_version = await self._get_current_version()
 
-        self._headers['Authorization'] = f"Bearer %s" % self._riot_auth.access_token
+        self._headers['Authorization'] = f'Bearer %s' % self._riot_auth.access_token
         self._headers['X-Riot-Entitlements-JWT'] = self._riot_auth.entitlements_token
         self._headers['X-Riot-ClientPlatform'] = self._client_platform
         self._headers['X-Riot-ClientVersion'] = self._riot_client_version

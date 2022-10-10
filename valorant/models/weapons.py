@@ -465,7 +465,7 @@ class SkinChroma(BaseModel):
     @property
     def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon."""
-        if self._display_name == self.base_weapon._display_name:
+        if self._display_name == getattr(self.base_weapon, '_display_name'):
             display_icon = self.base_weapon.display_icon
         else:
             display_icon = self._display_icon or self.base_skin.display_icon
@@ -674,16 +674,16 @@ class BaseLoadout:
 
     if TYPE_CHECKING:
         _client: Client
-        _buddy_uuid: str
-        _buddy_level_uuid: str
-        _is_random: bool
-        _is_favorite: bool
 
-    def _update_loadout(self, loadout: SkinLoadoutPayload) -> None:
+    def __init__(self, loadout: SkinLoadoutPayload, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
         self._buddy_uuid = loadout.get('CharmID')
         self._buddy_level_uuid = loadout.get('CharmLevelID')
-        self._is_favorite = loadout.get('IsFavorite?', False)  # feature not implemented yet
-        self._is_random = loadout.get('IsRandom?', False)  # feature not implemented yet
+        self._is_favorite: bool = False
+
+    def set_favorite(self, value: bool) -> None:
+        """Sets the loadout as favorite."""
+        self._is_favorite = value
 
     @property
     def buddy(self) -> Optional[Buddy]:
@@ -699,10 +699,6 @@ class BaseLoadout:
         """:class: `bool` Returns whether the skin is favorite."""
         return self._is_favorite
 
-    def is_random(self) -> bool:
-        """:class: `bool` Returns whether the skin is random."""
-        return self._is_random
-
 
 class LoadoutRandomFilter:
     pass
@@ -710,8 +706,7 @@ class LoadoutRandomFilter:
 
 class SkinLoadout(Skin, BaseLoadout):
     def __init__(self, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
-        super().__init__(client=client, data=data)
-        self._update_loadout(loadout)
+        super().__init__(loadout=loadout, client=client, data=data)
 
     def __repr__(self) -> str:
         return f"<SkinLoadout display_name={self.display_name!r}>"
