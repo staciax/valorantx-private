@@ -146,7 +146,7 @@ class Collection(BaseModel):
         # self.user = client.user
         self._uuid: str = data['Subject']
         self.version: int = data['Version']
-        self._incognito: bool = data['Incognito']
+        self._incognito: bool = data.get('Incognito', False)
         self.identity: Identity = Identity(client, data['Identity'])
         self._skins_loadout: List[SkinLoadoutPayload] = data['Guns']
         self._sprays_loadout: List[SprayLoadoutPayload] = data['Sprays']
@@ -173,11 +173,11 @@ class Collection(BaseModel):
     def sprays(self) -> Union[SprayCollection, List[SprayL]]:
         spray_loadout = []
         for spray in self._sprays_loadout:
-            if spray['SprayLevelID']:
+            if spray.get('SprayLevelID'):
                 spray_loadout.append(
                     SprayLevelLoadout._from_loadout(client=self._client, uuid=spray['SprayLevelID'], loadout=spray)
                 )
-            elif spray['SprayID']:
+            elif spray.get('SprayID'):
                 spray_loadout.append(SprayLoadout._from_loadout(client=self._client, uuid=spray['SprayID'], loadout=spray))
 
         return SprayCollection(spray_loadout)
@@ -187,15 +187,15 @@ class Collection(BaseModel):
 
         skin_loadout = []
         for skin in sorted(self._skins_loadout, key=lambda x: x['ID']):
-            if skin['ChromaID']:
+            if skin.get('ChromaID'):
                 skin_loadout.append(
                     SkinChromaLoadout._from_loadout(client=self._client, uuid=skin['ChromaID'], loadout=skin)
                 )
-            elif skin['SkinLevelID']:
+            elif skin.get('SkinLevelID'):
                 skin_loadout.append(
                     SkinLevelLoadout._from_loadout(client=self._client, uuid=skin['SkinLevelID'], loadout=skin)
                 )
-            elif skin['SkinID']:
+            elif skin.get('SkinID'):
                 skin_loadout.append(SkinLoadout._from_loadout(client=self._client, uuid=skin['SkinID'], loadout=skin))
 
         return SkinCollection(skin_loadout)
@@ -207,26 +207,25 @@ class Collection(BaseModel):
 
 class SkinCollection:
 
-    classic: SkinL
-    shorty: SkinL
-    frenzy: SkinL
-    ghost: SkinL
-    sheriff: SkinL
-    stinger: SkinL
-    spectre: SkinL
-    bucky: SkinL
-    judge: SkinL
-    bulldog: SkinL
-    guardian: SkinL
-    phantom: SkinL
-    vandal: SkinL
-    marshal: SkinL
-    operator: SkinL
-    ares: SkinL
-    odin: SkinL
-    melee: SkinL
-
     def __init__(self, loadout: List[SkinL]) -> None:
+        self.melee: Optional[SkinL] = None
+        self.classic: Optional[SkinL] = None
+        self.shorty: Optional[SkinL] = None
+        self.frenzy: Optional[SkinL] = None
+        self.ghost: Optional[SkinL] = None
+        self.sheriff: Optional[SkinL] = None
+        self.stinger: Optional[SkinL] = None
+        self.spectre: Optional[SkinL] = None
+        self.bucky: Optional[SkinL] = None
+        self.judge: Optional[SkinL] = None
+        self.bulldog: Optional[SkinL] = None
+        self.guardian: Optional[SkinL] = None
+        self.phantom: Optional[SkinL] = None
+        self.vandal: Optional[SkinL] = None
+        self.marshal: Optional[SkinL] = None
+        self.operator: Optional[SkinL] = None
+        self.ares: Optional[SkinL] = None
+        self.odin: Optional[SkinL] = None
         self._update(loadout)
 
     def __repr__(self) -> str:
@@ -260,7 +259,8 @@ class SkinCollection:
 
     def _update(self, loadout: List[SkinL]) -> None:
         for skin in loadout:
-            setattr(self, skin.base_weapon.display_name.lower(), skin)
+            if hasattr(self, skin.base_weapon.display_name.lower()):
+                setattr(self, skin.base_weapon.display_name.lower(), skin)
 
     @property
     def sidearms(self) -> List[SkinL]:
@@ -330,15 +330,15 @@ class SprayCollection:
                 self._slot_3 = spray
 
     @property
-    def slot_1(self) -> SprayL:
+    def slot_1(self) -> Optional[SprayL]:
         return self._slot_1
 
     @property
-    def slot_2(self) -> SprayL:
+    def slot_2(self) -> Optional[SprayL]:
         return self._slot_2
 
     @property
-    def slot_3(self) -> SprayL:
+    def slot_3(self) -> Optional[SprayL]:
         return self._slot_3
 
     def to_list(self) -> List[SprayL]:

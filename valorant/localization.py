@@ -25,8 +25,8 @@ from __future__ import annotations
 
 from typing import Dict, Optional, Union
 
-from .enums import Locale
 from . import utils
+from .enums import Locale
 
 __all__ = ("Localization",)
 

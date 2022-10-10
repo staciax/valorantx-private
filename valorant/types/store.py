@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from typing import List, TypedDict, Union
 
-from typing_extensions import NotRequired, TypeAlias
+from typing_extensions import NotRequired
 
 
 class Item(TypedDict):

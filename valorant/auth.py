@@ -202,7 +202,6 @@ class RiotAuth(_RiotAuth):
             ) as r:
                 data = await r.json()
                 self.region = data['affinities']['live']
-
             # endregion
 
     async def reauthorize(self) -> bool:

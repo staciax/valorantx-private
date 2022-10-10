@@ -122,7 +122,7 @@ class Contract(BaseModel):
 
 
 class ContractU(Contract):
-    def __init__(self, client: Client, data: Dict[str, Any], contract: ContractUPayload) -> None:
+    def __init__(self, client: Client, data: Mapping[str, Any], contract: ContractUPayload) -> None:
         super().__init__(client=client, data=data)
         self.total_progression_earned: int = contract['ContractProgression']['TotalProgressionEarned']
         self.highest_rewarded_level: int = contract['ContractProgression']['HighestRewardedLevel'][

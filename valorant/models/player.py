@@ -148,7 +148,7 @@ class Player(_PlayerTag):
         match_history = await self._client.fetch_match_history(puuid=self.puuid, end_index=1)
         for match in match_history:
             for player in match.players:
-                if player.puuid == self.subject:
+                if player.puuid == self.puuid:
                     self.name = player.name
                     self.tagline = player.tagline
                     self.player_card = player.player_card

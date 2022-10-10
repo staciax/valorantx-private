@@ -201,16 +201,15 @@ class Region(Enum):
     PBE = 'pbe'
 
     def __str__(self) -> str:
-        return self.region_shard_override()
+        if self.shard == 'pbe':
+            return 'na'
+        return str(self.value)
 
     @property
     def shard(self) -> str:
-        return getattr(Shard, self.value.upper())
-
-    def region_shard_override(self) -> str:
-        if self.shard is self.PBE.value:
-            return self.NA.value
-        return str(self.value)
+        if isinstance(self.value, str):
+            return getattr(Shard, self.value.upper())
+        return ''
 
 
 class Shard(Enum):
