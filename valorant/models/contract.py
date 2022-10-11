@@ -204,6 +204,14 @@ class ContractU(Contract):
                     else:
                         yield from chapter.rewards
 
+    def get_next_reward(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
+        """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the next reward."""
+        reward = self.next_tier_reward
+        if reward:
+            return reward.get_reward()
+        else:
+            return None
+
     @classmethod
     def _from_contract(cls, client: Client, contract: ContractUPayload) -> Self:
         data = client.assets.get_contract(contract['ContractDefinitionID'])
@@ -469,7 +477,7 @@ class Reward:
         self.chapter_index: int = index
 
     def __repr__(self) -> str:
-        return f'<Reward reward={self.reward!r}>'
+        return f'<Reward reward={self._reward!r}>'
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Reward) and self.uuid == other.uuid
@@ -488,7 +496,7 @@ class Reward:
     # special case for the free rewards
 
     @property
-    def reward(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
+    def _reward(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
         if self.type == str(RewardType.skin_level):
             return self._client.get_skin_level(uuid=self.uuid)
         elif self.type == str(RewardType.buddy_level):
@@ -504,3 +512,7 @@ class Reward:
         else:
             _log.warning(f'Unknown contract reward type {self.type!r} with uuid {self.uuid!r}')
             return None
+
+    def get_reward(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
+        """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the reward."""
+        return self._reward

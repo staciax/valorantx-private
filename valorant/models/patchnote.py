@@ -112,6 +112,7 @@ class PatchNotes:
 
     @property
     def see_article_title(self) -> str:
+        """:class:`str`: Returns the title of the see article."""
         try:
             for edge in self.result.page_data.locale_edges:
                 if edge['node']['ns'] == 'home':
@@ -123,20 +124,21 @@ class PatchNotes:
 
     @property
     def title(self) -> str:
+        """:class:`str`: The title of the patch notes."""
         return self.result.page_data.title
 
     @property
     def patch_notes(self) -> List[PatchNote]:
+        """:class:`List[:class:`PatchNote`]: Returns a list of patch notes."""
         return [
             PatchNote(client=self._client, data=node, locale=self.locale) for node in self.result.page_data.article_nodes
         ]
 
-    @property
-    def latest(self) -> Optional[PatchNote]:
+    def get_latest_patch_note(self) -> Optional[PatchNote]:
+        """:class:`Optional[:class:`PatchNote`]: Returns the latest patch note."""
         if len(self.result.page_data.article_nodes) > 0:
             return PatchNote(client=self._client, data=self.result.page_data.article_nodes[0], locale=self.locale)
         return None
-
 
 class PatchNote:
 
@@ -173,10 +175,12 @@ class PatchNote:
 
     @property
     def url(self) -> str:
+        """:class:`str`: The URL of the patch note."""
         return self._url
 
     @property
     def version(self) -> float:
+        """:class:`float`: The version of the patch note."""
         digits = [i for i in self.title if i.isdigit()]
         try:
             version = float(digits[0] + '.' + ''.join(digits[1:]))
@@ -187,13 +191,16 @@ class PatchNote:
 
     @property
     def banner(self) -> Asset:
+        """:class:`Asset`: The banner of the patch note."""
         return Asset._from_url(client=self._client, url=self._banner_url)
 
     @property
     def timestamp(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: The timestamp of the patch note."""
         return utils.parse_iso_datetime(self._date_iso)
 
     @property
     def category_title(self) -> Optional[str]:
+        """:class:`Optional[str]`: The category title of the patch note."""
         if len(self._category_title) > 0:
             return self._category_title[0]['title']
