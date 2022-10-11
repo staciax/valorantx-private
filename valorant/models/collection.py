@@ -206,7 +206,6 @@ class Collection(BaseModel):
 
 
 class SkinCollection:
-
     def __init__(self, loadout: List[SkinL]) -> None:
         self.melee: Optional[SkinL] = None
         self.classic: Optional[SkinL] = None

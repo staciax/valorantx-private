@@ -706,7 +706,8 @@ class LoadoutRandomFilter:
 
 class SkinLoadout(Skin, BaseLoadout):
     def __init__(self, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
-        super().__init__(loadout=loadout, client=client, data=data)
+        super().__init__(client=client, data=data)
+        BaseLoadout.__init__(self, loadout=loadout)
 
     def __repr__(self) -> str:
         return f"<SkinLoadout display_name={self.display_name!r}>"
@@ -720,7 +721,7 @@ class SkinLoadout(Skin, BaseLoadout):
 class SkinLevelLoadout(SkinLevel, BaseLoadout):
     def __init__(self, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
         super().__init__(client=client, data=data)
-        self._update_loadout(loadout)
+        BaseLoadout.__init__(self, loadout=loadout)
 
     def __repr__(self) -> str:
         return f"<SkinLevelLoadout display_name={self.display_name!r}>"
@@ -734,7 +735,7 @@ class SkinLevelLoadout(SkinLevel, BaseLoadout):
 class SkinChromaLoadout(SkinChroma, BaseLoadout):
     def __init__(self, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
         super().__init__(client=client, data=data)
-        self._update_loadout(loadout)
+        BaseLoadout.__init__(self, loadout=loadout)
 
     def __repr__(self) -> str:
         return f"<SkinChromaLoadout display_name={self.display_name!r}>"
