@@ -225,6 +225,17 @@ class HTTPClient:
             else:
                 raise HTTPException(resp, 'failed to get asset')
 
+    async def text_from_url(self, url: str) -> str:
+        async with self._session.get(url) as resp:
+            if resp.status == 200:
+                return await resp.text()
+            elif resp.status == 404:
+                raise NotFound(resp, 'asset not found')
+            elif resp.status == 403:
+                raise Forbidden(resp, 'cannot retrieve asset')
+            else:
+                raise HTTPException(resp, 'failed to get asset')
+
     # valorant-api.com
 
     def asset_valorant_version(self) -> Response[version.Version]:
@@ -638,107 +649,107 @@ class HTTPClient:
         puuid = self.__check_puuid(puuid)
         return self.request(Route('DELETE', f'/parties/v1/players/{puuid}', EndpointType.glz, self._region))
 
-    def fetch_party(self, current_party_id: str) -> Response[Mapping[str, Any]]:
+    def fetch_party(self, party_id: str) -> Response[Mapping[str, Any]]:
         """
         Party_FetchParty
         Get details about a given party id
         """
-        r = Route('GET', f'/parties/v1/parties/{current_party_id}', EndpointType.glz, self._region)
+        r = Route('GET', f'/parties/v1/parties/{party_id}', EndpointType.glz, self._region)
         return self.request(r)
 
-    def party_set_member_ready(self, current_party_id: str, ready: bool) -> Response[Mapping[str, Any]]:
+    def party_set_member_ready(self, party_id: str, ready: bool) -> Response[Mapping[str, Any]]:
         """
         Party_SetMemberReady
         Sets whether a party member is ready for queueing or not
         """
         payload = {"ready": ready}
         r = Route(
-            'POST', f'/parties/v1/parties/{current_party_id}/members/{self._puuid}/setReady', EndpointType.glz, self._region
+            'POST', f'/parties/v1/parties/{party_id}/members/{self._puuid}/setReady', EndpointType.glz, self._region
         )
         return self.request(r, json=payload)
 
-    def party_refresh_competitive_tier(self, current_party_id: str) -> Response[Mapping[str, Any]]:
+    def party_refresh_competitive_tier(self, party_id: str) -> Response[Mapping[str, Any]]:
         """
         Party_RefreshCompetitiveTier
         Refreshes the competitive tier for a player
         """
         r = Route(
             'POST',
-            f'/parties/v1/parties/{current_party_id}/members/{self._puuid}/refreshCompetitiveTier',
+            f'/parties/v1/parties/{party_id}/members/{self._puuid}/refreshCompetitiveTier',
             EndpointType.glz,
             self._region,
         )
         return self.request(r)
 
-    def party_refresh_player_identity(self, current_party_id: str) -> Response[Mapping[str, Any]]:
+    def party_refresh_player_identity(self, party_id: str) -> Response[Mapping[str, Any]]:
         """
         Party_RefreshPlayerIdentity
         Refreshes the identity for a player
         """
         r = Route(
             'POST',
-            f'/parties/v1/parties/{current_party_id}/members/{self._puuid}/refreshPlayerIdentity',
+            f'/parties/v1/parties/{party_id}/members/{self._puuid}/refreshPlayerIdentity',
             EndpointType.glz,
             self._region,
         )
         return self.request(r)
 
-    def party_refresh_pings(self, current_party_id: str) -> Response[Mapping[str, Any]]:
+    def party_refresh_pings(self, party_id: str) -> Response[Mapping[str, Any]]:
         """
         Party_RefreshPings
         Refreshes the pings for a player
         """
         r = Route(
             'POST',
-            f'/parties/v1/parties/{current_party_id}/members/{self._puuid}/refreshPings',
+            f'/parties/v1/parties/{party_id}/members/{self._puuid}/refreshPings',
             EndpointType.glz,
             self._region,
         )
         return self.request(r)
 
-    def party_change_queue(self, current_party_id: str, queue_id: Union[QueueID, str]) -> Response[Mapping[str, Any]]:
+    def party_change_queue(self, party_id: str, queue_id: Union[QueueID, str]) -> Response[Mapping[str, Any]]:
         """
         Party_ChangeQueue
         Sets the matchmaking queue for the party
         """
         payload = {"queueID": str(queue_id)}
-        r = Route('POST', f'/parties/v1/parties/{current_party_id}/queue', EndpointType.glz, self._region)
+        r = Route('POST', f'/parties/v1/parties/{party_id}/queue', EndpointType.glz, self._region)
         return self.request(r, json=payload)
 
-    def party_start_custom_game(self, current_party_id: str) -> Response[Mapping[str, Any]]:
+    def party_start_custom_game(self, party_id: str) -> Response[Mapping[str, Any]]:
         """
         Party_StartCustomGame
         Starts a custom game
         """
-        r = Route('POST', f'/parties/v1/parties/{current_party_id}/startcustomgame', EndpointType.glz, self._region)
+        r = Route('POST', f'/parties/v1/parties/{party_id}/startcustomgame', EndpointType.glz, self._region)
         return self.request(r)
 
-    def party_enter_matchmaking_queue(self, current_party_id: str) -> Response[Mapping[str, Any]]:
+    def party_enter_matchmaking_queue(self, party_id: str) -> Response[Mapping[str, Any]]:
         """
         Party_EnterMatchmakingQueue
         Enters the matchmaking queue
         """
-        r = Route('POST', f'/parties/v1/parties/{current_party_id}/matchmaking/join', EndpointType.glz, self._region)
+        r = Route('POST', f'/parties/v1/parties/{party_id}/matchmaking/join', EndpointType.glz, self._region)
         return self.request(r)
 
-    def party_leave_matchmaking_queue(self, current_party_id: str) -> Response[Mapping[str, Any]]:
+    def party_leave_matchmaking_queue(self, party_id: str) -> Response[Mapping[str, Any]]:
         """
         Party_LeaveMatchmakingQueue
         Leaves the matchmaking queue
         """
-        r = Route('POST', f'/parties/v1/parties/{current_party_id}/matchmaking/leave', EndpointType.glz, self._region)
+        r = Route('POST', f'/parties/v1/parties/{party_id}/matchmaking/leave', EndpointType.glz, self._region)
         return self.request(r)
 
-    def set_party_accessibility(self, current_party_id: str, open_join: bool) -> Response[Mapping[str, Any]]:
+    def set_party_accessibility(self, party_id: str, open_join: bool) -> Response[Mapping[str, Any]]:
         """
         Party_SetAccessibility
         Changes the party accessibility to be open or closed
         """
         payload = {"openJoin": ("OPEN" if open_join else "CLOSED")}
-        r = Route('POST', f'/parties/v1/parties/{current_party_id}/accessibility', EndpointType.glz, self._region)
+        r = Route('POST', f'/parties/v1/parties/{party_id}/accessibility', EndpointType.glz, self._region)
         return self.request(r, json=payload)
 
-    def party_set_custom_game_settings(self, current_party_id: str, settings: Mapping) -> Response[Mapping[str, Any]]:
+    def party_set_custom_game_settings(self, party_id: str, settings: Mapping) -> Response[Mapping[str, Any]]:
         """
         Party_SetCustomGameSettings
         Changes the settings for a custom game
@@ -752,17 +763,17 @@ class HTTPClient:
         }
         """
         # TODO: Object settings
-        r = Route('POST', f'/parties/v1/parties/{current_party_id}/customgamesettings', EndpointType.glz, self._region)
+        r = Route('POST', f'/parties/v1/parties/{party_id}/customgamesettings', EndpointType.glz, self._region)
         return self.request(r, json=settings)
 
-    def party_invite_by_display_name(self, current_party_id: str, name: str, tag: str) -> Response[Mapping[str, Any]]:
+    def party_invite_by_display_name(self, party_id: str, name: str, tag: str) -> Response[Mapping[str, Any]]:
         """
         Party_InviteToPartyByDisplayName
         Invites a player to the party with their display name
         omit the "#" in tag
         """
         r = Route(
-            'POST', f'/parties/v1/parties/{current_party_id}/invites/name/{name}/tag/{tag}', EndpointType.glz, self._region
+            'POST', f'/parties/v1/parties/{party_id}/invites/name/{name}/tag/{tag}', EndpointType.glz, self._region
         )
         return self.request(r)
 
@@ -775,14 +786,14 @@ class HTTPClient:
         r = Route('POST', f'/parties/v1/parties/{party_id}/request', EndpointType.glz, self._region)
         return self.request(r, json=payload)
 
-    def party_decline_request(self, current_party_id: str, request_id: str) -> Response[Mapping[str, Any]]:
+    def party_decline_request(self, party_id: str, request_id: str) -> Response[Mapping[str, Any]]:
         """
         Party_DeclineRequest
         Declines a party request
         {request id}: The ID of the party request. Can be found from the Requests array on the Party_FetchParty endpoint.
         """
         r = Route(
-            'POST', f'/parties/v1/parties/{current_party_id}/request/{request_id}/decline', EndpointType.glz, self._region
+            'POST', f'/parties/v1/parties/{party_id}/request/{request_id}/decline', EndpointType.glz, self._region
         )
         return self.request(r)
 
@@ -810,36 +821,36 @@ class HTTPClient:
         r = Route('GET', f'/parties/v1/parties/customgameconfigs', EndpointType.glz, self._region)
         return self.request(r)
 
-    def party_fetch_muc_token(self, current_party_id: str) -> Response[Mapping[str, Any]]:
+    def party_fetch_muc_token(self, party_id: str) -> Response[Mapping[str, Any]]:
         """
         Party_FetchMUCToken
         Get a token for party chat
         """
-        r = Route('GET', f'/parties/v1/parties/{current_party_id}/muctoken', EndpointType.glz, self._region)
+        r = Route('GET', f'/parties/v1/parties/{party_id}/muctoken', EndpointType.glz, self._region)
         return self.request(r)
 
-    def party_fetch_voice_token(self, current_party_id: str) -> Response[Mapping[str, Any]]:
+    def party_fetch_voice_token(self, party_id: str) -> Response[Mapping[str, Any]]:
         """
         Party_FetchVoiceToken
         Get a token for party voice
         """
-        r = Route('GET', f'/parties/v1/parties/{current_party_id}/voicetoken', EndpointType.glz, self._region)
+        r = Route('GET', f'/parties/v1/parties/{party_id}/voicetoken', EndpointType.glz, self._region)
         return self.request(r)
 
-    def party_transfer_owner(self, current_party_id: str, puuid: str) -> Response[Mapping[str, Any]]:
+    def party_transfer_owner(self, party_id: str, puuid: str) -> Response[Mapping[str, Any]]:
         """
         Party_TransferOwner
         Transfer party ownership
         """
-        r = Route('POST', f'/parties/v1/parties/{current_party_id}/members/{puuid}/owner', EndpointType.glz, self._region)
+        r = Route('POST', f'/parties/v1/parties/{party_id}/members/{puuid}/owner', EndpointType.glz, self._region)
         return self.request(r)
 
-    def party_leave_from_party(self, current_party_id: str, puuid: str) -> Response[Mapping[str, Any]]:
+    def party_leave_from_party(self, party_id: str, puuid: str) -> Response[Mapping[str, Any]]:
         """
         Party_LeaveFromParty
         Kick a player from the party
         """
-        r = Route('DELETE', f'/parties/v1/parties/{current_party_id}/members/{puuid}', EndpointType.glz, self._region)
+        r = Route('DELETE', f'/parties/v1/parties/{party_id}/members/{puuid}', EndpointType.glz, self._region)
         return self.request(r)
 
     # queue endpoints
@@ -857,23 +868,6 @@ class HTTPClient:
     # utils
 
     # local utility functions
-
-    # def __get_live_season(self) -> str:
-    #     """Get the UUID of the live competitive season"""
-    # content = self.fetch_content()
-    # season_id = [season["ID"] for season in content["Seasons"] if season["IsActive"] and season["Type"] == "act"]
-    #     if not season_id:
-    #         return self.fetch_mmr()["LatestCompetitiveUpdate"]["SeasonID"]
-    #     return season_id[0]
-
-    # def __check_party_id(self, party_id: str) -> str:
-    #     """If party ID passed into method is None make it user's current party"""
-    #     return self.__get_current_party_id() if party_id is None else party_id
-
-    # def __get_current_party_id(self) -> str:
-    #     """Get the user's current party ID"""
-    #     party = self.party_fetch_player()
-    #     return party["CurrentPartyID"]
 
     # def __coregame_check_match_id(self, match_id: str) -> str:
     # """Check if a match id was passed into the method"""
