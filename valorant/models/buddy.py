@@ -39,7 +39,7 @@ __all__ = ('Buddy', 'BuddyLevel', 'BuddyBundle')
 
 
 class Buddy(BaseModel):
-    def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
+    def __init__(self, *, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
@@ -105,8 +105,8 @@ class Buddy(BaseModel):
 
 
 class BuddyLevel(BaseModel):
-    def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
-        super().__init__(client=client, data=data)
+    def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs) -> None:
+        super().__init__(client=client, data=data, **kwargs)
         self._uuid: str = data['uuid']
         self._base_buddy_uuid: Optional[str] = data['base_uuid']
         self.level: int = data['charmLevel']
@@ -158,9 +158,8 @@ class BuddyLevel(BaseModel):
 
 
 class BuddyBundle(BuddyLevel, BaseFeaturedBundleItem):
-    def __init__(self, client: Client, data: Optional[Mapping[str, Any]], bundle: Dict[str, Any]) -> None:
-        BuddyLevel.__init__(self, client=client, data=data)
-        BaseFeaturedBundleItem.__init__(self, bundle=bundle)
+    def __init__(self, *, client: Client, data: Optional[Mapping[str, Any]], bundle: Dict[str, Any]) -> None:
+        super().__init__(client=client, data=data, bundle=bundle)
 
     def __repr__(self) -> str:
         attrs = [('display_name', self.display_name), ('price', self.price), ('discounted_price', self.discounted_price)]

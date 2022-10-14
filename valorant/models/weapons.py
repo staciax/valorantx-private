@@ -433,8 +433,8 @@ class Skin(BaseModel):
 
 
 class SkinChroma(BaseModel):
-    def __init__(self, *, client: Client, data: Mapping[str, Any]) -> None:
-        super().__init__(client=client, data=data)
+    def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs) -> None:
+        super().__init__(client=client, data=data, **kwargs)
         self._uuid: str = data['uuid']
         self._base_weapon_uuid: Optional[str] = data.get('base_weapon_uuid')
         self._base_skin_uuid: Optional[str] = data.get('base_skin_uuid')
@@ -526,8 +526,8 @@ class SkinChroma(BaseModel):
 
 
 class SkinLevel(BaseModel):
-    def __init__(self, *, client: Client, data: Mapping[str, Any]) -> None:
-        super().__init__(client=client, data=data)
+    def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs) -> None:
+        super().__init__(client=client, data=data, **kwargs)
         self._uuid: str = data['uuid']
         self._base_weapon_uuid: Optional[str] = data.get('base_weapon_uuid')
         self._base_skin_uuid: Optional[str] = data.get('base_skin_uuid')
@@ -654,9 +654,8 @@ class SkinNightMarket(SkinLevel):
 
 
 class SkinBundle(SkinLevel, BaseFeaturedBundleItem):
-    def __init__(self, client: Client, data: Mapping[str, Any], bundle: Dict[str, Any]) -> None:
-        SkinLevel.__init__(self, client=client, data=data)
-        BaseFeaturedBundleItem.__init__(self, bundle=bundle)
+    def __init__(self, *, client: Client, data: Mapping[str, Any], bundle: Dict[str, Any]) -> None:
+        super().__init__(client=client, data=data, bundle=bundle)
 
     def __repr__(self) -> str:
         attrs = [('display_name', self.display_name), ('price', self.price), ('discounted_price', self.discounted_price)]
@@ -676,7 +675,6 @@ class BaseLoadout:
         _client: Client
 
     def __init__(self, loadout: SkinLoadoutPayload, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
         self._buddy_uuid = loadout.get('CharmID')
         self._buddy_level_uuid = loadout.get('CharmLevelID')
         self._is_favorite: bool = False
@@ -705,7 +703,7 @@ class LoadoutRandomFilter:
 
 
 class SkinLoadout(Skin, BaseLoadout):
-    def __init__(self, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
+    def __init__(self, *, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
         super().__init__(client=client, data=data)
         BaseLoadout.__init__(self, loadout=loadout)
 
@@ -719,9 +717,8 @@ class SkinLoadout(Skin, BaseLoadout):
 
 
 class SkinLevelLoadout(SkinLevel, BaseLoadout):
-    def __init__(self, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
-        super().__init__(client=client, data=data)
-        BaseLoadout.__init__(self, loadout=loadout)
+    def __init__(self, *, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
+        super().__init__(client=client, data=data, loadout=loadout)
 
     def __repr__(self) -> str:
         return f"<SkinLevelLoadout display_name={self.display_name!r}>"
@@ -733,9 +730,8 @@ class SkinLevelLoadout(SkinLevel, BaseLoadout):
 
 
 class SkinChromaLoadout(SkinChroma, BaseLoadout):
-    def __init__(self, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
-        super().__init__(client=client, data=data)
-        BaseLoadout.__init__(self, loadout=loadout)
+    def __init__(self, *, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
+        super().__init__(client=client, data=data, loadout=loadout)
 
     def __repr__(self) -> str:
         return f"<SkinChromaLoadout display_name={self.display_name!r}>"

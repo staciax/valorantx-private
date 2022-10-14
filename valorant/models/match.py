@@ -85,7 +85,7 @@ class MatchHistory:
     def __len__(self) -> int:
         return len(self._match_details)
 
-    async def fetch_history(self) -> List[MatchDetails]:
+    async def fetch_details(self) -> List[MatchDetails]:
 
         future_tasks = []
         for match in self._match_history:

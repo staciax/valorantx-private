@@ -493,11 +493,11 @@ class Client:
         return AccountXP(client=self, data=data)
 
     @_authorize_required
-    async def fetch_loadout(self, *, fetch_account_xp: bool = True) -> Collection:
+    async def fetch_loadout(self, *, with_xp: bool = True) -> Collection:
 
         data = await self.http.fetch_player_loadout()
         collection = Collection(client=self, data=data)
-        if fetch_account_xp:
+        if with_xp:
             account_xp = await self.fetch_account_xp()
             self.user.account_level = account_xp.level
             collection.identity.account_level = account_xp.level
@@ -505,7 +505,7 @@ class Client:
         return collection
 
     @_authorize_required
-    def put_loadout(self, loadout: Mapping) -> Any:
+    def put_loadout(self, loadout: Mapping) -> Any:  # TODO: loadout object
         return self.http.put_player_loadout(loadout)
 
     @_authorize_required
@@ -517,16 +517,16 @@ class Client:
     async def fetch_match_history(
         self,
         puuid: Optional[str] = None,
-        start_index: int = 0,
-        end_index: int = 15,
-        queue_id: Optional[str, QueueID] = QueueID.unrated,
+        queue: Optional[str, QueueID] = QueueID.unrated,
         *,
-        fetch_match_details: bool = True,
+        start: int = 0,
+        end: int = 15,
+        with_details: bool = True,
     ) -> Optional[MatchHistory]:
-        data = await self.http.fetch_match_history(puuid, start_index, end_index, queue_id)
+        data = await self.http.fetch_match_history(puuid, start, end, queue)
         history = MatchHistory(client=self, data=data) if data else None
-        if fetch_match_details and history is not None:
-            await history.fetch_history()
+        if with_details and history is not None:
+            await history.fetch_details()
         return history
 
     @_authorize_required

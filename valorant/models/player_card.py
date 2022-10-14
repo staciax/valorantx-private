@@ -44,8 +44,8 @@ __all__ = (
 
 
 class PlayerCard(BaseModel):
-    def __init__(self, *, client: Client, data: Mapping[str, Any]) -> None:
-        super().__init__(client=client, data=data)
+    def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs) -> None:
+        super().__init__(client=client, data=data, **kwargs)
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._is_hidden_if_not_owned: bool = data.get('isHiddenIfNotOwned', False)
@@ -131,9 +131,8 @@ class PlayerCard(BaseModel):
 
 
 class PlayerCardBundle(PlayerCard, BaseFeaturedBundleItem):
-    def __init__(self, client: Client, data: Mapping[str, Any], bundle: Dict[str, Any]) -> None:
-        PlayerCard.__init__(self, client=client, data=data)
-        BaseFeaturedBundleItem.__init__(self, bundle=bundle)
+    def __init__(self, *, client: Client, data: Mapping[str, Any], bundle: Dict[str, Any]) -> None:
+        super().__init__(client=client, data=data, bundle=bundle)
 
     def __repr__(self) -> str:
         attrs = [('display_name', self.display_name), ('price', self.price), ('discounted_price', self.discounted_price)]

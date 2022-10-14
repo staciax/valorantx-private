@@ -50,6 +50,7 @@ class BaseModel(abc.ABC):
         _extras: Optional[Mapping[str, Any]]
 
     def __init__(self, client: Client, data: Optional[Mapping[str, Any]], **kwargs: Any) -> None:
+        super().__init__(**kwargs)
         self._client = client
         self._uuid: str = data.get('uuid') if data is not None else ''
         self._extras = kwargs
