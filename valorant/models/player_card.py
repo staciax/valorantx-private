@@ -33,6 +33,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..client import Client
+    from ..types.store import FeaturedBundleItem as FeaturedBundleItemPayload
     from .theme import Theme
 
 # fmt: off
@@ -44,7 +45,7 @@ __all__ = (
 
 
 class PlayerCard(BaseModel):
-    def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs) -> None:
+    def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs: Any) -> None:
         super().__init__(client=client, data=data, **kwargs)
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
@@ -131,7 +132,7 @@ class PlayerCard(BaseModel):
 
 
 class PlayerCardBundle(PlayerCard, BaseFeaturedBundleItem):
-    def __init__(self, *, client: Client, data: Mapping[str, Any], bundle: Dict[str, Any]) -> None:
+    def __init__(self, *, client: Client, data: Mapping[str, Any], bundle: FeaturedBundleItemPayload) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 
     def __repr__(self) -> str:

@@ -663,9 +663,7 @@ class HTTPClient:
         Sets whether a party member is ready for queueing or not
         """
         payload = {"ready": ready}
-        r = Route(
-            'POST', f'/parties/v1/parties/{party_id}/members/{self._puuid}/setReady', EndpointType.glz, self._region
-        )
+        r = Route('POST', f'/parties/v1/parties/{party_id}/members/{self._puuid}/setReady', EndpointType.glz, self._region)
         return self.request(r, json=payload)
 
     def party_refresh_competitive_tier(self, party_id: str) -> Response[Mapping[str, Any]]:
@@ -772,9 +770,7 @@ class HTTPClient:
         Invites a player to the party with their display name
         omit the "#" in tag
         """
-        r = Route(
-            'POST', f'/parties/v1/parties/{party_id}/invites/name/{name}/tag/{tag}', EndpointType.glz, self._region
-        )
+        r = Route('POST', f'/parties/v1/parties/{party_id}/invites/name/{name}/tag/{tag}', EndpointType.glz, self._region)
         return self.request(r)
 
     def party_request_to_join(self, party_id: str, other_puuid: str) -> Response[Mapping[str, Any]]:
@@ -792,9 +788,7 @@ class HTTPClient:
         Declines a party request
         {request id}: The ID of the party request. Can be found from the Requests array on the Party_FetchParty endpoint.
         """
-        r = Route(
-            'POST', f'/parties/v1/parties/{party_id}/request/{request_id}/decline', EndpointType.glz, self._region
-        )
+        r = Route('POST', f'/parties/v1/parties/{party_id}/request/{request_id}/decline', EndpointType.glz, self._region)
         return self.request(r)
 
     def party_join(self, party_id: str) -> Response[Mapping[str, Any]]:

@@ -33,6 +33,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..client import Client
+    from ..types.store import FeaturedBundleItem as FeaturedBundleItemPayload
     from .theme import Theme
 
 __all__ = ('Buddy', 'BuddyLevel', 'BuddyBundle')
@@ -105,7 +106,7 @@ class Buddy(BaseModel):
 
 
 class BuddyLevel(BaseModel):
-    def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs) -> None:
+    def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs: Any) -> None:
         super().__init__(client=client, data=data, **kwargs)
         self._uuid: str = data['uuid']
         self._base_buddy_uuid: Optional[str] = data['base_uuid']
@@ -158,7 +159,7 @@ class BuddyLevel(BaseModel):
 
 
 class BuddyBundle(BuddyLevel, BaseFeaturedBundleItem):
-    def __init__(self, *, client: Client, data: Optional[Mapping[str, Any]], bundle: Dict[str, Any]) -> None:
+    def __init__(self, *, client: Client, data: Mapping[str, Any], bundle: FeaturedBundleItemPayload) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 
     def __repr__(self) -> str:

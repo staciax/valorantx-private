@@ -140,6 +140,7 @@ class PatchNotes:
             return PatchNote(client=self._client, data=self.result.page_data.article_nodes[0], locale=self.locale)
         return None
 
+
 class PatchNote:
 
     BASE_URL = 'https://playvalorant.com'

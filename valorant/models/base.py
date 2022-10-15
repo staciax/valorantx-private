@@ -24,12 +24,13 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Mapping, Optional
 
 from ..enums import MeleeWeaponID
 
 if TYPE_CHECKING:
     from ..client import Client
+    from ..types.store import FeaturedBundleItem as FeaturedBundleItemPayload
 
 __all__ = (
     'BaseModel',
@@ -79,7 +80,7 @@ class BaseFeaturedBundleItem:
         price: int
         from .currency import Currency
 
-    def __init__(self, bundle: Dict[str, Any]) -> None:
+    def __init__(self, bundle: FeaturedBundleItemPayload) -> None:
         self.price: int = bundle.get('BasePrice')
         self.discounted_price: int = bundle.get('DiscountedPrice', 0)
         self._is_promo: bool = bundle.get('IsPromoItem', False)

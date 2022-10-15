@@ -35,13 +35,14 @@ if TYPE_CHECKING:
 
     from ..client import Client
     from ..types.collection import SprayLoadout as SprayLoadoutPayload
+    from ..types.store import FeaturedBundleItem as FeaturedBundleItemPayload
     from .theme import Theme
 
 __all__ = ('Spray', 'SprayBundle', 'SprayLevel', 'SprayLevelLoadout', 'SprayLoadout')
 
 
 class Spray(BaseModel):
-    def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs) -> None:
+    def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs: Any) -> None:
         super().__init__(client=client, data=data, **kwargs)
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
@@ -207,7 +208,7 @@ class SprayLevel(BaseModel):
 
 
 class SprayBundle(Spray, BaseFeaturedBundleItem):
-    def __init__(self, *, client: Client, data: Mapping[str, Any], bundle: Dict[str, Any]) -> None:
+    def __init__(self, *, client: Client, data: Mapping[str, Any], bundle: FeaturedBundleItemPayload) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 
     def __repr__(self) -> str:

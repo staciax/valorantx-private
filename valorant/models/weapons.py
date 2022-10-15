@@ -38,6 +38,7 @@ if TYPE_CHECKING:
 
     from ..client import Client
     from ..types.collection import SkinLoadout as SkinLoadoutPayload
+    from ..types.store import FeaturedBundleItem as FeaturedBundleItemPayload
     from .buddy import Buddy, BuddyLevel
     from .content import ContentTier
     from .theme import Theme
@@ -654,7 +655,7 @@ class SkinNightMarket(SkinLevel):
 
 
 class SkinBundle(SkinLevel, BaseFeaturedBundleItem):
-    def __init__(self, *, client: Client, data: Mapping[str, Any], bundle: Dict[str, Any]) -> None:
+    def __init__(self, *, client: Client, data: Mapping[str, Any], bundle: FeaturedBundleItemPayload) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 
     def __repr__(self) -> str:
@@ -674,7 +675,7 @@ class BaseLoadout:
     if TYPE_CHECKING:
         _client: Client
 
-    def __init__(self, loadout: SkinLoadoutPayload, *args, **kwargs) -> None:
+    def __init__(self, loadout: SkinLoadoutPayload, *args, **kwargs: Any) -> None:
         self._buddy_uuid = loadout.get('CharmID')
         self._buddy_level_uuid = loadout.get('CharmLevelID')
         self._is_favorite: bool = False

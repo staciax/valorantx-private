@@ -146,3 +146,18 @@ class Entitlements(TypedDict):
 
 class EntitlementsByTypes(TypedDict):
     EntitlementsByTypes: List[Entitlements]
+
+
+class ItemFeaturedBundle(TypedDict):
+    ItemTypeID: str
+    ItemID: str
+    Amount: int
+
+
+class FeaturedBundleItem(TypedDict):
+    Item: ItemFeaturedBundle
+    BasePrice: int
+    CurrencyID: str
+    DiscountPercent: int
+    DiscountedPrice: int
+    IsPromoItem: bool
