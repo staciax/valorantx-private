@@ -39,6 +39,7 @@ if TYPE_CHECKING:
         SkinLoadout as SkinLoadoutPayload,
         SprayLoadout as SprayLoadoutPayload,
     )
+    from .player import ClientPlayer
     from .level_border import LevelBorder
     from .player_card import PlayerCard
     from .player_title import PlayerTitle
@@ -143,7 +144,7 @@ class Collection(BaseModel):
 
     def __init__(self, client: Client, data: LoadoutPayload, **kwargs: Any) -> None:
         super().__init__(client, data, **kwargs)
-        # self.user = client.user
+        self.user: ClientPlayer = client.user
         self._uuid: str = data['Subject']
         self.version: int = data['Version']
         self._incognito: bool = data.get('Incognito', False)

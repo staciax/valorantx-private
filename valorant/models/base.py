@@ -31,6 +31,7 @@ from ..enums import MeleeWeaponID
 if TYPE_CHECKING:
     from ..client import Client
     from ..types.store import FeaturedBundleItem as FeaturedBundleItemPayload
+    from .currency import Currency
 
 __all__ = (
     'BaseModel',
@@ -39,22 +40,18 @@ __all__ = (
 
 
 class BaseModel(abc.ABC):
+
     __slots__ = (
         '_uuid',
         '_client',
         '_extras',
     )
 
-    if TYPE_CHECKING:
-        uuid: str
-        _client: Client
-        _extras: Optional[Mapping[str, Any]]
-
     def __init__(self, client: Client, data: Optional[Mapping[str, Any]], **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self._client = client
+        self._client: Client = client
         self._uuid: str = data.get('uuid') if data is not None else ''
-        self._extras = kwargs
+        self._extras: Optional[Mapping[str, Any]] = kwargs
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} uuid={self.uuid!r}>"
@@ -75,11 +72,6 @@ class BaseModel(abc.ABC):
 
 
 class BaseFeaturedBundleItem:
-
-    if TYPE_CHECKING:
-        price: int
-        from .currency import Currency
-
     def __init__(self, bundle: FeaturedBundleItemPayload) -> None:
         self.price: int = bundle.get('BasePrice')
         self.discounted_price: int = bundle.get('DiscountedPrice', 0)

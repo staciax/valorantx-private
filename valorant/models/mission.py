@@ -93,14 +93,14 @@ class Mission(BaseModel):
         return try_enum(MissionType, type_strip)
 
     @property
-    def activation_date(self) -> datetime.datetime:
+    def activation_date(self) -> Optional[datetime.datetime]:
         """:class: `datetime.datetime` Returns the mission's activation date."""
-        return utils.parse_iso_datetime(self._activation_date_iso)
+        return utils.parse_iso_datetime(self._activation_date_iso) if self._activation_date_iso else None
 
     @property
-    def expiration_date(self) -> datetime.datetime:
+    def expiration_date(self) -> Optional[datetime.datetime]:
         """:class: `datetime.datetime` Returns the mission's expiration date."""
-        return utils.parse_iso_datetime(self._expiration_date_iso)
+        return utils.parse_iso_datetime(self._expiration_date_iso) if self._expiration_date_iso else None
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -190,11 +190,11 @@ class MissionMeta:
         return not self.__eq__(other)
 
     @property
-    def weekly_check_point(self) -> datetime.datetime:
+    def weekly_check_point(self) -> Optional[datetime.datetime]:
         """:class: `datetime.datetime` Returns the weekly check point."""
-        return utils.parse_iso_datetime(self._weekly_check_point)
+        return utils.parse_iso_datetime(self._weekly_check_point) if self._weekly_check_point else None
 
     @property
-    def weekly_refill_time(self) -> datetime.datetime:
+    def weekly_refill_time(self) -> Optional[datetime.datetime]:
         """:class: `datetime.datetime` Returns the weekly refill time."""
-        return utils.parse_iso_datetime(self._weekly_refill_time)
+        return utils.parse_iso_datetime(self._weekly_refill_time) if self._weekly_refill_time else None
