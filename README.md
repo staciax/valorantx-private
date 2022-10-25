@@ -5,9 +5,10 @@
 
 ```python
 import asyncio
-import valorant
+import valorantx
 
-client = valorant.Client(locale=valorant.Locale.japanese)
+client = valorantx.Client(locale=valorantx.Locale.japanese)
+
 
 async def main():
     async with client:
@@ -16,7 +17,7 @@ async def main():
         # after fetch_assets, you can comment above line and use below line
         # client.reload_assets()
         # if new version available, please use `await client.fetch_assets()` again
-    
+
         agent = client.get_agent('Killjoy')
         print(repr(agent))
 
@@ -101,6 +102,7 @@ async def main():
 
         theme = client.get_theme('fdfe356c-40c4-ac6a-864e-16998fc784ef')
         print(repr(theme))
+
 
 if __name__ == '__main__':
     asyncio.run(main())

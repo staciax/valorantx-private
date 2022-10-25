@@ -39,8 +39,8 @@ if TYPE_CHECKING:
         SkinLoadout as SkinLoadoutPayload,
         SprayLoadout as SprayLoadoutPayload,
     )
-    from .player import ClientPlayer
     from .level_border import LevelBorder
+    from .player import ClientPlayer
     from .player_card import PlayerCard
     from .player_title import PlayerTitle
 

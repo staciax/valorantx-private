@@ -1,12 +1,12 @@
 import asyncio
 import logging
 
-import valorant
+import valorantx
 
 # logging
 logging.basicConfig(level=logging.ERROR)
 
-client = valorant.Client(locale=valorant.Locale.thai)
+client = valorantx.Client(locale=valorantx.Locale.thai)
 
 
 async def main():
@@ -25,7 +25,7 @@ async def main():
             print(skin.name_localizations.japanese)
             print(skin.price)
 
-        history = await client.fetch_match_history(queue_id=valorant.QueueID.deathmatch)
+        history = await client.fetch_match_history(queue=valorantx.QueueID.deathmatch)
         print(repr(history))
 
         content = await client.fetch_content()
@@ -34,11 +34,11 @@ async def main():
         wallet = await client.fetch_wallet()
         print(repr(wallet))
 
-        for locale in valorant.Locale:
+        for locale in valorantx.Locale:
             patch_note = await client.fetch_patch_notes(locale=locale)
             print(repr(patch_note.latest))
 
-        loadout = await client.fetch_player_loadout()
+        loadout = await client.fetch_loadout()
         print(repr(loadout.skins))
         for skin in loadout.skins:
             print(skin.display_name, skin.display_icon)

@@ -9,7 +9,7 @@ with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
 version = ''
-with open('valorant/__init__.py') as f:
+with open('valorantx/__init__.py') as f:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
 
 readme = ''
@@ -20,7 +20,7 @@ extras_require = {
     'local': ['urllib3>=1.26.12,<1.27'],
 }
 
-packages = ['valorant', 'valorant.models', 'valorant.types']
+packages = ['valorantx', 'valorantx.models', 'valorantx.types']
 
 setup(
     name='valorantx',

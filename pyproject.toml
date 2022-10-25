@@ -14,9 +14,9 @@ line_length = 125
 
 [tool.pyright]
 include = [
-    "valorant",
-    "valorant/models",
-    "valorant/types"
+    "valorantx",
+    "valorantx/models",
+    "valorantx/types"
 ]
 exclude = [
     "**/__pycache__"

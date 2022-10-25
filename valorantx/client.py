@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Any, Coroutine, Iterator, Mapping, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, Iterator, List, Mapping, Optional, Tuple, Type, Union
 
 from . import utils
 from .assets import Assets
@@ -141,6 +141,95 @@ class Client:
 
         # assets
         self.assets: Assets = Assets(client=self, auto_reload=self._auto_reload_assets)
+
+        # events
+        self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
+
+    # events
+
+    # source code from https://github.com/Rapptz/discord.py
+
+    def _schedule_event(
+        self,
+        coro: Callable[..., Coroutine[Any, Any, Any]],
+        event_name: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> asyncio.Task:
+        wrapped = self._run_event(coro, event_name, *args, **kwargs)
+        # Schedules the task
+        return self.loop.create_task(wrapped, name=f'valorantx: {event_name}')
+
+    async def _run_event(
+        self,
+        coro: Callable[..., Coroutine[Any, Any, Any]],
+        event_name: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        try:
+            await coro(*args, **kwargs)
+        except asyncio.CancelledError:
+            pass
+        except Exception: # noqa
+            try:
+                await self.on_error(event_name, *args, **kwargs)
+            except asyncio.CancelledError:
+                pass
+
+    def dispatch(self, event: str, /, *args: Any, **kwargs: Any) -> None:
+        _log.debug('Dispatching event %s', event)
+        method = 'on_' + event
+
+        listeners = self._listeners.get(event)
+        if listeners:
+            removed = []
+            for i, (future, condition) in enumerate(listeners):
+                if future.cancelled():
+                    removed.append(i)
+                    continue
+
+                try:
+                    result = condition(*args)
+                except Exception as exc:
+                    future.set_exception(exc)
+                    removed.append(i)
+                else:
+                    if result:
+                        if len(args) == 0:
+                            future.set_result(None)
+                        elif len(args) == 1:
+                            future.set_result(args[0])
+                        else:
+                            future.set_result(args)
+                        removed.append(i)
+
+            if len(removed) == len(listeners):
+                self._listeners.pop(event)
+            else:
+                for idx in reversed(removed):
+                    del listeners[idx]
+
+        try:
+            coro = getattr(self, method)
+        except AttributeError:
+            pass
+        else:
+            self._schedule_event(coro, method, *args, **kwargs)
+
+    async def on_error(self, event_method: str, /, *args: Any, **kwargs: Any) -> None:
+        """|coro|
+
+        The default error handler provided by the client.
+
+        By default, this logs to the library logger however it could be
+        overridden to have a different implementation.
+        Check :func:`~valorant.on_error` for more details.
+        """
+
+        _log.exception('Ignoring exception in %s', event_method)
+
+    # end events
 
     async def __aenter__(self) -> Self:
         # do something

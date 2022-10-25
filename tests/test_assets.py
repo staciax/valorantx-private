@@ -1,9 +1,9 @@
 import asyncio
 import logging
 
-import valorant
+import valorantx
 
-client = valorant.Client(locale=valorant.Locale.japanese)
+client = valorantx.Client(locale=valorantx.Locale.japanese)
 
 # get basic logging
 logging.basicConfig(level=logging.ERROR)
