@@ -21,9 +21,12 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Any, List, TypedDict
+from typing import TYPE_CHECKING, Any, List, Optional, TypedDict
 
 from .player import Player as BasePlayer
+
+if TYPE_CHECKING:
+    from .match import PlayerPlatformInfo
 
 
 class PlayerParty(BasePlayer, TypedDict):
@@ -38,3 +41,12 @@ class PlayerParty(BasePlayer, TypedDict):
     IsModerator: bool
     UseBroadcastHUD: bool
     PlatformType: str
+
+
+class Party(TypedDict):
+    Subject: str
+    Version: int
+    CurrentPartyID: str
+    Invites: Optional[Any]
+    Requests: List[Any]
+    PlatformInfo: PlayerPlatformInfo

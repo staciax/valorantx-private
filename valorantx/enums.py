@@ -227,13 +227,17 @@ class Shard(Enum):
 
 class ItemType(Enum):
     agent = '01bb38e1-da47-4e6a-9b3d-945fe4655707'
+    buddy = 'buddy'  # unknown type
     buddy_level = 'dd3bf334-87f3-40bd-b043-682a57a8dc3a'
     contract = 'f85cb6f7-33e5-4dc8-b609-ec7212301948'
+    skin = 'skin'  # unknown type
     skin_level = 'e7c63390-eda7-46e0-bb7a-a6abdacd2433'
     skin_chroma = '3ad1b2b2-acdb-4524-852f-954a76ddae0a'
     spray = 'd5f120f8-ff8c-4aac-92ea-f2b5acbe9475'
+    spray_level = 'spray_level'  # unknown type
     player_card = '3f296c07-64c3-494c-923b-fe692a4fa1bd'
     player_title = 'de7caa6b-adf7-4588-bbd1-143831e786c6'
+    weapon = 'weapon'  # unknown type
 
     def __str__(self) -> str:
         return str(self.value)
@@ -312,11 +316,11 @@ class MapID(Enum):
         return getattr(MapURL, self.name).value
 
     @classmethod
-    def from_url(cls, url: str) -> str:
+    def from_url(cls, map_url: str) -> str:
         for x in cls:
-            if x.url == url:
+            if x.url == map_url:
                 return str(x.value)
-        raise ValueError(f'No map found for url {url}')
+        raise ValueError(f'No map found for url {map_url}')
 
 
 class MapURL(Enum):
@@ -335,11 +339,11 @@ class MapURL(Enum):
         return getattr(MapID, self.name).value
 
     @classmethod
-    def from_uuid(cls, uuid: str) -> str:
+    def from_id(cls, map_id: str) -> str:
         for x in cls:
-            if x.uuid == uuid:
+            if x.uuid == map_id:
                 return str(x.value)
-        raise ValueError(f'No map found for uuid {uuid}')
+        raise ValueError(f'No map found for uuid {map_id}')
 
 
 class WeaponID(Enum):

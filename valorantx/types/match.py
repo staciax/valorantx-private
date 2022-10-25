@@ -67,7 +67,7 @@ class MatchInfo(TypedDict):
     shouldMatchDisablePenalties: bool
 
 
-class MatchPlayerPlatformInfo(TypedDict):
+class PlayerPlatformInfo(TypedDict):
     platformType: str
     platformOS: str
     platformOSVersion: str
@@ -288,7 +288,7 @@ class PlayerMatch(Player):
     subject: str
     gameName: str
     tagLine: str
-    platformInfo: MatchPlayerPlatformInfo
+    platformInfo: PlayerPlatformInfo
     teamId: str
     partyId: str
     characterId: str

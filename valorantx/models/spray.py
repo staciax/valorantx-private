@@ -26,7 +26,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from ..asset import Asset
-from ..enums import SpraySlotID
+from ..enums import ItemType, SpraySlotID
 from ..localization import Localization
 from .base import BaseFeaturedBundleItem, BaseModel
 
@@ -56,6 +56,9 @@ class Spray(BaseModel):
         self.asset_path: str = data['assetPath']
         self._levels: List[Dict[str, Any]] = data['levels']
         self._price: int = self._client.get_item_price(self.uuid)
+        self._is_favorite: bool = False
+        self.__is_fetch_favorite: bool = False
+        self.type: ItemType = ItemType.spray
 
     def __str__(self) -> str:
         return self.display_name
@@ -133,6 +136,29 @@ class Spray(BaseModel):
     def price(self, value: int) -> None:
         self._price = value
 
+    def is_favorite(self) -> bool:
+        """:class: `bool` Returns whether the spray is favorited."""
+        return self._is_favorite
+
+    async def add_favorite(self, *, force: bool = False) -> bool:
+        """coro Adds the spray to the user's favorites."""
+
+        if self.is_favorite() and not force:
+            return False
+        to_fav = await self._client.add_favorite(self)
+        if self in to_fav.sprays:
+            self._is_favorite = True
+        return self.is_favorite()
+
+    async def remove_favorite(self, *, force: bool = False) -> bool:
+        """coro Removes the spray from the user's favorites."""
+        if not self.is_favorite() and not force:
+            return False
+        remove_fav = await self._client.remove_favorite(self)
+        if self not in remove_fav.sprays:
+            self._is_favorite = False
+        return self.is_favorite()
+
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the spray with the given uuid."""
@@ -150,6 +176,7 @@ class SprayLevel(BaseModel):
         self._display_icon: Optional[str] = data['displayIcon']
         self._asset_path: str = data['assetPath']
         self._price: int = 0
+        self.type: ItemType = ItemType.spray_level
 
     def __str__(self) -> str:
         return self.display_name
@@ -199,6 +226,10 @@ class SprayLevel(BaseModel):
     def base_spray(self) -> Spray:
         """:class: `Spray` Returns the base spray."""
         return self._client.get_spray(self._base_spray_uuid)
+
+    def is_favorite(self) -> bool:
+        """:class: `bool` Returns whether the spray is favorited."""
+        return self.base_spray.is_favorite()
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

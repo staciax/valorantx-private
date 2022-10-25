@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union, ove
 
 from .. import utils
 from ..asset import Asset
-from ..enums import CurrencyID
+from ..enums import CurrencyID, ItemType
 from ..localization import Localization
 from .base import BaseFeaturedBundleItem, BaseModel
 
@@ -266,6 +266,7 @@ class Weapon(BaseModel):
         self._shop_data: Optional[Dict[str, Any]] = data.get('shopData')
         self._cost: int = 0
         self._skins: List[Dict[str, Any]] = data['skins']
+        self.type: ItemType = ItemType.weapon
 
     def __str__(self) -> str:
         return self.display_name
@@ -348,6 +349,8 @@ class Skin(BaseModel):
         self._chromas: List[Dict[str, Any]] = data['chromas']
         self._levels: List[Dict[str, Any]] = data['levels']
         self._price: int = 0
+        self._is_favorite: bool = False
+        self.type: ItemType = ItemType.skin
 
     def __str__(self) -> str:
         return self.display_name
@@ -413,6 +416,29 @@ class Skin(BaseModel):
     def price(self, value: int) -> None:
         self._price = value
 
+    def is_favorite(self) -> bool:
+        """:class: `bool` Returns whether the skin is favorited."""
+        return self._is_favorite
+
+    async def add_favorite(self, *, force: bool = False) -> bool:
+        """coro Adds the skin to the user's favorites."""
+
+        if self.is_favorite() and not force:
+            return False
+        to_fav = await self._client.add_favorite(self)
+        if self in to_fav.skins:
+            self._is_favorite = True
+        return self.is_favorite()
+
+    async def remove_favorite(self, *, force: bool = False) -> bool:
+        """coro Removes the skin from the user's favorites."""
+        if not self.is_favorite() and not force:
+            return False
+        remove_fav = await self._client.remove_favorite(self)
+        if self not in remove_fav.skins:
+            self._is_favorite = False
+        return self.is_favorite()
+
     @classmethod
     @overload
     def _from_uuid(cls, client: Client, uuid: str, all_type: bool = True) -> Optional[Union[Self, SkinLevel, SkinChroma]]:
@@ -446,6 +472,7 @@ class SkinChroma(BaseModel):
         self._streamed_video: Optional[str] = data['streamedVideo']
         self.asset_path: str = data['assetPath']
         self._price: int = 0
+        self.type: ItemType = ItemType.skin_chroma
 
     def __str__(self) -> str:
         return self.display_name
@@ -519,6 +546,10 @@ class SkinChroma(BaseModel):
     def price(self, value: int) -> None:
         self._price = value
 
+    def is_favorite(self) -> bool:
+        """:class: `bool` Returns whether the skin is favorited."""
+        return self.base_skin.is_favorite() if self.base_skin else False
+
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the skin with the given UUID."""
@@ -539,6 +570,7 @@ class SkinLevel(BaseModel):
         self.asset_path: str = data['assetPath']
         self._price: int = self._client.get_item_price(self.uuid)
         self._is_level_one: bool = data['isLevelOne']
+        self.type: ItemType = ItemType.skin_level
 
     def __str__(self) -> str:
         return self.display_name
@@ -606,6 +638,10 @@ class SkinLevel(BaseModel):
     def is_level_one(self) -> bool:
         """:class: `bool` Returns whether the skin is level one."""
         return self._is_level_one
+
+    def is_favorite(self) -> bool:
+        """:class: `bool` Returns whether the skin is favorited."""
+        return self.base_skin.is_favorite() if self.base_skin else False
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

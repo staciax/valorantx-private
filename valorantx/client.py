@@ -25,7 +25,21 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, Iterator, List, Mapping, Optional, Tuple, Type, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Coroutine,
+    Dict,
+    Iterator,
+    List,
+    Mapping,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from . import utils
 from .assets import Assets
@@ -50,6 +64,7 @@ from .models import (
     Currency,
     Entitlements,
     Event,
+    Favorites,
     GameMode,
     GameModeEquippable,
     Gear,
@@ -87,6 +102,8 @@ __all__ = (
 )
 # fmt: on
 
+Coro = TypeVar('Coro', bound=Callable[..., Coroutine[Any, Any, Any]])
+
 _log = logging.getLogger(__name__)
 
 MISSING: Any = utils.MISSING
@@ -122,8 +139,8 @@ class Client:
     def __init__(self, *, locale: Union[Locale, str] = Locale.american_english, **kwargs: Any) -> None:
 
         self._locale: Union[Locale, str] = locale
-        self._auto_fetch_assets: bool = kwargs.get('auto_fetch_assets', False)
-        self._auto_reload_assets: bool = kwargs.get('auto_reload_assets', False)
+        self._with_assets: bool = kwargs.get('with_assets', False)
+        self._reload_assets: bool = kwargs.get('reload_assets', False)
 
         self.loop: asyncio.AbstractEventLoop = _loop
         self.user: ClientPlayer = MISSING
@@ -140,7 +157,7 @@ class Client:
         self._http: HTTPClient = HTTPClient()
 
         # assets
-        self.assets: Assets = Assets(client=self, auto_reload=self._auto_reload_assets)
+        self.assets: Assets = Assets(client=self, auto_reload=self._reload_assets)
 
         # events
         self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
@@ -171,7 +188,7 @@ class Client:
             await coro(*args, **kwargs)
         except asyncio.CancelledError:
             pass
-        except Exception: # noqa
+        except Exception:  # noqa
             try:
                 await self.on_error(event_name, *args, **kwargs)
             except asyncio.CancelledError:
@@ -229,6 +246,37 @@ class Client:
 
         _log.exception('Ignoring exception in %s', event_method)
 
+    def event(self, coro: Coro, /) -> Coro:
+        """A decorator that registers an event to listen to.
+
+        You can find more info about the events on the :ref:`documentation below <discord-api-events>`.
+
+        The events must be a :ref:`coroutine <coroutine>`, if not, :exc:`TypeError` is raised.
+
+        Example
+        ---------
+
+        .. code-block:: python3
+
+            @client.event
+            async def on_ready():
+                print('Ready!')
+
+        ``coro`` parameter is now positional-only.
+
+        Raises
+        --------
+        TypeError
+            The coroutine passed is not actually a coroutine.
+        """
+
+        if not asyncio.iscoroutinefunction(coro):
+            raise TypeError('event registered must be a coroutine function')
+
+        setattr(self, coro.__name__, coro)
+        _log.debug('%s has successfully been registered as an event', coro.__name__)
+        return coro
+
     # end events
 
     async def __aenter__(self) -> Self:
@@ -239,7 +287,7 @@ class Client:
             self.version = await self.get_valorant_version()
         self.http._riot_client_version = self.version.riot_client_version
 
-        if self._auto_fetch_assets:
+        if self._with_assets:
             await self.assets.fetch_assets()
 
         return self
@@ -441,8 +489,9 @@ class Client:
 
     def get_spray(self, *args: Any, **kwargs: Any) -> Optional[Union[Spray, SprayLevel]]:
         """Get a spray by UUID."""
+        level = kwargs.get('level', True)
         data = self.assets.get_spray(*args, **kwargs)
-        return Spray(client=self, data=data) if data else self.get_spray_level(*args, **kwargs)
+        return Spray(client=self, data=data) if data else (self.get_spray_level(*args, **kwargs) if level else None)
 
     def get_spray_level(self, *args: Any, **kwargs: Any) -> Optional[SprayLevel]:
         """Get a spray level by UUID."""
@@ -656,3 +705,24 @@ class Client:
     async def fetch_entitlements(self, item_type: Optional[Union[str, ItemType]] = None) -> Any:
         data = await self.http.store_fetch_entitlements(item_type)
         return Entitlements(client=self, data=data)
+
+    # favorite endpoints
+
+    @_authorize_required
+    async def fetch_favorites(self) -> Favorites:
+        data = await self.http.favorites_fetch()
+        return Favorites(client=self, data=data)
+
+    @_authorize_required
+    async def add_favorite(self, maybe_uuid: Union[str, Skin, PlayerCard, Spray]) -> Favorites:
+        if isinstance(maybe_uuid, (Skin, PlayerCard, Spray)):
+            maybe_uuid = maybe_uuid.uuid
+        data = await self.http.favorite_post(maybe_uuid)
+        return Favorites(client=self, data=data)
+
+    @_authorize_required
+    async def remove_favorite(self, maybe_uuid: Union[str, Skin, PlayerCard, Spray]) -> Favorites:
+        if isinstance(maybe_uuid, (Skin, PlayerCard, Spray)):
+            maybe_uuid = maybe_uuid.uuid
+        data = await self.http.favorite_delete(maybe_uuid)
+        return Favorites(client=self, data=data)

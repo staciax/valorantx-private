@@ -21,7 +21,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Any, List, TypedDict
+from typing import Any, Dict, List, TypedDict
 
 from typing_extensions import NotRequired
 
@@ -58,3 +58,13 @@ class Loadout(TypedDict):
     Sprays: List[SprayLoadout]
     Identity: IdentityLoadout
     Incognito: bool
+
+
+class Favorite(TypedDict):
+    FavoriteID: str
+    ItemID: str
+
+
+class Favorites(TypedDict):
+    Subject: str
+    FavoritedContent: Dict[str, Favorite]

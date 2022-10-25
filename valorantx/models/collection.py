@@ -23,9 +23,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
-from ..enums import EmptyTitleID
+from ..enums import EmptyTitleID, ItemType
 from .base import BaseModel
 from .spray import SprayLevelLoadout, SprayLoadout
 from .weapons import SkinChromaLoadout, SkinLevelLoadout, SkinLoadout
@@ -35,6 +36,7 @@ if TYPE_CHECKING:
 
     from ..client import Client
     from ..types.collection import (
+        Favorites as FavoritesPayload,
         Loadout as LoadoutPayload,
         SkinLoadout as SkinLoadoutPayload,
         SprayLoadout as SprayLoadoutPayload,
@@ -43,15 +45,20 @@ if TYPE_CHECKING:
     from .player import ClientPlayer
     from .player_card import PlayerCard
     from .player_title import PlayerTitle
+    from .spray import Spray
+    from .weapons import Skin
 
     SprayL: TypeAlias = Union[SprayLoadout, SprayLevelLoadout]
     SkinL: TypeAlias = Union[SkinLoadout, SkinLevelLoadout, SkinChromaLoadout]
 
 __all__ = (
     'Collection',
+    'Favorites',
     'SkinCollection',
     'SprayCollection',
 )
+
+_log = logging.getLogger(__name__)
 
 
 class Identity:
@@ -297,11 +304,11 @@ class SkinCollection:
 
 
 class SprayCollection:
-    def __init__(self, loadout: List[SprayL]) -> None:
+    def __init__(self, data: List[SprayL]) -> None:
         self._slot_1: Optional[SprayL] = None
         self._slot_2: Optional[SprayL] = None
         self._slot_3: Optional[SprayL] = None
-        self._update(loadout)
+        self._update(data)
 
     def __repr__(self) -> str:
         return f'<SprayCollection slot_1={self.slot_1!r}, slot_2={self.slot_2!r} slot_3={self.slot_3!r}>'
@@ -343,3 +350,58 @@ class SprayCollection:
 
     def to_list(self) -> List[SprayL]:
         return [self.slot_1, self.slot_2, self.slot_3]
+
+
+class Favorites:
+    def __init__(self, *, client: Client, data: FavoritesPayload) -> None:
+        self._client = client
+        self._data = data
+        self._subject: str = data.get('Subject', '')
+        self.skins: List[Skin] = []
+        self.sprays: List[Spray] = []
+        self.player_cards: List[PlayerCard] = []
+        self.any: List[Any] = []
+        self._update(data)
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('len(skins)', len(self.skins)),
+            ('len(sprays)', len(self.sprays)),
+            ('len(player_cards)', len(self.player_cards)),
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, Favorites)
+            and self.skins == other.skins
+            and self.sprays == other.sprays
+            and self.player_cards == other.player_cards
+        )
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def _update(self, data: FavoritesPayload) -> None:
+        for i in data['FavoritedContent']:
+            item_id = data['FavoritedContent'][i]['ItemID']
+            item = (
+                self._client.get_skin(uuid=item_id, level=False, chroma=False)
+                or self._client.get_spray(uuid=item_id, level=False)
+                or self._client.get_player_card(uuid=item_id)
+            )
+            if item is not None:
+
+                if hasattr(item, '_is_favorite'):  # set favorite to True
+                    item._is_favorite = True
+
+                if getattr(item, 'type') == ItemType.skin:
+                    self.skins.append(item)
+                elif getattr(item, 'type') == ItemType.spray:
+                    self.sprays.append(item)
+                elif getattr(item, 'type') == ItemType.player_card:
+                    self.player_cards.append(item)
+                else:
+                    _log.warning(f'Unknown item: {item}')
+                    self.any.append(item)

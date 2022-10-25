@@ -330,39 +330,6 @@ class HTTPClient:
 
     # PVP endpoints
 
-    def fetch_favorites(self) -> Response[weapons.Favorites]:
-        """
-        FetchFavorite
-        Get the favorite list of the authenticated user
-        """
-        r = Route('GET', f'/favorites/v1/players/{self._puuid}/favorites', EndpointType.pd, self._region)
-        return self.request(r)
-
-    def post_favorite(self, item_id: str) -> Response[weapons.Favorites]:
-        """
-        PostFavorite
-        Add a player to the favorite list of the authenticated user
-        """
-        payload = {
-            "ItemID": item_id,
-        }
-        r = Route('POST', f'/favorites/v1/players/{self._puuid}/favorites', EndpointType.pd, self._region)
-        return self.request(r, json=payload)
-
-    def delete_favorite(self, item_id: str) -> Response[weapons.Favorites]:
-        """
-        DeleteFavorite
-        Remove a player from the favorite list of the authenticated user
-        """
-        item_id_without_dashes = str(item_id).replace('-', '')
-        r = Route(
-            'DELETE',
-            f'/favorites/v1/players/{self._puuid}/favorites/{item_id_without_dashes}',
-            EndpointType.pd,
-            self._region,
-        )
-        return self.request(r)
-
     def fetch_content(self) -> Response[Mapping[str, Any]]:
         """
         Content_FetchContent
@@ -855,6 +822,41 @@ class HTTPClient:
         Get information about the current queue
         """
         r = Route('GET', f'/matchmaking/v1/queues/configs ', EndpointType.glz, self._region)
+        return self.request(r)
+
+    # favorite endpoints
+
+    def favorites_fetch(self) -> Response[weapons.Favorites]:
+        """
+        FetchFavorite
+        Get the favorite list of the authenticated user
+        """
+        r = Route('GET', f'/favorites/v1/players/{self._puuid}/favorites', EndpointType.pd, self._region)
+        return self.request(r)
+
+    def favorite_post(self, item_id: str) -> Response[weapons.Favorites]:
+        """
+        PostFavorite
+        Add a player to the favorite list of the authenticated user
+        """
+        payload = {
+            "ItemID": item_id,
+        }
+        r = Route('POST', f'/favorites/v1/players/{self._puuid}/favorites', EndpointType.pd, self._region)
+        return self.request(r, json=payload)
+
+    def favorite_delete(self, item_id: str) -> Response[weapons.Favorites]:
+        """
+        DeleteFavorite
+        Remove a player from the favorite list of the authenticated user
+        """
+        item_id_without_dashes = str(item_id).replace('-', '')
+        r = Route(
+            'DELETE',
+            f'/favorites/v1/players/{self._puuid}/favorites/{item_id_without_dashes}',
+            EndpointType.pd,
+            self._region,
+        )
         return self.request(r)
 
     # local endpoints

@@ -26,6 +26,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
 
 from ..asset import Asset
+from ..enums import ItemType
 from ..localization import Localization
 from .base import BaseFeaturedBundleItem, BaseModel
 
@@ -57,6 +58,8 @@ class PlayerCard(BaseModel):
         self._theme_uuid: Optional[str] = data['themeUuid']
         self.asset_path: str = data['assetPath']
         self._price = self._client.get_item_price(self.uuid)
+        self._is_favorite: bool = False
+        self.type: ItemType = ItemType.player_card
 
     def __str__(self) -> str:
         return self.display_name
@@ -119,6 +122,29 @@ class PlayerCard(BaseModel):
     def is_hidden_if_not_owned(self) -> bool:
         """:class: `bool` Returns whether the buddy is hidden if not owned."""
         return self._is_hidden_if_not_owned
+
+    def is_favorite(self) -> bool:
+        """:class: `bool` Returns whether the spray is favorited."""
+        return self._is_favorite
+
+    async def add_favorite(self, *, force: bool = False) -> bool:
+        """coro Adds the player card to the user's favorites."""
+
+        if self.is_favorite() and not force:
+            return False
+        to_fav = await self._client.add_favorite(self)
+        if self in to_fav.player_cards:
+            self._is_favorite = True
+        return self.is_favorite()
+
+    async def remove_favorite(self, *, force: bool = False) -> bool:
+        """coro Removes the player card from the user's favorites."""
+        if not self.is_favorite() and not force:
+            return False
+        remove_fav = await self._client.remove_favorite(self)
+        if self not in remove_fav.player_cards:
+            self._is_favorite = False
+        return self.is_favorite()
 
     # @property
     # def is_owned(self) -> bool:  # TODO: Someday...
