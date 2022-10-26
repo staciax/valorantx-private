@@ -70,6 +70,7 @@ class Identity:
         self._level_border: Optional[str] = data.get('PreferredLevelBorderID')
         self._account_level: int = 0
         self._hide_account_level: bool = data.get('HideAccountLevel', False)
+        self._player_card: Optional[PlayerCard] = self._client.get_player_card(self._player_card)
 
     def __repr__(self) -> str:
         attrs = [
@@ -96,7 +97,7 @@ class Identity:
     @property
     def player_card(self) -> Optional[PlayerCard]:
         """:class:`PlayerCard`: The player card."""
-        return self._client.get_player_card(self._player_card)
+        return self._player_card
 
     @property
     def player_title(self) -> Optional[PlayerTitle]:
@@ -214,6 +215,58 @@ class Collection(BaseModel):
     def get_skins(self) -> SkinCollection:
         return self._skins
 
+    def get_player_card(self) -> Optional[PlayerCard]:
+        return self.identity.player_card
+
+    def get_player_title(self) -> Optional[PlayerTitle]:
+        return self.identity.player_title
+
+    def get_level_border(self) -> Optional[LevelBorder]:
+        return self.identity.level_border
+
+    async def fetch_account_xp(self) -> None:
+        """|coro|
+
+        Fetches the account XP.
+        """
+        account_xp = await self._client.fetch_account_xp()
+        self._client.user.account_level = account_xp.level
+        self.identity.account_level = account_xp.level
+
+    async def fetch_favorites(self):
+        """|coro|
+
+        Fetches the player favorites.
+        """
+
+        favorite = await self._client.fetch_favorites()
+        for i_fav in favorite.items:
+
+            for i_skin in self.get_skins():
+
+                if i_fav.type == ItemType.skin:
+                    if i_skin == i_fav:
+                        i_skin.set_favorite(True)
+                else:
+                    base_skin = i_skin.get_base_skin()
+                    if base_skin == i_fav:
+                        base_skin.set_favorite(True)
+
+                if i_fav.type == ItemType.buddy:
+                    skin_buddy = i_skin.get_buddy()
+                    if skin_buddy == i_fav:
+                        skin_buddy.set_favorite(True)
+
+            if i_fav.type == ItemType.spray:
+                for i_spray in self.get_sprays():
+                    if i_spray == i_fav:
+                        i_spray.set_favorite(True)
+
+            if i_fav.type == ItemType.player_card:
+                player_card = self.get_player_card()
+                if player_card == i_fav:
+                    player_card.set_favorite(True)
+
     # @property
     # def player_name(self) -> str:
     #     return self._client.user.name
@@ -271,8 +324,10 @@ class SkinCollection:
 
     def _update(self, loadout: List[SkinL]) -> None:
         for skin in loadout:
-            if hasattr(self, skin.base_weapon.display_name.lower()):
-                setattr(self, skin.base_weapon.display_name.lower(), skin)
+            base_weapon = skin.get_base_weapon()
+            if base_weapon is not None:
+                if hasattr(self, base_weapon.display_name.lower()):
+                    setattr(self, base_weapon.display_name.lower(), skin)
 
     @property
     def sidearms(self) -> List[SkinL]:
@@ -366,7 +421,7 @@ class Favorites:
         self.player_cards: List[PlayerCard] = []
         self.buddies: List[Buddy] = []
         self.any: List[Any] = []
-        self.items: List[Union[Skin, Spray, PlayerCard]] = []
+        self.items: List[Union[Skin, Spray, PlayerCard, Buddy]] = []
         self._update(data)
 
     def __repr__(self) -> str:
@@ -484,14 +539,14 @@ class Favorites:
     async def add_buddy(self, buddy: Union[str, Buddy], *, force: bool = False) -> None:
         """|coro|
 
-        Adds a buddy to your favorites.
+        Adds a get_buddy to your favorites.
 
         Parameters
         ----------
         buddy: Union[:class:`str`, :class:`Buddy`]
-            The buddy to add.
+            The get_buddy to add.
         force: :class:`bool`
-            Whether to force add the buddy to your favorites.
+            Whether to force add the get_buddy to your favorites.
         """
         if isinstance(buddy, str):
             buddy = self._client.get_buddy(uuid=buddy)
@@ -565,14 +620,14 @@ class Favorites:
     async def remove_buddy(self, buddy: Union[str, Buddy], *, force: bool = False) -> None:
         """|coro|
 
-        Removes a buddy from your favorites.
+        Removes a get_buddy from your favorites.
 
         Parameters
         ----------
         buddy: Union[:class:`str`, :class:`Buddy`]
-            The buddy to remove.
+            The get_buddy to remove.
         force: :class:`bool`
-            Whether to force remove the buddy from your favorites.
+            Whether to force remove the get_buddy from your favorites.
         """
         if isinstance(buddy, str):
             buddy = self._client.get_buddy(uuid=buddy)

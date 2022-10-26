@@ -393,12 +393,12 @@ class Client:
         return Agent(client=self, data=data) if data else None
 
     def get_buddy(self, *args: Any, **kwargs: Any) -> Optional[Union[Buddy, BuddyLevel]]:
-        """Get a buddy by UUID or Display Name."""
+        """Get a get_buddy by UUID or Display Name."""
         data = self.assets.get_buddy(*args, **kwargs)
         return Buddy(client=self, data=data) if data else self.get_buddy_level(*args, **kwargs)
 
     def get_buddy_level(self, *args: Any, **kwargs: Any) -> Optional[BuddyLevel]:
-        """Get a buddy level by UUID or Display Name."""
+        """Get a get_buddy level by UUID or Display Name."""
         data = self.assets.get_buddy_level(*args, **kwargs)
         return BuddyLevel(client=self, data=data) if data else None
 
@@ -635,18 +635,12 @@ class Client:
 
         data = await self.http.fetch_player_loadout()
         collection = Collection(client=self, data=data)
+
         if with_xp:
-            account_xp = await self.fetch_account_xp()
-            self.user.account_level = account_xp.level
-            collection.identity.account_level = account_xp.level
+            await collection.fetch_account_xp()
 
         if with_favorite:
-            favorite = await self.fetch_favorites()
-            for i_fav in favorite.items:
-                for i_col in collection.get_skins():
-                    if isinstance(i_col, (SkinChroma, SkinLevel)):
-                        if i_col.get_base_skin() == i_fav:
-                            i_col.set_favorite(True)
+            await collection.fetch_favorites()
 
         return collection
 

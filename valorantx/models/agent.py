@@ -43,6 +43,19 @@ __all__ = (
 
 
 class Role:
+
+    """
+    The Role's of an Agent.
+
+    Parameters
+    ----------
+    client: :class:`Client`
+        The client that is used to make requests.
+    data: :class:`Dict[str, Any]`
+        The data to use to create the role.
+
+    """
+
     def __init__(self, client: Client, data: Dict[str, Any]) -> None:
         self._client = client
         self.uuid: str = data['uuid']
@@ -90,6 +103,19 @@ class Role:
 
 
 class Ability:
+
+    """
+    The Abilities of an Agent.
+
+    Parameters
+    ----------
+    client: :class:`Client`
+        The client that is used to make requests.
+    data: :class:`Dict[str, Any]`
+        The data to use to create the ability.
+
+    """
+
     def __init__(self, client: Client, data: Dict[str, Any]) -> None:
         self._client = client
         self.slot: AbilityType = try_enum(AbilityType, data['slot'])
@@ -136,6 +162,15 @@ class Ability:
 
 
 class Media:
+    """
+    The Media of an Agent.
+
+    Parameters
+    ----------
+    data: :class:`Dict[str, Any]`
+        The data to use to create the media.
+    """
+
     def __init__(self, data: Dict[str, Any]) -> None:
         self.id: int = data['id']
         self.wwise: str = data['wwise']
@@ -155,6 +190,17 @@ class Media:
 
 
 class VoiceLine:
+
+    """
+    The Voice Lines of an Agent.
+
+    Parameters
+    ----------
+    data: :class:`Dict[str, Any]`
+        The data to use to create the voice line.
+
+    """
+
     def __init__(self, data: Dict[str, Any]) -> None:
         self.min_duration: float = data['minDuration']
         self.max_duration: float = data['maxDuration']
@@ -178,6 +224,18 @@ class VoiceLine:
 
 
 class VoiceLineLocalization:
+
+    """
+    The Voice Line Localizations of an Agent.
+
+    Parameters
+    ----------
+    untranslated: :class:`Dict[str, Any]`
+        The data to use to create the voice line localizations.
+    locale: :class:`Union[str, Locale]`
+        The locale to use for the voice line localizations.
+    """
+
     def __init__(
         self,
         untranslated: Dict[str, Any],
@@ -341,6 +399,19 @@ class VoiceLineLocalization:
 
 
 class Agent(BaseModel):
+
+    """
+    Agent in VALORANT.
+
+    Parameters
+    ----------
+    client: :class:`Client`
+        The client that instantiated this object.
+    data: :class:`Mapping[str, Any]`
+        The data that was received from the API.
+
+    """
+
     def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
@@ -445,19 +516,33 @@ class Agent(BaseModel):
         return self._is_full_portrait_right_facing
 
     def is_playable_character(self) -> bool:
-        """Returns whether the agent is playable."""
+        """:class: `bool` Returns whether the agent is a playable character."""
         return self._is_playable_character
 
     def is_available_for_test(self) -> bool:
-        """Returns whether the agent is available for test."""
+        """:class: `bool` Returns whether the agent is available for test."""
         return self._is_available_for_test
 
     def is_base_content(self) -> bool:
-        """Returns whether the agent is base content."""
+        """:class: `bool` Returns whether the agent is base content."""
         return self._is_base_content
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
-        """Returns the agent with the given UUID."""
+        """
+        Returns an agent from the given uuid.
+
+        Parameters
+        ----------
+        client: :class: `Client`
+            The client to use.
+        uuid: :class: `str`
+            The agent's uuid.
+
+        Returns
+        -------
+        Optional[:class: `Agent`]
+            The agent from the given uuid.
+        """
         data = client.assets.get_agent(uuid)
         return cls(client=client, data=data) if data else None

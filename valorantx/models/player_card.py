@@ -69,50 +69,50 @@ class PlayerCard(BaseModel):
 
     @property
     def name_localizations(self) -> Localization:
-        """:class: `Translator` Returns the buddy's names."""
+        """:class: `Translator` Returns the get_buddy's names."""
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
     def display_name(self) -> str:
-        """:class: `str` Returns the buddy's name."""
+        """:class: `str` Returns the get_buddy's name."""
         return self.name_localizations.american_english
 
     @property
     def display_icon(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the buddy's icon."""
+        """:class: `Asset` Returns the get_buddy's icon."""
         if self._display_icon is None:
             return None
         return Asset._from_url(client=self._client, url=self._display_icon)
 
     @property
     def small_icon(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the buddy's small icon."""
+        """:class: `Asset` Returns the get_buddy's small icon."""
         if self._small_icon is None:
             return None
         return Asset._from_url(client=self._client, url=self._small_icon)
 
     @property
     def wide_icon(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the buddy's wide icon."""
+        """:class: `Asset` Returns the get_buddy's wide icon."""
         if self._wide_icon is None:
             return None
         return Asset._from_url(client=self._client, url=self._wide_icon)
 
     @property
     def large_icon(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the buddy's large icon."""
+        """:class: `Asset` Returns the get_buddy's large icon."""
         if self._large_icon is None:
             return None
         return Asset._from_url(client=self._client, url=self._large_icon)
 
     @property
     def theme(self) -> Optional[Theme]:
-        """:class: `Theme` Returns the buddy's theme."""
+        """:class: `Theme` Returns the get_buddy's theme."""
         return self._client.get_theme(uuid=self._theme_uuid)
 
     @property
     def price(self) -> int:
-        """:class: `int` Returns the buddy's price."""
+        """:class: `int` Returns the get_buddy's price."""
         return self._price
 
     @price.setter
@@ -120,12 +120,16 @@ class PlayerCard(BaseModel):
         self._price = value
 
     def is_hidden_if_not_owned(self) -> bool:
-        """:class: `bool` Returns whether the buddy is hidden if not owned."""
+        """:class: `bool` Returns whether the get_buddy is hidden if not owned."""
         return self._is_hidden_if_not_owned
 
     def is_favorite(self) -> bool:
         """:class: `bool` Returns whether the spray is favorited."""
         return self._is_favorite
+
+    def set_favorite(self, value: bool) -> None:
+        """Sets the player card's favorite status."""
+        self._is_favorite = value
 
     async def add_favorite(self, *, force: bool = False) -> bool:
         """coro Adds the player card to the user's favorites."""

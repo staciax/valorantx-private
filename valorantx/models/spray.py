@@ -139,6 +139,9 @@ class Spray(BaseModel):
         """:class: `bool` Returns whether the spray is favorited."""
         return self._is_favorite
 
+    def set_favorite(self, value: bool) -> None:
+        self._is_favorite = value
+
     async def add_favorite(self, *, force: bool = False) -> bool:
         """coro Adds the spray to the user's favorites."""
 
@@ -186,12 +189,12 @@ class SprayLevel(BaseModel):
 
     @property
     def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the buddy's names."""
+        """:class: `Localization` Returns the get_buddy's names."""
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
     def display_name(self) -> str:
-        """:class: `str` Returns the buddy's name."""
+        """:class: `str` Returns the get_buddy's name."""
         return self.name_localizations.american_english
 
     @property

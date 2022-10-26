@@ -805,14 +805,12 @@ class BaseLoadout:
     def set_favorite(self, value: bool) -> None:
         self._is_favorite_loadout = value
 
-    @property
-    def buddy(self) -> Optional[Buddy]:
-        """Returns the buddy for this skin"""
+    def get_buddy(self) -> Optional[Buddy]:
+        """Returns the get_buddy for this skin"""
         return self._client.get_buddy(uuid=self._buddy_uuid) if self._buddy_uuid else None
 
-    @property
-    def buddy_level(self) -> Optional[BuddyLevel]:
-        """Returns the buddy level for this skin"""
+    def get_buddy_level(self) -> Optional[BuddyLevel]:
+        """Returns the get_buddy level for this skin"""
         return self._client.get_buddy_level(uuid=self._buddy_level_uuid) if self._buddy_level_uuid else None
 
 
