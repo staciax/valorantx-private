@@ -631,7 +631,7 @@ class Client:
         return AccountXP(client=self, data=data)
 
     @_authorize_required
-    async def fetch_loadout(self, *, with_xp: bool = True) -> Collection:
+    async def fetch_loadout(self, *, with_xp: bool = True, with_favorite: bool = True) -> Collection:
 
         data = await self.http.fetch_player_loadout()
         collection = Collection(client=self, data=data)
@@ -639,6 +639,14 @@ class Client:
             account_xp = await self.fetch_account_xp()
             self.user.account_level = account_xp.level
             collection.identity.account_level = account_xp.level
+
+        if with_favorite:
+            favorite = await self.fetch_favorites()
+            for i_fav in favorite.items:
+                for i_col in collection.get_skins():
+                    if isinstance(i_col, (SkinChroma, SkinLevel)):
+                        if i_col.base_skin == i_fav:
+                            i_col.set_favorite(True)
 
         return collection
 

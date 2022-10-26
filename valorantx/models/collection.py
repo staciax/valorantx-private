@@ -158,9 +158,12 @@ class Collection(BaseModel):
         self.identity: Identity = Identity(client, data['Identity'])
         self._skins_loadout: List[SkinLoadoutPayload] = data['Guns']
         self._sprays_loadout: List[SprayLoadoutPayload] = data['Sprays']
+        self._skins: SkinCollection = SkinCollection()
+        self._sprays: SprayCollection = SprayCollection()
+        self._update()
 
     def __repr__(self) -> str:
-        return f'<Loadout skins={self.skins!r} version={self.version!r} incognito={self.incognito()!r}>'
+        return f'<Loadout skins={self.get_skins()!r} version={self.version!r} incognito={self.incognito()!r}>'
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Collection) and (self.version == other.version or self.incognito == other.incognito)
@@ -177,8 +180,7 @@ class Collection(BaseModel):
         """
         return self._incognito
 
-    @property
-    def sprays(self) -> Union[SprayCollection, List[SprayL]]:
+    def _update(self) -> None:
         spray_loadout = []
         for spray in self._sprays_loadout:
             if spray.get('SprayLevelID'):
@@ -188,10 +190,7 @@ class Collection(BaseModel):
             elif spray.get('SprayID'):
                 spray_loadout.append(SprayLoadout._from_loadout(client=self._client, uuid=spray['SprayID'], loadout=spray))
 
-        return SprayCollection(spray_loadout)
-
-    @property
-    def skins(self) -> Union[SkinCollection, List[SkinL]]:
+        self._sprays._update(spray_loadout)
 
         skin_loadout = []
         for skin in sorted(self._skins_loadout, key=lambda x: x['ID']):
@@ -206,7 +205,13 @@ class Collection(BaseModel):
             elif skin.get('SkinID'):
                 skin_loadout.append(SkinLoadout._from_loadout(client=self._client, uuid=skin['SkinID'], loadout=skin))
 
-        return SkinCollection(skin_loadout)
+        self._skins._update(skin_loadout)
+
+    def get_sprays(self) -> SprayCollection:
+        return self._sprays
+
+    def get_skins(self) -> SkinCollection:
+        return self._skins
 
     # @property
     # def player_name(self) -> str:
@@ -214,7 +219,7 @@ class Collection(BaseModel):
 
 
 class SkinCollection:
-    def __init__(self, loadout: List[SkinL]) -> None:
+    def __init__(self) -> None:
         self.melee: Optional[SkinL] = None
         self.classic: Optional[SkinL] = None
         self.shorty: Optional[SkinL] = None
@@ -233,7 +238,6 @@ class SkinCollection:
         self.operator: Optional[SkinL] = None
         self.ares: Optional[SkinL] = None
         self.odin: Optional[SkinL] = None
-        self._update(loadout)
 
     def __repr__(self) -> str:
         attrs = [
@@ -304,11 +308,10 @@ class SkinCollection:
 
 
 class SprayCollection:
-    def __init__(self, data: List[SprayL]) -> None:
+    def __init__(self) -> None:
         self._slot_1: Optional[SprayL] = None
         self._slot_2: Optional[SprayL] = None
         self._slot_3: Optional[SprayL] = None
-        self._update(data)
 
     def __repr__(self) -> str:
         return f'<SprayCollection slot_1={self.slot_1!r}, slot_2={self.slot_2!r} slot_3={self.slot_3!r}>'
@@ -361,6 +364,7 @@ class Favorites:
         self.sprays: List[Spray] = []
         self.player_cards: List[PlayerCard] = []
         self.any: List[Any] = []
+        self.items: List[Union[Skin, Spray, PlayerCard]] = []
         self._update(data)
 
     def __repr__(self) -> str:
@@ -405,3 +409,171 @@ class Favorites:
                 else:
                     _log.warning(f'Unknown item: {item}')
                     self.any.append(item)
+                self.items.append(item)
+
+    async def add_skin(self, skin: Union[str, Skin], *, force: bool = False) -> None:
+        """|coro|
+
+        Adds a skin to your favorites.
+
+        Parameters
+        ----------
+        skin: Union[:class:`str`, :class:`Skin`]
+            The skin to add.
+        force: :class:`bool`
+            Whether to force add the skin to your favorites.
+        """
+        if isinstance(skin, str):
+            skin = self._client.get_skin(uuid=skin, level=False, chroma=False)
+        if skin in self.skins:
+            raise ValueError(f'{skin} is already in your favorites.')
+
+        is_favorite = await skin.add_favorite(force=force)
+        if is_favorite:
+            self.skins.append(skin)
+
+    async def add_spray(self, spray: Union[str, Spray], *, force: bool = False) -> None:
+        """|coro|
+
+        Adds a spray to your favorites.
+
+        Parameters
+        ----------
+        spray: Union[:class:`str`, :class:`Spray`]
+            The spray to add.
+        force: :class:`bool`
+            Whether to force add the spray to your favorites.
+        """
+        if isinstance(spray, str):
+            spray = self._client.get_spray(uuid=spray, level=False)
+        if spray in self.sprays:
+            raise ValueError(f'{spray} is already in your favorites.')
+
+        is_favorite = await spray.add_favorite(force=force)
+        if is_favorite:
+            self.sprays.append(spray)
+
+    async def add_player_card(self, player_card: Union[str, PlayerCard], *, force: bool = False) -> None:
+        """|coro|
+
+        Adds a player card to your favorites.
+
+        Parameters
+        ----------
+        player_card: Union[:class:`str`, :class:`PlayerCard`]
+            The player card to add.
+        force: :class:`bool`
+            Whether to force add the player card to your favorites.
+        """
+        if isinstance(player_card, str):
+            player_card = self._client.get_player_card(uuid=player_card)
+        if player_card in self.player_cards:
+            raise ValueError(f'{player_card} is already in your favorites.')
+
+        is_favorite = await player_card.add_favorite(force=force)
+        if is_favorite:
+            self.player_cards.append(player_card)
+
+    async def remove_skin(self, skin: Union[str, Skin], *, force: bool = False) -> None:
+        """|coro|
+
+        Removes a skin from your favorites.
+
+        Parameters
+        ----------
+        skin: Union[:class:`str`, :class:`Skin`]
+            The skin to remove.
+        force: :class:`bool`
+            Whether to force remove the skin from your favorites.
+        """
+        if isinstance(skin, str):
+            skin = self._client.get_skin(uuid=skin, level=False, chroma=False)
+        if skin not in self.skins:
+            raise ValueError(f'{skin} is not in your favorites.')
+        is_favorite = await skin.remove_favorite(force=force)
+        if not is_favorite:
+            self.skins.remove(skin)
+
+    async def remove_spray(self, spray: Union[str, Spray], *, force: bool = False) -> None:
+        """|coro|
+
+        Removes a spray from your favorites.
+
+        Parameters
+        ----------
+        spray: Union[:class:`str`, :class:`Spray`]
+            The spray to remove.
+        force: :class:`bool`
+            Whether to force remove the spray from your favorites.
+        """
+        if isinstance(spray, str):
+            spray = self._client.get_spray(uuid=spray, level=False)
+        if spray not in self.sprays:
+            raise ValueError(f'{spray} is not in your favorites.')
+        is_favorite = await spray.remove_favorite(force=force)
+        if not is_favorite:
+            self.sprays.remove(spray)
+
+    async def remove_player_card(self, player_card: Union[str, PlayerCard], *, force: bool = False) -> None:
+        """|coro|
+
+        Removes a player card from your favorites.
+
+        Parameters
+        ----------
+        player_card: Union[:class:`str`, :class:`PlayerCard`]
+            The player card to remove.
+        force: :class:`bool`
+            Whether to force remove the player card from your favorites.
+        """
+        if isinstance(player_card, str):
+            player_card = self._client.get_player_card(uuid=player_card)
+        if player_card not in self.player_cards:
+            raise ValueError(f'{player_card} is not in your favorites.')
+        is_favorite = await player_card.remove_favorite(force=force)
+        if not is_favorite:
+            self.player_cards.remove(player_card)
+
+    async def remove_all(self, item_type: Optional[ItemType] = None, *, force: bool = False) -> None:
+        """|coro|
+
+        Removes all items from your favorites.
+
+        Parameters
+        ----------
+        item_type: Optional[:class:`ItemType`]
+            The item type to remove.
+        force: :class:`bool`
+            Whether to force remove the items from your favorites.
+        """
+
+        async def remove_skin() -> None:
+            for skin in self.skins:
+                is_fav = await skin.remove_favorite(force=force)
+                if not is_fav:
+                    self.skins.remove(skin)
+
+        async def remove_spray() -> None:
+            for spray in self.sprays:
+                is_fav = await spray.remove_favorite(force=force)
+                if not is_fav:
+                    self.sprays.remove(spray)
+
+        async def remove_player_card() -> None:
+            for player_card in self.player_cards:
+                is_fav = await player_card.remove_favorite(force=force)
+                if not is_fav:
+                    self.player_cards.remove(player_card)
+
+        if item_type is None:
+            await remove_skin()
+            await remove_spray()
+            await remove_player_card()
+        elif item_type == ItemType.skin:
+            await remove_skin()
+        elif item_type == ItemType.spray:
+            await remove_spray()
+        elif item_type == ItemType.player_card:
+            await remove_player_card()
+        else:
+            raise ValueError(f'Unknown item type: {item_type}')

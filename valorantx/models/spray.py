@@ -57,7 +57,6 @@ class Spray(BaseModel):
         self._levels: List[Dict[str, Any]] = data['levels']
         self._price: int = self._client.get_item_price(self.uuid)
         self._is_favorite: bool = False
-        self.__is_fetch_favorite: bool = False
         self.type: ItemType = ItemType.spray
 
     def __str__(self) -> str:
@@ -230,6 +229,26 @@ class SprayLevel(BaseModel):
     def is_favorite(self) -> bool:
         """:class: `bool` Returns whether the spray is favorited."""
         return self.base_spray.is_favorite()
+
+    async def add_favorite(self, *, force: bool = False) -> bool:
+        """|coro|
+
+        Parameters
+        ----------
+        force: :class: `bool`
+            Whether to force add the spray to favorites.
+        """
+        return await self.base_spray.add_favorite(force=force)
+
+    async def remove_favorite(self, *, force: bool = False) -> bool:
+        """|coro|
+
+        Parameters
+        ----------
+        force: :class: `bool`
+            Whether to force remove the spray from favorites.
+        """
+        return await self.base_spray.remove_favorite(force=force)
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

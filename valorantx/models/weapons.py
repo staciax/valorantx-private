@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union, overload
+from typing import TYPE_CHECKING, Any, Dict, Generic, List, Mapping, Optional, TypeVar, Union, overload
 
 from .. import utils
 from ..asset import Asset
@@ -41,6 +41,7 @@ if TYPE_CHECKING:
     from ..types.store import FeaturedBundleItem as FeaturedBundleItemPayload
     from .buddy import Buddy, BuddyLevel
     from .content import ContentTier
+    from .player_card import PlayerCard
     from .theme import Theme
 
 __all__ = (
@@ -420,6 +421,9 @@ class Skin(BaseModel):
         """:class: `bool` Returns whether the skin is favorited."""
         return self._is_favorite
 
+    def set_favorite(self, value: bool) -> None:
+        self._is_favorite = value
+
     async def add_favorite(self, *, force: bool = False) -> bool:
         """coro Adds the skin to the user's favorites."""
 
@@ -488,7 +492,7 @@ class SkinChroma(BaseModel):
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the skin's name."""
-        return self.name_localizations.american_english
+        return self.name_localizations.american_english or ''
 
     @property
     def display_icon(self) -> Optional[Asset]:
@@ -547,8 +551,42 @@ class SkinChroma(BaseModel):
         self._price = value
 
     def is_favorite(self) -> bool:
-        """:class: `bool` Returns whether the skin is favorited."""
-        return self.base_skin.is_favorite() if self.base_skin else False
+        """:class: `bool` Returns whether the skin is in the user's favorites."""
+        return self.base_skin.is_favorite() if self.base_skin is not None else False
+
+    def set_favorite(self, value: bool) -> None:
+        if self.base_skin is not None:
+            self.base_skin.set_favorite(value)
+
+    async def add_favorite(self, *, force: bool = False) -> bool:
+        """|coro|
+
+        Parameters
+        ----------
+        force: :class:`bool`
+            Whether to force add the skin to the user's favorites.
+
+        Returns
+        -------
+        :class:`bool`
+            Whether the skin was added to the user's favorites.
+        """
+        return await self.base_skin.add_favorite(force=force)
+
+    async def remove_favorite(self, *, force: bool = False) -> bool:
+        """|coro|
+
+        Parameters
+        ----------
+        force: :class:`bool`
+            Whether to force remove the skin from the user's favorites.
+
+        Returns
+        -------
+        :class:`bool`
+            Whether the skin was removed from the user's favorites.
+        """
+        return await self.base_skin.remove_favorite(force=force)
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -641,7 +679,41 @@ class SkinLevel(BaseModel):
 
     def is_favorite(self) -> bool:
         """:class: `bool` Returns whether the skin is favorited."""
-        return self.base_skin.is_favorite() if self.base_skin else False
+        return self.base_skin.is_favorite() if self.base_skin is not None else False
+
+    def set_favorite(self, value: bool) -> None:
+        if self.base_skin is not None:
+            self.base_skin.set_favorite(value)
+
+    async def add_favorite(self, *, force: bool = False) -> bool:
+        """|coro|
+
+        Parameters
+        ----------
+        force: :class:`bool`
+            Whether to force add the skin to the user's favorites.
+
+        Returns
+        -------
+        :class:`bool`
+            Whether the skin was added to the user's favorites.
+        """
+        return await self.base_skin.add_favorite(force=force)
+
+    async def remove_favorite(self, *, force: bool = False) -> bool:
+        """|coro|
+
+        Parameters
+        ----------
+        force: :class:`bool`
+            Whether to force remove the skin from the user's favorites.
+
+        Returns
+        -------
+        :class:`bool`
+            Whether the skin was removed from the user's favorites.
+        """
+        return await self.base_skin.remove_favorite(force=force)
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -706,6 +778,9 @@ class SkinBundle(SkinLevel, BaseFeaturedBundleItem):
         return cls(client=client, data=data, bundle=bundle) if data else None
 
 
+T = TypeVar('T', bound=Union['Buddy', 'PlayerCard', Skin, SkinLevel, SkinChroma])
+
+
 class BaseLoadout:
 
     if TYPE_CHECKING:
@@ -714,11 +789,18 @@ class BaseLoadout:
     def __init__(self, loadout: SkinLoadoutPayload, *args, **kwargs: Any) -> None:
         self._buddy_uuid = loadout.get('CharmID')
         self._buddy_level_uuid = loadout.get('CharmLevelID')
-        self._is_favorite: bool = False
+        self._is_favorite_loadout: bool = False
+
+    def is_random(self: T) -> bool:
+        """:class:`bool` Returns whether the skin is random."""
+        return True if 'Random' in self.asset_path else False
+
+    def is_favorite(self) -> bool:
+        """:class: `bool` Returns whether the skin is favorited."""
+        return self._is_favorite_loadout
 
     def set_favorite(self, value: bool) -> None:
-        """Sets the loadout as favorite."""
-        self._is_favorite = value
+        self._is_favorite_loadout = value
 
     @property
     def buddy(self) -> Optional[Buddy]:
@@ -730,19 +812,10 @@ class BaseLoadout:
         """Returns the buddy level for this skin"""
         return self._client.get_buddy_level(uuid=self._buddy_level_uuid) if self._buddy_level_uuid else None
 
-    def is_favorite(self) -> bool:
-        """:class: `bool` Returns whether the skin is favorite."""
-        return self._is_favorite
-
-
-class LoadoutRandomFilter:
-    pass
-
 
 class SkinLoadout(Skin, BaseLoadout):
     def __init__(self, *, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
-        super().__init__(client=client, data=data)
-        BaseLoadout.__init__(self, loadout=loadout)
+        super().__init__(client=client, data=data, loadout=loadout)
 
     def __repr__(self) -> str:
         return f"<SkinLoadout display_name={self.display_name!r}>"
