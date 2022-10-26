@@ -645,7 +645,7 @@ class Client:
             for i_fav in favorite.items:
                 for i_col in collection.get_skins():
                     if isinstance(i_col, (SkinChroma, SkinLevel)):
-                        if i_col.base_skin == i_fav:
+                        if i_col.get_base_skin() == i_fav:
                             i_col.set_favorite(True)
 
         return collection
