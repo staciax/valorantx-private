@@ -41,6 +41,7 @@ if TYPE_CHECKING:
         SkinLoadout as SkinLoadoutPayload,
         SprayLoadout as SprayLoadoutPayload,
     )
+    from .buddy import Buddy
     from .level_border import LevelBorder
     from .player import ClientPlayer
     from .player_card import PlayerCard
@@ -363,6 +364,7 @@ class Favorites:
         self.skins: List[Skin] = []
         self.sprays: List[Spray] = []
         self.player_cards: List[PlayerCard] = []
+        self.buddies: List[Buddy] = []
         self.any: List[Any] = []
         self.items: List[Union[Skin, Spray, PlayerCard]] = []
         self._update(data)
@@ -372,6 +374,7 @@ class Favorites:
             ('len(skins)', len(self.skins)),
             ('len(sprays)', len(self.sprays)),
             ('len(player_cards)', len(self.player_cards)),
+            ('len(buddies)', len(self.buddies)),
         ]
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
@@ -382,6 +385,7 @@ class Favorites:
             and self.skins == other.skins
             and self.sprays == other.sprays
             and self.player_cards == other.player_cards
+            and self.buddies == other.buddies
         )
 
     def __ne__(self, other: object) -> bool:
@@ -394,6 +398,7 @@ class Favorites:
                 self._client.get_skin(uuid=item_id, level=False, chroma=False)
                 or self._client.get_spray(uuid=item_id, level=False)
                 or self._client.get_player_card(uuid=item_id)
+                or self._client.get_buddy(uuid=item_id)
             )
             if item is not None:
 
@@ -406,6 +411,8 @@ class Favorites:
                     self.sprays.append(item)
                 elif getattr(item, 'type') == ItemType.player_card:
                     self.player_cards.append(item)
+                elif getattr(item, 'type') == ItemType.buddy:
+                    self.buddies.append(item)
                 else:
                     _log.warning(f'Unknown item: {item}')
                     self.any.append(item)
@@ -474,6 +481,27 @@ class Favorites:
         if is_favorite:
             self.player_cards.append(player_card)
 
+    async def add_buddy(self, buddy: Union[str, Buddy], *, force: bool = False) -> None:
+        """|coro|
+
+        Adds a buddy to your favorites.
+
+        Parameters
+        ----------
+        buddy: Union[:class:`str`, :class:`Buddy`]
+            The buddy to add.
+        force: :class:`bool`
+            Whether to force add the buddy to your favorites.
+        """
+        if isinstance(buddy, str):
+            buddy = self._client.get_buddy(uuid=buddy)
+        if buddy in self.buddies:
+            raise ValueError(f'{buddy} is already in your favorites.')
+
+        is_favorite = await buddy.add_favorite(force=force)
+        if is_favorite:
+            self.buddies.append(buddy)
+
     async def remove_skin(self, skin: Union[str, Skin], *, force: bool = False) -> None:
         """|coro|
 
@@ -534,6 +562,26 @@ class Favorites:
         if not is_favorite:
             self.player_cards.remove(player_card)
 
+    async def remove_buddy(self, buddy: Union[str, Buddy], *, force: bool = False) -> None:
+        """|coro|
+
+        Removes a buddy from your favorites.
+
+        Parameters
+        ----------
+        buddy: Union[:class:`str`, :class:`Buddy`]
+            The buddy to remove.
+        force: :class:`bool`
+            Whether to force remove the buddy from your favorites.
+        """
+        if isinstance(buddy, str):
+            buddy = self._client.get_buddy(uuid=buddy)
+        if buddy not in self.buddies:
+            raise ValueError(f'{buddy} is not in your favorites.')
+        is_favorite = await buddy.remove_favorite(force=force)
+        if not is_favorite:
+            self.buddies.remove(buddy)
+
     async def remove_all(self, item_type: Optional[ItemType] = None, *, force: bool = False) -> None:
         """|coro|
 
@@ -565,15 +613,24 @@ class Favorites:
                 if not is_fav:
                     self.player_cards.remove(player_card)
 
+        async def remove_buddy() -> None:
+            for buddy in self.buddies:
+                is_fav = await buddy.remove_favorite(force=force)
+                if not is_fav:
+                    self.buddies.remove(buddy)
+
         if item_type is None:
             await remove_skin()
             await remove_spray()
             await remove_player_card()
+            await remove_buddy()
         elif item_type == ItemType.skin:
             await remove_skin()
         elif item_type == ItemType.spray:
             await remove_spray()
         elif item_type == ItemType.player_card:
             await remove_player_card()
+        elif item_type == ItemType.buddy:
+            await remove_buddy()
         else:
             raise ValueError(f'Unknown item type: {item_type}')

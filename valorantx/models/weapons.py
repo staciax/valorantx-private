@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Generic, List, Mapping, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, TypeVar, Union, overload
 
 from .. import utils
 from ..asset import Asset
@@ -41,7 +41,6 @@ if TYPE_CHECKING:
     from ..types.store import FeaturedBundleItem as FeaturedBundleItemPayload
     from .buddy import Buddy, BuddyLevel
     from .content import ContentTier
-    from .player_card import PlayerCard
     from .theme import Theme
 
 __all__ = (
@@ -477,6 +476,10 @@ class SkinChroma(BaseModel):
         self.asset_path: str = data['assetPath']
         self._price: int = 0
         self.type: ItemType = ItemType.skin_chroma
+        self._base_weapon: Optional[Weapon] = (
+            self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
+        )
+        self._base_skin: Optional[Skin] = self._client.get_skin(uuid=self._base_skin_uuid) if self._base_skin_uuid else None
 
     def __str__(self) -> str:
         return self.display_name
@@ -492,15 +495,15 @@ class SkinChroma(BaseModel):
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the skin's name."""
-        return self.name_localizations.american_english or ''
+        return self.name_localizations.american_english
 
     @property
     def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon."""
-        if self._display_name == getattr(self.base_weapon, '_display_name'):
-            display_icon = self.base_weapon.display_icon
+        if self._display_name == getattr(self._base_weapon, '_display_name'):
+            display_icon = self._base_weapon.display_icon
         else:
-            display_icon = self._display_icon or self.base_skin.display_icon
+            display_icon = self._display_icon or self._base_skin.display_icon
         return Asset._from_url(client=self._client, url=str(display_icon)) if display_icon else None
 
     @property
@@ -518,32 +521,30 @@ class SkinChroma(BaseModel):
         """:class: `Asset` Returns the skin's video."""
         return Asset._from_url(client=self._client, url=self._streamed_video) if self._streamed_video else None
 
-    @property
-    def base_weapon(self) -> Optional[Weapon]:
+    def get_base_weapon(self) -> Optional[Weapon]:
         """:class: `Weapon` Returns the skin's base weapon."""
-        return self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
+        return self._base_weapon
 
-    @property
-    def base_skin(self) -> Optional[Skin]:
+    def get_base_skin(self) -> Optional[Skin]:
         """:class: `Skin` Returns the skin's base skin."""
-        return self._client.get_skin(uuid=self._base_skin_uuid) if self._base_skin_uuid else None
+        return self._base_skin
 
     @property
     def theme(self) -> Optional[Theme]:
         """:class: `Theme` Returns the skin's theme uuid."""
-        return self.base_skin.theme if self.base_skin else None
+        return self._base_skin.theme if self._base_skin else None
 
     @property
     def rarity(self) -> Optional[ContentTier]:
         """:class: `ContentTier` Returns the skin's rarity."""
-        return self.base_skin.rarity if self.base_skin else None
+        return self._base_skin.rarity if self._base_skin else None
 
     @property
     def price(self) -> Optional[int]:
         """:class: `int` Returns the skin's price."""
         if self._price == 0:
-            if hasattr(self.base_skin, 'price'):
-                self._price = self.base_skin.price
+            if self._base_skin is not None:
+                self._price = self._base_skin.price
         return self._price
 
     @price.setter
@@ -552,11 +553,11 @@ class SkinChroma(BaseModel):
 
     def is_favorite(self) -> bool:
         """:class: `bool` Returns whether the skin is in the user's favorites."""
-        return self.base_skin.is_favorite() if self.base_skin is not None else False
+        return self._base_skin.is_favorite() if self._base_skin is not None else False
 
     def set_favorite(self, value: bool) -> None:
-        if self.base_skin is not None:
-            self.base_skin.set_favorite(value)
+        if self._base_skin is not None:
+            self._base_skin.set_favorite(value)
 
     async def add_favorite(self, *, force: bool = False) -> bool:
         """|coro|
@@ -571,7 +572,7 @@ class SkinChroma(BaseModel):
         :class:`bool`
             Whether the skin was added to the user's favorites.
         """
-        return await self.base_skin.add_favorite(force=force)
+        return await self._base_skin.add_favorite(force=force)
 
     async def remove_favorite(self, *, force: bool = False) -> bool:
         """|coro|
@@ -586,7 +587,7 @@ class SkinChroma(BaseModel):
         :class:`bool`
             Whether the skin was removed from the user's favorites.
         """
-        return await self.base_skin.remove_favorite(force=force)
+        return await self._base_skin.remove_favorite(force=force)
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -609,6 +610,10 @@ class SkinLevel(BaseModel):
         self._price: int = self._client.get_item_price(self.uuid)
         self._is_level_one: bool = data['isLevelOne']
         self.type: ItemType = ItemType.skin_level
+        self._base_weapon: Optional[Weapon] = (
+            self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
+        )
+        self._base_skin: Optional[Skin] = self._client.get_skin(uuid=self._base_skin_uuid) if self._base_skin_uuid else None
 
     def __str__(self) -> str:
         return self.display_name
@@ -636,7 +641,7 @@ class SkinLevel(BaseModel):
     @property
     def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon."""
-        display_icon = self._display_icon or self.base_skin.display_icon or self.base_weapon.display_icon
+        display_icon = self._display_icon or self._base_skin.display_icon or self._base_weapon.display_icon
         return Asset._from_url(client=self._client, url=str(display_icon)) if display_icon else None
 
     @property
@@ -644,25 +649,23 @@ class SkinLevel(BaseModel):
         """:class: `Asset` Returns the skin's video."""
         return Asset._from_url(client=self._client, url=self._streamed_video) if self._streamed_video else None
 
-    @property
-    def base_weapon(self) -> Optional[Weapon]:
+    def get_base_weapon(self) -> Optional[Weapon]:
         """:class: `Weapon` Returns the skin's base weapon."""
-        return self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
+        return self._base_weapon
 
-    @property
-    def base_skin(self) -> Optional[Skin]:
+    def get_base_skin(self) -> Optional[Skin]:
         """:class: `Skin` Returns the skin's base skin."""
-        return self._client.get_skin(uuid=self._base_skin_uuid) if self._base_skin_uuid else None
+        return self._base_skin
 
     @property
     def theme(self) -> Optional[Theme]:
         """:class: `Theme` Returns the skin's theme uuid."""
-        return self.base_skin.theme if self.base_skin else None
+        return self._base_skin.theme if self._base_skin else None
 
     @property
     def rarity(self) -> Optional[ContentTier]:
         """:class: `ContentTier` Returns the skin's rarity."""
-        return self.base_skin.rarity if self.base_skin else None
+        return self._base_skin.rarity if self._base_skin else None
 
     @property
     def price(self) -> Optional[int]:
@@ -679,11 +682,11 @@ class SkinLevel(BaseModel):
 
     def is_favorite(self) -> bool:
         """:class: `bool` Returns whether the skin is favorited."""
-        return self.base_skin.is_favorite() if self.base_skin is not None else False
+        return self._base_skin.is_favorite() if self._base_skin is not None else False
 
     def set_favorite(self, value: bool) -> None:
-        if self.base_skin is not None:
-            self.base_skin.set_favorite(value)
+        if self._base_skin is not None:
+            self._base_skin.set_favorite(value)
 
     async def add_favorite(self, *, force: bool = False) -> bool:
         """|coro|
@@ -698,7 +701,7 @@ class SkinLevel(BaseModel):
         :class:`bool`
             Whether the skin was added to the user's favorites.
         """
-        return await self.base_skin.add_favorite(force=force)
+        return await self._base_skin.add_favorite(force=force)
 
     async def remove_favorite(self, *, force: bool = False) -> bool:
         """|coro|
@@ -713,7 +716,7 @@ class SkinLevel(BaseModel):
         :class:`bool`
             Whether the skin was removed from the user's favorites.
         """
-        return await self.base_skin.remove_favorite(force=force)
+        return await self._base_skin.remove_favorite(force=force)
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

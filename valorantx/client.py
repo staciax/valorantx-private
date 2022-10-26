@@ -722,14 +722,14 @@ class Client:
         return Favorites(client=self, data=data)
 
     @_authorize_required
-    async def add_favorite(self, maybe_uuid: Union[str, Skin, PlayerCard, Spray]) -> Favorites:
+    async def add_favorite(self, maybe_uuid: Union[str, Skin, PlayerCard, Spray, Buddy]) -> Favorites:
         if isinstance(maybe_uuid, (Skin, PlayerCard, Spray)):
             maybe_uuid = maybe_uuid.uuid
         data = await self.http.favorite_post(maybe_uuid)
         return Favorites(client=self, data=data)
 
     @_authorize_required
-    async def remove_favorite(self, maybe_uuid: Union[str, Skin, PlayerCard, Spray]) -> Favorites:
+    async def remove_favorite(self, maybe_uuid: Union[str, Skin, PlayerCard, Spray, Buddy]) -> Favorites:
         if isinstance(maybe_uuid, (Skin, PlayerCard, Spray)):
             maybe_uuid = maybe_uuid.uuid
         data = await self.http.favorite_delete(maybe_uuid)

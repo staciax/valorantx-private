@@ -176,12 +176,13 @@ class SprayLevel(BaseModel):
         self._asset_path: str = data['assetPath']
         self._price: int = 0
         self.type: ItemType = ItemType.spray_level
+        self._base_spray: Optional[Spray] = self._client.get_spray(self._base_spray_uuid)
 
     def __str__(self) -> str:
         return self.display_name
 
     def __repr__(self) -> str:
-        return f'<SprayLevel display_name={self.display_name!r} base={self.base_spray!r}>'
+        return f'<SprayLevel display_name={self.display_name!r} base={self._base_spray!r}>'
 
     @property
     def name_localizations(self) -> Localization:
@@ -212,8 +213,8 @@ class SprayLevel(BaseModel):
     def price(self) -> int:
         """:class: `int` Returns the price of the spray."""
         if self._price == 0:
-            if hasattr(self.base_spray, 'price'):
-                self._price = self.base_spray.price
+            if self._base_spray is not None:
+                self._price = self._base_spray.price
         return self._price
 
     @price.setter
@@ -221,14 +222,17 @@ class SprayLevel(BaseModel):
         """Sets the price of the spray."""
         self._price = value
 
-    @property
-    def base_spray(self) -> Spray:
+    def get_base_spray(self) -> Optional[Spray]:
         """:class: `Spray` Returns the base spray."""
-        return self._client.get_spray(self._base_spray_uuid)
+        return self._base_spray
 
     def is_favorite(self) -> bool:
         """:class: `bool` Returns whether the spray is favorited."""
-        return self.base_spray.is_favorite()
+        return self._base_spray.is_favorite()
+
+    def set_favorite(self, value: bool) -> None:
+        """Sets the spray as favorited."""
+        self._base_spray._is_favorite = value
 
     async def add_favorite(self, *, force: bool = False) -> bool:
         """|coro|
@@ -238,7 +242,9 @@ class SprayLevel(BaseModel):
         force: :class: `bool`
             Whether to force add the spray to favorites.
         """
-        return await self.base_spray.add_favorite(force=force)
+        if self._base_spray is not None:
+            return await self._base_spray.add_favorite(force=force)
+        return False
 
     async def remove_favorite(self, *, force: bool = False) -> bool:
         """|coro|
@@ -248,7 +254,9 @@ class SprayLevel(BaseModel):
         force: :class: `bool`
             Whether to force remove the spray from favorites.
         """
-        return await self.base_spray.remove_favorite(force=force)
+        if self._base_spray is not None:
+            return await self._base_spray.remove_favorite(force=force)
+        return self.is_favorite()
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

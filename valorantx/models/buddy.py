@@ -50,6 +50,7 @@ class Buddy(BaseModel):
         self.asset_path: str = data['assetPath']
         self._levels: List[Dict[str, Any]] = data['levels']
         self._price: int = 0
+        self._is_favorite: bool = False
 
     def __str__(self) -> str:
         return self.display_name
@@ -98,6 +99,33 @@ class Buddy(BaseModel):
     def price(self, value: int) -> None:
         self._price = value
 
+    def is_favorite(self) -> bool:
+        """:class: `bool` Returns whether the buddy is favorited."""
+        return self._is_favorite
+
+    def set_favorite(self, value: bool) -> None:
+        self._is_favorite = value
+
+    async def add_favorite(self, *, force: bool = False) -> bool:
+        """coro Adds the buddy to the user's favorites."""
+
+        if self.is_favorite() and not force:
+            return False
+        to_fav = await self._client.add_favorite(self)
+        if self in to_fav.buddies:
+            self._is_favorite = True
+        return self.is_favorite()
+
+    async def remove_favorite(self, *, force: bool = False) -> bool:
+        """coro Removes the buddy from the user's favorites."""
+
+        if not self.is_favorite() and not force:
+            return False
+        remove_fav = await self._client.remove_favorite(self)
+        if self not in remove_fav.buddies:
+            self._is_favorite = False
+        return self.is_favorite()
+
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the buddy with the given UUID."""
@@ -115,12 +143,13 @@ class BuddyLevel(BaseModel):
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
         self._price: int = self._client.get_item_price(self.uuid)
+        self._base_buddy: Optional[Buddy] = self._client.get_buddy(self._base_buddy_uuid)
 
     def __str__(self) -> str:
         return self.display_name
 
     def __repr__(self) -> str:
-        return f'<BuddyLevel display_name={self.display_name!r} base={self.base_buddy!r}>'
+        return f'<BuddyLevel display_name={self.display_name!r} base={self._base_buddy!r}>'
 
     @property
     def name_localizations(self) -> Localization:
@@ -146,10 +175,39 @@ class BuddyLevel(BaseModel):
     def price(self, value: int) -> None:
         self._price = value
 
-    @property
-    def base_buddy(self) -> Buddy:
+    def get_base_buddy(self) -> Optional[Buddy]:
         """:class: `Buddy` Returns the base buddy."""
-        return self._client.get_buddy(self._base_buddy_uuid)
+        return self._base_buddy
+
+    def is_favorite(self) -> bool:
+        """:class: `bool` Returns whether the buddy is favorited."""
+        return self._base_buddy.is_favorite() if self._base_buddy else False
+
+    def set_favorite(self, value: bool) -> None:
+        """
+        Sets the buddy as favorited.
+
+        Parameters
+        ----------
+        value: :class: `bool`
+            Whether the buddy should be favorited.
+        """
+        if self._base_buddy:
+            self._base_buddy.set_favorite(value)
+
+    async def add_favorite(self, *, force: bool = False) -> bool:
+        """coro Adds the buddy to the user's favorites."""
+
+        if self._base_buddy is not None:
+            return await self._base_buddy.add_favorite(force=force)
+        return False
+
+    async def remove_favorite(self, *, force: bool = False) -> bool:
+        """coro Removes the buddy from the user's favorites."""
+
+        if self._base_buddy is not None:
+            return await self._base_buddy.remove_favorite(force=force)
+        return self.is_favorite()
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
