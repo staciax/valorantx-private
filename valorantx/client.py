@@ -393,12 +393,12 @@ class Client:
         return Agent(client=self, data=data) if data else None
 
     def get_buddy(self, *args: Any, **kwargs: Any) -> Optional[Union[Buddy, BuddyLevel]]:
-        """Get a get_buddy by UUID or Display Name."""
+        """Get a buddy by UUID or Display Name."""
         data = self.assets.get_buddy(*args, **kwargs)
         return Buddy(client=self, data=data) if data else self.get_buddy_level(*args, **kwargs)
 
     def get_buddy_level(self, *args: Any, **kwargs: Any) -> Optional[BuddyLevel]:
-        """Get a get_buddy level by UUID or Display Name."""
+        """Get a buddy level by UUID or Display Name."""
         data = self.assets.get_buddy_level(*args, **kwargs)
         return BuddyLevel(client=self, data=data) if data else None
 

@@ -261,13 +261,13 @@ class Assets:
 
     @_finder()
     def get_buddy(self, uuid: str) -> Optional[Mapping[str, Any]]:
-        """buddies, Get a get_buddy by UUID."""
+        """buddies, Get a buddy by UUID."""
         data = self.get_asset('buddies')
         return data.get(uuid)
 
     @_finder()
     def get_buddy_level(self, uuid: str) -> Optional[Mapping[str, Any]]:
-        """buddies_levels, Get a get_buddy level by UUID."""
+        """buddies_levels, Get a buddy level by UUID."""
         data = self.get_asset('buddies_levels')
         return data.get(uuid)
 

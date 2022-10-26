@@ -539,14 +539,14 @@ class Favorites:
     async def add_buddy(self, buddy: Union[str, Buddy], *, force: bool = False) -> None:
         """|coro|
 
-        Adds a get_buddy to your favorites.
+        Adds a buddy to your favorites.
 
         Parameters
         ----------
         buddy: Union[:class:`str`, :class:`Buddy`]
-            The get_buddy to add.
+            The buddy to add.
         force: :class:`bool`
-            Whether to force add the get_buddy to your favorites.
+            Whether to force add the buddy to your favorites.
         """
         if isinstance(buddy, str):
             buddy = self._client.get_buddy(uuid=buddy)
@@ -620,14 +620,14 @@ class Favorites:
     async def remove_buddy(self, buddy: Union[str, Buddy], *, force: bool = False) -> None:
         """|coro|
 
-        Removes a get_buddy from your favorites.
+        Removes a buddy from your favorites.
 
         Parameters
         ----------
         buddy: Union[:class:`str`, :class:`Buddy`]
-            The get_buddy to remove.
+            The buddy to remove.
         force: :class:`bool`
-            Whether to force remove the get_buddy from your favorites.
+            Whether to force remove the buddy from your favorites.
         """
         if isinstance(buddy, str):
             buddy = self._client.get_buddy(uuid=buddy)

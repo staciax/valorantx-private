@@ -227,7 +227,7 @@ class Shard(Enum):
 
 class ItemType(Enum):
     agent = '01bb38e1-da47-4e6a-9b3d-945fe4655707'
-    buddy = 'get_buddy'  # unknown type
+    buddy = 'buddy'  # unknown type
     buddy_level = 'dd3bf334-87f3-40bd-b043-682a57a8dc3a'
     contract = 'f85cb6f7-33e5-4dc8-b609-ec7212301948'
     skin = 'skin'  # unknown type

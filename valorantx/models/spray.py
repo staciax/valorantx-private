@@ -189,12 +189,12 @@ class SprayLevel(BaseModel):
 
     @property
     def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the get_buddy's names."""
+        """:class: `Localization` Returns the spray's names."""
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
     def display_name(self) -> str:
-        """:class: `str` Returns the get_buddy's name."""
+        """:class: `str` Returns the spray's name."""
         return self.name_localizations.american_english
 
     @property

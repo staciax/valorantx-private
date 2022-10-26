@@ -301,10 +301,10 @@ class Entitlements:
         return [self._client.get_skin_chroma(uuid=item.get('ItemID')) for item in items]
 
     def get_buddy_levels(self) -> List[BuddyLevel]:
-        """:class:`.models.BuddyLevel`: Returns a list of get_buddy levels."""
+        """:class:`.models.BuddyLevel`: Returns a list of buddy levels."""
         items = self.get_by_type(ItemType.buddy_level)
         # instance_id = item.get('InstanceID')  # What is this?
-        # TODO: amount get_buddy levels owned
+        # TODO: amount buddy levels owned
         return [self._client.get_buddy_level(uuid=item.get('ItemID')) for item in items]
 
     def get_sprays(self) -> List[Spray]:

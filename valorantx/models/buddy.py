@@ -60,36 +60,36 @@ class Buddy(BaseModel):
 
     @property
     def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the get_buddy's names."""
+        """:class: `Localization` Returns the buddy's names."""
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
     def display_name(self) -> str:
-        """:class: `str` Returns the get_buddy's name."""
+        """:class: `str` Returns the buddy's name."""
         return self.name_localizations.american_english
 
     @property
     def theme(self) -> Theme:
-        """:class: `Theme` Returns the get_buddy's theme."""
+        """:class: `Theme` Returns the buddy's theme."""
         return self._client.get_theme(uuid=self._theme_uuid)
 
     @property
     def display_icon(self) -> Asset:
-        """:class: `Asset` Returns the get_buddy's icon."""
+        """:class: `Asset` Returns the buddy's icon."""
         return Asset._from_url(client=self._client, url=self._display_icon)
 
     @property
     def levels(self) -> List[BuddyLevel]:
-        """:class: `List[BuddyLevel]` Returns the get_buddy's levels."""
+        """:class: `List[BuddyLevel]` Returns the buddy's levels."""
         return [BuddyLevel(client=self._client, data=level) for level in self._levels]
 
     def is_hidden_if_not_owned(self) -> bool:
-        """:class: `bool` Returns whether the get_buddy is hidden if not owned."""
+        """:class: `bool` Returns whether the buddy is hidden if not owned."""
         return self._is_hidden_if_not_owned
 
     @property
     def price(self) -> int:
-        """:class: `int` Returns the get_buddy's price."""
+        """:class: `int` Returns the buddy's price."""
         if self._price == 0:
             if len(self.levels) > 0:
                 self._price = self.levels[0].price
@@ -100,14 +100,14 @@ class Buddy(BaseModel):
         self._price = value
 
     def is_favorite(self) -> bool:
-        """:class: `bool` Returns whether the get_buddy is favorited."""
+        """:class: `bool` Returns whether the buddy is favorited."""
         return self._is_favorite
 
     def set_favorite(self, value: bool) -> None:
         self._is_favorite = value
 
     async def add_favorite(self, *, force: bool = False) -> bool:
-        """coro Adds the get_buddy to the user's favorites."""
+        """coro Adds the buddy to the user's favorites."""
 
         if self.is_favorite() and not force:
             return False
@@ -117,7 +117,7 @@ class Buddy(BaseModel):
         return self.is_favorite()
 
     async def remove_favorite(self, *, force: bool = False) -> bool:
-        """coro Removes the get_buddy from the user's favorites."""
+        """coro Removes the buddy from the user's favorites."""
 
         if not self.is_favorite() and not force:
             return False
@@ -128,7 +128,7 @@ class Buddy(BaseModel):
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
-        """Returns the get_buddy with the given UUID."""
+        """Returns the buddy with the given UUID."""
         data = client.assets.get_buddy(uuid)
         return cls(client=client, data=data) if data else None
 
@@ -153,22 +153,22 @@ class BuddyLevel(BaseModel):
 
     @property
     def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the get_buddy's names."""
+        """:class: `Localization` Returns the buddy's names."""
         return Localization(self._display_name, locale=self._client.locale)
 
     @property
     def display_name(self) -> str:
-        """:class: `str` Returns the get_buddy's name."""
+        """:class: `str` Returns the buddy's name."""
         return self.name_localizations.american_english
 
     @property
     def display_icon(self) -> Optional[Asset]:
-        """:class: `str` Returns the get_buddy's display icon."""
+        """:class: `str` Returns the buddy's display icon."""
         return Asset._from_url(client=self._client, url=self._display_icon) if self._display_icon else None
 
     @property
     def price(self) -> int:
-        """:class: `int` Returns the get_buddy's price."""
+        """:class: `int` Returns the buddy's price."""
         return self._price
 
     @price.setter
@@ -176,34 +176,34 @@ class BuddyLevel(BaseModel):
         self._price = value
 
     def get_base_buddy(self) -> Optional[Buddy]:
-        """:class: `Buddy` Returns the base get_buddy."""
+        """:class: `Buddy` Returns the base buddy."""
         return self._base_buddy
 
     def is_favorite(self) -> bool:
-        """:class: `bool` Returns whether the get_buddy is favorited."""
+        """:class: `bool` Returns whether the buddy is favorited."""
         return self._base_buddy.is_favorite() if self._base_buddy else False
 
     def set_favorite(self, value: bool) -> None:
         """
-        Sets the get_buddy as favorited.
+        Sets the buddy as favorited.
 
         Parameters
         ----------
         value: :class: `bool`
-            Whether the get_buddy should be favorited.
+            Whether the buddy should be favorited.
         """
         if self._base_buddy:
             self._base_buddy.set_favorite(value)
 
     async def add_favorite(self, *, force: bool = False) -> bool:
-        """coro Adds the get_buddy to the user's favorites."""
+        """coro Adds the buddy to the user's favorites."""
 
         if self._base_buddy is not None:
             return await self._base_buddy.add_favorite(force=force)
         return False
 
     async def remove_favorite(self, *, force: bool = False) -> bool:
-        """coro Removes the get_buddy from the user's favorites."""
+        """coro Removes the buddy from the user's favorites."""
 
         if self._base_buddy is not None:
             return await self._base_buddy.remove_favorite(force=force)
@@ -211,7 +211,7 @@ class BuddyLevel(BaseModel):
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
-        """Returns the get_buddy level with the given UUID."""
+        """Returns the buddy level with the given UUID."""
         data = client.assets.get_buddy_level(uuid)
         return cls(client=client, data=data) if data else None
 
@@ -227,6 +227,6 @@ class BuddyBundle(BuddyLevel, BaseFeaturedBundleItem):
 
     @classmethod
     def _from_bundle(cls, client: Client, uuid: str, bundle: Dict[str, Any]) -> Optional[Self]:
-        """Returns the get_buddy level with the given UUID."""
+        """Returns the buddy level with the given UUID."""
         data = client.assets.get_buddy_level(uuid)
         return cls(client=client, data=data, bundle=bundle) if data else None
