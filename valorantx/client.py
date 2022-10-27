@@ -138,7 +138,7 @@ def _authorize_required(func):
 class Client:
     def __init__(self, *, locale: Union[Locale, str] = Locale.american_english, **kwargs: Any) -> None:
 
-        self._locale: Union[Locale, str] = locale
+        self._locale: Locale = try_enum(Locale, locale) if isinstance(locale, str) else locale
         self._with_assets: bool = kwargs.get('with_assets', False)
         self._reload_assets: bool = kwargs.get('reload_assets', False)
 
@@ -302,7 +302,17 @@ class Client:
             await self.close()
 
     async def authorize(self, username: Optional[str], password: Optional[str]) -> None:
-        """Authorize the client with the given username and password."""
+        """|coro|
+
+        Authorize the client with the given username and password.
+
+        Parameters
+        -----------
+        username: Optional[:class:`str`]
+            The username of the account to authorize.
+        password: Optional[:class:`str`]
+            The password of the account to authorize.
+        """
         self._is_authorized = True
         riot_auth = await self.http.static_login(username.strip(), password.strip())
         payload = dict(
@@ -319,7 +329,7 @@ class Client:
                 break
 
     def is_authorized(self) -> bool:
-        """Check if the client is authorized."""
+        """:class:`bool`: Whether the client is authorized."""
         return self._is_authorized
 
     # def run(self, username: Optional[str], password: Optional[str]) -> None:
@@ -336,6 +346,10 @@ class Client:
     #         return
 
     async def close(self) -> None:
+        """|coro|
+
+        Closes the client session and logs out.
+        """
 
         if self._closed:
             return
@@ -343,10 +357,12 @@ class Client:
         await self.http.close()
 
     def is_closed(self) -> bool:
+        """:class:`bool`: Indicates if the client is closed."""
         return self._closed
 
     @property
     def http(self) -> HTTPClient:
+        """:class:`HTTPClient`: The HTTP client associated with this client."""
         return self._http
 
     @http.setter
@@ -354,11 +370,17 @@ class Client:
         self._http = http
 
     @property
-    def locale(self) -> str:
+    def locale(self) -> Locale:
+        """:class:`Locale`: The locale of the client."""
         return self._locale
+
+    @locale.setter
+    def locale(self, locale: str) -> None:
+        self._locale = locale
 
     @property
     def version(self) -> Optional[Version]:
+        """:class:`Version`: The version of the client."""
         return self._version
 
     @version.setter
@@ -367,149 +389,148 @@ class Client:
 
     @property
     def season(self) -> Optional[Season]:
+        """:class:`Season`: The season of the client."""
         return self._season
 
     @season.setter
     def season(self, value: Season) -> None:
         self._season = value
 
-    @locale.setter
-    def locale(self, locale: str) -> None:
-        self._locale = locale
-
     # assets
 
     def fetch_assets(
         self, force: bool = False, with_price: bool = False, *, reload: bool = True
     ) -> Coroutine[Any, Any, Any]:
+        """:class:`coroutine`: Fetches the assets of the client."""
         return self.assets.fetch_assets(force=force, with_price=with_price, reload_asset=reload)
 
     def reload_assets(self, with_price: bool = False) -> None:
+        """Reloads the assets of the client."""
         self.assets.reload_assets(with_price=with_price)
 
     def get_agent(self, *args: Any, **kwargs: Any) -> Optional[Agent]:
-        """Get an agent by UUID or Display Name."""
+        """:class:`Optional[Agent]`: Gets an agent from the assets."""
         data = self.assets.get_agent(*args, **kwargs)
         return Agent(client=self, data=data) if data else None
 
     def get_buddy(self, *args: Any, **kwargs: Any) -> Optional[Union[Buddy, BuddyLevel]]:
-        """Get a buddy by UUID or Display Name."""
+        """:class:`Optional[Union[Buddy, BuddyLevel]]`: Gets a buddy from the assets."""
         data = self.assets.get_buddy(*args, **kwargs)
         return Buddy(client=self, data=data) if data else self.get_buddy_level(*args, **kwargs)
 
     def get_buddy_level(self, *args: Any, **kwargs: Any) -> Optional[BuddyLevel]:
-        """Get a buddy level by UUID or Display Name."""
+        """:class:`Optional[BuddyLevel]`: Gets a buddy level from the assets."""
         data = self.assets.get_buddy_level(*args, **kwargs)
         return BuddyLevel(client=self, data=data) if data else None
 
     def get_bundle(self, *args: Any, **kwargs: Any) -> Optional[Bundle]:
-        """Get a bundle by UUID or Display Name."""
+        """:class:`Optional[Bundle]`: Gets a bundle from the assets."""
         data = self.assets.get_bundle(*args, **kwargs)
         return Bundle(client=self, data=data) if data else None
 
     def get_ceremony(self, *args: Any, **kwargs: Any) -> Optional[Ceremony]:
-        """Get a ceremony by UUID."""
+        """:class:`Optional[Ceremony]`: Gets a ceremony from the assets."""
         data = self.assets.get_ceremony(*args, **kwargs)
         return Ceremony(client=self, data=data) if data else None
 
     def get_competitive_tier(self, *args: Any, **kwargs: Any) -> Optional[CompetitiveTier]:
-        """Get a competitive tier by UUID."""
+        """:class:`Optional[CompetitiveTier]`: Gets a competitive tier from the assets."""
         data = self.assets.get_competitive_tier(*args, **kwargs)
         return CompetitiveTier(client=self, data=data) if data else None
 
     def get_content_tier(self, *args: Any, **kwargs: Any) -> Optional[ContentTier]:
-        """Get a content tier by UUID."""
+        """:class:`Optional[ContentTier]`: Gets a content tier from the assets."""
         data = self.assets.get_content_tier(*args, **kwargs)
         return ContentTier(client=self, data=data) if data else None
 
     def get_contract(self, *args: Any, **kwargs: Any) -> Optional[Contract]:
-        """Get a contract by UUID."""
+        """:class:`Optional[Contract]`: Gets a contract from the assets."""
         data = self.assets.get_contract(*args, **kwargs)
         return Contract(client=self, data=data) if data else None
 
     def get_currency(self, *args: Any, **kwargs: Any) -> Optional[Currency]:
-        """Get a currency by UUID."""
+        """:class:`Optional[Currency]`: Gets a currency from the assets."""
         data = self.assets.get_currency(*args, **kwargs)
         return Currency(client=self, data=data) if data else None
 
     def get_event(self, *args: Any, **kwargs: Any) -> Optional[Event]:
-        """Get an event by UUID."""
+        """:class:`Optional[Event]`: Gets an event from the assets."""
         data = self.assets.get_event(*args, **kwargs)
         return Event(client=self, data=data) if data else None
 
     def get_game_mode(self, *args: Any, **kwargs: Any) -> Optional[GameMode]:
-        """Get a game mode by UUID."""
+        """:class:`Optional[GameMode]`: Gets a game mode from the assets."""
         data = self.assets.get_game_mode(*args, **kwargs)
         return GameMode(client=self, data=data) if data else None
 
     def get_game_mode_equippable(self, *args: Any, **kwargs: Any) -> Optional[GameModeEquippable]:
-        """Get a game mode equippable by UUID."""
+        """:class:`Optional[GameModeEquippable]`: Gets a game mode equippable from the assets."""
         data = self.assets.get_game_mode_equippable(*args, **kwargs)
         return GameModeEquippable(client=self, data=data) if data else None
 
     def get_gear(self, *args: Any, **kwargs: Any) -> Optional[Gear]:
-        """Get a gear by UUID."""
+        """:class:`Optional[Gear]`: Gets a gear from the assets."""
         data = self.assets.get_gear(*args, **kwargs)
         return Gear(client=self, data=data) if data else None
 
     def get_level_border(self, *args: Any, **kwargs: Any) -> Optional[LevelBorder]:
-        """Get a level border by UUID."""
+        """:class:`Optional[LevelBorder]`: Gets a level border from the assets."""
         data = self.assets.get_level_border(*args, **kwargs)
         return LevelBorder(client=self, data=data) if data else None
 
     def get_map(self, *args: Any, **kwargs: Any) -> Optional[Map]:
-        """Get a map by UUID."""
+        """:class:`Optional[Map]`: Gets a map from the assets."""
         data = self.assets.get_map(*args, **kwargs)
         return Map(client=self, data=data) if data else None
 
     def get_mission(self, *args: Any, **kwargs: Any) -> Optional[Mission]:
-        """missions, Get a mission by UUID."""
+        """:class:`Optional[Mission]`: Gets a mission from the assets."""
         data = self.assets.get_mission(*args, **kwargs)
         return Mission(client=self, data=data) if data else None
 
     def get_player_card(self, *args: Any, **kwargs: Any) -> Optional[PlayerCard]:
-        """player_cards, Get a player card by UUID."""
+        """:class:`Optional[PlayerCard]`: Gets a player card from the assets."""
         data = self.assets.get_player_card(*args, **kwargs)
         return PlayerCard(client=self, data=data) if data else None
 
     def get_player_title(self, *args: Any, **kwargs: Any) -> Optional[PlayerTitle]:
-        """player_titles, Get a player title by UUID."""
+        """:class:`Optional[PlayerTitle]`: Gets a player title from the assets."""
         data = self.assets.get_player_title(*args, **kwargs)
         return PlayerTitle(client=self, data=data) if data else None
 
     def get_season(self, *args: Any, **kwargs: Any) -> Optional[Season]:
-        """seasons, Get a season by UUID."""
+        """:class:`Optional[Season]`: Gets a season from the assets."""
         data = self.assets.get_season(*args, **kwargs)
         return Season(client=self, data=data) if data else None
 
     def get_season_competitive(self, *args: Any, **kwargs: Any) -> Optional[SeasonCompetitive]:
-        """seasons, Get a season competitive by UUID."""
+        """:class:`Optional[SeasonCompetitive]`: Gets a season competitive from the assets."""
         data = self.assets.get_season_competitive(*args, **kwargs)
         return SeasonCompetitive(client=self, data=data) if data else None
 
     def get_spray(self, *args: Any, **kwargs: Any) -> Optional[Union[Spray, SprayLevel]]:
-        """Get a spray by UUID."""
+        """:class:`Optional[Union[Spray, SprayLevel]]`: Gets a spray from the assets."""
         level = kwargs.get('level', True)
         data = self.assets.get_spray(*args, **kwargs)
         return Spray(client=self, data=data) if data else (self.get_spray_level(*args, **kwargs) if level else None)
 
     def get_spray_level(self, *args: Any, **kwargs: Any) -> Optional[SprayLevel]:
-        """Get a spray level by UUID."""
+        """:class:`Optional[SprayLevel]`: Gets a spray level from the assets."""
         data = self.assets.get_spray_level(*args, **kwargs)
         return SprayLevel(client=self, data=data) if data else None
 
     def get_theme(self, *args: Any, **kwargs: Any) -> Optional[Theme]:
-        """themes, Get a theme by UUID."""
+        """:class:`Optional[Theme]`: Gets a theme from the assets."""
         data = self.assets.get_theme(*args, **kwargs)
         return Theme(client=self, data=data) if data else None
 
     def get_weapon(self, *args: Any, **kwargs: Any) -> Optional[Weapon]:
-        """weapons, Get a weapon by UUID."""
+        """Optional[:class:`Weapon`]: Gets a weapon from the assets."""
         data = self.assets.get_weapon(*args, **kwargs)
         return Weapon(client=self, data=data) if data else None
 
     def get_skin(self, *args: Any, **kwargs: Any) -> Optional[Union[Skin, SkinLevel, SkinChroma]]:
-        """weapon_skins, Get a weapon skin by UUID."""
+        """Optional[:class:`Union[Skin, SkinLevel, SkinChroma]`]: Gets a skin from the assets."""
         level = kwargs.get('level', True)
         chroma = kwargs.get('chroma', True)
 
@@ -525,88 +546,123 @@ class Client:
         )
 
     def get_skin_level(self, *args: Any, **kwargs: Any) -> Optional[SkinLevel]:
-        """weapon_skins_levels, Get a weapon skin level by UUID."""
+        """Optional[:class:`SkinLevel`]: Gets a skin level from the assets."""
         data = self.assets.get_skin_level(*args, **kwargs)
         return SkinLevel(client=self, data=data) if data else None
 
     def get_skin_chroma(self, *args: Any, **kwargs: Any) -> Optional[SkinChroma]:
-        """weapon_skins_chromas, Get a weapon skin chroma by UUID."""
+        """Optional[:class:`SkinChroma`]: Gets a skin chroma from the assets."""
         data = self.assets.get_skin_chroma(*args, **kwargs)
         return SkinChroma(client=self, data=data) if data else None
 
     # get all
 
     def get_all_agents(self) -> Iterator[Agent]:
+        """:class:`Iterator[Agent]`: Gets all agents from the assets."""
         data = self.assets.get_asset('agents')
         for item in data.values():
             yield Agent(client=self, data=item)
 
     def get_all_bundles(self) -> Iterator[Bundle]:
+        """:class:`Iterator[Bundle]`: Gets all bundles from the assets."""
         data = self.assets.get_asset('bundles')
         for item in data.values():
             yield Bundle(client=self, data=item)
 
     def get_all_buddies(self) -> Iterator[Buddy]:
+        """:class:`Iterator[Buddy]`: Gets all buddies from the assets."""
         data = self.assets.get_asset('buddies')
         for item in data.values():
             yield Buddy(client=self, data=item)
 
     def get_all_buddy_levels(self) -> Iterator[BuddyLevel]:
+        """:class:`Iterator[BuddyLevel]`: Gets all buddy levels from the assets."""
         data = self.assets.get_asset('buddies_levels')
         for item in data.values():
             yield BuddyLevel(client=self, data=item)
 
     def get_all_player_titles(self) -> Iterator[PlayerTitle]:
+        """:class:`Iterator[PlayerTitle]`: Gets all player titles from the assets."""
         data = self.assets.get_asset('player_titles')
         for item in data.values():
             yield PlayerTitle(client=self, data=item)
 
     def get_all_player_cards(self) -> Iterator[PlayerCard]:
+        """:class:`Iterator[PlayerCard]`: Gets all player cards from the assets."""
         data = self.assets.get_asset('player_cards')
         for item in data.values():
             yield PlayerCard(client=self, data=item)
 
     def get_all_skins(self) -> Iterator[Skin]:
+        """:class:`Iterator[Skin]`: Gets all skins from the assets."""
         data = self.assets.get_asset('weapon_skins')
         for item in data.values():
             yield Skin(client=self, data=item)
 
     def get_all_skin_levels(self) -> Iterator[SkinLevel]:
+        """:class:`Iterator[SkinLevel]`: Gets all skin levels from the assets."""
         data = self.assets.get_asset('weapon_skins_levels')
         for item in data.values():
             yield SkinLevel(client=self, data=item)
 
     def get_all_skin_chromas(self) -> Iterator[SkinChroma]:
+        """:class:`Iterator[SkinChroma]`: Gets all skin chromas from the assets."""
         data = self.assets.get_asset('weapon_skins_chromas')
         for item in data.values():
             yield SkinChroma(client=self, data=item)
 
     def get_all_sprays(self) -> Iterator[Spray]:
+        """:class:`Iterator[Spray]`: Gets all sprays from the assets."""
         data = self.assets.get_asset('sprays')
         for item in data.values():
             yield Spray(client=self, data=item)
 
     def get_all_spray_levels(self) -> Iterator[SprayLevel]:
+        """:class:`Iterator[SprayLevel]`: Gets all spray levels from the assets."""
         data = self.assets.get_asset('sprays_levels')
         for item in data.values():
             yield SprayLevel(client=self, data=item)
 
     def get_all_weapons(self) -> Iterator[Weapon]:
+        """:class:`Iterator[Weapon]`: Gets all weapons from the assets."""
         data = self.assets.get_asset('weapons')
         for item in data.values():
             yield Weapon(client=self, data=item)
 
     def get_item_price(self, uuid: str) -> int:
-        """Get the price of an item by UUID."""
+        """:class:`int`: Gets the price of an item."""
         return self.assets.get_item_price(uuid)
 
     async def get_valorant_version(self) -> Version:
+        """|coro|
+
+        Gets the current version of Valorant.
+
+        Returns
+        -------
+        :class:`Version`
+            The current version of Valorant.
+        """
         data = await self.http.asset_valorant_version()
         return Version(client=self, data=data)
 
     # patch notes
 
     async def fetch_patch_notes(self, locale: Union[str, Locale] = Locale.american_english) -> PatchNotes:
+        """|coro|
+
+        Fetches the patch notes for the current version of Valorant.
+
+        Parameters
+        ----------
+        locale: Union[:class:`str`, :class:`Locale`]
+            The locale to fetch the patch notes in.
+
+        Returns
+        -------
+        :class:`PatchNotes`
+            The patch notes for the current version of Valorant.
+        """
 
         if isinstance(locale, str):
             locale = try_enum(Locale, str(locale))
@@ -622,17 +678,50 @@ class Client:
 
     @_authorize_required
     async def fetch_content(self) -> Content:
+        """|coro|
+
+        Fetches the content for the current version of Valorant.
+
+        Returns
+        -------
+        :class:`Content`
+            The content for the current version of Valorant.
+        """
         data = await self.http.fetch_content()
         return Content(client=self, data=data)
 
     @_authorize_required
     async def fetch_account_xp(self) -> AccountXP:
+        """|coro|
+
+        Fetches the account XP for the current user.
+
+        Returns
+        -------
+        :class:`AccountXP`
+            The account XP for the current user.
+        """
         data = await self.http.fetch_account_xp()
         return AccountXP(client=self, data=data)
 
     @_authorize_required
     async def fetch_loadout(self, *, with_xp: bool = True, with_favorite: bool = True) -> Collection:
+        """|coro|
 
+        Fetches the loadout for the current user.
+
+        Parameters
+        ----------
+        with_xp: :class:`bool`
+            Whether to include the XP for each item in the loadout.
+        with_favorite: :class:`bool`
+            Whether to include the favorite status for each item in the loadout.
+
+        Returns
+        -------
+        :class:`Collection`
+            The loadout for the current user.
+        """
         data = await self.http.fetch_player_loadout()
         collection = Collection(client=self, data=data)
 
@@ -646,10 +735,38 @@ class Client:
 
     @_authorize_required
     def put_loadout(self, loadout: Mapping) -> Any:  # TODO: loadout object
+        """|coro|
+
+        Puts the loadout for the current user.
+
+        Parameters
+        ----------
+        loadout: :class:`Mapping`
+            The loadout to put.
+
+        Returns
+        -------
+        :class:`Any`
+            The response from the API.
+        """
         return self.http.put_player_loadout(loadout)
 
     @_authorize_required
     async def fetch_mmr(self, puuid: Optional[str] = None) -> MMR:
+        """|coro|
+
+        Fetches the MMR for the current user or a given user.
+
+        Parameters
+        ----------
+        puuid: Optional[:class:`str`]
+            The puuid of the user to fetch the MMR for.
+
+        Returns
+        -------
+        :class:`MMR`
+            The MMR for the current user or a given user.
+        """
         data = await self.http.fetch_mmr(puuid)
         return MMR(client=self, data=data)
 
@@ -663,6 +780,28 @@ class Client:
         end: int = 15,
         with_details: bool = True,
     ) -> Optional[MatchHistory]:
+        """|coro|
+
+        Fetches the match history for the current user or a given user.
+
+        Parameters
+        ----------
+        puuid: Optional[:class:`str`]
+            The puuid of the user to fetch the match history for.
+        queue: Optional[Union[:class:`str`, :class:`QueueID`]]
+            The queue to fetch the match history for.
+        start: :class:`int`
+            The start index of the match history.
+        end: :class:`int`
+            The end index of the match history.
+        with_details: :class:`bool`
+            Whether to include the details for each match in the match history.
+
+        Returns
+        -------
+        Optional[:class:`MatchHistory`]
+            The match history for the current user or a given user.
+        """
         data = await self.http.fetch_match_history(puuid, start, end, queue)
         history = MatchHistory(client=self, data=data) if data else None
         if with_details and history is not None:
@@ -671,6 +810,20 @@ class Client:
 
     @_authorize_required
     async def fetch_match_details(self, match_id: str) -> Optional[MatchDetails]:
+        """|coro|
+
+        Fetches the match details for a given match.
+
+        Parameters
+        ----------
+        match_id: :class:`str`
+            The match ID to fetch the match details for.
+
+        Returns
+        -------
+        Optional[:class:`MatchDetails`]
+            The match details for a given match.
+        """
         match_details = await self.http.fetch_match_details(match_id)
         return MatchDetails(client=self, data=match_details)
 
@@ -678,6 +831,15 @@ class Client:
 
     @_authorize_required
     async def fetch_contracts(self) -> Contracts:
+        """|coro|
+
+        Fetches the contracts for the current user.
+
+        Returns
+        -------
+        :class:`Contracts`
+            The contracts for the current user.
+        """
         data = await self.http.contracts_fetch()
         return Contracts(client=self, data=data)
 
@@ -685,26 +847,82 @@ class Client:
 
     @_authorize_required
     async def fetch_offers(self) -> Offers:
+        """|coro|
+
+        Fetches the offers for the current user.
+
+        Returns
+        -------
+        :class:`Offers`
+            The offers for the current user.
+        """
         data = await self.http.store_fetch_offers()
         return Offers(data=data)
 
     @_authorize_required
     async def fetch_store_front(self) -> StoreFront:
+        """|coro|
+
+        Fetches the store front for the current user.
+
+        Returns
+        -------
+        :class:`StoreFront`
+            The store front for the current user.
+        """
         data = await self.http.store_fetch_storefront()
         return StoreFront(client=self, data=data)
 
     @_authorize_required
     async def fetch_wallet(self) -> Wallet:
+        """|coro|
+
+        Fetches the wallet for the current user.
+
+        Returns
+        -------
+        :class:`Wallet`
+            The wallet for the current user.
+        """
         data = await self.http.store_fetch_wallet()
         return Wallet(client=self, data=data)
 
     @_authorize_required
     async def fetch_order(self, order_id: str) -> Any:
+        """|coro|
+
+        Fetches the order for the current user.
+
+        Parameters
+        ----------
+        order_id: :class:`str`
+            The order ID to fetch the order for.
+
+        Returns
+        -------
+        :class:`Any`
+            The order for the current user.
+        """
         data = await self.http.store_fetch_order(order_id)
         # return Order(client=self, data=data)
 
     @_authorize_required
-    async def fetch_entitlements(self, item_type: Optional[Union[str, ItemType]] = None) -> Any:
+    async def fetch_entitlements(self, item_type: Optional[Union[str, ItemType]] = None) -> Entitlements:
+        """|coro|
+
+        Fetches the entitlements for the current user.
+
+        Parameters
+        ----------
+        item_type: Optional[Union[:class:`str`, :class:`ItemType`]]
+            The item type to fetch the entitlements for.
+
+
+        Returns
+        -------
+        :class:`Entitlements`
+            The entitlements for the current user.
+        """
         data = await self.http.store_fetch_entitlements(item_type)
         return Entitlements(client=self, data=data)
 
@@ -712,19 +930,60 @@ class Client:
 
     @_authorize_required
     async def fetch_favorites(self) -> Favorites:
+        """|coro|
+
+        Fetches the favorites items for the current user.
+
+        Returns
+        -------
+        :class:`Favorites`
+            The favorites items for the current user.
+        """
         data = await self.http.favorites_fetch()
         return Favorites(client=self, data=data)
 
     @_authorize_required
-    async def add_favorite(self, maybe_uuid: Union[str, Skin, PlayerCard, Spray, Buddy]) -> Favorites:
-        if isinstance(maybe_uuid, (Skin, PlayerCard, Spray)):
-            maybe_uuid = maybe_uuid.uuid
-        data = await self.http.favorite_post(maybe_uuid)
+    async def add_favorite(self, item: Union[str, Buddy, PlayerCard, Skin, Spray]) -> Favorites:
+        """|coro|
+
+        Adds a favorite item for the current user.
+
+        Parameters
+        ----------
+        item: Union[:class:`str`, :class:`Buddy`, :class:`PlayerCard`, :class:`Skin`, :class:`Spray`]
+            The item to add as a favorite.
+
+        Returns
+        -------
+        :class:`Favorites`
+            The favorites items for the current user.
+        """
+        if isinstance(item, (Buddy, PlayerCard, Skin, Spray)):
+            uuid = item.uuid
+        else:
+            uuid = utils.is_uuid(item)
+        data = await self.http.favorite_post(uuid)
         return Favorites(client=self, data=data)
 
     @_authorize_required
-    async def remove_favorite(self, maybe_uuid: Union[str, Skin, PlayerCard, Spray, Buddy]) -> Favorites:
-        if isinstance(maybe_uuid, (Skin, PlayerCard, Spray)):
-            maybe_uuid = maybe_uuid.uuid
-        data = await self.http.favorite_delete(maybe_uuid)
+    async def remove_favorite(self, item: Union[str, Buddy, PlayerCard, Skin, Spray]) -> Favorites:
+        """|coro|
+
+        Removes a favorite item for the current user.
+
+        Parameters
+        ----------
+        item: Union[:class:`str`, :class:`Buddy`, :class:`PlayerCard`, :class:`Skin`, :class:`Spray`]
+            The item to remove as a favorite.
+
+        Returns
+        -------
+        :class:`Favorites`
+            The favorites items for the current user.
+        """
+        if isinstance(item, (Buddy, PlayerCard, Skin, Spray)):
+            uuid = item.uuid
+        else:
+            uuid = utils.is_uuid(item)
+        data = await self.http.favorite_delete(uuid)
         return Favorites(client=self, data=data)
