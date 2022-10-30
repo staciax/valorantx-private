@@ -94,7 +94,7 @@ from .models import (
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from typing_extensions import Self, TypeAlias
+    from typing_extensions import Self
 
     # item = TypeVar('item', bound=ItemType)
 
@@ -718,12 +718,27 @@ class Client:
         :class:`int`
             The price of the item
         """
+
+        uuid = '' if not isinstance(item, str) else item
+
         if isinstance(item, Skin):
             skin_lv1 = item.get_skin_level(level=1)
             if skin_lv1 is not None:
                 uuid = skin_lv1.uuid
         elif isinstance(item, SkinChroma):
-            uuid = item.uuid
+            skin = item.get_base_skin()
+            if skin is not None:
+                skin_lv1 = skin.get_skin_level(level=1)
+                if skin_lv1 is not None:
+                    uuid = skin_lv1.uuid
+        elif isinstance(item, Buddy):
+            buddy_lv1 = item.get_buddy_level(level=1)
+            if buddy_lv1 is not None:
+                uuid = buddy_lv1.uuid
+        elif isinstance(item, SprayLevel):
+            spray = item.get_base_spray()
+            if spray is not None:
+                uuid = spray.uuid
         elif isinstance(item, (SkinLevel, PlayerCard, Spray, BuddyLevel)):
             uuid = item.uuid
 

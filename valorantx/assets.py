@@ -611,8 +611,9 @@ class Assets:
                 uuid = item['uuid']
 
                 if filename.startswith('buddies'):
-                    for buddy_level in item['levels']:
+                    for index, buddy_level in enumerate(item['levels'], start=1):
                         buddy_level['BuddyID'] = uuid
+                        buddy_level['levelNumber'] = index
                         buddy_level_dict[buddy_level['uuid']] = buddy_level
                     Assets.ASSET_CACHE['buddies_levels'] = buddy_level_dict
 

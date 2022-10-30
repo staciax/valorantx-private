@@ -99,6 +99,10 @@ class Buddy(BaseModel):
     def price(self, value: int) -> None:
         self._price = value
 
+    def get_buddy_level(self, level: int) -> Optional[BuddyLevel]:
+        """Returns the buddy level for the given level number."""
+        return next((b for b in self.levels if b.level_number == level), None)
+
     def is_favorite(self) -> bool:
         """:class: `bool` Returns whether the buddy is favorited."""
         return self._is_favorite
@@ -143,6 +147,7 @@ class BuddyLevel(BaseModel):
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
         self._price: int = self._client.get_item_price(self.uuid)
+        self.level_number: int = data.get('levelNumber', 0)
         self._base_buddy: Optional[Buddy] = self._client.get_buddy(self._base_buddy_uuid)
 
     def __str__(self) -> str:

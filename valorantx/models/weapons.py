@@ -416,7 +416,7 @@ class Skin(BaseModel):
     def price(self, value: int) -> None:
         self._price = value
 
-    def get_skin_level(self, level: int = 1) -> Optional[SkinLevel]:
+    def get_skin_level(self, level: int) -> Optional[SkinLevel]:
         """get the skin's level with the given level.
 
         Parameters
