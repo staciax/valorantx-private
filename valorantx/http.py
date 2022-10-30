@@ -34,15 +34,18 @@ from urllib.parse import urlencode
 
 import aiohttp
 
-try:
-    import urllib3
-except ImportError:
-    urllib3 = None
-
 from . import __version__, utils
 from .auth import RiotAuth
 from .enums import ItemType, Locale, QueueID, Region, try_enum
 from .errors import Forbidden, HTTPException, NotFound, RiotServerError, ValorantAPIServerError
+
+try:
+    import urllib3  # type: ignore
+except ImportError:
+    pass
+else:
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    # disable urllib3 warnings that might arise from making requests to 127.0.0.1
 
 MISSING = utils.MISSING
 
@@ -50,10 +53,6 @@ if TYPE_CHECKING:
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
     from .types import collection, competitive, contract, match, store, version, weapons, xp
-
-if urllib3 is not None:
-    # disable urllib3 warnings that might arise from making requests to 127.0.0.1
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 _log = logging.getLogger(__name__)
 

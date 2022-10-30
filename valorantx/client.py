@@ -94,7 +94,9 @@ from .models import (
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from typing_extensions import Self
+    from typing_extensions import Self, TypeAlias
+
+    # item = TypeVar('item', bound=ItemType)
 
 # fmt: off
 __all__ = (
@@ -375,8 +377,8 @@ class Client:
         return self._locale
 
     @locale.setter
-    def locale(self, locale: str) -> None:
-        self._locale = locale
+    def locale(self, locale: Union[str, Locale]) -> None:
+        self._locale = try_enum(Locale, locale) if isinstance(locale, str) else locale
 
     @property
     def version(self) -> Optional[Version]:
@@ -558,79 +560,173 @@ class Client:
     # get all
 
     def get_all_agents(self) -> Iterator[Agent]:
-        """:class:`Iterator[Agent]`: Gets all agents from the assets."""
+        """Gets all agents from the assets.
+
+        Yields
+        -------
+        :class:`Agent`
+            The agent.
+        """
         data = self.assets.get_asset('agents')
         for item in data.values():
             yield Agent(client=self, data=item)
 
-    def get_all_bundles(self) -> Iterator[Bundle]:
-        """:class:`Iterator[Bundle]`: Gets all bundles from the assets."""
-        data = self.assets.get_asset('bundles')
-        for item in data.values():
-            yield Bundle(client=self, data=item)
-
     def get_all_buddies(self) -> Iterator[Buddy]:
-        """:class:`Iterator[Buddy]`: Gets all buddies from the assets."""
+        """Gets all buddies from the assets.
+
+        Yields
+        -------
+        :class:`Buddy`
+            The buddy.
+        """
         data = self.assets.get_asset('buddies')
         for item in data.values():
             yield Buddy(client=self, data=item)
 
     def get_all_buddy_levels(self) -> Iterator[BuddyLevel]:
-        """:class:`Iterator[BuddyLevel]`: Gets all buddy levels from the assets."""
+        """Gets all buddy levels from the assets.
+
+        Yields
+        -------
+        :class:`BuddyLevel`
+            The buddy level.
+        """
         data = self.assets.get_asset('buddies_levels')
         for item in data.values():
             yield BuddyLevel(client=self, data=item)
 
+    def get_all_bundles(self) -> Iterator[Bundle]:
+        """Gets all bundles from the assets.
+
+        Yields
+        -------
+        :class:`Bundle`
+            The bundle.
+        """
+        data = self.assets.get_asset('bundles')
+        for item in data.values():
+            yield Bundle(client=self, data=item)
+
     def get_all_player_titles(self) -> Iterator[PlayerTitle]:
-        """:class:`Iterator[PlayerTitle]`: Gets all player titles from the assets."""
+        """Gets all player titles from the assets.
+
+        Yields
+        -------
+        :class:`PlayerTitle`
+            The player title.
+        """
         data = self.assets.get_asset('player_titles')
         for item in data.values():
             yield PlayerTitle(client=self, data=item)
 
     def get_all_player_cards(self) -> Iterator[PlayerCard]:
-        """:class:`Iterator[PlayerCard]`: Gets all player cards from the assets."""
+        """Gets all player cards from the assets.
+
+        Yields
+        -------
+        :class:`PlayerCard`
+            The player card.
+        """
         data = self.assets.get_asset('player_cards')
         for item in data.values():
             yield PlayerCard(client=self, data=item)
 
     def get_all_skins(self) -> Iterator[Skin]:
-        """:class:`Iterator[Skin]`: Gets all skins from the assets."""
+        """Gets all skins from the assets.
+
+        Yields
+        -------
+        :class:`Skin`
+            The skin.
+        """
         data = self.assets.get_asset('weapon_skins')
         for item in data.values():
             yield Skin(client=self, data=item)
 
     def get_all_skin_levels(self) -> Iterator[SkinLevel]:
-        """:class:`Iterator[SkinLevel]`: Gets all skin levels from the assets."""
+        """Gets all skin levels from the assets.
+
+        Yields
+        -------
+        :class:`SkinLevel`
+            The skin level.
+        """
         data = self.assets.get_asset('weapon_skins_levels')
         for item in data.values():
             yield SkinLevel(client=self, data=item)
 
     def get_all_skin_chromas(self) -> Iterator[SkinChroma]:
-        """:class:`Iterator[SkinChroma]`: Gets all skin chromas from the assets."""
+        """Gets all skin chromas from the assets.
+
+        Yields
+        -------
+        :class:`SkinChroma`
+            The skin chroma.
+        """
         data = self.assets.get_asset('weapon_skins_chromas')
         for item in data.values():
             yield SkinChroma(client=self, data=item)
 
     def get_all_sprays(self) -> Iterator[Spray]:
-        """:class:`Iterator[Spray]`: Gets all sprays from the assets."""
+        """Gets all sprays from the assets.
+
+        Yields
+        -------
+        :class:`Spray`
+            The spray.
+        """
         data = self.assets.get_asset('sprays')
         for item in data.values():
             yield Spray(client=self, data=item)
 
     def get_all_spray_levels(self) -> Iterator[SprayLevel]:
-        """:class:`Iterator[SprayLevel]`: Gets all spray levels from the assets."""
+        """Gets all spray levels from the assets.
+
+        Yields
+        -------
+        :class:`SprayLevel`
+            The spray level.
+        """
         data = self.assets.get_asset('sprays_levels')
         for item in data.values():
             yield SprayLevel(client=self, data=item)
 
     def get_all_weapons(self) -> Iterator[Weapon]:
-        """:class:`Iterator[Weapon]`: Gets all weapons from the assets."""
+        """Gets all weapons from the assets.
+
+        Yields
+        -------
+        :class:`Weapon`
+            The weapon.
+        """
         data = self.assets.get_asset('weapons')
         for item in data.values():
             yield Weapon(client=self, data=item)
 
-    def get_item_price(self, uuid: str) -> int:
-        """:class:`int`: Gets the price of an item."""
+    def get_item_price(
+        self, item: Union[str, Skin, SkinChroma, SkinLevel, PlayerCard, Buddy, BuddyLevel, Spray, SprayLevel]
+    ) -> int:
+        """Gets the price of an item
+
+        Parameters
+        ----------
+        item: :class:`str`
+            The uuid of the item
+
+        Returns
+        -------
+        :class:`int`
+            The price of the item
+        """
+        if isinstance(item, Skin):
+            skin_lv1 = item.get_skin_level(level=1)
+            if skin_lv1 is not None:
+                uuid = skin_lv1.uuid
+        elif isinstance(item, SkinChroma):
+            uuid = item.uuid
+        elif isinstance(item, (SkinLevel, PlayerCard, Spray, BuddyLevel)):
+            uuid = item.uuid
+
         return self.assets.get_item_price(uuid)
 
     async def get_valorant_version(self) -> Version:
@@ -863,12 +959,12 @@ class Client:
     async def fetch_store_front(self) -> StoreFront:
         """|coro|
 
-        Fetches the store front for the current user.
+        Fetches the storefront for the current user.
 
         Returns
         -------
         :class:`StoreFront`
-            The store front for the current user.
+            The storefront for the current user.
         """
         data = await self.http.store_fetch_storefront()
         return StoreFront(client=self, data=data)

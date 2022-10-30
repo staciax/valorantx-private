@@ -172,7 +172,7 @@ class SprayLevel(BaseModel):
     def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._base_spray_uuid: Optional[str] = data['base_uuid']
+        self._base_spray_uuid: Optional[str] = data['SprayID']
         self._spray_level: int = data['sprayLevel']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']

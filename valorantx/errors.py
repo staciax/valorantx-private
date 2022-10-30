@@ -41,7 +41,7 @@ def _flatten_error_dict(d: Dict[str, Any], key: str = '') -> Dict[str, str]:
             try:
                 _errors: List[Dict[str, Any]] = v['_errors']
             except KeyError:
-                items.extend(_flatten_error_dict(v, new_key).items())
+                items.extend(_flatten_error_dict(v, new_key).items())  # type: ignore
             else:
                 items.append((new_key, ' '.join(x.get('message', '') for x in _errors)))
         else:

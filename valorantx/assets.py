@@ -612,32 +612,32 @@ class Assets:
 
                 if filename.startswith('buddies'):
                     for buddy_level in item['levels']:
-                        buddy_level['base_uuid'] = uuid
+                        buddy_level['BuddyID'] = uuid
                         buddy_level_dict[buddy_level['uuid']] = buddy_level
                     Assets.ASSET_CACHE['buddies_levels'] = buddy_level_dict
 
                 elif filename.startswith('sprays'):
                     for spray_level in item['levels']:
-                        spray_level['base_uuid'] = uuid
+                        spray_level['SprayID'] = uuid
                         spray_level_dict[spray_level['uuid']] = spray_level
                     Assets.ASSET_CACHE['sprays_levels'] = spray_level_dict
 
                 elif filename.startswith('weapons'):
 
                     for skin in item['skins']:
-                        skin['base_weapon_uuid'] = uuid
+                        skin['WeaponID'] = uuid
                         skin_dict[skin['uuid']] = skin
 
                         for skin_chroma in skin['chromas']:
-                            skin_chroma['base_weapon_uuid'] = uuid
-                            skin_chroma['base_skin_uuid'] = skin['uuid']
+                            skin_chroma['WeaponID'] = uuid
+                            skin_chroma['SkinID'] = skin['uuid']
                             skin_chroma_dict[skin_chroma['uuid']] = skin_chroma
                         Assets.ASSET_CACHE['weapon_skins_chromas'] = skin_chroma_dict
 
-                        for index, skin_level in enumerate(skin['levels']):
-                            skin_level['base_weapon_uuid'] = uuid
-                            skin_level['base_skin_uuid'] = skin['uuid']
-                            skin_level['isLevelOne'] = index == 0
+                        for index, skin_level in enumerate(skin['levels'], start=1):
+                            skin_level['WeaponID'] = uuid
+                            skin_level['SkinID'] = skin['uuid']
+                            skin_level['levelNumber'] = index
                             skin_level_dict[skin_level['uuid']] = skin_level
                         Assets.ASSET_CACHE['weapon_skins_levels'] = skin_level_dict
 

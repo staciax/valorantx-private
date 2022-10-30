@@ -137,7 +137,7 @@ class BuddyLevel(BaseModel):
     def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs: Any) -> None:
         super().__init__(client=client, data=data, **kwargs)
         self._uuid: str = data['uuid']
-        self._base_buddy_uuid: Optional[str] = data['base_uuid']
+        self._base_buddy_uuid: Optional[str] = data['BuddyID']
         self.level: int = data['charmLevel']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']

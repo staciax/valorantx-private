@@ -339,7 +339,7 @@ class Skin(BaseModel):
     def __init__(self, *, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid = data['uuid']
-        self._base_weapon_uuid: Optional[str] = data.get('base_weapon_uuid')
+        self._base_weapon_uuid: Optional[str] = data.get('WeaponID')
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._theme_uuid: str = data['themeUuid']
         self._content_tier_uuid: Optional[str] = data['contentTierUuid']
@@ -416,6 +416,21 @@ class Skin(BaseModel):
     def price(self, value: int) -> None:
         self._price = value
 
+    def get_skin_level(self, level: int = 1) -> Optional[SkinLevel]:
+        """get the skin's level with the given level.
+
+        Parameters
+        ----------
+        level: :class: `int`
+            The level of the skin level to get.
+
+        Returns
+        -------
+        Optional[:class: `SkinLevel`]
+            The skin level with the given level.
+        """
+        return next((skin_level for skin_level in self.levels if skin_level.level_number == level), None)
+
     def is_favorite(self) -> bool:
         """:class: `bool` Returns whether the skin is favorited."""
         return self._is_favorite
@@ -466,8 +481,8 @@ class SkinChroma(BaseModel):
     def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs) -> None:
         super().__init__(client=client, data=data, **kwargs)
         self._uuid: str = data['uuid']
-        self._base_weapon_uuid: Optional[str] = data.get('base_weapon_uuid')
-        self._base_skin_uuid: Optional[str] = data.get('base_skin_uuid')
+        self._base_weapon_uuid: Optional[str] = data.get('WeaponID')
+        self._base_skin_uuid: Optional[str] = data.get('SkinID')
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: str = data['displayIcon']
         self._full_render: str = data['fullRender']
@@ -600,15 +615,16 @@ class SkinLevel(BaseModel):
     def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs) -> None:
         super().__init__(client=client, data=data, **kwargs)
         self._uuid: str = data['uuid']
-        self._base_weapon_uuid: Optional[str] = data.get('base_weapon_uuid')
-        self._base_skin_uuid: Optional[str] = data.get('base_skin_uuid')
+        self._base_weapon_uuid: Optional[str] = data.get('WeaponID')
+        self._base_skin_uuid: Optional[str] = data.get('SkinID')
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._level: Optional[str] = data.get('levelItem')
         self._display_icon: str = data['displayIcon']
         self._streamed_video: Optional[str] = data.get('streamedVideo')
         self.asset_path: str = data['assetPath']
         self._price: int = self._client.get_item_price(self.uuid)
-        self._is_level_one: bool = data['isLevelOne']
+        self.level_number: int = data.get('levelNumber', 0)
+        self._is_level_one: bool = self.level_number == 1
         self.type: ItemType = ItemType.skin_level
         self._base_weapon: Optional[Weapon] = (
             self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
