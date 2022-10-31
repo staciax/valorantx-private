@@ -93,7 +93,6 @@ from .models import (
 
 if TYPE_CHECKING:
     from types import TracebackType
-
     from typing_extensions import Self
 
     # item = TypeVar('item', bound=ItemType)
@@ -1072,7 +1071,7 @@ class Client:
         if isinstance(item, (Buddy, PlayerCard, Skin, Spray)):
             uuid = item.uuid
         else:
-            uuid = utils.is_uuid(item)
+            uuid = item if utils.is_uuid(item) else ''
         data = await self.http.favorite_post(uuid)
         return Favorites(client=self, data=data)
 
@@ -1095,6 +1094,6 @@ class Client:
         if isinstance(item, (Buddy, PlayerCard, Skin, Spray)):
             uuid = item.uuid
         else:
-            uuid = utils.is_uuid(item)
+            uuid = item if utils.is_uuid(item) else ''
         data = await self.http.favorite_delete(uuid)
         return Favorites(client=self, data=data)
