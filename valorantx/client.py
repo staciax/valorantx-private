@@ -185,6 +185,7 @@ class Client:
         *args: Any,
         **kwargs: Any,
     ) -> None:
+        # TODO: docs
         try:
             await coro(*args, **kwargs)
         except asyncio.CancelledError:
@@ -196,6 +197,7 @@ class Client:
                 pass
 
     def dispatch(self, event: str, /, *args: Any, **kwargs: Any) -> None:
+        # TODO: docs
         _log.debug('Dispatching event %s', event)
         method = 'on_' + event
 

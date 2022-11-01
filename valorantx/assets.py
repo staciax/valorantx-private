@@ -590,7 +590,6 @@ class Assets:
             if file.endswith('.json'):
                 with open(os.path.join(self._get_asset_special_dir(), file), encoding='utf-8') as f:
                     to_dict = json.load(f)
-                    print(to_dict)
 
     @staticmethod
     def __customize_asset_cache_format(filename: str, data: Mapping[str, Any]) -> None:

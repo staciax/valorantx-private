@@ -796,10 +796,6 @@ class SkinBundle(SkinLevel, BaseFeaturedBundleItem):
         data = client.assets.get_skin_level(uuid)
         return cls(client=client, data=data, bundle=bundle) if data else None
 
-
-T = TypeVar('T', bound=Union['Buddy', 'PlayerCard', Skin, SkinLevel, SkinChroma])
-
-
 class BaseLoadout:
 
     if TYPE_CHECKING:
@@ -810,9 +806,9 @@ class BaseLoadout:
         self._buddy_level_uuid = loadout.get('CharmLevelID')
         self._is_favorite_loadout: bool = False
 
-    def is_random(self: T) -> bool:
+    def is_random(self) -> bool:
         """:class:`bool` Returns whether the skin is random."""
-        return True if 'Random' in self.asset_path else False
+        return True if 'Random' in self.asset_path else False  # type: ignore
 
     def is_favorite(self) -> bool:
         """:class: `bool` Returns whether the skin is favorited."""
