@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Mapping
 
 from .. import utils
 
@@ -45,7 +45,7 @@ __all__ = (
 
 
 class SourceXP:
-    def __init__(self, data: Dict[str, Any]):
+    def __init__(self, data: Mapping[str, Any]):
         self.id: str = data['ID']
         self.amount: int = data['Amount']
 

@@ -193,6 +193,7 @@ class AssetType(Enum):
     buddies = 'buddies'
     buddies_levels = 'buddies_levels'
     bundles = 'bundles'
+    # TODO: add more
 
 
 EmptyTitleID: uuid.UUID = uuid.UUID('d13e579c-435e-44d4-cec2-6eae5a3c5ed4')

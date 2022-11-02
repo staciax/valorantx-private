@@ -37,7 +37,7 @@ import aiohttp
 from . import __version__, utils
 from .auth import RiotAuth
 from .enums import ItemType, Locale, QueueID, Region, try_enum
-from .errors import Forbidden, HTTPException, NotFound, RiotServerError, ValorantAPIServerError
+from .errors import Forbidden, HTTPException, NotFound, RiotServerError, ValorantAPIServerError, PhaseError
 
 try:
     import urllib3  # type: ignore
@@ -160,7 +160,7 @@ class HTTPClient:
                             await self._riot_auth.reauthorize()
                             await self.__build_headers()
                             return await self.request(route, is_asset=is_asset, re_authorize=False, **kwargs)
-                        # raise PhaseError(response, data)
+                        raise PhaseError(response, data)
 
                     # we are being rate limited
                     if response.status == 429:
