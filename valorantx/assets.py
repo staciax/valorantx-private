@@ -27,7 +27,7 @@ import json
 import logging
 import os
 import shutil
-from functools import wraps
+from functools import cache as _cache, wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, TypeVar
 
@@ -39,6 +39,7 @@ from .utils import is_uuid
 
 if TYPE_CHECKING:
     from .client import Client
+    from .models.version import Version
 
 # fmt: off
 __all__ = (
@@ -222,6 +223,8 @@ class Assets:
         self._client = client
         if auto_reload:
             self.reload_assets()
+        self.version: Optional[Version] = None
+        self._is_with_price: bool = False
 
     @staticmethod
     def clear_asset_cache() -> None:
@@ -246,10 +249,11 @@ class Assets:
                 if key in self.ASSET_CACHE:
                     return self.ASSET_CACHE[key]
                 else:
-                    _log.warning(f'Asset {key} not found')
+                    if _ >= tries:
+                        _log.warning(f'Asset {key} not found')
                     raise KeyError(f"Asset {key!r} not found")
             except KeyError:
-                self.reload_assets()
+                self.reload_assets(with_price=self._is_with_price)
                 if _ >= tries - 1:
                     raise KeyError(f"Asset {key!r} not found")
 
@@ -427,10 +431,13 @@ class Assets:
     ) -> None:
         """Fetch all assets."""
 
+        self._is_with_price = with_price
+
         get_version = await self._client.get_valorant_version()
 
         if get_version != self._client.version:
             self._client.version = get_version
+            self.version = get_version
 
         self.__mkdir_assets_dir()
         asset_path = self._get_asset_dir()
@@ -494,7 +501,10 @@ class Assets:
         """
         Reload assets from disk.
         """
+
         _log.info("Reloading assets")
+
+        self._is_with_price = with_price
 
         self.ASSET_CACHE.clear()
 
@@ -513,7 +523,7 @@ class Assets:
                             with open(file_path, encoding='utf-8') as f:
                                 to_dict = json.load(f)
                                 if not filename.startswith('_offers'):
-                                    self.__customize_asset_cache_format(filename, to_dict)
+                                    self.__to_assets_cache(filename, to_dict)
                                 elif filename.startswith('_offers') and with_price:
                                     self.OFFER_CACHE.clear()
                                     self.OFFER_CACHE.update(to_dict)
@@ -522,18 +532,22 @@ class Assets:
                     shutil.rmtree(maybe_asset_dir)
                     _log.info(f'Removed asset directory {maybe_asset_dir}')
 
+        self.__special_weapons()
+
         _log.info("Assets reloaded")
         if with_price:
             _log.info("Offers reloaded")
 
+    @_cache
     def _get_asset_dir(self) -> str:
         """Get the asset directory."""
         return os.path.join(Assets._cache_dir, self._client.version.version)
 
     @staticmethod
+    @_cache
     def _get_asset_special_dir() -> str:
         """Get the asset special directory."""
-        return os.path.join(Assets._cache_dir, 'special')
+        return os.path.join(Assets._cache_dir, 'specials')
 
     def __mkdir_cache_dir(self) -> bool:
         """Make the assets' directory."""
@@ -585,24 +599,28 @@ class Assets:
                     return
 
     def __special_weapons(self) -> None:
-        listdir = os.listdir(self._get_asset_special_dir())
-        for file in listdir:
-            if file.endswith('.json'):
-                with open(os.path.join(self._get_asset_special_dir(), file), encoding='utf-8') as f:
+        """Special weapons."""
+
+        special_dir = self._get_asset_special_dir()
+
+        for filename in sorted(os.listdir(special_dir)):
+            if isinstance(filename, str) and filename.endswith('.json'):
+                file_path = os.path.join(str(special_dir), filename)
+                with open(file_path, encoding='utf-8') as f:
                     to_dict = json.load(f)
+                    if filename.startswith('weapons'):
+                        self.ASSET_CACHE['weapons'].update(to_dict)
 
     @staticmethod
-    def __customize_asset_cache_format(filename: str, data: Mapping[str, Any]) -> None:
+    def __to_assets_cache(filename: str, data: Mapping[str, Any]) -> None:
         """Customize the asset assets format."""
 
-        # TODO: additional asset weapons
-
         new_dict = {}
-        buddy_level_dict = {}
-        spray_level_dict = {}
-        skin_dict = {}
-        skin_level_dict = {}
-        skin_chroma_dict = {}
+        buddy_level_payload = {}
+        spray_level_payload = {}
+        skin_payload = {}
+        skin_level_payload = {}
+        skin_chroma_payload = {}
 
         try:
 
@@ -613,35 +631,35 @@ class Assets:
                     for index, buddy_level in enumerate(item['levels'], start=1):
                         buddy_level['BuddyID'] = uuid
                         buddy_level['levelNumber'] = index
-                        buddy_level_dict[buddy_level['uuid']] = buddy_level
-                    Assets.ASSET_CACHE['buddies_levels'] = buddy_level_dict
+                        buddy_level_payload[buddy_level['uuid']] = buddy_level
+                    Assets.ASSET_CACHE['buddies_levels'] = buddy_level_payload
 
                 elif filename.startswith('sprays'):
                     for spray_level in item['levels']:
                         spray_level['SprayID'] = uuid
-                        spray_level_dict[spray_level['uuid']] = spray_level
-                    Assets.ASSET_CACHE['sprays_levels'] = spray_level_dict
+                        spray_level_payload[spray_level['uuid']] = spray_level
+                    Assets.ASSET_CACHE['sprays_levels'] = spray_level_payload
 
                 elif filename.startswith('weapons'):
 
                     for skin in item['skins']:
                         skin['WeaponID'] = uuid
-                        skin_dict[skin['uuid']] = skin
+                        skin_payload[skin['uuid']] = skin
 
                         for skin_chroma in skin['chromas']:
                             skin_chroma['WeaponID'] = uuid
                             skin_chroma['SkinID'] = skin['uuid']
-                            skin_chroma_dict[skin_chroma['uuid']] = skin_chroma
-                        Assets.ASSET_CACHE['weapon_skins_chromas'] = skin_chroma_dict
+                            skin_chroma_payload[skin_chroma['uuid']] = skin_chroma
+                        Assets.ASSET_CACHE['weapon_skins_chromas'] = skin_chroma_payload
 
                         for index, skin_level in enumerate(skin['levels'], start=1):
                             skin_level['WeaponID'] = uuid
                             skin_level['SkinID'] = skin['uuid']
                             skin_level['levelNumber'] = index
-                            skin_level_dict[skin_level['uuid']] = skin_level
-                        Assets.ASSET_CACHE['weapon_skins_levels'] = skin_level_dict
+                            skin_level_payload[skin_level['uuid']] = skin_level
+                        Assets.ASSET_CACHE['weapon_skins_levels'] = skin_level_payload
 
-                    Assets.ASSET_CACHE['weapon_skins'] = skin_dict
+                    Assets.ASSET_CACHE['weapon_skins'] = skin_payload
 
                 elif filename.startswith('bundles_2nd'):
                     bundle = Assets.ASSET_CACHE['bundles'][uuid]
@@ -706,4 +724,4 @@ class Assets:
 
         except KeyError as e:
             print(e)
-            _log.error(f'Failed to customize asset cache format for {filename}')
+            _log.error(f'Failed to parse {filename} assets')
