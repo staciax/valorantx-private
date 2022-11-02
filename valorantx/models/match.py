@@ -55,7 +55,7 @@ if TYPE_CHECKING:
         Team as MatchTeamPayload,
         XpModification as xpModificationPayload,
     )
-    from .agent import Ability, Agent  # noqa
+    from .agent import Agent, AgentAbility  # noqa
     from .gear import Gear
     from .level_border import LevelBorder
     from .map import Map
@@ -63,7 +63,7 @@ if TYPE_CHECKING:
     from .player_title import PlayerTitle
     from .weapons import Weapon
 
-__all__ = ('MatchDetails', 'MatchHistory', 'MatchPlayer')
+__all__ = ('MatchDetails', 'MatchHistory', 'MatchPlayer', 'Platform')
 
 
 class MatchHistory:
@@ -688,25 +688,25 @@ class AbilityCasts:
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
 
-    def get_ability(self, slot: AbilityType) -> Ability:
+    def get_ability(self, slot: AbilityType) -> AgentAbility:
         for skill in self.agent.abilities:
             if skill.slot == slot:
                 return skill
 
     @property
-    def e(self) -> Ability:
+    def e(self) -> AgentAbility:
         return self.get_ability(AbilityType.ability_2)
 
     @property
-    def q(self) -> Ability:
+    def q(self) -> AgentAbility:
         return self.get_ability(AbilityType.ability_1)
 
     @property
-    def c(self) -> Ability:
+    def c(self) -> AgentAbility:
         return self.get_ability(AbilityType.grenade)
 
     @property
-    def x(self) -> Ability:
+    def x(self) -> AgentAbility:
         return self.get_ability(AbilityType.ultimate)
 
 

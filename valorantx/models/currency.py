@@ -47,8 +47,8 @@ class Currency(BaseModel):
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_name_singular: Union[str, Dict[str, str]] = data['displayNameSingular']
-        self._display_icon: str = data['displayIcon']
-        self._large_icon: str = data['largeIcon']
+        self._display_icon: Optional[str] = data.get('displayIcon')
+        self._large_icon: Optional[str] = data.get('largeIcon')
         self.asset_path: str = data['assetPath']
 
     def __str__(self) -> str:
@@ -78,14 +78,14 @@ class Currency(BaseModel):
         return self.name_singular_localizations.american_english
 
     @property
-    def display_icon(self) -> Asset:
-        """:class: `Asset` Returns the agent's icon."""
-        return Asset._from_url(client=self._client, url=self._display_icon)
+    def display_icon(self) -> Optional[Asset]:
+        """:class: `Optional[Asset]` Returns the agent's icon."""
+        return Asset._from_url(client=self._client, url=self._display_icon) if self._display_icon else None
 
     @property
-    def large_icon(self) -> Asset:
-        """:class: `Asset` Returns the agent's large icon."""
-        return Asset._from_url(client=self._client, url=self._large_icon)
+    def large_icon(self) -> Optional[Asset]:
+        """:class: `Optional[Asset]` Returns the agent's large icon."""
+        return Asset._from_url(client=self._client, url=self._large_icon) if self._large_icon else None
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

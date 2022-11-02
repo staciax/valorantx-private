@@ -104,6 +104,13 @@ class StoreFront:
         """:class:`.models.NightMarketOffer`: The nightmarket offer in the featured panel."""
         return NightMarket(client=self._client, data=self._bonus_store) if self._bonus_store is not None else None
 
+    # alias
+
+    def get_skins(self, base_skin: bool = False) -> List[SkinLevel]:
+        """:class:`.models.SkinLevel`: The list of skins in the featured panel."""
+        store = self.get_store()
+        return store.get_skins(base_skin=base_skin)
+
 
 class StoreOffer:
 
@@ -113,20 +120,33 @@ class StoreOffer:
         self._client: Client = client
         self._skin_offers: List[str] = data['SingleItemOffers']
         self._duration: int = data['SingleItemOffersRemainingDurationInSeconds']
+        self._skins: List[SkinLevel] = [self._client.get_skin_level(uuid=uuid) for uuid in self._skin_offers]
 
     def __repr__(self) -> str:
-        return f'<StoreOffer skins={self.skins!r} duration={self.duration} reset_at={self.reset_at}>'
+        return f'<StoreOffer skins={self._skins!r} duration={self.duration} reset_at={self.reset_at}>'
 
     def __len__(self) -> int:
-        return len(self.skins)
+        return len(self._skins)
 
-    def __iter__(self) -> Iterator[Skin]:
-        return iter(self.skins)
+    def __iter__(self) -> Iterator[SkinLevel]:
+        return iter(self._skins)
 
-    @property
-    def skins(self) -> List[Skin]:
-        """:class:`.models.Skin`: The list of skins in the store offer."""
-        return [self._client.get_skin(uuid=uuid) for uuid in self._skin_offers]
+    def get_skins(self, *, base_skin: bool = False) -> List[Union[SkinLevel, Skin]]:
+        """The list of skins in the store offer
+
+        Parameters
+        ----------
+        base_skin: :class:`bool`
+            Whether to return the base skin or the skin level.
+
+        Returns
+        -------
+        List[:class:`Union[.models.SkinLevel, .models.Skin]`]
+            The list of skins in the store offer.
+        """
+        if not base_skin:
+            return self._skins
+        return [skin.get_base_skin() for skin in self._skins]
 
     @property
     def duration(self) -> float:
@@ -150,18 +170,20 @@ class NightMarket:
         self._client = client
         self._skin_offers: List[BonusStoreOfferPayload] = data['BonusStoreOffers']
         self.duration: int = data['BonusStoreRemainingDurationInSeconds']
+        self._skins: List[SkinNightMarket] = [
+            SkinNightMarket._from_data(client=self._client, skin_data=skin) for skin in self._skin_offers
+        ]
 
     def __repr__(self) -> str:
-        return f'<NightMarket skins={self.skins!r} duration={self.duration}>'
+        return f'<NightMarket skins={self._skins!r} duration={self.duration}>'
 
     def __len__(self) -> int:
-        return len(self.skins)
+        return len(self._skins)
 
     def __iter__(self) -> Iterator[SkinNightMarket]:
-        return iter(self.skins)
+        return iter(self._skins)
 
-    @property
-    def skins(self) -> List[SkinNightMarket]:
+    def get_skins(self) -> List[SkinNightMarket]:
         """Returns a list of skins in the offer"""
         return [SkinNightMarket._from_data(client=self._client, skin_data=skin) for skin in self._skin_offers]
 

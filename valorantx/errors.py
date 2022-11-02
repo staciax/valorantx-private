@@ -205,3 +205,9 @@ class InvalidRelationType(ValueError):
     """Exception that's raised when the relation type is invalid."""
 
     pass
+
+
+class PartyNotOwner(ValorantException):
+    """Exception that's raised when the user is not the owner of the party."""
+
+    pass

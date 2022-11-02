@@ -38,6 +38,11 @@ if TYPE_CHECKING:
 # fmt: off
 __all__ = (
     'Agent',
+    'AgentRole',
+    'AgentAbility',
+    'AgentMedia',
+    'AgentVoiceLine',
+    'AgentVoiceLineLocalization'
 )
 # fmt: on
 
@@ -131,9 +136,6 @@ class Ability:
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
-
-    # def __hash__(self) -> int:
-    #     return hash(self.slot)
 
     @property
     def name_localizations(self) -> Localization:
@@ -241,28 +243,28 @@ class VoiceLineLocalization:
         untranslated: Dict[str, Any],
         locale: Union[str, Locale] = None,
     ) -> None:
-        self.untranslated = untranslated
+        self.ut = untranslated
         self._locale = locale
 
         # locale code
-        self.ar_AE: VoiceLine = VoiceLine(self.untranslated.get('ar-AE')) if self.untranslated.get('ar-AE') else None
-        self.de_DE: VoiceLine = VoiceLine(self.untranslated.get('de-DE')) if self.untranslated.get('de-DE') else None
-        self.en_US: VoiceLine = VoiceLine(self.untranslated.get('en-US')) if self.untranslated.get('en-US') else None
-        self.es_ES: VoiceLine = VoiceLine(self.untranslated.get('es-ES')) if self.untranslated.get('es-ES') else None
-        self.es_MX: VoiceLine = VoiceLine(self.untranslated.get('es-MX')) if self.untranslated.get('es-MX') else None
-        self.fr_FR: VoiceLine = VoiceLine(self.untranslated.get('fr-FR')) if self.untranslated.get('fr-FR') else None
-        self.id_ID: VoiceLine = VoiceLine(self.untranslated.get('id-ID')) if self.untranslated.get('id-ID') else None
-        self.it_IT: VoiceLine = VoiceLine(self.untranslated.get('it-IT')) if self.untranslated.get('it-IT') else None
-        self.ja_JP: VoiceLine = VoiceLine(self.untranslated.get('ja-JP')) if self.untranslated.get('ja-JP') else None
-        self.ko_KR: VoiceLine = VoiceLine(self.untranslated.get('ko-KR')) if self.untranslated.get('ko-KR') else None
-        self.pl_PL: VoiceLine = VoiceLine(self.untranslated.get('pl-PL')) if self.untranslated.get('pl-PL') else None
-        self.pt_BR: VoiceLine = VoiceLine(self.untranslated.get('pt-BR')) if self.untranslated.get('pt-BR') else None
-        self.ru_RU: VoiceLine = VoiceLine(self.untranslated.get('ru-RU')) if self.untranslated.get('ru-RU') else None
-        self.th_TH: VoiceLine = VoiceLine(self.untranslated.get('th-TH')) if self.untranslated.get('th-TH') else None
-        self.tr_TR: VoiceLine = VoiceLine(self.untranslated.get('tr-TR')) if self.untranslated.get('tr-TR') else None
-        self.vi_VN: VoiceLine = VoiceLine(self.untranslated.get('vi-VN')) if self.untranslated.get('vi-VN') else None
-        self.zh_CN: VoiceLine = VoiceLine(self.untranslated.get('zh-CN')) if self.untranslated.get('zh-CN') else None
-        self.zh_TW: VoiceLine = VoiceLine(self.untranslated.get('zh-TW')) if self.untranslated.get('zh-TW') else None
+        self.ar_AE: Optional[VoiceLine] = VoiceLine(self.ut.get('ar-AE')) if self.ut.get('ar-AE') else None
+        self.de_DE: Optional[VoiceLine] = VoiceLine(self.ut.get('de-DE')) if self.ut.get('de-DE') else None
+        self.en_US: Optional[VoiceLine] = VoiceLine(self.ut.get('en-US')) if self.ut.get('en-US') else None
+        self.es_ES: Optional[VoiceLine] = VoiceLine(self.ut.get('es-ES')) if self.ut.get('es-ES') else None
+        self.es_MX: Optional[VoiceLine] = VoiceLine(self.ut.get('es-MX')) if self.ut.get('es-MX') else None
+        self.fr_FR: Optional[VoiceLine] = VoiceLine(self.ut.get('fr-FR')) if self.ut.get('fr-FR') else None
+        self.id_ID: Optional[VoiceLine] = VoiceLine(self.ut.get('id-ID')) if self.ut.get('id-ID') else None
+        self.it_IT: Optional[VoiceLine] = VoiceLine(self.ut.get('it-IT')) if self.ut.get('it-IT') else None
+        self.ja_JP: Optional[VoiceLine] = VoiceLine(self.ut.get('ja-JP')) if self.ut.get('ja-JP') else None
+        self.ko_KR: Optional[VoiceLine] = VoiceLine(self.ut.get('ko-KR')) if self.ut.get('ko-KR') else None
+        self.pl_PL: Optional[VoiceLine] = VoiceLine(self.ut.get('pl-PL')) if self.ut.get('pl-PL') else None
+        self.pt_BR: Optional[VoiceLine] = VoiceLine(self.ut.get('pt-BR')) if self.ut.get('pt-BR') else None
+        self.ru_RU: Optional[VoiceLine] = VoiceLine(self.ut.get('ru-RU')) if self.ut.get('ru-RU') else None
+        self.th_TH: Optional[VoiceLine] = VoiceLine(self.ut.get('th-TH')) if self.ut.get('th-TH') else None
+        self.tr_TR: Optional[VoiceLine] = VoiceLine(self.ut.get('tr-TR')) if self.ut.get('tr-TR') else None
+        self.vi_VN: Optional[VoiceLine] = VoiceLine(self.ut.get('vi-VN')) if self.ut.get('vi-VN') else None
+        self.zh_CN: Optional[VoiceLine] = VoiceLine(self.ut.get('zh-CN')) if self.ut.get('zh-CN') else None
+        self.zh_TW: Optional[VoiceLine] = VoiceLine(self.ut.get('zh-TW')) if self.ut.get('zh-TW') else None
 
     def __repr__(self) -> str:
         attrs = [
@@ -289,112 +291,112 @@ class VoiceLineLocalization:
         return f'<{self.__class__.__name__} {joined}>'
 
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, Localization) and self.untranslated == other.untranslated
+        return isinstance(other, Localization) and self.ut == other.untranslated
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
-        return hash(self.untranslated)
+        return hash(self.ut)
 
     @property
-    def arabic(self) -> VoiceLine:
-        """:class:`str`: Returns the Arabic locale."""
+    def arabic(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the Arabic locale."""
         return self.ar_AE
 
     @property
-    def german(self) -> VoiceLine:
-        """:class:`str`: Returns the German locale."""
+    def german(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the German locale."""
         return self.de_DE
 
     @property
-    def english(self) -> VoiceLine:
-        """:class:`str`: Returns the English locale."""
+    def english(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the English locale."""
         return self.en_US
 
     @property
-    def american_english(self) -> VoiceLine:
-        """:class:`str`: Returns the American English locale."""
+    def american_english(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the American English locale."""
         return self.en_US
 
     @property
-    def british_english(self) -> VoiceLine:
-        """:class:`str`: Returns the British English locale."""
+    def british_english(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the British English locale."""
         return self.en_US
 
     @property
-    def spanish(self) -> VoiceLine:
-        """:class:`str`: Returns the Spanish locale."""
+    def spanish(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the Spanish locale."""
         return self.es_ES
 
     @property
-    def spanish_mexican(self) -> VoiceLine:
-        """:class:`str`: Returns the Spanish Mexican locale."""
+    def spanish_mexican(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the Spanish Mexican locale."""
         return self.es_MX
 
     @property
-    def french(self) -> VoiceLine:
-        """:class:`str`: Returns the French locale."""
+    def french(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the French locale."""
         return self.fr_FR
 
     @property
-    def indonesian(self) -> VoiceLine:
-        """:class:`str`: Returns the Indonesian locale."""
+    def indonesian(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the Indonesian locale."""
         return self.id_ID
 
     @property
-    def italian(self) -> VoiceLine:
-        """:class:`str`: Returns the Italian locale."""
+    def italian(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the Italian locale."""
         return self.it_IT
 
     @property
-    def japanese(self) -> VoiceLine:
-        """:class:`str`: Returns the Japanese locale."""
+    def japanese(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the Japanese locale."""
         return self.ja_JP
 
     @property
-    def korean(self) -> VoiceLine:
-        """:class:`str`: Returns the Korean locale."""
+    def korean(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the Korean locale."""
         return self.ko_KR
 
     @property
-    def polish(self) -> VoiceLine:
-        """:class:`str`: Returns the Polish locale."""
+    def polish(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the Polish locale."""
         return self.pl_PL
 
     @property
-    def portuguese_brazil(self) -> VoiceLine:
-        """:class:`str`: Returns the Portuguese Brazil locale."""
+    def portuguese_brazil(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the Portuguese Brazil locale."""
         return self.pt_BR
 
     @property
-    def russian(self) -> VoiceLine:
-        """:class:`str`: Returns the Russian locale."""
+    def russian(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the Russian locale."""
         return self.ru_RU
 
     @property
-    def thai(self) -> VoiceLine:
-        """:class:`str`: Returns the Thai locale."""
+    def thai(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the Thai locale."""
         return self.th_TH
 
     @property
-    def turkish(self) -> VoiceLine:
-        """:class:`str`: Returns the Turkish locale."""
+    def turkish(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the Turkish locale."""
         return self.tr_TR
 
     @property
-    def vietnamese(self) -> VoiceLine:
-        """:class:`str`: Returns the Vietnamese locale."""
+    def vietnamese(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the Vietnamese locale."""
         return self.vi_VN
 
     @property
-    def chinese_simplified(self) -> VoiceLine:
-        """:class:`str`: Returns the Chinese Simplified locale."""
+    def chinese_simplified(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the Chinese Simplified locale."""
         return self.zh_CN
 
     @property
-    def chinese_traditional(self) -> VoiceLine:
-        """:class:`str`: Returns the Chinese Traditional locale."""
+    def chinese_traditional(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the Chinese Traditional locale."""
         return self.zh_TW
 
 
@@ -546,3 +548,10 @@ class Agent(BaseModel):
         """
         data = client.assets.get_agent(uuid)
         return cls(client=client, data=data) if data else None
+
+
+AgentRole = Role
+AgentAbility = Ability
+AgentMedia = Media
+AgentVoiceLine = VoiceLine
+AgentVoiceLineLocalization = VoiceLineLocalization

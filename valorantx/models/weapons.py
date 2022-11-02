@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union, overload
 
 from .. import utils
 from ..asset import Asset
@@ -464,11 +464,11 @@ class Skin(BaseModel):
 
     @classmethod
     @overload
-    def _from_uuid(cls, client: Client, uuid: str, all_type: bool = False) -> Optional[Self]:
+    def _from_uuid(cls, client: Client, uuid: str, all_type: bool = False) -> Union[Self, SkinLevel, SkinChroma]:
         ...
 
     @classmethod
-    def _from_uuid(cls, client: Client, uuid: str, all_type: bool = False) -> Optional[Self]:
+    def _from_uuid(cls, client: Client, uuid: str, all_type: bool = False) -> Union[Self, SkinLevel, SkinChroma]:
         """Returns the skin with the given UUID."""
         data = client.assets.get_skin(uuid)
         if not all_type:
@@ -796,6 +796,7 @@ class SkinBundle(SkinLevel, BaseFeaturedBundleItem):
         data = client.assets.get_skin_level(uuid)
         return cls(client=client, data=data, bundle=bundle) if data else None
 
+
 class BaseLoadout:
 
     if TYPE_CHECKING:
@@ -804,18 +805,10 @@ class BaseLoadout:
     def __init__(self, loadout: SkinLoadoutPayload, *args, **kwargs: Any) -> None:
         self._buddy_uuid = loadout.get('CharmID')
         self._buddy_level_uuid = loadout.get('CharmLevelID')
-        self._is_favorite_loadout: bool = False
 
     def is_random(self) -> bool:
         """:class:`bool` Returns whether the skin is random."""
         return True if 'Random' in self.asset_path else False  # type: ignore
-
-    def is_favorite(self) -> bool:
-        """:class: `bool` Returns whether the skin is favorited."""
-        return self._is_favorite_loadout
-
-    def set_favorite(self, value: bool) -> None:
-        self._is_favorite_loadout = value
 
     def get_buddy(self) -> Optional[Buddy]:
         """Returns the get_buddy for this skin"""

@@ -28,7 +28,11 @@ from typing import Dict, Optional, Union
 from . import utils
 from .enums import Locale
 
-__all__ = ("Localization",)
+# fmt: off
+__all__ = (
+    "Localization",
+)
+# fmt: on
 
 
 class Localization:

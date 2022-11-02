@@ -550,7 +550,7 @@ class BundleID(Enum):
     Smite = 'adec612c-4c82-a4b2-a5f2-b7909e638a67'
     Snowfall = '8a3507cd-44ef-0695-1d66-4da0f87e7522'
     Sovereign = 'fd9fd08f-446f-018f-c632-0e96428f2978'
-    SoulStrife = ''
+    SoulStrife = 'bd94a6b3-4dfc-d333-8ba0-82a34d924ed7'
     Spectrum = 'f7f37856-4af7-9b0e-08aa-91a5207c0439'
     Spline = 'c1b255e2-411d-b159-6da3-5ab6c011a8cf'
     TeamAce = 'f7bf90a6-4e39-6c04-c12a-b79c8842359c'

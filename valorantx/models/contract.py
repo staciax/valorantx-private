@@ -58,9 +58,6 @@ __all__ = ('Contract', 'ContractU', 'Contracts')
 
 _log = logging.getLogger(__name__)
 
-# A = Asset
-# U = User
-
 
 class Contract(BaseModel):
     def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
@@ -220,13 +217,13 @@ class ContractU(Contract):
 
 class ProcessedMatch:
     def __init__(self, data: ProcessedMatchPayload) -> None:
-        self.id: str = data['ID']
-        self._start_time: Union[datetime.datetime, str] = data['StartTime']
-        self.xp_grants: Optional[Any] = data['XPGrants']
-        self.reward_grants: Optional[Any] = data['RewardGrants']
-        self.mission_deltas: Optional[Any] = data['MissionDeltas']
-        self.contract_deltas: Optional[Any] = data['ContractDeltas']
-        self._could_progress_missions: bool = data['CouldProgressMissions']
+        self.id: str = data.get('ID', '')
+        self._start_time: Union[datetime.datetime, str] = data.get('StartTime')
+        self.xp_grants: Optional[Any] = data.get('XPGrants')
+        self.reward_grants: Optional[Any] = data.get('RewardGrants')
+        self.mission_deltas: Optional[Any] = data.get('MissionDeltas')
+        self.contract_deltas: Optional[Any] = data.get('ContractDeltas')
+        self._could_progress_missions: bool = data.get('CouldProgressMissions', False)
 
     def __repr__(self) -> str:
         return f'<ProcessedMatch id={self.id!r}>'

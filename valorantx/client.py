@@ -93,6 +93,7 @@ from .models import (
 
 if TYPE_CHECKING:
     from types import TracebackType
+
     from typing_extensions import Self
 
     # item = TypeVar('item', bound=ItemType)
@@ -197,7 +198,6 @@ class Client:
                 pass
 
     def dispatch(self, event: str, /, *args: Any, **kwargs: Any) -> None:
-        # TODO: docs
         _log.debug('Dispatching event %s', event)
         method = 'on_' + event
 
@@ -326,7 +326,7 @@ class Client:
         )
         self.user = ClientPlayer(client=self, data=payload)
         content = await self.fetch_content()
-        for season in content.seasons:
+        for season in content.get_seasons():
             if season.is_active():
                 self._season = self.get_season(uuid=season.id)
                 break
@@ -387,7 +387,9 @@ class Client:
         return self._version
 
     @version.setter
-    def version(self, value: Optional[Version]) -> None:
+    def version(self, value: Version) -> None:
+        if not isinstance(value, Version):
+            raise TypeError(f"Expected Version, got {type(value).__name__}")
         self._version = value
 
     @property
@@ -397,6 +399,8 @@ class Client:
 
     @season.setter
     def season(self, value: Season) -> None:
+        if not isinstance(value, Season):
+            raise TypeError(f"Expected Season, got {type(value).__name__}")
         self._season = value
 
     # assets
@@ -534,8 +538,8 @@ class Client:
 
     def get_skin(self, *args: Any, **kwargs: Any) -> Optional[Union[Skin, SkinLevel, SkinChroma]]:
         """Optional[:class:`Union[Skin, SkinLevel, SkinChroma]`]: Gets a skin from the assets."""
-        level = kwargs.get('level', True)
-        chroma = kwargs.get('chroma', True)
+        level = kwargs.get('level', False)
+        chroma = kwargs.get('chroma', False)
 
         data = self.assets.get_skin(*args, **kwargs)
         return (
@@ -1099,3 +1103,18 @@ class Client:
             uuid = item if utils.is_uuid(item) else ''
         data = await self.http.favorite_delete(uuid)
         return Favorites(client=self, data=data)
+
+    # party endpoint
+
+    @_authorize_required
+    async def fetch_party_player(self) -> Any:
+        data = await self.http.party_fetch_player()
+        return ...
+
+    @_authorize_required
+    async def party_request_to_join(self, party_id: str) -> Any:
+        return ...
+
+    @_authorize_required
+    async def party_leave_from_party(self, party_id: str) -> Any:
+        return ...

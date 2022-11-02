@@ -40,18 +40,20 @@ __all__ = ('Content', 'ContentEvent', 'ContentSeason', 'ContentTier')
 
 
 class Content:
-    def __init__(self, client: Client, data: Any) -> None:
+    def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         self._client = client
         self._disabled_ids: List[str] = data['DisabledIDs']
-        self._seasons: List[ContentSeason] = data['Seasons']
-        self._events: List[str] = data['Events']
+        self._seasons: List[Optional[Mapping[str, Any]]] = data['Seasons']
+        self._events: List[Optional[Mapping[str, Any]]] = data['Events']
 
     def __repr__(self) -> str:
-        return f"<Content season={self.seasons!r}"
+        return f"<Content season={self.get_seasons()!r}"
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Content) and (
-            self.disabled_ids == other.disabled_ids and self.seasons == other.seasons and self.events == other.events
+            self.disabled_ids == other.disabled_ids
+            and self.get_seasons() == other.get_seasons()
+            and self.get_events() == other.get_events()
         )
 
     def __ne__(self, other: object) -> bool:
@@ -61,17 +63,15 @@ class Content:
     def disabled_ids(self) -> List[str]:
         return self._disabled_ids
 
-    @property
-    def seasons(self) -> List[ContentSeason]:
-        return [ContentSeason(season) for season in self._seasons]
+    def get_seasons(self) -> List[ContentSeason]:
+        return [ContentSeason(season) for season in self._seasons if season is not None]
 
-    @property
-    def events(self) -> List[ContentEvent]:
-        return [ContentEvent(event) for event in self._events]
+    def get_events(self) -> List[ContentEvent]:
+        return [ContentEvent(event) for event in self._events if event is not None]
 
 
 class ContentSeason:
-    def __init__(self, data: Any) -> None:
+    def __init__(self, data: Mapping[str, Any]) -> None:
         self.id: str = data['ID']
         self.name: str = data['Name']
         self.type: str = data['Type']
@@ -104,7 +104,7 @@ class ContentSeason:
 
 
 class ContentEvent:
-    def __init__(self, data: Any) -> None:
+    def __init__(self, data: Mapping[str, Any]) -> None:
         self.id: str = data['ID']
         self.name: str = data['Name']
         self._is_active: bool = data['IsActive']

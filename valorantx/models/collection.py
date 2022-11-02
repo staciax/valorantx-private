@@ -242,17 +242,14 @@ class Collection(BaseModel):
         favorite = await self._client.fetch_favorites()
         for i_fav in favorite.items:
 
-            for i_skin in self.get_skins():
-
-                if i_fav.type == ItemType.skin:
-                    if i_skin == i_fav:
+            if i_fav.type == ItemType.skin:
+                for i_skin in self._skins:
+                    skin_loadout = i_skin.get_base_skin() if i_skin.type != ItemType.skin else i_skin
+                    if skin_loadout == i_fav:
                         i_skin.set_favorite(True)
-                else:
-                    base_skin = i_skin.get_base_skin()
-                    if base_skin == i_fav:
-                        base_skin.set_favorite(True)
 
-                if i_fav.type == ItemType.buddy:
+            if i_fav.type == ItemType.buddy:
+                for i_skin in self._skins:
                     skin_buddy = i_skin.get_buddy()
                     if skin_buddy == i_fav:
                         skin_buddy.set_favorite(True)
@@ -450,7 +447,7 @@ class Favorites:
         for i in data['FavoritedContent']:
             item_id = data['FavoritedContent'][i]['ItemID']
             item = (
-                self._client.get_skin(uuid=item_id, level=False, chroma=False)
+                self._client.get_skin(uuid=item_id)
                 or self._client.get_spray(uuid=item_id, level=False)
                 or self._client.get_player_card(uuid=item_id)
                 or self._client.get_buddy(uuid=item_id)
@@ -486,7 +483,7 @@ class Favorites:
             Whether to force add the skin to your favorites.
         """
         if isinstance(skin, str):
-            skin = self._client.get_skin(uuid=skin, level=False, chroma=False)
+            skin = self._client.get_skin(uuid=skin)
         if skin in self.skins:
             raise ValueError(f'{skin} is already in your favorites.')
 
@@ -570,7 +567,7 @@ class Favorites:
             Whether to force remove the skin from your favorites.
         """
         if isinstance(skin, str):
-            skin = self._client.get_skin(uuid=skin, level=False, chroma=False)
+            skin = self._client.get_skin(uuid=skin)
         if skin not in self.skins:
             raise ValueError(f'{skin} is not in your favorites.')
         is_favorite = await skin.remove_favorite(force=force)
