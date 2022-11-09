@@ -152,6 +152,6 @@ cython_debug/
 .idea/
 
 # custom
-test__*.py
+test_*.py
 valorantx/assets/0*
-/venv_dev/
+/raw_data/
