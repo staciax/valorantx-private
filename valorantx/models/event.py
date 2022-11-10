@@ -92,5 +92,5 @@ class Event(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the event with the given UUID."""
-        data = client.assets.get_event(uuid)
+        data = client._assets.get_event(uuid)
         return cls(client=client, data=data) if data else None

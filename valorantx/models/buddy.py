@@ -26,6 +26,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from ..asset import Asset
+from ..enums import ItemType
 from ..localization import Localization
 from .base import BaseFeaturedBundleItem, BaseModel
 
@@ -51,6 +52,7 @@ class Buddy(BaseModel):
         self._levels: List[Dict[str, Any]] = data['levels']
         self._price: int = 0
         self._is_favorite: bool = False
+        self.type: ItemType = ItemType.buddy
 
     def __str__(self) -> str:
         return self.display_name
@@ -116,7 +118,7 @@ class Buddy(BaseModel):
         if self.is_favorite() and not force:
             return False
         to_fav = await self._client.add_favorite(self)
-        if self in to_fav.buddies:
+        if self in to_fav._buddies:
             self._is_favorite = True
         return self.is_favorite()
 
@@ -126,14 +128,14 @@ class Buddy(BaseModel):
         if not self.is_favorite() and not force:
             return False
         remove_fav = await self._client.remove_favorite(self)
-        if self not in remove_fav.buddies:
+        if self not in remove_fav._buddies:
             self._is_favorite = False
         return self.is_favorite()
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the buddy with the given UUID."""
-        data = client.assets.get_buddy(uuid)
+        data = client._assets.get_buddy(uuid)
         return cls(client=client, data=data) if data else None
 
 
@@ -149,6 +151,7 @@ class BuddyLevel(BaseModel):
         self._price: int = self._client.get_item_price(self.uuid)
         self.level_number: int = data.get('levelNumber', 0)
         self._base_buddy: Optional[Buddy] = self._client.get_buddy(self._base_buddy_uuid)
+        self.type: ItemType = ItemType.buddy_level
 
     def __str__(self) -> str:
         return self.display_name
@@ -217,7 +220,7 @@ class BuddyLevel(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the buddy level with the given UUID."""
-        data = client.assets.get_buddy_level(uuid)
+        data = client._assets.get_buddy_level(uuid)
         return cls(client=client, data=data) if data else None
 
 
@@ -233,5 +236,5 @@ class BuddyBundle(BuddyLevel, BaseFeaturedBundleItem):
     @classmethod
     def _from_bundle(cls, client: Client, uuid: str, bundle: Dict[str, Any]) -> Optional[Self]:
         """Returns the buddy level with the given UUID."""
-        data = client.assets.get_buddy_level(uuid)
+        data = client._assets.get_buddy_level(uuid)
         return cls(client=client, data=data, bundle=bundle) if data else None

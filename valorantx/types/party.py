@@ -20,33 +20,114 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Optional, TypedDict
-
-from .player import Player as BasePlayer
+from typing import TYPE_CHECKING, Any, List, Optional, TypedDict, Union
 
 if TYPE_CHECKING:
+    import datetime
+
     from .match import PlayerPlatformInfo
+    from .player import PlayerIdentity
 
 
-class PlayerParty(BasePlayer, TypedDict):
+class PartyMember(TypedDict):
     Subject: str
     CompetitiveTier: int
-    PlayerIdentity: List[Any]
+    PlayerIdentity: PlayerIdentity
     SeasonalBadgeInfo: Any
     IsOwner: bool
     QueueEligibleRemainingAccountLevels: int
-    Pings: List[Any]
+    Pings: List[Ping]
     IsReady: bool
     IsModerator: bool
     UseBroadcastHUD: bool
     PlatformType: str
 
 
-class Party(TypedDict):
+class CustomSettings(TypedDict):
+    Map: str
+    Mode: str
+    UseBots: bool
+    GamePod: str
+    GameRules: Optional[Any]
+
+
+class CustomMembership(TypedDict):
+    teamOne: Optional[Any]
+    teamTwo: Optional[Any]
+    teamSpectate: Optional[Any]
+    teamOneCoaches: Optional[Any]
+    teamTwoCoaches: Optional[Any]
+
+
+class CustomGameData(TypedDict):
+    Settings: CustomSettings
+    Membership: CustomMembership
+    MaxPartySize: int
+    AutobalanceEnabled: bool
+    AutobalanceMinPlayers: int
+
+
+class Invite(TypedDict):
+    ID: str
+    PartyID: str
+    Subject: str
+    InvitedBySubject: str
+    CreatedAt: Union[str, datetime.datetime]
+    RefreshedAt: Union[str, datetime.datetime]
+    ExpiresIn: int
+
+
+class PartyPlayer(TypedDict):
     Subject: str
     Version: int
     CurrentPartyID: str
-    Invites: Optional[Any]
+    Invites: Optional[List[Invite]]
     Requests: List[Any]
     PlatformInfo: PlayerPlatformInfo
+
+
+class MatchmakingData(TypedDict):
+    QueueID: str
+    PreferredGamePods: List[str]
+    SkillDisparityRRPenalty: int
+
+
+class ErrorNotification(TypedDict):
+    ErrorType: str
+    ErroredPlayers: Optional[Any]
+
+
+class CheatData(TypedDict):
+    GamePodOverride: str
+    ForcePostGameProcessing: bool
+
+
+class Party(TypedDict):
+    ID: str
+    MUCName: str
+    VoiceRoomID: str
+    Version: int
+    ClientVersion: str
+    Members: List[PartyMember]
+    State: str
+    PreviousState: str
+    StateTransitionReason: str
+    Accessibility: str
+    CustomGameData: CustomGameData
+    MatchmakingData: MatchmakingData
+    Invites: Optional[Any]
+    Requests: List[Any]
+    QueueEntryTime: Union[str, datetime.datetime]
+    ErrorNotification: ErrorNotification
+    RestrictedSeconds: int
+    EligibleQueues: List[str]
+    QueueIneligibilities: List[Any]
+    CheatData: CheatData
+    XPBonuses: List[Any]
+
+
+class Ping(TypedDict):
+    Ping: int
+    GamePodID: str

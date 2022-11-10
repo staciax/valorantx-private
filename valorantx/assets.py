@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
@@ -35,7 +36,7 @@ from typing_extensions import Concatenate, ParamSpec
 
 from .enums import CurrencyID, ItemType
 from .errors import AuthRequired
-from .utils import is_uuid
+from .utils import MISSING, is_uuid
 
 if TYPE_CHECKING:
     from .client import Client
@@ -213,21 +214,22 @@ def _finder():
 
 
 class Assets:
-
     _cache_dir: Path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
 
     ASSET_CACHE = {}
     OFFER_CACHE = {}
 
-    def __init__(self, *, client: Client, auto_reload: bool) -> None:
+    def __init__(self, *, client: Client) -> None:
         self._client = client
-        if auto_reload:
-            self.reload_assets()
-        self.version: Optional[Version] = None
+        self.version: Version = MISSING
         self._is_with_price: bool = False
+        self._ready: bool = False
+
+    def is_ready(self) -> bool:
+        return self._ready
 
     @staticmethod
-    def clear_asset_cache() -> None:
+    def clear_cache() -> None:
         Assets.ASSET_CACHE.clear()
 
     @staticmethod
@@ -235,8 +237,8 @@ class Assets:
         Assets.OFFER_CACHE.clear()
 
     @staticmethod
-    def clear_all_cache() -> None:
-        Assets.clear_asset_cache()
+    def clear() -> None:
+        Assets.clear_cache()
         Assets.clear_offer_cache()
 
     def get_asset(self, key: str, tries: int = 3) -> Optional[Mapping[str, Any]]:
@@ -253,7 +255,7 @@ class Assets:
                         _log.warning(f'Asset {key} not found')
                     raise KeyError(f"Asset {key!r} not found")
             except KeyError:
-                self.reload_assets(with_price=self._is_with_price)
+                self.reload(with_price=self._is_with_price)
                 if _ >= tries - 1:
                     raise KeyError(f"Asset {key!r} not found")
 
@@ -427,20 +429,21 @@ class Assets:
         *,
         force: bool = False,
         with_price: bool = False,
-        reload_asset: bool = False,
+        reload: bool = False,
+        version: Optional[Version] = None,
     ) -> None:
         """Fetch all assets."""
 
         self._is_with_price = with_price
 
-        get_version = await self._client.get_valorant_version()
+        get_version = version or await self._client.get_valorant_version()
 
         if get_version != self._client.version:
             self._client.version = get_version
             self.version = get_version
 
         self.__mkdir_assets_dir()
-        asset_path = self._get_asset_dir()
+        asset_path = self.__get_dir()
 
         # verify files exist
         list_dir = os.listdir(asset_path)
@@ -459,7 +462,7 @@ class Assets:
                 new_dict = {}
                 for offer in data.offers:
                     new_dict[offer.id] = offer.cost
-                self._dump(new_dict, '_offers')
+                self.__dump(new_dict, '_offers')
         else:
             if self._client.is_authorized():
                 if not self.OFFER_CACHE:
@@ -467,37 +470,39 @@ class Assets:
             else:
                 _log.info('Skipping fetching items prices')
 
-        if not asset_path.endswith(get_version.version) or len(os.listdir(self._get_asset_dir())) == 0 or force:
+        if not asset_path.endswith(get_version.version) or len(os.listdir(self.__get_dir())) == 0 or force:
             _log.info(f"Fetching assets for version {get_version.version!r}")
 
-            self._dump(await self._client.http.asset_get_agents(), 'agents')
-            self._dump(await self._client.http.asset_get_buddies(), 'buddies')
-            self._dump(await self._client.http.asset_get_bundles(), 'bundles')
-            self._dump(await self._client.http.asset_get_ceremonies(), 'ceremonies')
-            self._dump(await self._client.http.asset_get_competitive_tiers(), 'competitive_tiers')
-            self._dump(await self._client.http.asset_get_content_tiers(), 'content_tiers')
-            self._dump(await self._client.http.asset_get_contracts(), 'contracts')
-            self._dump(await self._client.http.asset_get_currencies(), 'currencies')
-            self._dump(await self._client.http.asset_get_events(), 'events')
-            self._dump(await self._client.http.asset_get_game_modes(), 'game_modes')
-            self._dump(await self._client.http.asset_get_game_modes_equippables(), 'game_modes_equippables')
-            self._dump(await self._client.http.asset_get_gear(), 'gear')
-            self._dump(await self._client.http.asset_get_level_borders(), 'level_borders')
-            self._dump(await self._client.http.asset_get_maps(), 'maps')
-            self._dump(await self._client.http.asset_get_missions(), 'missions')
-            self._dump(await self._client.http.asset_get_player_cards(), 'player_cards')
-            self._dump(await self._client.http.asset_get_player_titles(), 'player_titles')
-            self._dump(await self._client.http.asset_get_seasons(), 'seasons')
-            self._dump(await self._client.http.asset_get_seasons_competitive(), 'seasons_competitive')
-            self._dump(await self._client.http.asset_get_sprays(), 'sprays')
-            self._dump(await self._client.http.asset_get_themes(), 'themes')
-            self._dump(await self._client.http.asset_get_weapons(), 'weapons')
-            self._dump(await self._client.http.asset_get_bundle_items(), 'bundles_2nd')
+            self.__dump(await self._client.http.asset_get_agents(), 'agents')
+            self.__dump(await self._client.http.asset_get_buddies(), 'buddies')
+            self.__dump(await self._client.http.asset_get_bundles(), 'bundles')
+            self.__dump(await self._client.http.asset_get_ceremonies(), 'ceremonies')
+            self.__dump(await self._client.http.asset_get_competitive_tiers(), 'competitive_tiers')
+            self.__dump(await self._client.http.asset_get_content_tiers(), 'content_tiers')
+            self.__dump(await self._client.http.asset_get_contracts(), 'contracts')
+            self.__dump(await self._client.http.asset_get_currencies(), 'currencies')
+            self.__dump(await self._client.http.asset_get_events(), 'events')
+            self.__dump(await self._client.http.asset_get_game_modes(), 'game_modes')
+            self.__dump(await self._client.http.asset_get_game_modes_equippables(), 'game_modes_equippables')
+            self.__dump(await self._client.http.asset_get_gear(), 'gear')
+            self.__dump(await self._client.http.asset_get_level_borders(), 'level_borders')
+            self.__dump(await self._client.http.asset_get_maps(), 'maps')
+            self.__dump(await self._client.http.asset_get_missions(), 'missions')
+            self.__dump(await self._client.http.asset_get_player_cards(), 'player_cards')
+            self.__dump(await self._client.http.asset_get_player_titles(), 'player_titles')
+            self.__dump(await self._client.http.asset_get_seasons(), 'seasons')
+            self.__dump(await self._client.http.asset_get_seasons_competitive(), 'seasons_competitive')
+            self.__dump(await self._client.http.asset_get_sprays(), 'sprays')
+            self.__dump(await self._client.http.asset_get_themes(), 'themes')
+            self.__dump(await self._client.http.asset_get_weapons(), 'weapons')
+            self.__dump(await self._client.http.asset_get_bundle_items(), 'bundles_2nd')
 
-        if reload_asset:
-            self.reload_assets(with_price=with_price)
+        if reload:
+            self.reload(with_price=with_price)
 
-    def reload_assets(self, with_price: bool = False):
+        self._ready = True
+
+    def reload(self, with_price: bool = False):
         """
         Reload assets from disk.
         """
@@ -523,7 +528,7 @@ class Assets:
                             with open(file_path, encoding='utf-8') as f:
                                 to_dict = json.load(f)
                                 if not filename.startswith('_offers'):
-                                    self.__to_assets_cache(filename, to_dict)
+                                    self.__to_cache(filename, to_dict)
                                 elif filename.startswith('_offers') and with_price:
                                     self.OFFER_CACHE.clear()
                                     self.OFFER_CACHE.update(to_dict)
@@ -532,37 +537,37 @@ class Assets:
                     shutil.rmtree(maybe_asset_dir)
                     _log.info(f'Removed asset directory {maybe_asset_dir}')
 
-        self.__special_weapons()
+        # self.__special_weapons()
 
         _log.info("Assets reloaded")
         if with_price:
             _log.info("Offers reloaded")
 
     @_cache
-    def _get_asset_dir(self) -> str:
-        """Get the asset directory."""
+    def __get_dir(self) -> str:
+        """:class:`str`: Get the asset directory."""
         return os.path.join(Assets._cache_dir, self._client.version.version)
 
     @staticmethod
     @_cache
-    def _get_asset_special_dir() -> str:
-        """Get the asset special directory."""
+    def __get_special_dir() -> str:
+        """:class:`str`: The special weapon directory."""
         return os.path.join(Assets._cache_dir, 'specials')
 
-    def __mkdir_cache_dir(self) -> bool:
-        """Make the assets' directory."""
+    def __mkdir_dir(self) -> bool:
+        """:return: True if the directory was created, False if it already exists."""
         if not os.path.exists(self._cache_dir):
             try:
                 os.mkdir(self._cache_dir)
             except OSError:
+                _log.error(f"Creation of the directory {self._cache_dir} failed")
                 return False
             else:
-                # self.__mkdir_cache_gitignore()
                 return True
 
     def __mkdir_assets_dir(self) -> bool:
         """Make the assets' directory."""
-        assets_dir = self._get_asset_dir()
+        assets_dir = self.__get_dir()
         if not os.path.exists(os.path.join(assets_dir)):
             try:
                 os.mkdir(os.path.join(assets_dir))
@@ -573,18 +578,9 @@ class Assets:
                 _log.info(f'Created asset directory')
                 return True
 
-    def __mkdir_cache_gitignore(self) -> None:
-        """Make a .gitignore file in the assets' directory."""
-
-        gitignore_path = os.path.join(self._cache_dir, ".gitignore")
-        msg = "# This directory is used to assets data from the Valorant API.\n*\n"
-        if not os.path.exists(gitignore_path):
-            with open(gitignore_path, 'w', encoding='utf-8') as f:
-                f.write(msg)
-
-    def _dump(self, data: Mapping[str, Any], filename: str) -> None:
+    def __dump(self, data: Mapping[str, Any], filename: str) -> None:
         """Dump data to a file."""
-        asset_path = self._get_asset_dir()
+        asset_path = self.__get_dir()
         file_path = os.path.join(asset_path, f'{filename}.json')
 
         for tries in range(3):
@@ -601,7 +597,7 @@ class Assets:
     def __special_weapons(self) -> None:
         """Special weapons."""
 
-        special_dir = self._get_asset_special_dir()
+        special_dir = self.__get_special_dir()
 
         for filename in sorted(os.listdir(special_dir)):
             if isinstance(filename, str) and filename.endswith('.json'):
@@ -612,7 +608,7 @@ class Assets:
                         self.ASSET_CACHE['weapons'].update(to_dict)
 
     @staticmethod
-    def __to_assets_cache(filename: str, data: Mapping[str, Any]) -> None:
+    def __to_cache(filename: str, data: Mapping[str, Any]) -> None:
         """Customize the asset assets format."""
 
         new_dict = {}

@@ -106,7 +106,7 @@ class StoreFront:
 
     # alias
 
-    def get_skins(self, base_skin: bool = False) -> List[SkinLevel]:
+    def get_skins(self, *, base_skin: bool = False) -> List[SkinLevel]:
         """:class:`.models.SkinLevel`: The list of skins in the featured panel."""
         store = self.get_store()
         return store.get_skins(base_skin=base_skin)

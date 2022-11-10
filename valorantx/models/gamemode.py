@@ -67,7 +67,7 @@ class GameMode(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the game mode with the given UUID."""
-        data = client.assets.get_game_mode(uuid)
+        data = client._assets.get_game_mode(uuid)
         return cls(client=client, data=data) if data else None
 
 
@@ -115,11 +115,11 @@ class GameModeEquippable(BaseModel):
     @property
     def get_weapon(self) -> Weapon:
         """:class: `Weapon` Returns the game mode's weapon."""
-        data = self._client.assets.get_weapon(uuid=self._uuid)
+        data = self._client._assets.get_weapon(uuid=self._uuid)
         return Weapon(client=self._client, data=data)
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the game mode with the given UUID."""
-        data = client.assets.get_game_mode_equippable(uuid)
+        data = client._assets.get_game_mode_equippable(uuid)
         return cls(client=client, data=data) if data else None

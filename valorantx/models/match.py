@@ -390,7 +390,7 @@ class PlayerStat:
         return self._stayed_in_spawn
 
 
-class playerScore:
+class PlayerScore:
     def __init__(self, match: MatchDetails, data: PlayerScorePayload) -> None:
         self.match: MatchDetails = match
         self.subject: str = data.get('subject')
@@ -505,8 +505,8 @@ class RoundResult:
             [PlayerEconomy(match, economy) for economy in data['playerEconomies']] if data.get('playerEconomies') else []
         )
         self.player_stats: List[PlayerStat] = [PlayerStat(match, player) for player in data.get('playerStats', [])]
-        self.player_scores: List[playerScore] = (
-            [playerScore(match, player) for player in data['playerScores']] if data.get('playerScores') else []
+        self.player_scores: List[PlayerScore] = (
+            [PlayerScore(match, player) for player in data['playerScores']] if data.get('playerScores') else []
         )
 
     def __int__(self) -> int:

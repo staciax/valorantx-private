@@ -331,7 +331,7 @@ class Weapon(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the weapon with the given UUID."""
-        data = client.assets.get_weapon(uuid)
+        data = client._assets.get_weapon(uuid)
         return cls(client=client, data=data) if data else None
 
 
@@ -444,7 +444,7 @@ class Skin(BaseModel):
         if self.is_favorite() and not force:
             return False
         to_fav = await self._client.add_favorite(self)
-        if self in to_fav.skins:
+        if self in to_fav._skins:
             self._is_favorite = True
         return self.is_favorite()
 
@@ -453,7 +453,7 @@ class Skin(BaseModel):
         if not self.is_favorite() and not force:
             return False
         remove_fav = await self._client.remove_favorite(self)
-        if self not in remove_fav.skins:
+        if self not in remove_fav._skins:
             self._is_favorite = False
         return self.is_favorite()
 
@@ -470,7 +470,7 @@ class Skin(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str, all_type: bool = False) -> Union[Self, SkinLevel, SkinChroma]:
         """Returns the skin with the given UUID."""
-        data = client.assets.get_skin(uuid)
+        data = client._assets.get_skin(uuid)
         if not all_type:
             return cls(client=client, data=data)
         else:
@@ -607,7 +607,7 @@ class SkinChroma(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the skin with the given UUID."""
-        data = client.assets.get_skin_chroma(uuid)
+        data = client._assets.get_skin_chroma(uuid)
         return cls(client=client, data=data) if data else None
 
 
@@ -737,7 +737,7 @@ class SkinLevel(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the skin with the given UUID."""
-        data = client.assets.get_skin_level(uuid)
+        data = client._assets.get_skin_level(uuid)
         return cls(client=client, data=data) if data else None
 
 
@@ -777,7 +777,7 @@ class SkinNightMarket(SkinLevel):
     def _from_data(cls, client: Client, skin_data: Dict[str, Any]) -> Self:
         """Returns the skin with the given UUID."""
         uuid = skin_data['Offer']['OfferID']
-        data = client.assets.get_skin_level(uuid)
+        data = client._assets.get_skin_level(uuid)
         return cls(client=client, data=data, extras=skin_data)
 
 
@@ -793,7 +793,7 @@ class SkinBundle(SkinLevel, BaseFeaturedBundleItem):
     @classmethod
     def _from_bundle(cls, client: Client, uuid: str, bundle: Dict[str, Any]) -> Optional[Self]:
         """Returns the spray level with the given UUID."""
-        data = client.assets.get_skin_level(uuid)
+        data = client._assets.get_skin_level(uuid)
         return cls(client=client, data=data, bundle=bundle) if data else None
 
 
@@ -828,7 +828,7 @@ class SkinLoadout(Skin, BaseLoadout):
 
     @classmethod
     def _from_loadout(cls, client: Client, uuid: str, loadout: SkinLoadoutPayload) -> Optional[Self]:
-        data = client.assets.get_skin(uuid)
+        data = client._assets.get_skin(uuid)
         return cls(client=client, data=data, loadout=loadout) if data else None
 
 
@@ -841,7 +841,7 @@ class SkinLevelLoadout(SkinLevel, BaseLoadout):
 
     @classmethod
     def _from_loadout(cls, client: Client, uuid: str, loadout: SkinLoadoutPayload) -> Self:
-        data = client.assets.get_skin_level(uuid)
+        data = client._assets.get_skin_level(uuid)
         return cls(client=client, data=data, loadout=loadout)
 
 
@@ -854,5 +854,5 @@ class SkinChromaLoadout(SkinChroma, BaseLoadout):
 
     @classmethod
     def _from_loadout(cls, client: Client, uuid: str, loadout: SkinLoadoutPayload) -> Self:
-        data = client.assets.get_skin_chroma(uuid)
+        data = client._assets.get_skin_chroma(uuid)
         return cls(client=client, data=data, loadout=loadout)

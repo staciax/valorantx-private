@@ -211,3 +211,20 @@ class PartyNotOwner(ValorantException):
     """Exception that's raised when the user is not the owner of the party."""
 
     pass
+
+
+class NotInPreGame(ValorantException):
+    """Exception that's raised when the user is not in a pre-game."""
+
+    pass
+
+
+class NotInCoreGame(ValorantException):
+    """Exception that's raised when the user is not in a core-game."""
+
+    pass
+
+
+class InvalidPuuid(ValorantException):
+    """Exception that's raised when the puuid is invalid."""
+    pass

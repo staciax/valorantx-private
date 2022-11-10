@@ -66,5 +66,5 @@ class Ceremony(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the ceremony with the given UUID."""
-        data = client.assets.get_ceremony(uuid)
+        data = client._assets.get_ceremony(uuid)
         return cls(client=client, data=data) if data else None

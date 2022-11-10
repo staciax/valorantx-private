@@ -186,5 +186,5 @@ class ContentTier(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the content tier with the given UUID."""
-        data = client.assets.get_content_tier(uuid)
+        data = client._assets.get_content_tier(uuid)
         return cls(client=client, data=data) if data else None

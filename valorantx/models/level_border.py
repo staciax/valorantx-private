@@ -82,5 +82,5 @@ class LevelBorder(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the level border with the given UUID."""
-        data = client.assets.get_level_border(uuid=str(uuid))
+        data = client._assets.get_level_border(uuid=str(uuid))
         return cls(client=client, data=data) if data else None

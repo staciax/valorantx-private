@@ -413,20 +413,20 @@ class Favorites:
         self._client = client
         self._data = data
         self._subject: str = data.get('Subject', '')
-        self.skins: List[Skin] = []
-        self.sprays: List[Spray] = []
-        self.player_cards: List[PlayerCard] = []
-        self.buddies: List[Buddy] = []
+        self._skins: List[Skin] = []
+        self._sprays: List[Spray] = []
+        self._player_cards: List[PlayerCard] = []
+        self._buddies: List[Buddy] = []
         self.any: List[Any] = []
         self.items: List[Union[Skin, Spray, PlayerCard, Buddy]] = []
         self._update(data)
 
     def __repr__(self) -> str:
         attrs = [
-            ('len(skins)', len(self.skins)),
-            ('len(sprays)', len(self.sprays)),
-            ('len(player_cards)', len(self.player_cards)),
-            ('len(buddies)', len(self.buddies)),
+            ('len(skins)', len(self._skins)),
+            ('len(sprays)', len(self._sprays)),
+            ('len(player_cards)', len(self._player_cards)),
+            ('len(buddies)', len(self._buddies)),
         ]
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
@@ -434,10 +434,10 @@ class Favorites:
     def __eq__(self, other: object) -> bool:
         return (
             isinstance(other, Favorites)
-            and self.skins == other.skins
-            and self.sprays == other.sprays
-            and self.player_cards == other.player_cards
-            and self.buddies == other.buddies
+            and self._skins == other._skins
+            and self._sprays == other._sprays
+            and self._player_cards == other._player_cards
+            and self._buddies == other._buddies
         )
 
     def __ne__(self, other: object) -> bool:
@@ -458,17 +458,29 @@ class Favorites:
                     item._is_favorite = True
 
                 if getattr(item, 'type') == ItemType.skin:
-                    self.skins.append(item)
+                    self._skins.append(item)
                 elif getattr(item, 'type') == ItemType.spray:
-                    self.sprays.append(item)
+                    self._sprays.append(item)
                 elif getattr(item, 'type') == ItemType.player_card:
-                    self.player_cards.append(item)
+                    self._player_cards.append(item)
                 elif getattr(item, 'type') == ItemType.buddy:
-                    self.buddies.append(item)
+                    self._buddies.append(item)
                 else:
                     _log.warning(f'Unknown item: {item}')
                     self.any.append(item)
                 self.items.append(item)
+
+    def get_skins(self) -> List[Skin]:
+        return self._skins
+
+    def get_sprays(self) -> List[Spray]:
+        return self._sprays
+
+    def get_player_cards(self) -> List[PlayerCard]:
+        return self._player_cards
+
+    def get_buddies(self) -> List[Buddy]:
+        return self._buddies
 
     async def add_skin(self, skin: Union[str, Skin], *, force: bool = False) -> None:
         """|coro|
@@ -484,12 +496,12 @@ class Favorites:
         """
         if isinstance(skin, str):
             skin = self._client.get_skin(uuid=skin)
-        if skin in self.skins:
+        if skin in self._skins:
             raise ValueError(f'{skin} is already in your favorites.')
 
         is_favorite = await skin.add_favorite(force=force)
         if is_favorite:
-            self.skins.append(skin)
+            self._skins.append(skin)
 
     async def add_spray(self, spray: Union[str, Spray], *, force: bool = False) -> None:
         """|coro|
@@ -505,12 +517,12 @@ class Favorites:
         """
         if isinstance(spray, str):
             spray = self._client.get_spray(uuid=spray, level=False)
-        if spray in self.sprays:
+        if spray in self._sprays:
             raise ValueError(f'{spray} is already in your favorites.')
 
         is_favorite = await spray.add_favorite(force=force)
         if is_favorite:
-            self.sprays.append(spray)
+            self._sprays.append(spray)
 
     async def add_player_card(self, player_card: Union[str, PlayerCard], *, force: bool = False) -> None:
         """|coro|
@@ -526,12 +538,12 @@ class Favorites:
         """
         if isinstance(player_card, str):
             player_card = self._client.get_player_card(uuid=player_card)
-        if player_card in self.player_cards:
+        if player_card in self._player_cards:
             raise ValueError(f'{player_card} is already in your favorites.')
 
         is_favorite = await player_card.add_favorite(force=force)
         if is_favorite:
-            self.player_cards.append(player_card)
+            self._player_cards.append(player_card)
 
     async def add_buddy(self, buddy: Union[str, Buddy], *, force: bool = False) -> None:
         """|coro|
@@ -547,12 +559,12 @@ class Favorites:
         """
         if isinstance(buddy, str):
             buddy = self._client.get_buddy(uuid=buddy)
-        if buddy in self.buddies:
+        if buddy in self._buddies:
             raise ValueError(f'{buddy} is already in your favorites.')
 
         is_favorite = await buddy.add_favorite(force=force)
         if is_favorite:
-            self.buddies.append(buddy)
+            self._buddies.append(buddy)
 
     async def remove_skin(self, skin: Union[str, Skin], *, force: bool = False) -> None:
         """|coro|
@@ -568,11 +580,11 @@ class Favorites:
         """
         if isinstance(skin, str):
             skin = self._client.get_skin(uuid=skin)
-        if skin not in self.skins:
+        if skin not in self._skins:
             raise ValueError(f'{skin} is not in your favorites.')
         is_favorite = await skin.remove_favorite(force=force)
         if not is_favorite:
-            self.skins.remove(skin)
+            self._skins.remove(skin)
 
     async def remove_spray(self, spray: Union[str, Spray], *, force: bool = False) -> None:
         """|coro|
@@ -588,11 +600,11 @@ class Favorites:
         """
         if isinstance(spray, str):
             spray = self._client.get_spray(uuid=spray, level=False)
-        if spray not in self.sprays:
+        if spray not in self._sprays:
             raise ValueError(f'{spray} is not in your favorites.')
         is_favorite = await spray.remove_favorite(force=force)
         if not is_favorite:
-            self.sprays.remove(spray)
+            self._sprays.remove(spray)
 
     async def remove_player_card(self, player_card: Union[str, PlayerCard], *, force: bool = False) -> None:
         """|coro|
@@ -608,11 +620,11 @@ class Favorites:
         """
         if isinstance(player_card, str):
             player_card = self._client.get_player_card(uuid=player_card)
-        if player_card not in self.player_cards:
+        if player_card not in self._player_cards:
             raise ValueError(f'{player_card} is not in your favorites.')
         is_favorite = await player_card.remove_favorite(force=force)
         if not is_favorite:
-            self.player_cards.remove(player_card)
+            self._player_cards.remove(player_card)
 
     async def remove_buddy(self, buddy: Union[str, Buddy], *, force: bool = False) -> None:
         """|coro|
@@ -628,11 +640,11 @@ class Favorites:
         """
         if isinstance(buddy, str):
             buddy = self._client.get_buddy(uuid=buddy)
-        if buddy not in self.buddies:
+        if buddy not in self._buddies:
             raise ValueError(f'{buddy} is not in your favorites.')
         is_favorite = await buddy.remove_favorite(force=force)
         if not is_favorite:
-            self.buddies.remove(buddy)
+            self._buddies.remove(buddy)
 
     async def remove_all(self, item_type: Optional[ItemType] = None, *, force: bool = False) -> None:
         """|coro|
@@ -648,28 +660,28 @@ class Favorites:
         """
 
         async def remove_skin() -> None:
-            for skin in self.skins:
-                is_fav = await skin.remove_favorite(force=force)
-                if not is_fav:
-                    self.skins.remove(skin)
+            for skin in self._skins:
+                skin_fav = await skin.remove_favorite(force=force)
+                if not skin_fav:
+                    self._skins.remove(skin)
 
         async def remove_spray() -> None:
-            for spray in self.sprays:
-                is_fav = await spray.remove_favorite(force=force)
-                if not is_fav:
-                    self.sprays.remove(spray)
+            for spray in self._sprays:
+                spray_fav = await spray.remove_favorite(force=force)
+                if not spray_fav:
+                    self._sprays.remove(spray)
 
         async def remove_player_card() -> None:
-            for player_card in self.player_cards:
-                is_fav = await player_card.remove_favorite(force=force)
-                if not is_fav:
-                    self.player_cards.remove(player_card)
+            for player_card in self._player_cards:
+                card_fav = await player_card.remove_favorite(force=force)
+                if not card_fav:
+                    self._player_cards.remove(player_card)
 
         async def remove_buddy() -> None:
-            for buddy in self.buddies:
-                is_fav = await buddy.remove_favorite(force=force)
-                if not is_fav:
-                    self.buddies.remove(buddy)
+            for buddy in self._buddies:
+                buddy_fav = await buddy.remove_favorite(force=force)
+                if not buddy_fav:
+                    self._buddies.remove(buddy)
 
         if item_type is None:
             await remove_skin()

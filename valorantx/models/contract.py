@@ -114,7 +114,7 @@ class Contract(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the contract with the given uuid."""
-        data = client.assets.get_contract(uuid)
+        data = client._assets.get_contract(uuid)
         return cls(client=client, data=data) if data else None
 
 
@@ -211,7 +211,7 @@ class ContractU(Contract):
 
     @classmethod
     def _from_contract(cls, client: Client, contract: ContractUPayload) -> Self:
-        data = client.assets.get_contract(contract['ContractDefinitionID'])
+        data = client._assets.get_contract(contract['ContractDefinitionID'])
         return cls(client=client, data=data, contract=contract)
 
 

@@ -20,35 +20,36 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
-
 from __future__ import annotations
 
-from typing import Optional, TypedDict
+from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Union
+
+if TYPE_CHECKING:
+    from ..client import Client
+    from .agent import Agent
 
 
-class PartialPlayer(TypedDict):
-    puuid: str
-    username: str
-    tagline: str
+class CoreGamePlayer:
+    ...
 
 
-class Player(PartialPlayer):
-    region: str
-    locale: Optional[str]
+class CoreGameMatch:
+    def __init__(self, client: Client, data: Mapping[str, Any]):
+        self._client = client
+        self.id: str = data['MatchID']
 
+    async def fetch_match_loadouts(self) -> None:
+        """Fetch match loadouts."""
+        await self._client.http.coregame_fetch_match_loadouts(match_id=self.id)
 
-class PlayerIdentity(TypedDict):
-    Subject: str
-    PlayerCardID: str
-    PlayerTitleID: str
-    AccountLevel: int
-    PreferredLevelBorderID: str
-    Incognito: bool
-    HideAccountLevel: bool
+    async def disassociate(self) -> None:
+        """Disassociate."""
+        await self._client.http.coregame_disassociate_player(match_id=self.id)
 
-
-class NameService(TypedDict):
-    DisplayName: str
-    Subject: str
-    GameName: str
-    TagLine: str
+    # async def fetch_team_chat_muc_token(self) -> None:
+    #     """Fetch voice token."""
+    #     await self._client.http.coregame_fetch_team_chat_muc_token(match_id=self.id)
+    #
+    # async def fetch_all_chat_muc_token(self) -> None:
+    #     """Fetch voice token."""
+    #     await self._client.http.coregame_fetch_all_chat_muc_token(match_id=self.id)

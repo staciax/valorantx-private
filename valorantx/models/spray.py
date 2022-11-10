@@ -148,7 +148,7 @@ class Spray(BaseModel):
         if self.is_favorite() and not force:
             return False
         to_fav = await self._client.add_favorite(self)
-        if self in to_fav.sprays:
+        if self in to_fav._sprays:
             self._is_favorite = True
         return self.is_favorite()
 
@@ -157,14 +157,14 @@ class Spray(BaseModel):
         if not self.is_favorite() and not force:
             return False
         remove_fav = await self._client.remove_favorite(self)
-        if self not in remove_fav.sprays:
+        if self not in remove_fav._sprays:
             self._is_favorite = False
         return self.is_favorite()
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the spray with the given uuid."""
-        data = client.assets.get_spray(uuid=uuid)
+        data = client._assets.get_spray(uuid=uuid)
         return cls(client=client, data=data) if data else None
 
 
@@ -264,7 +264,7 @@ class SprayLevel(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the spray level with the given uuid."""
-        data = client.assets.get_spray_level(uuid=uuid)
+        data = client._assets.get_spray_level(uuid=uuid)
         return cls(client=client, data=data) if data else None
 
 
@@ -280,7 +280,7 @@ class SprayBundle(Spray, BaseFeaturedBundleItem):
     @classmethod
     def _from_bundle(cls, client: Client, uuid: str, bundle: Dict[str, Any]) -> Optional[Self]:
         """Returns the spray level with the given UUID."""
-        data = client.assets.get_spray(uuid)
+        data = client._assets.get_spray(uuid)
         return cls(client=client, data=data, bundle=bundle) if data else None
 
 
@@ -299,7 +299,7 @@ class SprayLoadout(Spray):
 
     @classmethod
     def _from_loadout(cls, client: Client, uuid: str, loadout: SprayLoadoutPayload) -> Self:
-        data = client.assets.get_spray(uuid)
+        data = client._assets.get_spray(uuid)
         return cls(client=client, data=data, loadout=loadout)
 
 
@@ -309,7 +309,7 @@ class SprayLevelLoadout(SprayLevel):
         self._slot = SpraySlotID.slot_number(loadout['EquipSlotID'])
 
     def __repr__(self) -> str:
-        return f'<SprayLevelLoadout display_name={self.display_name!r} base={self.base_spray!r}>'
+        return f'<SprayLevelLoadout display_name={self.display_name!r} base={self.get_base_spray()!r}>'
 
     @property
     def slot(self) -> int:
@@ -318,5 +318,5 @@ class SprayLevelLoadout(SprayLevel):
 
     @classmethod
     def _from_loadout(cls, client: Client, uuid: str, loadout: SprayLoadoutPayload) -> Self:
-        data = client.assets.get_spray_level(uuid)
+        data = client._assets.get_spray_level(uuid)
         return cls(client=client, data=data, loadout=loadout)

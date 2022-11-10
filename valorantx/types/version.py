@@ -35,6 +35,7 @@ class VersionData(TypedDict):
     buildVersion: str
     engineVersion: str
     riotClientVersion: str
+    riotClientBuild: str
     buildDate: str
 
 

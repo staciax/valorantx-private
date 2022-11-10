@@ -37,7 +37,7 @@ import aiohttp
 from . import __version__, utils
 from .auth import RiotAuth
 from .enums import ItemType, Locale, QueueID, Region, try_enum
-from .errors import Forbidden, HTTPException, NotFound, RiotServerError, ValorantAPIServerError, PhaseError
+from .errors import Forbidden, HTTPException, NotFound, PhaseError, RiotServerError, ValorantAPIServerError
 
 try:
     import urllib3  # type: ignore
@@ -52,7 +52,7 @@ MISSING = utils.MISSING
 if TYPE_CHECKING:
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
-    from .types import collection, competitive, contract, match, store, version, weapons, xp
+    from .types import collection, competitive, contract, match, party, store, version, weapons, xp, player
 
 _log = logging.getLogger(__name__)
 
@@ -110,7 +110,8 @@ class Route:
 
 
 class HTTPClient:
-    def __init__(self) -> None:
+    def __init__(self, loop: asyncio.AbstractEventLoop) -> None:
+        self.loop: asyncio.AbstractEventLoop = loop
         # self.user: Optional[ClientPlayer] = None
         self._session: aiohttp.ClientSession = MISSING
         self._headers: Dict[str, str] = {}
@@ -122,6 +123,10 @@ class HTTPClient:
 
         user_agent = 'valorantx (https://github.com/staciax/valorantx {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
+
+    def clear(self) -> None:
+        if self._session and self._session.closed:
+            self._session = MISSING
 
     async def request(self, route: Route, **kwargs: Any) -> Any:
         method = route.method
@@ -209,6 +214,14 @@ class HTTPClient:
     async def static_login(self, username: str, password: str) -> RiotAuth:
         """Riot Auth login."""
         await self._riot_auth.authorize(username, password)
+        self._puuid = self._riot_auth.puuid
+        await self.__build_headers()
+        return self._riot_auth
+
+    async def token_login(self, data: Dict[str, str]) -> RiotAuth:
+        """Riot Auth login."""
+
+        self._riot_auth.from_data(data)
         self._puuid = self._riot_auth.puuid
         await self.__build_headers()
         return self._riot_auth
@@ -479,7 +492,7 @@ class HTTPClient:
         """
         return self.request(Route('GET', '/v1/config/{region}', EndpointType.shard, self._region))
 
-    def fetch_name_by_puuid(self, puuid: Optional[List[str]] = None) -> Response[Mapping[str, Any]]:
+    def fetch_name_by_puuid(self, puuid: Optional[Union[List[str], str]] = None) -> Response[List[player.NameService]]:
         """
         Name_service
         get player name tag by puuid
@@ -488,6 +501,10 @@ class HTTPClient:
         """
         if puuid is None:
             puuid = []
+
+        if isinstance(puuid, str):
+            puuid = [puuid]
+
         return self.request(Route('PUT', '/name-service/v2/players', EndpointType.pd, self._region), json=puuid)
 
     # contract endpoints
@@ -600,7 +617,8 @@ class HTTPClient:
     # party endpoints
 
     # party endpoints
-    def party_fetch_player(self) -> Response[Mapping[str, Any]]:
+
+    def party_fetch_player(self) -> Response[party.PartyPlayer]:
         """
         Party_FetchPlayer
         Get the Party ID that a given player belongs to
@@ -615,7 +633,7 @@ class HTTPClient:
         puuid = self.__check_puuid(puuid)
         return self.request(Route('DELETE', f'/parties/v1/players/{puuid}', EndpointType.glz, self._region))
 
-    def fetch_party(self, party_id: str) -> Response[Mapping[str, Any]]:
+    def fetch_party(self, party_id: str) -> Response[party.Party]:
         """
         Party_FetchParty
         Get details about a given party id
@@ -645,7 +663,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def party_refresh_player_identity(self, party_id: str) -> Response[Mapping[str, Any]]:
+    def party_refresh_player_identity(self, party_id: str) -> Response[party.Party]:
         """
         Party_RefreshPlayerIdentity
         Refreshes the identity for a player
@@ -671,7 +689,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def party_change_queue(self, party_id: str, queue_id: Union[QueueID, str]) -> Response[Mapping[str, Any]]:
+    def party_change_queue(self, party_id: str, queue_id: Union[QueueID, str]) -> Response[party.Party]:
         """
         Party_ChangeQueue
         Sets the matchmaking queue for the party
@@ -704,12 +722,12 @@ class HTTPClient:
         r = Route('POST', f'/parties/v1/parties/{party_id}/matchmaking/leave', EndpointType.glz, self._region)
         return self.request(r)
 
-    def set_party_accessibility(self, party_id: str, open_join: bool) -> Response[Mapping[str, Any]]:
+    def set_party_accessibility(self, party_id: str, open_join: bool) -> Response[party.Party]:
         """
         Party_SetAccessibility
         Changes the party accessibility to be open or closed
         """
-        payload = {"openJoin": ("OPEN" if open_join else "CLOSED")}
+        payload = {"accessibility": ("OPEN" if open_join else "CLOSED")}
         r = Route('POST', f'/parties/v1/parties/{party_id}/accessibility', EndpointType.glz, self._region)
         return self.request(r, json=payload)
 
@@ -858,21 +876,132 @@ class HTTPClient:
         )
         return self.request(r)
 
+    # pre game endpoints
+    # exceptions = {404: [PhaseError, "You are not in a pre-game"]},
+
+    def pregame_fetch_player(self) -> Response[Mapping[str, Any]]:
+        """
+        Pregame_GetPlayer
+        Get the ID of a game in the pre-game stage
+        """
+        r = Route('GET', f'/pregame/v1/players/{self._puuid}', EndpointType.glz, self._region)
+        return self.request(r)
+
+    def pregame_fetch_match(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
+        """
+        Pregame_GetMatch
+        Get info for a game in the pre-game stage
+        """
+        r = Route('GET', f'/pregame/v1/matches/{match_id}', EndpointType.glz, self._region)
+        return self.request(r)
+
+    def pregame_fetch_match_loadouts(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
+        """
+        Pregame_GetMatchLoadouts
+        Get player skins and sprays for a game in the pre-game stage
+        """
+        r = Route('GET', f'/pregame/v1/matches/{match_id}/loadouts', EndpointType.glz, self._region)
+        return self.request(r)
+
+    def pregame_fetch_chat_token(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
+        """
+        Pregame_FetchChatToken
+        Get a chat token
+        """
+        r = Route('GET', f'/pregame/v1/matches/{match_id}/chattoken', EndpointType.glz, self._region)
+        return self.request(r)
+
+    def pregame_fetch_voice_token(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
+        """
+        Pregame_FetchVoiceToken
+        Get a voice token
+        """
+        r = Route('GET', f'/pregame/v1/matches/{match_id}/voicetoken', EndpointType.glz, self._region)
+        return self.request(r)
+
+    def pregame_select_character(self, agent_id: str, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
+        """
+        Pregame_SelectCharacter
+        Select an agent
+        don't use this for instalocking :)
+        """
+        r = Route('POST', f'/pregame/v1/matches/{match_id}/select/{agent_id}', EndpointType.glz, self._region)
+        return self.request(r)
+
+    def pregame_lock_character(self, agent_id: str, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
+        """
+        Pregame_LockCharacter
+        Lock in an agent
+        don't use this for instalocking :)
+        """
+        r = Route('POST', f'/pregame/v1/matches/{match_id}/lock/{agent_id}', EndpointType.glz, self._region)
+        return self.request(r)
+
+    def pregame_quit_match(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
+        """
+        Pregame_QuitMatch
+        Quit a match in the pre-game stage
+        """
+        r = Route('POST', f'/pregame/v1/matches/{match_id}/quit', EndpointType.glz, self._region)
+        return self.request(r)
+
+    # live game endpoints
+    # exceptions={404: [PhaseError, "You are not in a core-game"]},
+
+    def coregame_fetch_player(self) -> Response[Mapping[str, Any]]:
+        """
+        CoreGame_FetchPlayer
+        Get the game ID for an ongoing game the player is in
+        """
+        r = Route('GET', f'/core-game/v1/players/{self._puuid}', EndpointType.glz, self._region)
+        return self.request(r)
+
+    def coregame_fetch_match(self, match_id: str = None) -> Response[Mapping[str, Any]]:
+        """
+        CoreGame_FetchMatch
+        Get information about an ongoing game
+        """
+        r = Route('GET', f'/core-game/v1/matches/{match_id}', EndpointType.glz, self._region)
+        return self.request(r)
+
+    def coregame_fetch_match_loadouts(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
+        """
+        CoreGame_FetchMatchLoadouts
+        Get player skins and sprays for an ongoing game
+        """
+        r = Route('GET', f'/core-game/v1/matches/{match_id}/loadouts', EndpointType.glz, self._region)
+        return self.request(r)
+
+    def coregame_fetch_team_chat_muc_token(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
+        """
+        CoreGame_FetchTeamChatMUCToken
+        Get a token for team chat
+        """
+        r = Route('GET', f'/core-game/v1/matches/{match_id}/teamchatmuctoken', EndpointType.glz, self._region)
+        return self.request(r)
+
+    def coregame_fetch_all_chat_muc_token(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
+        """
+        CoreGame_FetchAllChatMUCToken
+        Get a token for all chat
+        """
+        r = Route('GET', f'/core-game/v1/matches/{match_id}/allchatmuctoken', EndpointType.glz, self._region)
+        return self.request(r)
+
+    def coregame_disassociate_player(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
+        """
+        CoreGame_DisassociatePlayer
+        Leave an in-progress game
+        """
+        r = Route('GET', f'/core-game/v1/players/{self._puuid}/disassociate/{match_id}', EndpointType.glz, self._region)
+        return self.request(r)
+
     # local endpoints
 
     # utils
 
-    # local utility functions
-
-    # def __coregame_check_match_id(self, match_id: str) -> str:
-    # """Check if a match id was passed into the method"""
-    # return self.coregame_fetch_player()["MatchID"] if match_id is None else match_id
-
-    # def __pregame_check_match_id(self, match_id: str) -> str:
-    #     return self.pregame_fetch_player()["MatchID"] if match_id is None else match_id
-
     def __check_puuid(self, puuid: str) -> str:
-        """If puuid passed into method is None make it current user's puuid"""
+        """if puuid passed into method is None make it current user's puuid"""
         return self._puuid if puuid is None else puuid
 
     async def __build_headers(self) -> None:

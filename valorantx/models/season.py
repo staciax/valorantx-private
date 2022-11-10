@@ -102,7 +102,7 @@ class Season(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the season with the given UUID."""
-        data = client.assets.get_season(uuid)
+        data = client._assets.get_season(uuid)
         return cls(client=client, data=data) if data else None
 
 

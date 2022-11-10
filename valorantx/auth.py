@@ -215,3 +215,36 @@ class RiotAuth(_RiotAuth):
             return True
         except RiotAuthenticationError:  # because credentials are empty
             return False
+
+    def from_data(self, data: Dict[str, Any]) -> None:
+        """
+        Set the token data from a dictionary.
+        """
+        self.access_token = data["access_token"]
+        self.id_token = data["id_token"]
+        self.entitlements_token = data["entitlements_token"]
+        self.token_type = data["token_type"]
+        self.expires_at = int(data["expires_at"])
+        self.user_id = data["user_id"]
+        self.puuid = data["puuid"]
+        self.name = data["name"]
+        self.tag = data["tag"]
+        self.region = data["region"]
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Return the token data as a dictionary.
+        """
+        return {
+            "access_token": self.access_token,
+            "id_token": self.id_token,
+            "entitlements_token": self.entitlements_token,
+            "token_type": self.token_type,
+            "expires_at": self.expires_at,
+            "user_id": self.user_id,
+            "puuid": self.puuid,
+            "name": self.name,
+            "tag": self.tag,
+            "region": self.region,
+        }
+

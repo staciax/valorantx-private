@@ -23,32 +23,60 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Optional, TypedDict
+from typing import TYPE_CHECKING, Any, List, Mapping, Optional, TypedDict, Union
+
+if TYPE_CHECKING:
+    import datetime
+
+    from .player import PlayerIdentity
 
 
-class PartialPlayer(TypedDict):
-    puuid: str
-    username: str
-    tagline: str
+class SeasonalBadgeInfo(TypedDict):
+    SeasonID: str
+    NumberOfWins: int
+    WinsByTier: Optional[Any]
+    Rank: int
+    LeaderboardRank: int
 
 
-class Player(PartialPlayer):
-    region: str
-    locale: Optional[str]
+class ConnectionDetails(TypedDict):
+    GameServerHosts: List[str]
+    GameServerHost: str
+    GameServerPort: int
+    GameServerObfuscatedIP: int
+    GameClientHash: int
+    PlayerKey: int
 
 
-class PlayerIdentity(TypedDict):
+class CoreGamePlayer(TypedDict):
     Subject: str
-    PlayerCardID: str
-    PlayerTitleID: str
-    AccountLevel: int
-    PreferredLevelBorderID: str
-    Incognito: bool
-    HideAccountLevel: bool
+    MatchID: str
+    Version: int
 
 
-class NameService(TypedDict):
-    DisplayName: str
+class PlayerCoreGame(TypedDict):
     Subject: str
-    GameName: str
-    TagLine: str
+    CharacterID: str
+    CharacterSelectionState: str
+    PlayerIdentity: PlayerIdentity
+    SeasonalBadgeInfo: SeasonalBadgeInfo
+    IsCoach: bool
+    IsAssociated: bool
+
+
+class PreGameMatch(TypedDict):
+    MatchID: str
+    Version: int
+    State: str
+    MapID: str
+    ModeID: str
+    ProvisioningFlow: str
+    GamePodID: str
+    AllMUCName: str
+    TeamMUCName: str
+    TeamVoiceID: str
+    IsReconnectable: bool
+    ConnectionDetails: ConnectionDetails
+    PostGameDetails: Optional[Any]
+    Players: List[PlayerCoreGame]
+    MatchmakingData: Optional[Any]

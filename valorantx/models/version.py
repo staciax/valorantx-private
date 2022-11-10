@@ -49,6 +49,7 @@ class Version:
         self.build_version: str = data['data']['buildVersion']
         self.engine_version: str = data['data']['engineVersion']
         self.riot_client_version: str = data['data']['riotClientVersion']
+        self.riot_client_build: str = data['data']['riotClientBuild']
         self._build_date_iso: str = data['data']['buildDate']
 
     def __eq__(self, other: object) -> bool:

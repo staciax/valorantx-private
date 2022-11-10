@@ -105,7 +105,7 @@ class Mission(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the mission with the given UUID."""
-        data = client.assets.get_mission(uuid)
+        data = client._assets.get_mission(uuid)
         return cls(client=client, data=data) if data else None
 
 
@@ -157,7 +157,7 @@ class MissionU(Mission):
     @classmethod
     def _from_mission(cls, client: Client, mission: MissionUPayload) -> Optional[Self]:
         """Returns the mission with the given UUID."""
-        data = client.assets.get_mission(mission['ID'])
+        data = client._assets.get_mission(mission['ID'])
         return cls(client=client, data=data, mission=mission) if data else None
 
 

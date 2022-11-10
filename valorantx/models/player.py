@@ -30,17 +30,16 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..client import Client
-    from ..types.player import PartialPlayer as PartialPlayerPayload, Player as PlayerPayload
+    from ..types.player import PartialPlayer as PartialPlayerPayload, Player as PlayerPayload, NameService as NameServicePayload
     from .level_border import LevelBorder
     from .player_card import PlayerCard
     from .player_title import PlayerTitle
 
-# fmt: off
 __all__ = (
     'Player',
     'ClientPlayer',
+    'NameService'
 )
-# fmt: on
 
 
 class _PlayerTag:
@@ -56,7 +55,7 @@ class Player(_PlayerTag):
         name: str
         # puuid: str
         _puuid: Optional[str]
-        tagline: str
+        tag: str
         region: str
         _client: Client
         _player_card_id: Optional[str]
@@ -73,7 +72,7 @@ class Player(_PlayerTag):
         self._client = client
         self._puuid: str = data.get('puuid', None) or data.get('Subject') or data.get('subject', None)
         self.name: Optional[str] = data.get('username') or data.get('gameName')
-        self.tagline: Optional[str] = data.get('tagline') or data.get('tagLine')
+        self.tag: Optional[str] = data.get('tagline') or data.get('tagLine')
         self.region: Optional[str] = data.get('region')
         self.account_level: int = 0
         self._player_card: Optional[PlayerCard] = None
@@ -82,10 +81,10 @@ class Player(_PlayerTag):
         self._last_updated: Optional[datetime.datetime] = None
 
     def __str__(self) -> str:
-        return f'{self.name}#{self.tagline}'
+        return f'{self.name}#{self.tag}'
 
     def __repr__(self) -> str:
-        return f"<Player puuid={self.puuid!r} name={self.name!r} tagline={self.tagline!r} region={self.region!r}>"
+        return f"<Player puuid={self.puuid!r} name={self.name!r} tagline={self.tag!r} region={self.region!r}>"
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, _PlayerTag) and other.puuid == self.puuid
@@ -104,9 +103,9 @@ class Player(_PlayerTag):
 
     @property
     def display_name(self) -> str:
-        if self.name is None and self.tagline is None:
+        if self.name is None and self.tag is None:
             return 'Unknown'
-        return f"{self.name}#{self.tagline}"
+        return f"{self.name}#{self.tag}"
 
     @property
     def player_card(self) -> Optional[PlayerCard]:
@@ -150,7 +149,7 @@ class Player(_PlayerTag):
             for player in match.players:
                 if player.puuid == self.puuid:
                     self.name = player.name
-                    self.tagline = player.tagline
+                    self.tag = player.tag
                     self.player_card = player.player_card
                     self.player_title = player.player_title
                     self.level_border = player.level_border
@@ -159,6 +158,10 @@ class Player(_PlayerTag):
                     # TODO: return rank
         return self
 
+    def parse_name_tag(self, name: str, tag: str) -> None:
+        self.name = name
+        self.tag = tag
+
 
 class ClientPlayer(Player):
     def __init__(self, *, client: Client, data: Union[PlayerPayload, Dict[str, Any]]) -> None:
@@ -166,4 +169,15 @@ class ClientPlayer(Player):
         self.locale: str = data.get('locale', None)
 
     def __repr__(self) -> str:
-        return f'<ClientPlayer puuid={self.puuid!r} name={self.name!r} tagline={self.tagline!r} region={self.region!r}'
+        return f'<ClientPlayer puuid={self.puuid!r} name={self.name!r} tagline={self.tag!r} region={self.region!r}'
+
+
+class NameService:
+    def __init__(self, data: NameServicePayload) -> None:
+        self._display_name: str = data.get('DisplayName')
+        self.puuid: str = data.get('Subject')
+        self.name: str = data.get('GameName')
+        self.tag: str = data.get('TagLine')
+
+    def __repr__(self) -> str:
+        return f'<NameService tag={self.tag!r} name={self.name!r}>'

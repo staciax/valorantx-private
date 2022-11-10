@@ -546,7 +546,7 @@ class Agent(BaseModel):
         Optional[:class: `Agent`]
             The agent from the given uuid.
         """
-        data = client.assets.get_agent(uuid)
+        data = client._assets.get_agent(uuid)
         return cls(client=client, data=data) if data else None
 
 

@@ -90,5 +90,5 @@ class Currency(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the currency with the given UUID."""
-        data = client.assets.get_currency(uuid)
+        data = client._assets.get_currency(uuid)
         return cls(client=client, data=data) if data else None
