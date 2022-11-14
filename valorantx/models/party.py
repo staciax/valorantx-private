@@ -23,27 +23,29 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, List, Optional, Union, Dict
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from ..enums import Region, QueueID, try_enum
-from ..errors import PartyNotOwner, InvalidPuuid
-# from .match import Platform
-from .player import Player
+from ..enums import QueueID, Region, try_enum
+from ..errors import InvalidPuuid, PartyNotOwner
 from ..utils import is_uuid
 
+# from .match import Platform
+from .player import Player
+
 if TYPE_CHECKING:
-    from ..client import Client
     from typing_extensions import Self
+
+    from ..client import Client
 
     if TYPE_CHECKING:
         from ..client import Client
         from ..enums import QueueID
         from ..types.party import (
+            MatchmakingData as MatchmakingDataPayload,
             Party as PartyPayload,
             PartyMember as PlayerPartyPayload,
             PartyPlayer as PartyPlayerPayload,
             Ping as PingPayload,
-            MatchmakingData as MatchmakingDataPayload,
         )
 
 __all__ = (
@@ -79,7 +81,6 @@ class CustomGameData:
 
 
 class Matchmaking:
-
     def __init__(self, data: MatchmakingDataPayload) -> None:
         self.queue: QueueID = try_enum(QueueID, data.get('QueueID'))
         self.preferred_game_pods: List[str] = data.get('PreferredGamePods')

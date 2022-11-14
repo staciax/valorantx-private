@@ -30,16 +30,16 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..client import Client
-    from ..types.player import PartialPlayer as PartialPlayerPayload, Player as PlayerPayload, NameService as NameServicePayload
+    from ..types.player import (
+        NameService as NameServicePayload,
+        PartialPlayer as PartialPlayerPayload,
+        Player as PlayerPayload,
+    )
     from .level_border import LevelBorder
     from .player_card import PlayerCard
     from .player_title import PlayerTitle
 
-__all__ = (
-    'Player',
-    'ClientPlayer',
-    'NameService'
-)
+__all__ = ('Player', 'ClientPlayer', 'NameService')
 
 
 class _PlayerTag:

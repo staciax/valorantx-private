@@ -467,13 +467,9 @@ class Client:
 
     # assets
 
-    def fetch_assets(self, force: bool = False, *, reload: bool = False) -> Coroutine[Any, Any, None]:
+    def fetch_assets(self, force: bool = False, reload: bool = False) -> Coroutine[Any, Any, None]:
         """:class:`coroutine`: Fetches the assets of the client."""
-        return self._assets.fetch_assets(
-            force=force,
-            with_price=self._is_authorized,
-            reload=reload,
-        )
+        return self._assets.fetch_assets(force=force, with_price=self._is_authorized, reload=reload)
 
     def reload_assets(self, with_price: bool = False) -> None:
         """Reloads the assets of the client."""
@@ -1230,5 +1226,3 @@ class Client:
     async def fetch_pregame_player(self) -> Any:
         data = await self.http.pregame_fetch_player()
         ...
-
-

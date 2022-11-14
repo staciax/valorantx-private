@@ -247,4 +247,3 @@ class RiotAuth(_RiotAuth):
             "tag": self.tag,
             "region": self.region,
         }
-
