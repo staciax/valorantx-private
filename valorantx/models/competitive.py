@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from .match import MatchDetails
     from .season import Season
 
-__all__ = ('CompetitiveTier', 'MMR')
+__all__ = ('CompetitiveTier', 'MMR', 'Tier')
 
 
 class Tier:
