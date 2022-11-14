@@ -52,7 +52,7 @@ MISSING = utils.MISSING
 if TYPE_CHECKING:
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
-    from .types import collection, competitive, contract, match, party, store, version, weapons, xp, player
+    from .types import collection, competitive, contract, match, party, player, store, version, weapons, xp
 
 _log = logging.getLogger(__name__)
 

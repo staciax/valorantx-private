@@ -227,4 +227,5 @@ class NotInCoreGame(ValorantException):
 
 class InvalidPuuid(ValorantException):
     """Exception that's raised when the puuid is invalid."""
+
     pass

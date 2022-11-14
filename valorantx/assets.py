@@ -23,7 +23,6 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import os
@@ -252,7 +251,7 @@ class Assets:
                     return self.ASSET_CACHE[key]
                 else:
                     if _ >= tries:
-                        _log.warning(f'Asset {key} not found')
+                        _log.warning(f'Asset {key!r} not found')
                     raise KeyError(f"Asset {key!r} not found")
             except KeyError:
                 self.reload(with_price=self._is_with_price)
@@ -535,7 +534,7 @@ class Assets:
                     to_remove_dir = True
                 else:
                     shutil.rmtree(maybe_asset_dir)
-                    _log.info(f'Removed asset directory {maybe_asset_dir}')
+                    _log.info(f'Removed asset directory {maybe_asset_dir!r}')
 
         # self.__special_weapons()
 
@@ -552,7 +551,8 @@ class Assets:
     @_cache
     def __get_special_dir() -> str:
         """:class:`str`: The special weapon directory."""
-        return os.path.join(Assets._cache_dir, 'specials')
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
+        return os.path.join(path, 'specials')
 
     def __mkdir_dir(self) -> bool:
         """:return: True if the directory was created, False if it already exists."""
@@ -560,7 +560,7 @@ class Assets:
             try:
                 os.mkdir(self._cache_dir)
             except OSError:
-                _log.error(f"Creation of the directory {self._cache_dir} failed")
+                _log.error(f"Creation of the directory {self._cache_dir!r} failed")
                 return False
             else:
                 return True
@@ -720,4 +720,4 @@ class Assets:
 
         except KeyError as e:
             print(e)
-            _log.error(f'Failed to parse {filename} assets')
+            _log.error(f'Failed to parse {filename!r} assets')

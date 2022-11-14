@@ -266,16 +266,34 @@ class QueueSkill:
 class QueueSkills:
     def __init__(self, client: Client, data: QueueSkillsPayload) -> None:
         self._client: Client = client
-        self.competitive: QueueSkill = QueueSkill(client=self._client, data=data['competitive'])
-        self.custom: QueueSkill = QueueSkill(client=self._client, data=data['custom'])
-        self.deathmatch: QueueSkill = QueueSkill(client=self._client, data=data['deathmatch'])
-        self.ggteam: QueueSkill = QueueSkill(client=self._client, data=data['ggteam'])
-        self.newmap: QueueSkill = QueueSkill(client=self._client, data=data['newmap'])
-        self.onefa: QueueSkill = QueueSkill(client=self._client, data=data['onefa'])
-        self.seeding: QueueSkill = QueueSkill(client=self._client, data=data['seeding'])
-        self.snowball: QueueSkill = QueueSkill(client=self._client, data=data['snowball'])
-        self.spikerush: QueueSkill = QueueSkill(client=self._client, data=data['spikerush'])
-        self.unrated: QueueSkill = QueueSkill(client=self._client, data=data['unrated'])
+        self.competitive: Optional[QueueSkill] = (
+            QueueSkill(client=self._client, data=data['competitive']) if data.get('competitive') else None
+        )
+        self.custom: Optional[QueueSkill] = (
+            QueueSkill(client=self._client, data=data['custom']) if data.get('custom') else None
+        )
+        self.deathmatch: Optional[QueueSkill] = (
+            QueueSkill(client=self._client, data=data['deathmatch']) if data.get('deathmatch') else None
+        )
+        self.ggteam: Optional[QueueSkill] = (
+            QueueSkill(client=self._client, data=data['ggteam']) if data.get('ggteam') else None
+        )
+        self.newmap: Optional[QueueSkill] = (
+            QueueSkill(client=self._client, data=data['newmap']) if data.get('newmap') else None
+        )
+        self.onefa: Optional[QueueSkill] = QueueSkill(client=self._client, data=data['onefa']) if data.get('onefa') else None
+        self.seeding: Optional[QueueSkill] = (
+            QueueSkill(client=self._client, data=data['seeding']) if data.get('seeding') else None
+        )
+        self.snowball: Optional[QueueSkill] = (
+            QueueSkill(client=self._client, data=data['snowball']) if data.get('snowball') else None
+        )
+        self.spikerush: Optional[QueueSkill] = (
+            QueueSkill(client=self._client, data=data['spikerush']) if data.get('spikerush') else None
+        )
+        self.unrated: Optional[QueueSkill] = (
+            QueueSkill(client=self._client, data=data['unrated']) if data.get('unrated') else None
+        )
 
     def __repr__(self) -> str:
         attrs = [
