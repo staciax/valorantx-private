@@ -197,7 +197,7 @@ class Localization:
         """:class:`str`: Returns from your current locale."""
         return self.untranslated.get(str(self._locale), self.default)
 
-    def from_locale_code(self, value: str):
+    def from_locale(self, value: str):
         """:class:`str`: Returns the locale from the locale code."""
         try:
             locale = getattr(self, value.replace('-', '_'))
