@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union, ove
 
 from .. import utils
 from ..asset import Asset
-from ..enums import CurrencyID, ItemType
+from ..enums import CurrencyID, ItemType, MeleeWeaponID
 from ..localization import Localization
 from .base import BaseFeaturedBundleItem, BaseModel
 
@@ -351,12 +351,19 @@ class Skin(BaseModel):
         self._price: int = 0
         self._is_favorite: bool = False
         self.type: ItemType = ItemType.skin
+        self._is_melee: bool = False
+        self.__melee_check()
 
     def __str__(self) -> str:
         return self.display_name
 
     def __repr__(self) -> str:
         return f"<Skin display_name={self.display_name!r}>"
+
+    def __melee_check(self) -> None:
+        if weapon := self.get_weapon() is not None:
+            if weapon.uuid == str(MeleeWeaponID):
+                self._is_melee = True
 
     @property
     def name_localizations(self) -> Localization:
@@ -399,8 +406,7 @@ class Skin(BaseModel):
         """:class: `list` Returns the skin's levels."""
         return [SkinLevel(client=self._client, data=data) for data in self._levels]
 
-    @property
-    def base_weapon(self) -> Optional[Weapon]:
+    def get_weapon(self) -> Optional[Weapon]:
         """:class: `Weapon` Returns the skin's base weapon."""
         return self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
 
@@ -415,6 +421,10 @@ class Skin(BaseModel):
     @price.setter
     def price(self, value: int) -> None:
         self._price = value
+
+    def is_melee(self) -> bool:
+        """:class: `bool` Returns whether the bundle is a melee."""
+        return self._is_melee
 
     def get_skin_level(self, level: int) -> Optional[SkinLevel]:
         """get the skin's level with the given level.
@@ -495,12 +505,19 @@ class SkinChroma(BaseModel):
             self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
         )
         self._base_skin: Optional[Skin] = self._client.get_skin(uuid=self._base_skin_uuid) if self._base_skin_uuid else None
+        self._is_melee: bool = False
+        self.__melee_check()
 
     def __str__(self) -> str:
         return self.display_name
 
     def __repr__(self) -> str:
         return f"<SkinChroma display_name={self.display_name!r}>"
+
+    def __melee_check(self) -> None:
+        if weapon := self.get_weapon() is not None:
+            if weapon.uuid == str(MeleeWeaponID):
+                self._is_melee = True
 
     @property
     def name_localizations(self) -> Localization:
@@ -536,11 +553,11 @@ class SkinChroma(BaseModel):
         """:class: `Asset` Returns the skin's video."""
         return Asset._from_url(client=self._client, url=self._streamed_video) if self._streamed_video else None
 
-    def get_base_weapon(self) -> Optional[Weapon]:
+    def get_weapon(self) -> Optional[Weapon]:
         """:class: `Weapon` Returns the skin's base weapon."""
         return self._base_weapon
 
-    def get_base_skin(self) -> Optional[Skin]:
+    def get_skin(self) -> Optional[Skin]:
         """:class: `Skin` Returns the skin's base skin."""
         return self._base_skin
 
@@ -565,6 +582,10 @@ class SkinChroma(BaseModel):
     @price.setter
     def price(self, value: int) -> None:
         self._price = value
+
+    def is_melee(self) -> bool:
+        """:class: `bool` Returns whether the skin is a melee weapon."""
+        return self._is_melee
 
     def is_favorite(self) -> bool:
         """:class: `bool` Returns whether the skin is in the user's favorites."""
@@ -630,12 +651,19 @@ class SkinLevel(BaseModel):
             self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
         )
         self._base_skin: Optional[Skin] = self._client.get_skin(uuid=self._base_skin_uuid) if self._base_skin_uuid else None
+        self._is_melee: bool = False
+        self.__melee_check()
 
     def __str__(self) -> str:
         return self.display_name
 
     def __repr__(self) -> str:
         return f"<SkinLevel display_name={self.display_name!r} level={self.level!r}>"
+
+    def __melee_check(self) -> None:
+        if weapon := self.get_weapon() is not None:
+            if weapon.uuid == str(MeleeWeaponID):
+                self._is_melee = True
 
     @property
     def name_localizations(self) -> Localization:
@@ -665,11 +693,11 @@ class SkinLevel(BaseModel):
         """:class: `Asset` Returns the skin's video."""
         return Asset._from_url(client=self._client, url=self._streamed_video) if self._streamed_video else None
 
-    def get_base_weapon(self) -> Optional[Weapon]:
+    def get_weapon(self) -> Optional[Weapon]:
         """:class: `Weapon` Returns the skin's base weapon."""
         return self._base_weapon
 
-    def get_base_skin(self) -> Optional[Skin]:
+    def get_skin(self) -> Optional[Skin]:
         """:class: `Skin` Returns the skin's base skin."""
         return self._base_skin
 
@@ -699,6 +727,10 @@ class SkinLevel(BaseModel):
     def is_favorite(self) -> bool:
         """:class: `bool` Returns whether the skin is favorited."""
         return self._base_skin.is_favorite() if self._base_skin is not None else False
+
+    def is_melee(self) -> bool:
+        """:class: `bool` Returns whether the skin is a melee skin."""
+        return self._is_melee
 
     def set_favorite(self, value: bool) -> None:
         if self._base_skin is not None:

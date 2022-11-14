@@ -244,7 +244,7 @@ class Collection(BaseModel):
 
             if i_fav.type == ItemType.skin:
                 for i_skin in self._skins:
-                    skin_loadout = i_skin.get_base_skin() if i_skin.type != ItemType.skin else i_skin
+                    skin_loadout = i_skin.get_skin() if i_skin.type != ItemType.skin else i_skin
                     if skin_loadout == i_fav:
                         i_skin.set_favorite(True)
 
@@ -321,7 +321,7 @@ class SkinCollection:
 
     def _update(self, loadout: List[SkinL]) -> None:
         for skin in loadout:
-            base_weapon = skin.get_base_weapon()
+            base_weapon = skin.get_weapon()
             if base_weapon is not None:
                 if hasattr(self, base_weapon.display_name.lower()):
                     setattr(self, base_weapon.display_name.lower(), skin)

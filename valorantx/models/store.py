@@ -146,7 +146,7 @@ class StoreOffer:
         """
         if not base_skin:
             return self._skins
-        return [skin.get_base_skin() for skin in self._skins]
+        return [skin.get_skin() for skin in self._skins]
 
     @property
     def duration(self) -> float:

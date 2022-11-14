@@ -89,6 +89,7 @@ from .models import (
     SprayLevel,
     StoreFront,
     Theme,
+    Tier,
     Version,
     Wallet,
     Weapon,
@@ -791,7 +792,7 @@ class Client:
             if skin_lv1 is not None:
                 uuid = skin_lv1.uuid
         elif isinstance(item, SkinChroma):
-            skin = item.get_base_skin()
+            skin = item.get_skin()
             if skin is not None:
                 skin_lv1 = skin.get_skin_level(level=1)
                 if skin_lv1 is not None:
