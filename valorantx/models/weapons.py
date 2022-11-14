@@ -267,6 +267,7 @@ class Weapon(BaseModel):
         self._cost: int = 0
         self._skins: List[Dict[str, Any]] = data['skins']
         self.type: ItemType = ItemType.weapon
+        self._is_melee: bool = True if self.uuid == str(MeleeWeaponID) else False
 
     def __str__(self) -> str:
         return self.display_name
@@ -328,6 +329,10 @@ class Weapon(BaseModel):
         """:class: `list` Returns the weapon's skins."""
         return [Skin(client=self._client, data=skin) for skin in self._skins]
 
+    def is_melee(self) -> bool:
+        """:class: `bool` Returns whether the weapon is a melee weapon."""
+        return self._is_melee
+
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the weapon with the given UUID."""
@@ -351,19 +356,12 @@ class Skin(BaseModel):
         self._price: int = 0
         self._is_favorite: bool = False
         self.type: ItemType = ItemType.skin
-        self._is_melee: bool = False
-        self.__melee_check()
 
     def __str__(self) -> str:
         return self.display_name
 
     def __repr__(self) -> str:
         return f"<Skin display_name={self.display_name!r}>"
-
-    def __melee_check(self) -> None:
-        if weapon := self.get_weapon() is not None:
-            if weapon.uuid == str(MeleeWeaponID):
-                self._is_melee = True
 
     @property
     def name_localizations(self) -> Localization:
@@ -424,7 +422,8 @@ class Skin(BaseModel):
 
     def is_melee(self) -> bool:
         """:class: `bool` Returns whether the bundle is a melee."""
-        return self._is_melee
+        if weapon := self.get_weapon() is not None:
+            return weapon.is_melee()
 
     def get_skin_level(self, level: int) -> Optional[SkinLevel]:
         """get the skin's level with the given level.
@@ -505,19 +504,12 @@ class SkinChroma(BaseModel):
             self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
         )
         self._base_skin: Optional[Skin] = self._client.get_skin(uuid=self._base_skin_uuid) if self._base_skin_uuid else None
-        self._is_melee: bool = False
-        self.__melee_check()
 
     def __str__(self) -> str:
         return self.display_name
 
     def __repr__(self) -> str:
         return f"<SkinChroma display_name={self.display_name!r}>"
-
-    def __melee_check(self) -> None:
-        if weapon := self.get_weapon() is not None:
-            if weapon.uuid == str(MeleeWeaponID):
-                self._is_melee = True
 
     @property
     def name_localizations(self) -> Localization:
@@ -584,8 +576,9 @@ class SkinChroma(BaseModel):
         self._price = value
 
     def is_melee(self) -> bool:
-        """:class: `bool` Returns whether the skin is a melee weapon."""
-        return self._is_melee
+        """:class: `bool` Returns whether the bundle is a melee."""
+        if weapon := self.get_weapon() is not None:
+            return weapon.is_melee()
 
     def is_favorite(self) -> bool:
         """:class: `bool` Returns whether the skin is in the user's favorites."""
@@ -651,19 +644,12 @@ class SkinLevel(BaseModel):
             self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
         )
         self._base_skin: Optional[Skin] = self._client.get_skin(uuid=self._base_skin_uuid) if self._base_skin_uuid else None
-        self._is_melee: bool = False
-        self.__melee_check()
 
     def __str__(self) -> str:
         return self.display_name
 
     def __repr__(self) -> str:
         return f"<SkinLevel display_name={self.display_name!r} level={self.level!r}>"
-
-    def __melee_check(self) -> None:
-        if weapon := self.get_weapon() is not None:
-            if weapon.uuid == str(MeleeWeaponID):
-                self._is_melee = True
 
     @property
     def name_localizations(self) -> Localization:
@@ -729,8 +715,9 @@ class SkinLevel(BaseModel):
         return self._base_skin.is_favorite() if self._base_skin is not None else False
 
     def is_melee(self) -> bool:
-        """:class: `bool` Returns whether the skin is a melee skin."""
-        return self._is_melee
+        """:class: `bool` Returns whether the bundle is a melee."""
+        if weapon := self.get_weapon() is not None:
+            return weapon.is_melee()
 
     def set_favorite(self, value: bool) -> None:
         if self._base_skin is not None:
