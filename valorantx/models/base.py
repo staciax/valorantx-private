@@ -79,22 +79,16 @@ class BaseFeaturedBundleItem:
         self._currency_id: str = bundle.get('CurrencyID')
         self.discount_percent: float = bundle.get('DiscountPercent', 0.0)
         self.amount: int = bundle['Item']['Amount']
-        # special case for featured bundles
-        self._is_melee: bool = False
-        self.__melee_check()
-
-    def __melee_check(self) -> None:
-        if hasattr(self, 'base_weapon'):
-            if self.base_weapon.uuid == str(MeleeWeaponID):
-                self._is_melee = True
-
-    def is_melee(self) -> bool:
-        """:class: `bool` Returns whether the bundle is a melee."""
-        return self._is_melee
 
     def is_promo(self) -> bool:
         """:class: `bool` Returns whether the bundle is a promo."""
         return self._is_promo
+
+    def is_melee(self) -> bool:
+        """:class: `bool` Returns whether the bundle is a melee weapon."""
+        if hasattr(self, '_is_melee'):
+            return self._is_melee
+        return False
 
     @property
     def currency(self) -> Optional[Currency]:
