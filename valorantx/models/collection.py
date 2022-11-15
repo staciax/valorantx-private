@@ -246,23 +246,23 @@ class Collection(BaseModel):
                 for i_skin in self._skins:
                     skin_loadout = i_skin.get_skin() if i_skin.type != ItemType.skin else i_skin
                     if skin_loadout == i_fav:
-                        i_skin.set_favorite(True)
+                        i_skin.to_favorite()
 
             if i_fav.type == ItemType.buddy:
                 for i_skin in self._skins:
                     skin_buddy = i_skin.get_buddy()
                     if skin_buddy == i_fav:
-                        skin_buddy.set_favorite(True)
+                        skin_buddy.to_favorite()
 
             if i_fav.type == ItemType.spray:
                 for i_spray in self.get_sprays():
                     if i_spray == i_fav:
-                        i_spray.set_favorite(True)
+                        i_spray.to_favorite()
 
             if i_fav.type == ItemType.player_card:
                 player_card = self.get_player_card()
                 if player_card == i_fav:
-                    player_card.set_favorite(True)
+                    player_card.to_favorite()
 
     # @property
     # def player_name(self) -> str:

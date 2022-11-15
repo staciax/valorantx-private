@@ -109,8 +109,8 @@ class Buddy(BaseModel):
         """:class: `bool` Returns whether the buddy is favorited."""
         return self._is_favorite
 
-    def set_favorite(self, value: bool) -> None:
-        self._is_favorite = value
+    def to_favorite(self) -> None:
+        self._is_favorite = True
 
     async def add_favorite(self, *, force: bool = False) -> bool:
         """coro Adds the buddy to the user's favorites."""
@@ -191,17 +191,9 @@ class BuddyLevel(BaseModel):
         """:class: `bool` Returns whether the buddy is favorited."""
         return self._base_buddy.is_favorite() if self._base_buddy else False
 
-    def set_favorite(self, value: bool) -> None:
-        """
-        Sets the buddy as favorited.
-
-        Parameters
-        ----------
-        value: :class: `bool`
-            Whether the buddy should be favorited.
-        """
+    def to_favorite(self) -> None:
         if self._base_buddy:
-            self._base_buddy.set_favorite(value)
+            self._base_buddy.to_favorite()
 
     async def add_favorite(self, *, force: bool = False) -> bool:
         """coro Adds the buddy to the user's favorites."""

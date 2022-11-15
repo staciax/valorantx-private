@@ -127,9 +127,8 @@ class PlayerCard(BaseModel):
         """:class: `bool` Returns whether the spray is favorited."""
         return self._is_favorite
 
-    def set_favorite(self, value: bool) -> None:
-        """Sets the player card's favorite status."""
-        self._is_favorite = value
+    def to_favorite(self) -> None:
+        self._is_favorite = True
 
     async def add_favorite(self, *, force: bool = False) -> bool:
         """coro Adds the player card to the user's favorites."""

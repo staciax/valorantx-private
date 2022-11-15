@@ -444,8 +444,8 @@ class Skin(BaseModel):
         """:class: `bool` Returns whether the skin is favorited."""
         return self._is_favorite
 
-    def set_favorite(self, value: bool) -> None:
-        self._is_favorite = value
+    def to_favorite(self) -> None:
+        self._is_favorite = True
 
     async def add_favorite(self, *, force: bool = False) -> bool:
         """coro Adds the skin to the user's favorites."""
@@ -584,9 +584,9 @@ class SkinChroma(BaseModel):
         """:class: `bool` Returns whether the skin is in the user's favorites."""
         return self._base_skin.is_favorite() if self._base_skin is not None else False
 
-    def set_favorite(self, value: bool) -> None:
+    def to_favorite(self) -> None:
         if self._base_skin is not None:
-            self._base_skin.set_favorite(value)
+            self._base_skin.to_favorite()
 
     async def add_favorite(self, *, force: bool = False) -> bool:
         """|coro|
@@ -719,9 +719,9 @@ class SkinLevel(BaseModel):
         if weapon := self.get_weapon() is not None:
             return weapon.is_melee()
 
-    def set_favorite(self, value: bool) -> None:
+    def to_favorite(self) -> None:
         if self._base_skin is not None:
-            self._base_skin.set_favorite(value)
+            self._base_skin.to_favorite()
 
     async def add_favorite(self, *, force: bool = False) -> bool:
         """|coro|
@@ -824,6 +824,8 @@ class BaseLoadout:
     def __init__(self, loadout: SkinLoadoutPayload, *args, **kwargs: Any) -> None:
         self._buddy_uuid = loadout.get('CharmID')
         self._buddy_level_uuid = loadout.get('CharmLevelID')
+        self._buddy: Optional[Buddy] = None
+        self._buddy_level: Optional[BuddyLevel] = None
 
     def is_random(self) -> bool:
         """:class:`bool` Returns whether the skin is random."""
@@ -831,11 +833,15 @@ class BaseLoadout:
 
     def get_buddy(self) -> Optional[Buddy]:
         """Returns the get_buddy for this skin"""
-        return self._client.get_buddy(uuid=self._buddy_uuid) if self._buddy_uuid else None
+        if self._buddy is None:
+            self._buddy = self._client.get_buddy(uuid=self._buddy_uuid) if self._buddy_uuid else None
+        return self._buddy
 
     def get_buddy_level(self) -> Optional[BuddyLevel]:
         """Returns the get_buddy level for this skin"""
-        return self._client.get_buddy_level(uuid=self._buddy_level_uuid) if self._buddy_level_uuid else None
+        if self._buddy_level is None:
+            self._buddy_level = self._client.get_buddy_level(uuid=self._buddy_level_uuid) if self._buddy_level_uuid else None
+        return self._buddy_level
 
 
 class SkinLoadout(Skin, BaseLoadout):

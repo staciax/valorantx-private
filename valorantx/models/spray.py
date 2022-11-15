@@ -139,8 +139,8 @@ class Spray(BaseModel):
         """:class: `bool` Returns whether the spray is favorited."""
         return self._is_favorite
 
-    def set_favorite(self, value: bool) -> None:
-        self._is_favorite = value
+    def to_favorite(self) -> None:
+        self._is_favorite = True
 
     async def add_favorite(self, *, force: bool = False) -> bool:
         """coro Adds the spray to the user's favorites."""
@@ -233,9 +233,9 @@ class SprayLevel(BaseModel):
         """:class: `bool` Returns whether the spray is favorited."""
         return self._base_spray.is_favorite()
 
-    def set_favorite(self, value: bool) -> None:
+    def to_favorite(self) -> None:
         """Sets the spray as favorited."""
-        self._base_spray._is_favorite = value
+        self._base_spray.to_favorite()
 
     async def add_favorite(self, *, force: bool = False) -> bool:
         """|coro|
