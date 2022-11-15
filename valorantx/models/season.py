@@ -140,7 +140,13 @@ class SeasonCompetitive(BaseModel):
         self._end_time_iso: Union[str, datetime.datetime] = data['endTime']
         self._season_uuid: str = data['seasonUuid']
         self._competitive_tiers_uuid: str = data['competitiveTiersUuid']
-        self.borders: List[Border] = [Border(client=self._client, data=b) for b in data['borders']]
+        self.borders: Optional[List[Border]] = (
+            [Border(client=self._client, data=b) for b in data['borders']] if data['borders'] else None
+        )
+        self._season: Optional[Season] = self._client.get_season(uuid=self._season_uuid)
+        self._competitive_tiers: Optional[CompetitiveTier] = self._client.get_competitive_tier(
+            uuid=self._competitive_tiers_uuid
+        )
 
     def __repr__(self) -> str:
         attrs = [
@@ -163,9 +169,9 @@ class SeasonCompetitive(BaseModel):
     @property
     def season(self) -> Optional[Season]:
         """:class: `Season` Returns the season."""
-        return self._client.get_season(uuid=self._season_uuid)
+        return self._season
 
     @property
     def competitive_tiers(self) -> Optional[CompetitiveTier]:
         """:class: `CompetitiveTier` Returns the competitive tiers."""
-        return self._client.get_competitive_tier(uuid=self._competitive_tiers_uuid)
+        return self._competitive_tiers

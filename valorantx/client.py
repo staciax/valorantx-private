@@ -623,6 +623,17 @@ class Client:
         data = self._assets.get_skin_chroma(*args, **kwargs)
         return SkinChroma(client=self, data=data) if data else None
 
+    def get_tier(self, tier_number: int, season: Optional[Season] = None) -> Optional[Tier]:
+        if season is None:
+            season = self.season
+        ss_com_all = self.get_all_season_competitive()
+        for ss_com in ss_com_all:
+            if ss_com.season == season:
+                ss_com_tiers = ss_com.competitive_tiers
+                for tier in ss_com_tiers.tiers:
+                    if tier.tier == tier_number:
+                        return tier
+
     # get all
 
     def get_all_agents(self) -> Iterator[Agent]:
@@ -768,6 +779,18 @@ class Client:
         data = self._assets.get_asset('weapons')
         for item in data.values():
             yield Weapon(client=self, data=item)
+
+    def get_all_season_competitive(self) -> Iterator[SeasonCompetitive]:
+        """Gets all seasons from the assets.
+
+        Yields
+        -------
+        :class:`SeasonCompetitive`
+            The season.
+        """
+        data = self._assets.get_asset('seasons_competitive')
+        for item in data.values():
+            yield SeasonCompetitive(client=self, data=item)
 
     def get_item_price(
         self, item: Union[str, Skin, SkinChroma, SkinLevel, PlayerCard, Buddy, BuddyLevel, Spray, SprayLevel]

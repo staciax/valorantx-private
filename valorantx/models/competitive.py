@@ -139,7 +139,7 @@ class CompetitiveTier(BaseModel):
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self.asset_object_name: str = data['assetObjectName']
-        self._tiers: List[Tier] = data['tiers']
+        self._tiers: List[Mapping[str, Any]] = data['tiers']
         self.asset_path: str = data['assetPath']
 
     def __str__(self) -> str:
@@ -352,12 +352,14 @@ class MMR(BaseModel):
         """:class: `LatestCompetitiveUpdate` Returns the latest competitive update."""
         return self._latest_competitive_update
 
-    def get_last_rank_tier(self) -> Optional[Tier]:
+    def get_last_rank_tier(self, season: Optional[Season] = None) -> Optional[Tier]:
         """:class: `Tier` Returns the last rank tier."""
+        if season is None:
+            season = self._client.season
         seasonal_info = self.queue_skills.competitive.get_seasonal_info()
         if seasonal_info is None:
             return None
         for info in seasonal_info:
-            if info.season == self._client.season:
+            if info.season == season:
                 return info.tier
         return None

@@ -56,11 +56,13 @@ if TYPE_CHECKING:
         XpModification as xpModificationPayload,
     )
     from .agent import Agent, AgentAbility  # noqa
+    from .competitive import Tier
     from .gear import Gear
     from .level_border import LevelBorder
     from .map import Map
     from .player_card import PlayerCard
     from .player_title import PlayerTitle
+    from .season import Season
     from .weapons import Weapon
 
 __all__ = ('MatchDetails', 'MatchHistory', 'MatchPlayer', 'Platform')
@@ -916,6 +918,25 @@ class MatchPlayer(Player):
         """:class:`str`: average combat score"""
         return self.average_combat_score
 
+    def get_competitive_rank(self) -> Optional[Tier]:
+        """:class:`Tier`: player's competitive rank"""
+        season = self.match.get_season()
+        return self._client.get_tier(self._competitive_rank, season)
+
+    async def fetch_competitive_rank(self) -> Optional[Tier]:
+        """|coro|
+
+        Fetch player's competitive rank
+
+        Returns
+        -------
+        Optional[:class:`Tier`]
+            player's competitive rank
+        """
+        season = self.match.get_season()
+        mmr = await self._client.fetch_mmr(puuid=self.puuid)
+        return mmr.get_last_rank_tier(season=season)
+
 
 class Coach(Player):
     def __init__(self, match: MatchDetails, data: CoachPayload) -> None:
@@ -1100,6 +1121,9 @@ class MatchDetails:
             if team.id.lower() == id_.lower():
                 return team
         return None
+
+    def get_season(self) -> Season:
+        return self._client.get_season(uuid=self._season_id)
 
 
 class MatchContract(MatchDetails):
