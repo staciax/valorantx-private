@@ -114,7 +114,7 @@ class MissionU(Mission):
         super().__init__(client=client, data=data)
         self._objectives: Dict[str, int] = mission['Objectives']
         self._complete: bool = mission['Complete']
-        self._expiration_time_iso: str = mission['ExpirationTime']
+        self._expiration_time_iso: Optional[str] = mission.get('ExpirationTime')
         self.current_progress: int = 0
         self.left_progress: int = 0
         self.total_progress: int = 0

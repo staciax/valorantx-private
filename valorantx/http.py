@@ -374,7 +374,7 @@ class HTTPClient:
         r = Route('PUT', f'/personalization/v2/players/{self._puuid}/playerloadout', EndpointType.pd, self._region)
         return self.request(r, json=loadout)
 
-    def fetch_mmr(self, puuid: Optional[str] = None) -> Response[competitive.MMR_]:
+    def fetch_mmr(self, puuid: Optional[str] = None) -> Response[competitive.MatchmakingRating]:
         """
         MMR_FetchPlayer
         Get the match making rating for a player

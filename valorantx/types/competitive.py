@@ -78,7 +78,7 @@ class LatestCompetitiveUpdate(TypedDict):
     AFKPenalty: int
 
 
-class MMR_(TypedDict):
+class MatchmakingRating(TypedDict):
     Version: int
     Subject: str
     NewPlayerExperienceFinished: bool

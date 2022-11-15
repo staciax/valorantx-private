@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
     from ..client import Client
     from ..types.competitive import (
-        MMR_,
+        MatchmakingRating as MatchmakingRatingPayload,
         QueueSkill as QueueSkillPayload,
         QueueSkills as QueueSkillsPayload,
         SeasonalInfo as SeasonalInfoPayload,
@@ -258,8 +258,10 @@ class QueueSkill:
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
 
-    def get_seasonal_info(self) -> List[SeasonalInfo]:
+    def get_seasonal_info(self) -> Optional[List[SeasonalInfo]]:
         """:class: `list` Returns the seasonal info."""
+        if self._seasonal_info_list is None:
+            return None
         return [SeasonalInfo(client=self._client, data=seasonal_info) for seasonal_info in self._seasonal_info_list.values()]
 
 
@@ -313,7 +315,7 @@ class QueueSkills:
 
 
 class MMR(BaseModel):
-    def __init__(self, client: Client, data: MMR_, **kwargs) -> None:
+    def __init__(self, client: Client, data: MatchmakingRatingPayload, **kwargs) -> None:
         super().__init__(client, data, **kwargs)
         self._uuid: str = data['Subject']
         self.version: int = data['Version']
@@ -353,6 +355,8 @@ class MMR(BaseModel):
     def get_last_rank_tier(self) -> Optional[Tier]:
         """:class: `Tier` Returns the last rank tier."""
         seasonal_info = self.queue_skills.competitive.get_seasonal_info()
+        if seasonal_info is None:
+            return None
         for info in seasonal_info:
             if info.season == self._client.season:
                 return info.tier
