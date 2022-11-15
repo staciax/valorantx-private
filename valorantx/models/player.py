@@ -146,7 +146,7 @@ class Player(_PlayerTag):
     async def fetch_data(self) -> Self:
         match_history = await self._client.fetch_match_history(puuid=self.puuid, end=1)
         for match in match_history:
-            for player in match.players:
+            for player in match._players:
                 if player.puuid == self.puuid:
                     self.name = player.name
                     self.tag = player.tag
