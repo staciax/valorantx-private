@@ -142,7 +142,7 @@ class Location:
         self.y: int = data.get('y', 0)
 
     def __repr__(self) -> str:
-        return f"<Location x={self.x!r} y={self.y!r}>"
+        return f'<Location x={self.x!r} y={self.y!r}>'
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Location) and self.x == other.x and self.y == other.y
@@ -723,9 +723,6 @@ class AbilityCasts:
 
 
 class MatchPlayer(Player):
-
-    # https://github.com/staciax/reinabot/blob/master/cogs/valorant/embeds.py
-
     def __init__(self, *, client: Client, data: PlayerMatchPayload, match: MatchDetails) -> None:
         super().__init__(client=client, data=data)
         self.match = match
@@ -751,8 +748,8 @@ class MatchPlayer(Player):
         self.deaths: int = data['stats']['deaths']
         self.assists: int = data['stats']['assists']
         self.rounds_played: int = data['stats']['roundsPlayed']
-        self.first_kill: int = 0
-        self.first_death: int = 0
+        self.first_kills: int = 0
+        self.first_deaths: int = 0
         self.plants: int = 0
         self.defuses: int = 0
         self.damages: int = 0
@@ -762,7 +759,7 @@ class MatchPlayer(Player):
         self.head_shot_percent: float = 0
         self.body_shot_percent: float = 0
         self.leg_shot_percent: float = 0
-        self.clutchs: int = 0
+        self.clutches: int = 0  # TODO: implement
         self.afk_time: int = 0
         self.penalized_time: int = 0
         self.stayed_in_spawn: int = 0
@@ -851,14 +848,23 @@ class MatchPlayer(Player):
             # find first blood and first death
             for player_death in sorted(death_on_round, key=lambda x: x.round_time):
                 if player_death.killer == self:
-                    self.first_kill += 1
+                    self.first_kills += 1
                 if player_death.victim == self:
-                    self.first_death += 1
+                    self.first_deaths += 1
                 break
+
+        for team in self.match.teams:
+            if team.is_won():
+                if team == self.team:
+                    self._is_winner = True
 
         with contextlib.suppress(ZeroDivisionError):
             hs_percent, bs_percent, ls_percent = utils.percent(self.head_shots, self.body_shots, self.leg_shots)
-            self.head_shot_percent, self.body_shot_percent, self.leg_shot_percent = hs_percent, bs_percent, ls_percent
+            self.head_shot_percent, self.body_shot_percent, self.leg_shot_percent = (
+                hs_percent,
+                bs_percent,
+                ls_percent,
+            )
 
     def get_opponent(self, player_opponent: MatchPlayer) -> Opponent:
         if player_opponent.team == self.team:
