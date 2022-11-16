@@ -617,6 +617,12 @@ class Opponent:
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
 
+    @property
+    def kda_opponent(self) -> str:
+        return '{kills}/{deaths}/{assists}'.format(
+            kills=self.opponent_kills, deaths=self.opponent_deaths, assists=self.opponent_assists
+        )
+
     def __fill_stats(self) -> None:
         for kill in self.match.kills:
 
@@ -827,8 +833,8 @@ class MatchPlayer(Player):
                     if len(stat.kills) == 5:
                         self.ace += 1
 
-                    # score
-                    self.score += stat.score
+                    # # score
+                    # self.score += stat.score
 
                     # behavior
                     if stat.was_afk():

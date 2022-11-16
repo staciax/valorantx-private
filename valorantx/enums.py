@@ -493,6 +493,7 @@ class LevelBorderID(Enum):
 
 
 class BundleID(Enum):
+    Abyssal = 'afa6651a-4b93-b7f8-b136-b6b081fc3258'
     Arcane = '2270b116-4255-8a14-4486-db9de4979b89'
     Avalanche = '0dee7ef6-d3ea-400a-b15c-5b9524243439'
     BlastX = 'a31f7d1f-89d8-47ae-875b-1ae2117655c2'
@@ -508,6 +509,7 @@ class BundleID(Enum):
     Forsaken = '1b98ee1c-4d9a-9e9d-0b36-f1a001a76628'
     GaiasVengeance = 'e10e00ae-4dcc-3c4a-16f7-7e885314f0d0'
     GiveBack = '441117e1-40be-42e2-3aeb-49957e5c03fd'
+    GiveBack_2022 = '35a66d96-4c72-ea81-f09e-43a967b64c66'
     Glitchpop = 'fc723fef-444a-4013-a741-3e85a97382f2'
     Glitchpop_2 = '05e8add9-404d-5d37-8973-9f93f8880e2d'
     GravitationalUraniumNeuroblaster = 'e84d5a16-462f-6fbf-bee0-5a80191a19e5'
