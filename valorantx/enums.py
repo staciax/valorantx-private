@@ -169,6 +169,8 @@ __all__ = (
     'ContractRewardType',
     'CurrencyID',
     'EmptyTitleID',
+    'GameModeID',
+    'GameModeURL',
     'ItemType',
     'LevelBorderID',
     'Locale',
@@ -378,6 +380,43 @@ class WeaponID(Enum):
 
     def __str__(self) -> str:
         return str(self.value)
+
+
+class GameModeURL(Enum):
+    standard = '/Game/GameModes/Bomb/BombGameMode.BombGameMode_C'
+    deathmatch = '/Game/GameModes/Deathmatch/DeathmatchGameMode.DeathmatchGameMode_C'
+    escalation = '/Game/GameModes/GunGame/GunGameTeamsGameMode.GunGameTeamsGameMode_C'
+    replication = '/Game/GameModes/OneForAll/OneForAll_GameMode.OneForAll_GameMode_C'
+    spike_rush = '/Game/GameModes/QuickBomb/QuickBombGameMode.QuickBombGameMode_C'
+    snowball_fight = '/Game/GameModes/SnowballFight/SnowballFightGameMode.SnowballFightGameMode_C'
+    practice = '/Game/GameModes/ShootingRange/ShootingRangeGameMode.ShootingRangeGameMode_C'
+    on_boarding = '/Game/GameModes/NewPlayerExperience/NPEGameMode.NPEGameMode_C'
+
+    @property
+    def uuid(self) -> str:
+        return getattr(GameModeID, self.name).value
+
+
+class GameModeID(Enum):
+    standard = '96bd3920-4f36-d026-2b28-c683eb0bcac5'
+    deathmatch = 'a8790ec5-4237-f2f0-e93b-08a8e89865b2'
+    escalation = 'a4ed6518-4741-6dcb-35bd-f884aecdc859'
+    replication = '4744698a-4513-dc96-9c22-a9aa437e4a58'
+    spike_rush = 'e921d1e6-416b-c31f-1291-74930c330b7b'
+    snowball_fight = '57038d6d-49b1-3a74-c5ef-3395d9f23a97'
+    practice = 'e2dc3878-4fe5-d132-28f8-3d8c259efcc6'
+    on_board = 'd2b4e425-4cab-8d95-eb26-bb9b444551dc'
+
+    @property
+    def url(self) -> str:
+        return getattr(GameModeURL, self.name).value
+
+    @classmethod
+    def from_url(cls, game_mode_url: str) -> str:
+        for x in cls:
+            if x.url == game_mode_url:
+                return str(x.value)
+        raise ValueError(f'No game mode found for url {game_mode_url}')
 
 
 class CurrencyID(Enum):

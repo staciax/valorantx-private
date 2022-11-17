@@ -28,7 +28,7 @@ import datetime
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
 
 from .. import utils
-from ..enums import AbilityType, MapID, QueueID, RoundResultCode, RoundResultType, try_enum
+from ..enums import AbilityType, GameModeID, MapID, QueueID, RoundResultCode, RoundResultType, try_enum
 from .player import Player
 
 if TYPE_CHECKING:
@@ -57,6 +57,7 @@ if TYPE_CHECKING:
     )
     from .agent import Agent, AgentAbility  # noqa
     from .competitive import Tier
+    from .gamemode import GameMode
     from .gear import Gear
     from .level_border import LevelBorder
     from .map import Map
@@ -780,13 +781,14 @@ class MatchPlayer(Player):
         )
 
         # behavior
-        self.afk_rounds: int = data['behaviorFactors']['afkRounds']
-        self.collisions: float = data['behaviorFactors']['collisions']
-        self.damage_participation_out_going: int = data['behaviorFactors']['damageParticipationOutgoing']
-        self.friendly_fire_in_coming: int = data['behaviorFactors'].get('friendlyFireIncoming', 0)
-        self.friendly_fire_out_going: int = data['behaviorFactors'].get('friendlyFireOutgoing', 0)
-        self.mouse_movement: int = data['behaviorFactors']['mouseMovement']
-        self.stayed_in_spawn_rounds: int = data['behaviorFactors'].get('stayedInSpawnRounds', 0)
+        behavior = data['behaviorFactors']
+        self.afk_rounds: int = behavior.get('afkRounds')
+        self.collisions: float = behavior.get('collisions', 0.0)
+        self.damage_participation_out_going: int = behavior.get('damageParticipationOutgoing')
+        self.friendly_fire_in_coming: int = behavior.get('friendlyFireIncoming', 0)
+        self.friendly_fire_out_going: int = behavior.get('friendlyFireOutgoing', 0)
+        self.mouse_movement: int = behavior.get('mouseMovement')
+        self.stayed_in_spawn_rounds: int = behavior.get('stayedInSpawnRounds', 0)
 
         # other info
         self.session_playtime_minutes: int = data.get('sessionPlaytimeMinutes', 0)
@@ -998,9 +1000,6 @@ class MatchDetails:
         self._platform_type: str = match_info.get('platformType')
         self._should_match_disable_penalties: bool = match_info.get('shouldMatchDisablePenalties')
         self._is_won: bool = False
-        self._round_results: List[RoundResult] = (
-            [RoundResult(self, data) for data in data['roundResults']] if data.get('roundResults') else []
-        )
         self._is_surrendered: bool = False
         self._players: List[MatchPlayer] = [
             MatchPlayer(client=self._client, data=player, match=self) for player in data['players']
@@ -1009,7 +1008,12 @@ class MatchDetails:
         self._bots: List[Dict[str, Any]] = data['bots']
         # self._kills: List[MatchKillPayload] = data['kills']
         self._teams: List[MatchTeamPayload] = data['teams']
+        self._round_results: List[RoundResult] = (
+            [RoundResult(self, data) for data in data['roundResults']] if data.get('roundResults') else []
+        )
         self.__fill_player_stats()
+        if str(self._queue_id) == '' and self._provisioning_FlowID == 'CustomGame':
+            self._queue_id = QueueID.custom
 
     def __repr__(self) -> str:
         attrs = [
@@ -1067,6 +1071,11 @@ class MatchDetails:
         """:class:`Map`: The map this match was played on."""
         to_uuid = MapID.from_url(self._map_url)
         return self._client.get_map(uuid=to_uuid)
+
+    @property
+    def game_mode(self) -> Optional[GameMode]:
+        """:class:`GameMode`: The game mode this match was played in."""
+        return self._client.get_game_mode(uuid=GameModeID.from_url(self._game_mode))
 
     @property
     def started_at(self) -> datetime.datetime:
