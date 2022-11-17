@@ -105,6 +105,12 @@ class Route:
             url = self.BASE_VALTRACKER_GG_URL + path
 
         if parameters:
+
+            # pop params that are None or ''
+            for k, v in list(parameters.items()):
+                if v is None or v == '':
+                    parameters.pop(k)
+
             url = url + '?' + urlencode(parameters)
         self.url: str = url
 
@@ -387,7 +393,7 @@ class HTTPClient:
         puuid: Optional[str] = None,
         start_index: int = 0,
         end_index: int = 15,
-        queue_id: Union[str, QueueID] = QueueID.unrated,
+        queue_id: Optional[Union[str, QueueID]] = None,
     ) -> Response[match.MatchHistory]:
         """
         MatchHistory_FetchMatchHistory
@@ -397,8 +403,12 @@ class HTTPClient:
         """
 
         puuid = self.__check_puuid(puuid)
-        if isinstance(queue_id, str):
-            queue_id = try_enum(QueueID, queue_id, QueueID.unrated)
+        # if isinstance(queue_id, str):
+        #     queue_id = try_enum(QueueID, queue_id, '')
+
+        if isinstance(queue_id, QueueID):
+            queue_id = str(queue_id)
+
         r = Route(
             'GET',
             f'/match-history/v1/history/{puuid}',
@@ -406,7 +416,7 @@ class HTTPClient:
             self._region,
             startIndex=start_index,
             endIndex=end_index,
-            queue=str(queue_id),
+            queue=queue_id,
         )
         return self.request(r)
 
@@ -431,8 +441,9 @@ class HTTPClient:
         There are 3 optional query parameters: start_index, end_index, and queue_id. queue can be one of null,
         competitive, custom, deathmatch, ggteam, newmap, onefa, snowball, spikerush, or unrated.
         """
-        queue_id = try_enum(QueueID, queue_id, QueueID.competitive)
         puuid = self.__check_puuid(puuid)
+        if isinstance(queue_id, QueueID):
+            queue_id = str(queue_id)
         r = Route(
             'GET',
             f'/mmr/v1/players/{puuid}/competitiveupdates',
@@ -440,7 +451,7 @@ class HTTPClient:
             self._region,
             startIndex=start_index,
             endIndex=end_index,
-            queue=str(queue_id),
+            queue=queue_id,
         )
         return self.request(r)
 
@@ -738,10 +749,10 @@ class HTTPClient:
         settings:
         {
             "Map": "/Game/Maps/Triad/Triad", # map url
-            "Mode": "/Game/GameModes/Bomb/BombGameMode.BombGameMode_C", # url to gamemode
+            "Mode": "/Game/GameModes/Bomb/BombGameMode.BombGameMode_C", # url to game mode
             "UseBots": true, # this isn't used anymore :(
             "GamePod": "aresriot.aws-rclusterprod-use1-1.na-gp-ashburn-awsedge-1", # server
-            "GameRules": null # idk what this is for
+            "GameRules": null # I don't know what this is for
         }
         """
         # TODO: Object settings
@@ -794,7 +805,7 @@ class HTTPClient:
     def party_fetch_custom_game_configs(self) -> Response[Mapping[str, Any]]:
         """
         Party_FetchCustomGameConfigs
-        Get information about the available gamemodes
+        Get information about the available game modes
         """
         r = Route('GET', f'/parties/v1/parties/customgameconfigs', EndpointType.glz, self._region)
         return self.request(r)

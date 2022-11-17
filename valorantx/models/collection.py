@@ -65,12 +65,11 @@ _log = logging.getLogger(__name__)
 class Identity:
     def __init__(self, client: Client, data: Dict[str, Any]) -> None:
         self._client = client
-        self._player_card: Optional[str] = data.get('PlayerCardID')
         self._player_title: Optional[str] = data.get('PlayerTitleID')
-        self._level_border: Optional[str] = data.get('PreferredLevelBorderID')
         self._account_level: int = 0
         self._hide_account_level: bool = data.get('HideAccountLevel', False)
-        self._player_card: Optional[PlayerCard] = self._client.get_player_card(self._player_card)
+        self._player_card: Optional[PlayerCard] = self._client.get_player_card(uuid=data.get('PlayerCardID'))
+        self._level_border: Optional[LevelBorder] = self._client.get_level_border(uuid=data.get('PreferredLevelBorderID'))
 
     def __repr__(self) -> str:
         attrs = [
@@ -110,7 +109,7 @@ class Identity:
     def level_border(self) -> Optional[LevelBorder]:
         """:class:`LevelBorder`: The level border."""
         # return self._client.get_level_border(self._level_border) # v1
-        return self._client.get_level_border(self._account_level)
+        return self._level_border
 
     @property
     def account_level(self) -> int:
@@ -224,6 +223,9 @@ class Collection(BaseModel):
     def get_level_border(self) -> Optional[LevelBorder]:
         return self.identity.level_border
 
+    def get_account_level(self) -> int:
+        return self.identity.account_level
+
     async def fetch_account_xp(self) -> None:
         """|coro|
 
@@ -263,6 +265,11 @@ class Collection(BaseModel):
                 player_card = self.get_player_card()
                 if player_card == i_fav:
                     player_card.to_favorite()
+
+            if i_fav.type == ItemType.level_border:
+                level_border = self.get_level_border()
+                if level_border == i_fav:
+                    level_border.to_favorite()
 
     # @property
     # def player_name(self) -> str:

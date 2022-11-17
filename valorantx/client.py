@@ -994,7 +994,7 @@ class Client:
     async def fetch_match_history(
         self,
         puuid: Optional[str] = None,
-        queue: Optional[str, QueueID] = QueueID.unrated,
+        queue: Optional[str, QueueID] = None,
         *,
         start: int = 0,
         end: int = 15,

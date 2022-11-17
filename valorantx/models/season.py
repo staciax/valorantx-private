@@ -53,8 +53,9 @@ class Season(BaseModel):
         self._type: Optional[str] = data.get('type')
         self._start_time_iso: Union[str, datetime.datetime] = data['startTime']
         self._end_time_iso: Union[str, datetime.datetime] = data['endTime']
-        self._parent_uuid: str = data['parentUuid']
+        self._parent_uuid: Optional[str] = data['parentUuid']
         self.asset_path: str = data['assetPath']
+        self._parent: Optional[Season] = self._client.get_season(uuid=self._parent_uuid)
 
     def __str__(self) -> str:
         return self.display_name
@@ -98,6 +99,11 @@ class Season(BaseModel):
     def end_time(self) -> datetime.datetime:
         """:class: `datetime.datetime` Returns the season's end time."""
         return utils.parse_iso_datetime(self._end_time_iso)
+
+    @property
+    def parent(self) -> Optional[Season]:
+        """:class: `Season` Returns the season's parent."""
+        return self._parent
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

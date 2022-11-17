@@ -514,6 +514,8 @@ class RoundResult:
         self.player_scores: List[PlayerScore] = (
             [PlayerScore(match, player) for player in data['playerScores']] if data.get('playerScores') else []
         )
+        if self.result_code == RoundResultCode.surrendered:
+            self.match._is_surrendered = True
 
     def __int__(self) -> int:
         return self.round_number
@@ -996,15 +998,17 @@ class MatchDetails:
         self._platform_type: str = match_info.get('platformType')
         self._should_match_disable_penalties: bool = match_info.get('shouldMatchDisablePenalties')
         self._is_won: bool = False
+        self._round_results: List[RoundResult] = (
+            [RoundResult(self, data) for data in data['roundResults']] if data.get('roundResults') else []
+        )
+        self._is_surrendered: bool = False
         self._players: List[MatchPlayer] = [
             MatchPlayer(client=self._client, data=player, match=self) for player in data['players']
         ]
-        self._round_results: List[MatchRoundResultPayload] = data['roundResults']
         self._coaches: List[Dict[str, Any]] = data['coaches']
         self._bots: List[Dict[str, Any]] = data['bots']
         # self._kills: List[MatchKillPayload] = data['kills']
         self._teams: List[MatchTeamPayload] = data['teams']
-
         self.__fill_player_stats()
 
     def __repr__(self) -> str:
@@ -1050,6 +1054,10 @@ class MatchDetails:
         """ " :class:`bool`: Whether this match was sampled."""
         return self._is_match_sampled
 
+    def is_surrendered(self) -> bool:
+        """:class:`bool`: Whether the user surrendered this match."""
+        return self._is_surrendered
+
     def should_match_disable_penalties(self) -> bool:
         """:class:`bool`: Whether this match disabled penalties."""
         return self._should_match_disable_penalties
@@ -1090,10 +1098,9 @@ class MatchDetails:
         return [Coach(match=self, data=coach) for coach in self._coaches]
 
     @property
-    def round_results(self) -> Iterator[RoundResult]:
-        """:class:`Iterator[RoundResult]`: Returns a list of round results in the match"""
-        for round_result in self._round_results:
-            yield RoundResult(match=self, data=round_result)
+    def round_results(self) -> List[RoundResult]:
+        """:class:`List[RoundResult]`: Returns a list of round results in the match"""
+        return self._round_results
 
     @property
     def kills(self) -> Iterator[Kill]:
