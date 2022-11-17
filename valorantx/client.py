@@ -925,10 +925,10 @@ class Client:
         return AccountXP(client=self, data=data)
 
     @_authorize_required
-    async def fetch_loadout(self, *, with_xp: bool = True, with_favorite: bool = True) -> Collection:
+    async def fetch_collection(self, *, with_xp: bool = True, with_favorite: bool = True) -> Collection:
         """|coro|
 
-        Fetches the loadout for the current user.
+        Fetches the collection for the current user.
 
         Parameters
         ----------
@@ -940,7 +940,7 @@ class Client:
         Returns
         -------
         :class:`Collection`
-            The loadout for the current user.
+            The collection for the current user.
         """
         data = await self.http.fetch_player_loadout()
         collection = Collection(client=self, data=data)
@@ -1163,7 +1163,7 @@ class Client:
         return Favorites(client=self, data=data)
 
     @_authorize_required
-    async def add_favorite(self, item: Union[str, Buddy, PlayerCard, Skin, Spray]) -> Favorites:
+    async def add_favorite(self, item: Union[str, Buddy, PlayerCard, Skin, Spray, LevelBorder]) -> Favorites:
         """|coro|
 
         Adds a favorite item for the current user.
@@ -1186,7 +1186,7 @@ class Client:
         return Favorites(client=self, data=data)
 
     @_authorize_required
-    async def remove_favorite(self, item: Union[str, Buddy, PlayerCard, Skin, Spray]) -> Favorites:
+    async def remove_favorite(self, item: Union[str, Buddy, PlayerCard, Skin, Spray, LevelBorder]) -> Favorites:
         """|coro|
 
         Removes a favorite item for the current user.

@@ -26,6 +26,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Mapping, Optional
 
 from ..asset import Asset
+from ..enums import ItemType
 from .base import BaseModel
 
 if TYPE_CHECKING:
@@ -48,6 +49,8 @@ class LevelBorder(BaseModel):
         self._level_number_appearance: str = data['levelNumberAppearance']
         self._small_player_card_appearance: str = data['smallPlayerCardAppearance']
         self.asset_path: str = data['assetPath']
+        self.type: ItemType = ItemType.level_border
+        self._is_favorite = True
 
     def __repr__(self) -> str:
         return f'<LevelBorder starting_level={self.starting_level!r}>'
@@ -78,6 +81,33 @@ class LevelBorder(BaseModel):
     def small_player_card_appearance(self) -> Asset:
         """:class: `Asset` Returns the small player card appearance of the level border."""
         return Asset._from_url(client=self._client, url=self._small_player_card_appearance)
+
+    def is_favorite(self) -> bool:
+        """:class: `bool` Returns whether or not the level border is favorited."""
+        return self._is_favorite
+
+    def to_favorite(self) -> None:
+        """Makes the level border a favorite."""
+        self._is_favorite = True
+
+    async def add_favorite(self, *, force: bool = False) -> bool:
+        """coro Adds the skin to the user's favorites."""
+
+        if self.is_favorite() and not force:
+            return False
+        to_fav = await self._client.add_favorite(self)
+        if self in to_fav._level_borders:
+            self._is_favorite = True
+        return self.is_favorite()
+
+    async def remove_favorite(self, *, force: bool = False) -> bool:
+        """coro Removes the skin from the user's favorites."""
+        if not self.is_favorite() and not force:
+            return False
+        remove_fav = await self._client.remove_favorite(self)
+        if self not in remove_fav._level_borders:
+            self._is_favorite = False
+        return self.is_favorite()
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

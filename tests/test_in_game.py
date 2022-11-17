@@ -38,7 +38,7 @@ async def main():
             patch_note = await client.fetch_patch_notes(locale=locale)
             print(repr(patch_note.latest))
 
-        loadout = await client.fetch_loadout()
+        loadout = await client.fetch_collection()
         print(repr(loadout.skins))
         for skin in loadout.skins:
             print(skin.display_name, skin.display_icon)

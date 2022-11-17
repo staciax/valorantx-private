@@ -417,8 +417,9 @@ class Favorites:
         self._sprays: List[Spray] = []
         self._player_cards: List[PlayerCard] = []
         self._buddies: List[Buddy] = []
+        self._level_borders: List[LevelBorder] = []
         self.any: List[Any] = []
-        self.items: List[Union[Skin, Spray, PlayerCard, Buddy]] = []
+        self.items: List[Union[Skin, Spray, PlayerCard, Buddy, LevelBorder]] = []
         self._update(data)
 
     def __repr__(self) -> str:
@@ -427,6 +428,7 @@ class Favorites:
             ('len(sprays)', len(self._sprays)),
             ('len(player_cards)', len(self._player_cards)),
             ('len(buddies)', len(self._buddies)),
+            ('len(level_borders)', len(self._level_borders)),
         ]
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
@@ -438,37 +440,39 @@ class Favorites:
             and self._sprays == other._sprays
             and self._player_cards == other._player_cards
             and self._buddies == other._buddies
+            and self._level_borders == other._level_borders
         )
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def _update(self, data: FavoritesPayload) -> None:
-        for i in data['FavoritedContent']:
-            item_id = data['FavoritedContent'][i]['ItemID']
-            item = (
-                self._client.get_skin(uuid=item_id)
-                or self._client.get_spray(uuid=item_id, level=False)
-                or self._client.get_player_card(uuid=item_id)
-                or self._client.get_buddy(uuid=item_id)
-            )
-            if item is not None:
+        if favorited_content := data.get('FavoritedContent'):
+            for i in favorited_content:
+                item_id = data['FavoritedContent'][i]['ItemID']
+                item = (
+                    self._client.get_skin(uuid=item_id)
+                    or self._client.get_spray(uuid=item_id, level=False)
+                    or self._client.get_player_card(uuid=item_id)
+                    or self._client.get_buddy(uuid=item_id)
+                    or self._client.get_level_border(uuid=item_id)
+                )
+                if item is not None:
+                    if hasattr(item, '_is_favorite'):  # set favorite to True
+                        item._is_favorite = True
 
-                if hasattr(item, '_is_favorite'):  # set favorite to True
-                    item._is_favorite = True
-
-                if getattr(item, 'type') == ItemType.skin:
-                    self._skins.append(item)
-                elif getattr(item, 'type') == ItemType.spray:
-                    self._sprays.append(item)
-                elif getattr(item, 'type') == ItemType.player_card:
-                    self._player_cards.append(item)
-                elif getattr(item, 'type') == ItemType.buddy:
-                    self._buddies.append(item)
-                else:
-                    _log.warning(f'Unknown item: {item}')
-                    self.any.append(item)
-                self.items.append(item)
+                    if hasattr(item, 'type'):
+                        if item.type == ItemType.skin:
+                            self._skins.append(item)
+                        elif item.type == ItemType.spray:
+                            self._sprays.append(item)
+                        elif item.type == ItemType.player_card:
+                            self._player_cards.append(item)
+                        elif item.type == ItemType.buddy:
+                            self._buddies.append(item)
+                        elif item.type == ItemType.level_border:
+                            self._level_borders.append(item)
+                        self.items.append(item)
 
     def get_skins(self) -> List[Skin]:
         return self._skins
@@ -481,6 +485,9 @@ class Favorites:
 
     def get_buddies(self) -> List[Buddy]:
         return self._buddies
+
+    def get_level_borders(self) -> List[LevelBorder]:
+        return self._level_borders
 
     async def add_skin(self, skin: Union[str, Skin], *, force: bool = False) -> None:
         """|coro|
@@ -566,6 +573,27 @@ class Favorites:
         if is_favorite:
             self._buddies.append(buddy)
 
+    async def add_level_border(self, level_border: Union[str, LevelBorder], *, force: bool = False) -> None:
+        """|coro|
+
+        Adds a level border to your favorites.
+
+        Parameters
+        ----------
+        level_border: Union[:class:`str`, :class:`LevelBorder`]
+            The level border to add.
+        force: :class:`bool`
+            Whether to force add the level border to your favorites.
+        """
+        if isinstance(level_border, str):
+            level_border = self._client.get_level_border(uuid=level_border)
+        if level_border in self._level_borders:
+            raise ValueError(f'{level_border} is already in your favorites.')
+
+        is_favorite = await level_border.add_favorite(force=force)
+        if is_favorite:
+            self._level_borders.append(level_border)
+
     async def remove_skin(self, skin: Union[str, Skin], *, force: bool = False) -> None:
         """|coro|
 
@@ -645,6 +673,26 @@ class Favorites:
         is_favorite = await buddy.remove_favorite(force=force)
         if not is_favorite:
             self._buddies.remove(buddy)
+
+    async def remove_level_border(self, level_border: Union[str, LevelBorder], *, force: bool = False) -> None:
+        """|coro|
+
+        Removes a level border from your favorites.
+
+        Parameters
+        ----------
+        level_border: Union[:class:`str`, :class:`LevelBorder`]
+            The level border to remove.
+        force: :class:`bool`
+            Whether to force remove the level border from your favorites.
+        """
+        if isinstance(level_border, str):
+            level_border = self._client.get_level_border(uuid=level_border)
+        if level_border not in self._level_borders:
+            raise ValueError(f'{level_border} is not in your favorites.')
+        is_favorite = await level_border.remove_favorite(force=force)
+        if not is_favorite:
+            self._level_borders.remove(level_border)
 
     async def remove_all(self, item_type: Optional[ItemType] = None, *, force: bool = False) -> None:
         """|coro|

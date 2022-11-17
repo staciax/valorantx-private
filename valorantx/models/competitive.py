@@ -363,3 +363,12 @@ class MMR(BaseModel):
             if info.season == season:
                 return info.tier
         return None
+
+    def get_latest_competitive_season(self) -> Optional[SeasonalInfo]:
+        """:class: `SeasonalInfo` Returns the latest competitive season."""
+        if self.queue_skills.competitive is None:
+            return None
+        seasonal_info = self.queue_skills.competitive.get_seasonal_info()
+        for si in seasonal_info:
+            if si.season == self._client.season:
+                return si
