@@ -43,7 +43,7 @@ from typing import (
 
 from . import utils
 from .assets import Assets
-from .enums import ItemType, Locale, QueueID, try_enum
+from .enums import ItemType, Locale, QueueType, try_enum
 from .errors import AuthRequired
 from .http import HTTPClient
 from .models import (
@@ -365,7 +365,7 @@ class Client:
         self.user = ClientPlayer(client=self, data=payload)
         if self.is_ready():
             content = await self.fetch_content()
-            for season in content.get_seasons():
+            for season in reversed(content.get_seasons()):
                 if season.is_active():
                     self._season = self.get_season(uuid=season.id)
                     break
@@ -994,7 +994,7 @@ class Client:
     async def fetch_match_history(
         self,
         puuid: Optional[str] = None,
-        queue: Optional[str, QueueID] = None,
+        queue: Optional[str, QueueType] = None,
         *,
         start: int = 0,
         end: int = 15,
@@ -1008,7 +1008,7 @@ class Client:
         ----------
         puuid: Optional[:class:`str`]
             The puuid of the user to fetch the match history for.
-        queue: Optional[Union[:class:`str`, :class:`QueueID`]]
+        queue: Optional[Union[:class:`str`, :class:`QueueType`]]
             The queue to fetch the match history for.
         start: :class:`int`
             The start index of the match history.

@@ -670,7 +670,7 @@ class Assets:
                                 ItemTypeID=kwargs['item_type_id'], ItemID=kwargs['item_id'], Amount=kwargs['amount']
                             ),  # noqa: E501
                             BasePrice=kwargs['base_price'],
-                            CurrencyID=str(CurrencyID.valorant_point),
+                            CurrencyID=str(CurrencyID.valorant),
                             DiscountPercent=0,
                             DiscountedPrice=0,
                             IsPromoItem=False,

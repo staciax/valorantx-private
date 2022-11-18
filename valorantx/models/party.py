@@ -25,7 +25,7 @@ from __future__ import annotations
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from ..enums import QueueID, Region, try_enum
+from ..enums import QueueType, Region, try_enum
 from ..errors import InvalidPuuid, PartyNotOwner
 from ..utils import is_uuid
 
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 
     if TYPE_CHECKING:
         from ..client import Client
-        from ..enums import QueueID
+        from ..enums import QueueType
         from ..types.party import (
             MatchmakingData as MatchmakingDataPayload,
             Party as PartyPayload,
@@ -64,7 +64,7 @@ class PartyPlayer:
         self.invites: Optional[Any] = data.get('Invites')
         self.requests: List[Any] = data.get('Requests')
         self._platform_info: Any = data.get('PlatformInfo')
-        self._current_queue: Optional[QueueID] = None
+        self._current_queue: Optional[QueueType] = None
 
     def __repr__(self) -> str:
         return f'<PartyPlayer id={self.id!r}>'
@@ -82,7 +82,7 @@ class CustomGameData:
 
 class Matchmaking:
     def __init__(self, data: MatchmakingDataPayload) -> None:
-        self.queue: QueueID = try_enum(QueueID, data.get('QueueID'))
+        self.queue: QueueType = try_enum(QueueType, data.get('QueueID'))
         self.preferred_game_pods: List[str] = data.get('PreferredGamePods')
         self.skill_disparity_rr_penalty: int = data.get('SkillDisparityRRPenalty')
 
@@ -111,7 +111,7 @@ class Party:
         self._is_owner: bool = False
         self._members: List[PlayerParty] = []
         self._party_owner: Optional[PlayerParty] = None
-        self._current_queue: Optional[QueueID] = None
+        self._current_queue: Optional[QueueType] = None
         self._closed: bool = False
         self._members_cache: Dict[str, PlayerParty] = {}
         self._update(data)
@@ -180,12 +180,12 @@ class Party:
         """
         return self._members
 
-    def get_current_queue(self) -> QueueID:
+    def get_current_queue(self) -> QueueType:
         """Get the current queue of the party.
 
         Returns
         -------
-        :class:`QueueID`
+        :class:`QueueType`
             The current queue of the party.
         """
         return self._current_queue
@@ -254,14 +254,14 @@ class Party:
 
         await self._client.http.party_leave(party_id=self.id)
 
-    async def change_queue(self, queue: Optional[QueueID, str] = None) -> None:
+    async def change_queue(self, queue: Optional[QueueType, str] = None) -> None:
         """|coro|
 
         Change the queue of the party.
 
         Parameters
         ----------
-        queue: Optional[:class:`Union[QueueID, str]`]
+        queue: Optional[:class:`Union[QueueType, str]`]
             The queue to change to. If ``None``, the queue will be set to ``None``.
         """
 

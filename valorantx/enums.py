@@ -165,26 +165,26 @@ else:
 
 __all__ = (
     'AbilityType',
-    'AgentID',
+    'AgentType',
     'ContractRewardType',
     'CurrencyID',
     'EmptyTitleID',
-    'GameModeID',
+    'GameModeType',
     'GameModeURL',
     'ItemType',
     'LevelBorderID',
     'Locale',
-    'MapID',
+    'MapType',
     'MeleeWeaponID',
     'MissionType',
-    'QueueID',
+    'QueueType',
     'Region',
     'RelationType',
     'RoundResultCode',
     'RoundResultType',
     'Shard',
     'SpraySlotID',
-    'WeaponID',
+    'WeaponType',
     'try_enum',
     'try_enum_key',
 )
@@ -264,7 +264,7 @@ class RelationType(Enum):
         return str(self.value)
 
 
-class AgentID(Enum):
+class AgentType(Enum):
     astra = '41fb69c1-4189-7b37-f117-bcaf1e96f1bf'
     breach = '5f8d3a7f-467b-97f3-062c-13acf203c006'
     brimstone = '9f0d8ba9-4140-b941-57d3-a7ad57c6b417'
@@ -290,7 +290,7 @@ class AgentID(Enum):
         return str(self.value)
 
 
-class QueueID(Enum):
+class QueueType(Enum):
     competitive = 'competitive'
     custom = 'custom'
     deathmatch = 'deathmatch'
@@ -309,7 +309,7 @@ class QueueID(Enum):
         return [str(x) for x in cls]
 
 
-class MapID(Enum):
+class MapType(Enum):
     ascent = '7eaecc1b-4337-bbf6-6ab9-04b8f06b3319'
     bind = '2c9d57ec-4431-9c5e-2939-8f9ef6dd5cba'
     breeze = '2fb9a4fd-47b8-4e7d-a969-74b4046ebd53'
@@ -348,7 +348,7 @@ class MapURL(Enum):
 
     @property
     def uuid(self) -> str:
-        return getattr(MapID, self.name).value
+        return getattr(MapType, self.name).value
 
     @classmethod
     def from_id(cls, map_id: str) -> str:
@@ -358,7 +358,7 @@ class MapURL(Enum):
         raise ValueError(f'No map found for uuid {map_id}')
 
 
-class WeaponID(Enum):
+class WeaponType(Enum):
     ares = '55d8a0f4-4274-ca67-fe2c-06ab45efdf58'
     bucky = '910be174-449b-c412-ab22-d0873436b21b'
     bulldog = 'ae3de142-4d85-2547-dd26-4e90bed35cf7'
@@ -392,12 +392,15 @@ class GameModeURL(Enum):
     practice = '/Game/GameModes/ShootingRange/ShootingRangeGameMode.ShootingRangeGameMode_C'
     on_boarding = '/Game/GameModes/NewPlayerExperience/NPEGameMode.NPEGameMode_C'
 
+    def __str__(self) -> str:
+        return str(self.value)
+
     @property
     def uuid(self) -> str:
-        return getattr(GameModeID, self.name).value
+        return getattr(GameModeType, self.name).value
 
 
-class GameModeID(Enum):
+class GameModeType(Enum):
     standard = '96bd3920-4f36-d026-2b28-c683eb0bcac5'
     deathmatch = 'a8790ec5-4237-f2f0-e93b-08a8e89865b2'
     escalation = 'a4ed6518-4741-6dcb-35bd-f884aecdc859'
@@ -406,6 +409,9 @@ class GameModeID(Enum):
     snowball_fight = '57038d6d-49b1-3a74-c5ef-3395d9f23a97'
     practice = 'e2dc3878-4fe5-d132-28f8-3d8c259efcc6'
     on_board = 'd2b4e425-4cab-8d95-eb26-bb9b444551dc'
+
+    def __str__(self) -> str:
+        return str(self.value)
 
     @property
     def url(self) -> str:
@@ -420,8 +426,8 @@ class GameModeID(Enum):
 
 
 class CurrencyID(Enum):
-    valorant_point = '85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741'
-    radianite_point = 'e59aa87c-4cbf-517a-5983-6e81511be9b7'
+    valorant = '85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741'
+    radianite = 'e59aa87c-4cbf-517a-5983-6e81511be9b7'
     free_agent = 'f08d4ae3-939c-4576-ab26-09ce1f23bb37'
 
     def __str__(self) -> str:

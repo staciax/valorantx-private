@@ -242,7 +242,7 @@ class Offer:
     def __init__(self, data: OfferPayload) -> None:
         self.id: str = data['OfferID']
         self._is_direct_purchase: bool = data['IsDirectPurchase']
-        self.cost: int = data['Cost'][str(CurrencyID.valorant_point)]
+        self.cost: int = data['Cost'][str(CurrencyID.valorant)]
         self.rewards: List[Reward] = [Reward(reward) for reward in data['Rewards']]
 
     def __repr__(self) -> str:

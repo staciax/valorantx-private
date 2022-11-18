@@ -25,7 +25,7 @@ async def main():
             print(skin.name_localizations.japanese)
             print(skin.price)
 
-        history = await client.fetch_match_history(queue=valorantx.QueueID.deathmatch)
+        history = await client.fetch_match_history(queue=valorantx.QueueType.deathmatch)
         print(repr(history))
 
         content = await client.fetch_content()

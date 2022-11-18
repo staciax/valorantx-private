@@ -28,7 +28,7 @@ import datetime
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
 
 from .. import utils
-from ..enums import AbilityType, GameModeID, MapID, QueueID, RoundResultCode, RoundResultType, try_enum
+from ..enums import AbilityType, GameModeType, MapType, QueueType, RoundResultCode, RoundResultType, try_enum
 from .player import Player
 
 if TYPE_CHECKING:
@@ -626,6 +626,10 @@ class Opponent:
             kills=self.opponent_kills, deaths=self.opponent_deaths, assists=self.opponent_assists
         )
 
+    @property
+    def kda(self) -> str:
+        return '{kills}/{deaths}/{assists}'.format(kills=self.kills, deaths=self.deaths, assists=self.assists)
+
     def __fill_stats(self) -> None:
         for kill in self.match.kills:
 
@@ -991,7 +995,7 @@ class MatchDetails:
         self._is_completed: bool = match_info.get('isCompleted')
         self._custom_game_name: str = match_info.get('customGameName')
         self._force_post_processing: bool = match_info.get('forcePostProcessing')
-        self._queue_id: QueueID = try_enum(QueueID, match_info.get('queueID'))
+        self._queue_id: QueueType = try_enum(QueueType, match_info.get('queueID'))
         self._game_mode: str = match_info.get('gameMode')
         self._is_ranked: bool = match_info.get('isRanked', False)
         self._is_match_sampled: bool = match_info.get('isMatchSampled')
@@ -1013,7 +1017,7 @@ class MatchDetails:
         )
         self.__fill_player_stats()
         if str(self._queue_id) == '' and self._provisioning_FlowID == 'CustomGame':
-            self._queue_id = QueueID.custom
+            self._queue_id = QueueType.custom
 
     def __repr__(self) -> str:
         attrs = [
@@ -1069,13 +1073,13 @@ class MatchDetails:
     @property
     def map(self) -> Map:
         """:class:`Map`: The map this match was played on."""
-        to_uuid = MapID.from_url(self._map_url)
+        to_uuid = MapType.from_url(self._map_url)
         return self._client.get_map(uuid=to_uuid)
 
     @property
     def game_mode(self) -> Optional[GameMode]:
         """:class:`GameMode`: The game mode this match was played in."""
-        return self._client.get_game_mode(uuid=GameModeID.from_url(self._game_mode))
+        return self._client.get_game_mode(uuid=GameModeType.from_url(self._game_mode))
 
     @property
     def started_at(self) -> datetime.datetime:
@@ -1088,7 +1092,7 @@ class MatchDetails:
         return self._game_length // 1000
 
     @property
-    def queue(self) -> QueueID:
+    def queue(self) -> QueueType:
         return self._queue_id
 
     @property

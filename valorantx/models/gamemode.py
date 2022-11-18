@@ -26,7 +26,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
 
 from ..asset import Asset
-from ..enums import GameModeID
+from ..enums import GameModeType
 from ..localization import Localization
 from .base import BaseModel
 
@@ -55,12 +55,12 @@ class GameMode(BaseModel):
     def __repr__(self) -> str:
         return f'<GameMode display_name={self.display_name!r}>'
 
-    def __eq__(self, other: Union[GameMode, GameModeID]) -> bool:
+    def __eq__(self, other: Union[GameMode, GameModeType]) -> bool:
         if isinstance(other, GameMode):
             return self.uuid == other.uuid
         return self.uuid == str(other)
 
-    def __ne__(self, other: Union[GameMode, GameModeID]) -> bool:
+    def __ne__(self, other: Union[GameMode, GameModeType]) -> bool:
         return not self.__eq__(other)
 
     @property

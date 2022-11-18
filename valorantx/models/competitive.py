@@ -26,7 +26,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from ..asset import Asset
-from ..enums import MapID
+from ..enums import MapType
 from ..localization import Localization
 from .base import BaseModel
 
@@ -187,7 +187,7 @@ class LatestCompetitiveUpdate:
     @property
     def map(self) -> Map:
         """:class: `Map` Returns the map."""
-        to_uuid = MapID.from_url(self._map_id)
+        to_uuid = MapType.from_url(self._map_id)
         return self._client.get_map(uuid=to_uuid)
 
     def season(self) -> Season:

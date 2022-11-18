@@ -764,8 +764,8 @@ class SkinNightMarket(SkinLevel):
     def __init__(self, *, client: Client, data: Mapping[str, Any], extras: Any) -> None:
         super().__init__(client=client, data=data)
         self.discount_percent: int = extras['DiscountPercent']
-        self._price: int = extras['Offer']['Cost'][str(CurrencyID.valorant_point)]
-        self.discount_price: int = extras['DiscountCosts'][str(CurrencyID.valorant_point)]
+        self._price: int = extras['Offer']['Cost'][str(CurrencyID.valorant)]
+        self.discount_price: int = extras['DiscountCosts'][str(CurrencyID.valorant)]
         self._is_direct_purchase: bool = extras['Offer']['IsDirectPurchase']
         self._is_seen: bool = extras['IsSeen']
         self._rewards: List[Dict[str, Any]] = extras['Offer']['Rewards']

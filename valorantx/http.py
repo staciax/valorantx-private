@@ -36,7 +36,7 @@ import aiohttp
 
 from . import __version__, utils
 from .auth import RiotAuth
-from .enums import ItemType, Locale, QueueID, Region, try_enum
+from .enums import ItemType, Locale, QueueType, Region, try_enum
 from .errors import Forbidden, HTTPException, NotFound, PhaseError, RiotServerError, ValorantAPIServerError
 
 try:
@@ -393,7 +393,7 @@ class HTTPClient:
         puuid: Optional[str] = None,
         start_index: int = 0,
         end_index: int = 15,
-        queue_id: Optional[Union[str, QueueID]] = None,
+        queue_id: Optional[Union[str, QueueType]] = None,
     ) -> Response[match.MatchHistory]:
         """
         MatchHistory_FetchMatchHistory
@@ -406,7 +406,7 @@ class HTTPClient:
         # if isinstance(queue_id, str):
         #     queue_id = try_enum(QueueID, queue_id, '')
 
-        if isinstance(queue_id, QueueID):
+        if isinstance(queue_id, QueueType):
             queue_id = str(queue_id)
 
         r = Route(
@@ -433,7 +433,7 @@ class HTTPClient:
         puuid: Optional[str] = None,
         start_index: int = 0,
         end_index: int = 15,
-        queue_id: Union[str, QueueID] = QueueID.competitive,
+        queue_id: Union[str, QueueType] = QueueType.competitive,
     ) -> Response[Mapping[str, Any]]:
         """
         MMR_FetchCompetitiveUpdates
@@ -442,7 +442,7 @@ class HTTPClient:
         competitive, custom, deathmatch, ggteam, newmap, onefa, snowball, spikerush, or unrated.
         """
         puuid = self.__check_puuid(puuid)
-        if isinstance(queue_id, QueueID):
+        if isinstance(queue_id, QueueType):
             queue_id = str(queue_id)
         r = Route(
             'GET',
@@ -700,7 +700,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def party_change_queue(self, party_id: str, queue_id: Union[QueueID, str]) -> Response[party.Party]:
+    def party_change_queue(self, party_id: str, queue_id: Union[QueueType, str]) -> Response[party.Party]:
         """
         Party_ChangeQueue
         Sets the matchmaking queue for the party

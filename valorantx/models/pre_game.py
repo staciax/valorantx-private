@@ -28,7 +28,7 @@ from .player import Player
 
 if TYPE_CHECKING:
     from ..client import Client
-    from ..enums import MapID
+    from ..enums import MapType
     from ..types.pre_game import PlayerPreGame as PlayerPreGamePayload, PreGameMatch as PreGameMatchPayload
     from .agent import Agent
     from .map import Map
@@ -125,7 +125,7 @@ class PreGameMatch:
         return self._is_ranked
 
     def map(self) -> Map:
-        return self._client.get_map(uuid=str(MapID.from_url(self._map_id)))
+        return self._client.get_map(uuid=str(MapType.from_url(self._map_id)))
 
     async def select_agent(self, agent: Agent, *, lock: bool = True) -> None:
         if lock:
