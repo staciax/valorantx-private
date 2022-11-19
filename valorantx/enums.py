@@ -167,7 +167,7 @@ __all__ = (
     'AbilityType',
     'AgentType',
     'ContractRewardType',
-    'CurrencyID',
+    'CurrencyType',
     'EmptyTitleID',
     'GameModeType',
     'GameModeURL',
@@ -425,7 +425,7 @@ class GameModeType(Enum):
         raise ValueError(f'No game mode found for url {game_mode_url}')
 
 
-class CurrencyID(Enum):
+class CurrencyType(Enum):
     valorant = '85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741'
     radianite = 'e59aa87c-4cbf-517a-5983-6e81511be9b7'
     free_agent = 'f08d4ae3-939c-4576-ab26-09ce1f23bb37'
@@ -639,6 +639,7 @@ class RoundResultCode(Enum):
 
 
 class AbilityType(Enum):
+    passive = 'Passive'
     grenade = 'Grenade'
     ability_1 = 'Ability1'
     ability_2 = 'Ability2'

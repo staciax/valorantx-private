@@ -1225,7 +1225,7 @@ class Client:
         return party
 
     @_authorize_required
-    async def fetch_party_player(self) -> Any:
+    async def fetch_party_player(self) -> PartyPlayer:
         data = await self.http.party_fetch_player()
         return PartyPlayer(client=self, data=data)
 

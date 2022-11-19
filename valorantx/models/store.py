@@ -26,7 +26,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
-from ..enums import CurrencyID, ItemType
+from ..enums import CurrencyType, ItemType
 from .bundle import FeaturedBundle
 from .weapons import SkinNightMarket
 
@@ -242,7 +242,7 @@ class Offer:
     def __init__(self, data: OfferPayload) -> None:
         self.id: str = data['OfferID']
         self._is_direct_purchase: bool = data['IsDirectPurchase']
-        self.cost: int = data['Cost'][str(CurrencyID.valorant)]
+        self.cost: int = data['Cost'][str(CurrencyType.valorant)]
         self.rewards: List[Reward] = [Reward(reward) for reward in data['Rewards']]
 
     def __repr__(self) -> str:

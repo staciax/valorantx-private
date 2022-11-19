@@ -33,7 +33,7 @@ from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, TypeVar
 
 from typing_extensions import Concatenate, ParamSpec
 
-from .enums import CurrencyID, ItemType
+from .enums import CurrencyType, ItemType
 from .errors import AuthRequired
 from .utils import MISSING, is_uuid
 
@@ -670,7 +670,7 @@ class Assets:
                                 ItemTypeID=kwargs['item_type_id'], ItemID=kwargs['item_id'], Amount=kwargs['amount']
                             ),  # noqa: E501
                             BasePrice=kwargs['base_price'],
-                            CurrencyID=str(CurrencyID.valorant),
+                            CurrencyID=str(CurrencyType.valorant),
                             DiscountPercent=0,
                             DiscountedPrice=0,
                             IsPromoItem=False,

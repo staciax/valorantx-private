@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union, ove
 
 from .. import utils
 from ..asset import Asset
-from ..enums import CurrencyID, ItemType, MeleeWeaponID
+from ..enums import CurrencyType, ItemType, MeleeWeaponID
 from ..localization import Localization
 from .base import BaseFeaturedBundleItem, BaseModel
 
@@ -764,8 +764,8 @@ class SkinNightMarket(SkinLevel):
     def __init__(self, *, client: Client, data: Mapping[str, Any], extras: Any) -> None:
         super().__init__(client=client, data=data)
         self.discount_percent: int = extras['DiscountPercent']
-        self._price: int = extras['Offer']['Cost'][str(CurrencyID.valorant)]
-        self.discount_price: int = extras['DiscountCosts'][str(CurrencyID.valorant)]
+        self._price: int = extras['Offer']['Cost'][str(CurrencyType.valorant)]
+        self.discount_price: int = extras['DiscountCosts'][str(CurrencyType.valorant)]
         self._is_direct_purchase: bool = extras['Offer']['IsDirectPurchase']
         self._is_seen: bool = extras['IsSeen']
         self._rewards: List[Dict[str, Any]] = extras['Offer']['Rewards']
