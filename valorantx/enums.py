@@ -409,6 +409,8 @@ class GameModeType(Enum):
     snowball_fight = '57038d6d-49b1-3a74-c5ef-3395d9f23a97'
     practice = 'e2dc3878-4fe5-d132-28f8-3d8c259efcc6'
     on_board = 'd2b4e425-4cab-8d95-eb26-bb9b444551dc'
+    unrated = standard
+    competitive = standard
 
     def __str__(self) -> str:
         return str(self.value)
@@ -429,6 +431,8 @@ class CurrencyType(Enum):
     valorant = '85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741'
     radianite = 'e59aa87c-4cbf-517a-5983-6e81511be9b7'
     free_agent = 'f08d4ae3-939c-4576-ab26-09ce1f23bb37'
+    vp = valorant
+    rad = radianite
 
     def __str__(self) -> str:
         return str(self.value)
