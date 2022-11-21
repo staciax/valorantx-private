@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union, List
 
 from ..asset import Asset
 from ..enums import GameModeType
@@ -47,6 +47,14 @@ class GameMode(BaseModel):
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._allows_match_timeouts: bool = data.get('allowsMatchTimeouts', False)
+        self._is_team_voice_allowed: bool = data.get('isTeamVoiceAllowed', False)
+        self._is_minimap_hidden: bool = data.get('isMinimapHidden', False)
+        self._orb_count: int = data.get('orbCount', 0)
+        self._team_roles: Optional[List[str]] = data.get('teamRoles')
+        self._game_feature_overrides: Optional[List[Dict[str, Any]]]
+        self._game_rule_bool_overrides: Optional[List[Dict[str, Any]]]
+        self._display_icon: Optional[str] = data.get('displayIcon')
         self.asset_path: str = data['assetPath']
 
     def __str__(self) -> str:
@@ -72,6 +80,29 @@ class GameMode(BaseModel):
     def display_name(self) -> str:
         """:class: `str` Returns the game mode's name."""
         return self.name_localizations.american_english
+
+    @property
+    def display_icon(self) -> Optional[Asset]:
+        """:class: `Asset` Returns the game mode's display icon."""
+        if self._display_icon is None:
+            return None
+        return Asset(self._client, self._display_icon)
+
+    def allows_match_timeouts(self) -> bool:
+        """:class: `bool` Returns whether the game mode allows match timeouts."""
+        return self._allows_match_timeouts
+
+    def is_team_voice_allowed(self) -> bool:
+        """:class: `bool` Returns whether the game mode allows team voice."""
+        return self._is_team_voice_allowed
+
+    def is_minimap_hidden(self) -> bool:
+        """:class: `bool` Returns whether the game mode hides the minimap."""
+        return self._is_minimap_hidden
+
+    def orb_count(self) -> int:
+        """:class: `int` Returns the game mode's orb count."""
+        return self._orb_count
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
