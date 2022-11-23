@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union, List
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from ..asset import Asset
 from ..enums import GameModeType
@@ -70,6 +70,9 @@ class GameMode(BaseModel):
 
     def __ne__(self, other: Union[GameMode, GameModeType]) -> bool:
         return not self.__eq__(other)
+
+    # def __contains__(self, item: Union[GameMode, GameModeType]) -> bool:
+    #     ...
 
     @property
     def name_localizations(self) -> Localization:

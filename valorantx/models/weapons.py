@@ -422,8 +422,7 @@ class Skin(BaseModel):
 
     def is_melee(self) -> bool:
         """:class: `bool` Returns whether the bundle is a melee."""
-        if weapon := self.get_weapon() is not None:
-            return weapon.is_melee()
+        return self.get_weapon().is_melee() if self.get_weapon() else False
 
     def get_skin_level(self, level: int) -> Optional[SkinLevel]:
         """get the skin's level with the given level.
@@ -524,10 +523,11 @@ class SkinChroma(BaseModel):
     @property
     def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon."""
-        if self._display_name == getattr(self._base_weapon, '_display_name'):
-            display_icon = self._base_weapon.display_icon
-        else:
-            display_icon = self._display_icon or self._base_skin.display_icon
+        display_icon = self._display_icon or self._base_skin.display_icon
+        if self.get_weapon() is not None:
+            if self.display_name.removeprefix('Standard ') == self._base_weapon.display_name:
+                display_icon = self._base_weapon.display_icon or display_icon
+
         return Asset._from_url(client=self._client, url=str(display_icon)) if display_icon else None
 
     @property
@@ -577,8 +577,7 @@ class SkinChroma(BaseModel):
 
     def is_melee(self) -> bool:
         """:class: `bool` Returns whether the bundle is a melee."""
-        if weapon := self.get_weapon() is not None:
-            return weapon.is_melee()
+        return self._base_weapon.is_melee() if self._base_weapon else False
 
     def is_favorite(self) -> bool:
         """:class: `bool` Returns whether the skin is in the user's favorites."""
@@ -716,8 +715,7 @@ class SkinLevel(BaseModel):
 
     def is_melee(self) -> bool:
         """:class: `bool` Returns whether the bundle is a melee."""
-        if weapon := self.get_weapon() is not None:
-            return weapon.is_melee()
+        return self._base_weapon.is_melee() if self._base_weapon is not None else False
 
     def to_favorite(self) -> None:
         if self._base_skin is not None:
