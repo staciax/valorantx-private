@@ -37,7 +37,7 @@ import aiohttp
 from . import __version__, utils
 from .auth import RiotAuth
 from .enums import ItemType, Locale, QueueType, Region, try_enum
-from .errors import Forbidden, HTTPException, NotFound, PhaseError, RiotServerError, ValorantAPIServerError
+from .errors import Forbidden, HTTPException, NotFound, PhaseError, RateLimited, RiotServerError, ValorantAPIServerError
 
 try:
     import urllib3  # type: ignore
@@ -178,6 +178,8 @@ class HTTPClient:
                         if not response.headers.get('Via') or isinstance(data, str):
                             # Banned by Cloudflare more than likely.
                             raise HTTPException(response, data)
+
+                        raise RateLimited(response, data)
 
                     if response.status in {500, 502, 504, 524}:
                         await asyncio.sleep(1 + tries * 2)

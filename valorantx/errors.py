@@ -162,6 +162,14 @@ class ValorantAPIServerError(HTTPException):
     pass
 
 
+class RateLimited(HTTPException):
+    """Exception that's raised for when a 429 status code occurs.
+    Subclass of :exc:`HTTPException`.
+    """
+
+    pass
+
+
 class RiotAuthError(Exception):
     """Base class for RiotAuth errors."""
 
