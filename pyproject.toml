@@ -19,7 +19,9 @@ include = [
     "valorantx/types"
 ]
 exclude = [
-    "**/__pycache__"
+    "**/__pycache__",
+    "build",
+    "dist"
 ]
 reportUnnecessaryTypeIgnoreComment = "warning"
 reportUnusedImport = "error"

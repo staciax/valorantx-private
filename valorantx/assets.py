@@ -213,7 +213,8 @@ def _finder():
 
 
 class Assets:
-    _cache_dir: Path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
+
+    _cache_dir: Optional[Path] = os.path.join(os.getcwd(), '.valorantx_cache')
 
     ASSET_CACHE = {}
     OFFER_CACHE = {}
@@ -441,6 +442,7 @@ class Assets:
             self._client.version = get_version
             self.version = get_version
 
+        self.__mkdir_dir()
         self.__mkdir_assets_dir()
         asset_path = self.__get_dir()
 
