@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional
 
 from ..asset import Asset
 from ..localization import Localization
@@ -45,14 +45,14 @@ class Gear(BaseModel):
     def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._description: Union[str, Dict[str, str]] = data['description']
+        self._display_name: Dict[str, str] = data['displayName']
+        self._description: Dict[str, str] = data['description']
         self._display_icon: str = data['displayIcon']
         self.asset_path: str = data['assetPath']
         self._shop: Dict[str, Any] = data['shopData']
         self.cost: int = self._shop['cost']
         self.shop_category: str = self._shop['category']
-        self._shop_category_text: Union[str, Dict[str, str]] = self._shop['categoryText']
+        self._shop_category_text: Dict[str, str] = self._shop['categoryText']
         self.shop_grid_position: Optional[Dict[str, int]] = self._shop['gridPosition']
         self._can_be_trashed: bool = self._shop.get('canBeTrashed', False)
         self._image: Optional[str] = self._shop['image']

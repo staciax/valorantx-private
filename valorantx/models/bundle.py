@@ -56,11 +56,11 @@ class Bundle(BaseModel):
     def __init__(self, client: Client, data: Mapping[str, Any], *, is_featured_bundle: bool = False) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._display_name_sub_text: Union[str, Dict[str, str]] = data['displayNameSubText']
-        self._description: Union[str, Dict[str, str]] = data['description']
-        self._description_extra: Union[str, Dict[str, str]] = data['extraDescription']
-        self._description_promo: Union[str, Dict[str, str]] = data['extraDescription']
+        self._display_name: Dict[str, str] = data['displayName']
+        self._display_name_sub_text: Dict[str, str] = data['displayNameSubText']
+        self._description: Dict[str, str] = data['description']
+        self._description_extra: Dict[str, str] = data['extraDescription']
+        self._description_promo: Dict[str, str] = data['extraDescription']
         self._display_icon: str = data['displayIcon']
         self._display_icon_2: str = data['displayIcon2']
         self._vertical_promo_image: str = data['verticalPromoImage']
@@ -136,9 +136,8 @@ class Bundle(BaseModel):
     @property
     def description_extra(self) -> Optional[str]:
         """:class: `str` Returns the bundle's description extra localizations."""
-        if self._description_extra is None:
-            return None
-        return self.description_extra_localizations.american_english
+        if self.description_extra_localizations is not None:
+            return self.description_extra_localizations.american_english
 
     @property
     def description_promo_localizations(self) -> Optional[Localization]:
@@ -150,9 +149,8 @@ class Bundle(BaseModel):
     @property
     def description_promo(self) -> Optional[str]:
         """:class: `str` Returns the bundle's description promo."""
-        if self._description_promo is None:
-            return None
-        return self.description_promo_localizations.american_english
+        if self.description_promo_localizations is not None:
+            return self.description_promo_localizations.american_english
 
     @property
     def display_icon(self) -> Asset:
@@ -172,7 +170,7 @@ class Bundle(BaseModel):
         )  # noqa: E501
 
     @property
-    def items(self) -> List[Union[Buddy, Spray, PlayerCard]]:
+    def items(self) -> List[Union[Skin, Buddy, Spray, PlayerCard]]:
         """:class: `List[Union[Buddy, Spray, PlayerCard]]` Returns the bundle's items."""
         return self._items
 

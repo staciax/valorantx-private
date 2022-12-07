@@ -180,7 +180,7 @@ class Party:
         """
         return self._members
 
-    def get_current_queue(self) -> QueueType:
+    def get_current_queue(self) -> Optional[QueueType]:
         """Get the current queue of the party.
 
         Returns
@@ -254,7 +254,7 @@ class Party:
 
         await self._client.http.party_leave(party_id=self.id)
 
-    async def change_queue(self, queue: Optional[QueueType, str] = None) -> None:
+    async def change_queue(self, queue: Optional[Union[QueueType, str]] = None) -> None:
         """|coro|
 
         Change the queue of the party.

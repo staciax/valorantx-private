@@ -85,14 +85,14 @@ class EnumMeta(type):
             try:
                 new_value = value_mapping[value]
             except KeyError:
-                new_value = value_cls(name=key, value=value)  # type: ignore
+                new_value = value_cls(name=key, value=value)
                 value_mapping[value] = new_value
                 member_names.append(key)
 
             try:
                 string_key_mapping[value]
             except KeyError:
-                string_key_mapping[str(key)] = value_cls(name=key, value=value)  # type: ignore
+                string_key_mapping[str(key)] = value_cls(name=key, value=value)
 
             member_mapping[key] = new_value
             attrs[key] = new_value
@@ -300,6 +300,7 @@ class QueueType(Enum):
     unrated = 'unrated'
     replication = 'onefa'
     new_map = 'newmap'
+    swiftplay = '...'
 
     def __str__(self) -> str:
         return str(self.value)
@@ -391,6 +392,7 @@ class GameModeURL(Enum):
     snowball_fight = '/Game/GameModes/SnowballFight/SnowballFightGameMode.SnowballFightGameMode_C'
     practice = '/Game/GameModes/ShootingRange/ShootingRangeGameMode.ShootingRangeGameMode_C'
     on_boarding = '/Game/GameModes/NewPlayerExperience/NPEGameMode.NPEGameMode_C'
+    swiftplay = '...'
 
     def __str__(self) -> str:
         return str(self.value)
@@ -551,6 +553,7 @@ class BundleID(Enum):
     ChronoVoid = 'a5da7b5a-49a4-8fa9-a1c6-01a9aced0f9f'
     Champions_2021 = 'bf987f36-4a33-45e4-3c49-1ab9a2502607'
     Champions_2022 = 'f99e5b38-48c7-1146-acfa-9baaf773b844'
+    Cryostasis = '3ae56d5e-423d-97c5-1aa2-4faccccec1a2'
     DoodleBuds = '2ed936df-4959-acc7-9aca-358d34a50619'
     CrimsonBeast = 'bd4f586d-469c-731d-5018-19835db2b086'
     Ego = '2d6ec1d9-4152-8a43-5f7f-ff96b29c857f'

@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional
+from typing import TYPE_CHECKING, Any, List, Mapping, Union
 
 from .. import utils
 
@@ -105,7 +105,7 @@ class HistoryXP:
     def __init__(self, client: Client, data: AccountXPHistoryPayload):
         self._client: Client = client
         self.id: str = data['ID']
-        self.match_start: datetime.datetime = utils.parse_iso_datetime(data['MatchStart'])
+        self.match_start: datetime.datetime = utils.parse_iso_datetime(str(data['MatchStart']))
         self.start_progress: ProgressXP = ProgressXP(data['StartProgress'])
         self.end_progress: ProgressXP = ProgressXP(data['EndProgress'])
         self.xp_delta: int = data['XPDelta']
@@ -142,8 +142,8 @@ class AccountXP:
         self.subject: str = data['Subject']
         self.progress: ProgressXP = ProgressXP(data['Progress'])
         self.history: List[HistoryXP] = [HistoryXP(client, history) for history in data['History']]
-        self._last_time_granted_first_win_iso: Optional[str, datetime.datetime] = data['LastTimeGrantedFirstWin']
-        self._next_time_first_win_available_iso: Optional[str, datetime.datetime] = data['NextTimeFirstWinAvailable']
+        self._last_time_granted_first_win_iso: Union[str, datetime.datetime] = data['LastTimeGrantedFirstWin']
+        self._next_time_first_win_available_iso: Union[str, datetime.datetime] = data['NextTimeFirstWinAvailable']
 
     def __repr__(self) -> str:
         return f'<AccountXP version={self.version!r} subject={self.subject!r}>'
@@ -169,7 +169,7 @@ class AccountXP:
         """
         :class: `datetime.datetime` Returns the last time the player was granted the first win.
         """
-        return utils.parse_iso_datetime(self._last_time_granted_first_win_iso)
+        return utils.parse_iso_datetime(str(self._last_time_granted_first_win_iso))
 
     @property
     def next_time_first_win_available(self) -> datetime.datetime:
@@ -177,4 +177,4 @@ class AccountXP:
         :class: `datetime.datetime`
         Returns the next time the player can be granted the first win.
         """
-        return utils.parse_iso_datetime(self._next_time_first_win_available_iso)
+        return utils.parse_iso_datetime(str(self._next_time_first_win_available_iso))

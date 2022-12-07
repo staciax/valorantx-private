@@ -120,7 +120,8 @@ class PatchNotes:
                     to_dict = json.loads(data)
                     return to_dict.get('news.seeArticle', 'See Article')
         except (KeyError, TypeError):
-            return 'See Article'
+            pass
+        return 'See Article'
 
     @property
     def title(self) -> str:

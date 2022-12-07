@@ -22,7 +22,8 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
+import datetime
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .player import Player
 
@@ -95,8 +96,8 @@ class PreGameMatch:
         self._pre_game_state: str = data['PregameState']
         self.enemy_team_size: int = 0
         self.enemy_team_lock_count: int = 0
-        self.pregame_state: str = data['PregameState']
-        self._last_update: str = data['LastUpdated']
+        self.pregame_state: str = data.get('PregameState', '')
+        self._last_update: Union[datetime.datetime, str] = data['LastUpdated']
         self._map_id: str = data['MapID']
         self.map_select_pool: List[Any] = data['MapSelectPool']
         self.banned_map_ids: List[Any] = data['BannedMapIDs']
@@ -124,7 +125,7 @@ class PreGameMatch:
     def is_ranked(self) -> bool:
         return self._is_ranked
 
-    def map(self) -> Map:
+    def map(self) -> Optional[Map]:
         return self._client.get_map(uuid=str(MapType.from_url(self._map_id)))
 
     async def select_agent(self, agent: Agent, *, lock: bool = True) -> None:

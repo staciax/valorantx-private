@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
     from ..client import Client
     from ..types.collection import SkinLoadout as SkinLoadoutPayload
-    from ..types.store import FeaturedBundleItem as FeaturedBundleItemPayload
+    from ..types.store import BonusStoreOffer as BonusStoreOfferPayload, FeaturedBundleItem as FeaturedBundleItemPayload
     from .buddy import Buddy, BuddyLevel
     from .content import ContentTier
     from .theme import Theme
@@ -60,8 +60,8 @@ __all__ = (
 
 class GridPosition:
     def __init__(self, data: Dict[str, Union[int, float]]) -> None:
-        self.row: int = data['row']
-        self.column: int = data['column']
+        self.row: float = data['row']
+        self.column: float = data['column']
 
     def __repr__(self) -> str:
         return f"<GridPosition row={self.row} column={self.column}>"
@@ -78,7 +78,7 @@ class AdsStats:
         self.zoom_multiplier: float = data['zoomMultiplier']
         self.fire_rate: float = data['fireRate']
         self.run_speed_multiplier: float = data['runSpeedMultiplier']
-        self.burst_count: int = data['burstCount']
+        self.burst_count: float = data['burstCount']
         self.first_bullet_accuracy: float = data['firstBulletAccuracy']
 
     def __repr__(self) -> str:
@@ -95,7 +95,7 @@ class AdsStats:
 
 class AltShotgunStats:
     def __init__(self, data: Dict[str, Union[int, float]]) -> None:
-        self.shotgun_pellet_count: int = data['shotgunPelletCount']
+        self.shotgun_pellet_count: float = data['shotgunPelletCount']
         self.burst_rate: float = data['burstRate']
 
     def __repr__(self) -> str:
@@ -104,7 +104,7 @@ class AltShotgunStats:
 
 class AirBurstStats:
     def __init__(self, data: Dict[str, Union[int, float]]) -> None:
-        self.shotgun_pellet_count: int = data['shotgunPelletCount']
+        self.shotgun_pellet_count: float = data['shotgunPelletCount']
         self.burst_distance: float = data['burstDistance']
 
     def __repr__(self) -> str:
@@ -190,10 +190,10 @@ class WeaponStats:
 class ShopData:
     def __init__(self, weapon: Weapon, data: Dict[str, Any]) -> None:
         self._weapon: Weapon = weapon
-        self._client: Client = getattr(weapon, '_client', None)
+        self._client: Client = weapon._client
         self.cost: int = data['cost']
         self.category: Optional[str] = data['category']
-        self._category_text: Optional[Union[str, Dict[str, str]]] = data['categoryText']
+        self._category_text: Dict[str, str] = data['categoryText']
         self._grid_position = data.get('gridPosition')
         self._can_be_trashed: bool = data['canBeTrashed']
         self._image: Optional[str] = data['image']
@@ -256,7 +256,7 @@ class Weapon(BaseModel):
     def __init__(self, *, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._display_name: Dict[str, str] = data['displayName']
         self._category: str = data['category']
         self.default_skin_uuid: str = data['defaultSkinUuid']
         self._display_icon: str = data['displayIcon']
@@ -345,7 +345,7 @@ class Skin(BaseModel):
         super().__init__(client=client, data=data)
         self._uuid = data['uuid']
         self._base_weapon_uuid: Optional[str] = data.get('WeaponID')
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._display_name: Dict[str, str] = data['displayName']
         self._theme_uuid: str = data['themeUuid']
         self._content_tier_uuid: Optional[str] = data['contentTierUuid']
         self._display_icon: str = data['displayIcon']
@@ -374,7 +374,7 @@ class Skin(BaseModel):
         return self.name_localizations.american_english
 
     @property
-    def theme(self) -> Theme:
+    def theme(self) -> Optional[Theme]:
         """:class: `Theme` Returns the skin's theme uuid."""
         return self._client.get_theme(uuid=self._theme_uuid)
 
@@ -413,8 +413,8 @@ class Skin(BaseModel):
         """:class: `int` Returns the skin's price."""
         if self._price == 0:
             if len(self.levels) > 0:
-                self._price = self.levels[0].price
-        return self._price
+                self.price = self.levels[0]._price
+        return self.price
 
     @price.setter
     def price(self, value: int) -> None:
@@ -422,7 +422,8 @@ class Skin(BaseModel):
 
     def is_melee(self) -> bool:
         """:class: `bool` Returns whether the bundle is a melee."""
-        return self.get_weapon().is_melee() if self.get_weapon() else False
+        weapon = self.get_weapon()
+        return weapon.is_melee() if weapon else False
 
     def get_skin_level(self, level: int) -> Optional[SkinLevel]:
         """get the skin's level with the given level.
@@ -491,7 +492,7 @@ class SkinChroma(BaseModel):
         self._uuid: str = data['uuid']
         self._base_weapon_uuid: Optional[str] = data.get('WeaponID')
         self._base_skin_uuid: Optional[str] = data.get('SkinID')
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._display_name: Dict[str, str] = data['displayName']
         self._display_icon: str = data['displayIcon']
         self._full_render: str = data['fullRender']
         self._swatch: Optional[str] = data['swatch']
@@ -502,7 +503,9 @@ class SkinChroma(BaseModel):
         self._base_weapon: Optional[Weapon] = (
             self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
         )
-        self._base_skin: Optional[Skin] = self._client.get_skin(uuid=self._base_skin_uuid) if self._base_skin_uuid else None
+        self._base_skin: Optional[Skin] = (
+            self._client.get_skin(uuid=self._base_skin_uuid, level=False, chroma=False) if self._base_skin_uuid else None
+        )
 
     def __str__(self) -> str:
         return self.display_name
@@ -523,10 +526,12 @@ class SkinChroma(BaseModel):
     @property
     def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon."""
-        display_icon = self._display_icon or self._base_skin.display_icon
+        base_skin = self.get_skin()
+        base_skin_display_icon = base_skin.display_icon if base_skin else None
+        display_icon = self._display_icon or base_skin_display_icon
         if self.get_weapon() is not None:
-            if self.display_name.removeprefix('Standard ') == self._base_weapon.display_name:
-                display_icon = self._base_weapon.display_icon or display_icon
+            if self.display_name.removeprefix('Standard ') == (base_skin.display_name if base_skin else None):
+                display_icon = base_skin_display_icon or display_icon
 
         return Asset._from_url(client=self._client, url=str(display_icon)) if display_icon else None
 
@@ -630,7 +635,7 @@ class SkinLevel(BaseModel):
         self._uuid: str = data['uuid']
         self._base_weapon_uuid: Optional[str] = data.get('WeaponID')
         self._base_skin_uuid: Optional[str] = data.get('SkinID')
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._display_name: Dict[str, str] = data['displayName']
         self._level: Optional[str] = data.get('levelItem')
         self._display_icon: str = data['displayIcon']
         self._streamed_video: Optional[str] = data.get('streamedVideo')
@@ -642,7 +647,9 @@ class SkinLevel(BaseModel):
         self._base_weapon: Optional[Weapon] = (
             self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
         )
-        self._base_skin: Optional[Skin] = self._client.get_skin(uuid=self._base_skin_uuid) if self._base_skin_uuid else None
+        self._base_skin: Optional[Skin] = (
+            self._client.get_skin(uuid=self._base_skin_uuid, level=False, chroma=False) if self._base_skin_uuid else None
+        )
 
     def __str__(self) -> str:
         return self.display_name
@@ -670,7 +677,11 @@ class SkinLevel(BaseModel):
     @property
     def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon."""
-        display_icon = self._display_icon or self._base_skin.display_icon or self._base_weapon.display_icon
+        display_icon = (
+            self._display_icon
+            or (self._base_skin.display_icon if self._base_skin else None)
+            or (self._base_weapon.display_icon if self._base_weapon else None)
+        )
         return Asset._from_url(client=self._client, url=str(display_icon)) if display_icon else None
 
     @property
@@ -791,9 +802,9 @@ class SkinNightMarket(SkinLevel):
         return utils.parse_iso_datetime(self._start_time_iso)
 
     @classmethod
-    def _from_data(cls, client: Client, skin_data: Dict[str, Any]) -> Self:
+    def _from_data(cls, client: Client, skin_data: BonusStoreOfferPayload) -> Self:
         """Returns the skin with the given UUID."""
-        uuid = skin_data['Offer']['OfferID']
+        uuid = skin_data['Offer']['OfferID']  # type: ignore
         data = client._assets.get_skin_level(uuid)
         return cls(client=client, data=data, extras=skin_data)
 
@@ -832,8 +843,8 @@ class BaseLoadout:
     def get_buddy(self) -> Optional[Buddy]:
         """Returns the get_buddy for this skin"""
         if self._buddy is None:
-            self._buddy = self._client.get_buddy(uuid=self._buddy_uuid) if self._buddy_uuid else None
-        return self._buddy
+            self._buddy = self._client.get_buddy(uuid=self._buddy_uuid) if self._buddy_uuid else None  # type: ignore
+        return self._buddy  # type: ignore
 
     def get_buddy_level(self) -> Optional[BuddyLevel]:
         """Returns the get_buddy level for this skin"""

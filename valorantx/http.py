@@ -120,10 +120,10 @@ class HTTPClient:
         self.loop: asyncio.AbstractEventLoop = loop
         # self.user: Optional[ClientPlayer] = None
         self._session: aiohttp.ClientSession = MISSING
-        self._headers: Dict[str, str] = {}
+        self._headers: Dict[str, Any] = {}
         self._client_platform = 'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9'  # noqa: E501
         self._riot_auth: RiotAuth = RiotAuth()
-        self._puuid: str = self._riot_auth.user_id
+        self._puuid: str = self._riot_auth.puuid
         self._region: Region = try_enum(Region, self._riot_auth.region, Region.AP)
         self._riot_client_version: str = ''
 
@@ -969,7 +969,7 @@ class HTTPClient:
         r = Route('GET', f'/core-game/v1/players/{self._puuid}', EndpointType.glz, self._region)
         return self.request(r)
 
-    def coregame_fetch_match(self, match_id: str = None) -> Response[Mapping[str, Any]]:
+    def coregame_fetch_match(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
         """
         CoreGame_FetchMatch
         Get information about an ongoing game
@@ -1013,7 +1013,7 @@ class HTTPClient:
 
     # utils
 
-    def __check_puuid(self, puuid: str) -> str:
+    def __check_puuid(self, puuid: Optional[str]) -> str:
         """if puuid passed into method is None make it current user's puuid"""
         return self._puuid if puuid is None else puuid
 

@@ -23,7 +23,6 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from locale import str
 from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from .. import utils
@@ -39,17 +38,14 @@ if TYPE_CHECKING:
     from ..client import Client
     from .competitive import CompetitiveTier
 
-__all__ = (
-    'Season',
-    'SeasonCompetitive',
-)
+__all__ = ('Season', 'SeasonCompetitive')
 
 
 class Season(BaseModel):
-    def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
+    def __init__(self, client: Client, data: Mapping[Any, Any]) -> None:
         super().__init__(client=client, data=data)
-        self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._uuid: str = data.get('uuid', '')
+        self._display_name: Dict[str, str] = data['displayName']
         self._type: Optional[str] = data.get('type')
         self._start_time_iso: Union[str, datetime.datetime] = data['startTime']
         self._end_time_iso: Union[str, datetime.datetime] = data['endTime']
@@ -93,12 +89,12 @@ class Season(BaseModel):
     @property
     def start_time(self) -> datetime.datetime:
         """:class: `datetime.datetime` Returns the season's start time."""
-        return utils.parse_iso_datetime(self._start_time_iso)
+        return utils.parse_iso_datetime(str(self._start_time_iso))
 
     @property
     def end_time(self) -> datetime.datetime:
         """:class: `datetime.datetime` Returns the season's end time."""
-        return utils.parse_iso_datetime(self._end_time_iso)
+        return utils.parse_iso_datetime(str(self._end_time_iso))
 
     @property
     def parent(self) -> Optional[Season]:
@@ -115,7 +111,7 @@ class Season(BaseModel):
 class Border(BaseModel):
     def __init__(self, client: Client, data: Dict[str, Any]) -> None:
         super().__init__(client=client, data=data)
-        self._uuid: str = data['uuid']
+        self._uuid: str = data.get('uuid', '')
         self.level: int = data['level']
         self.wins_required: int = data['winsRequired']
         self._display_icon: Optional[str] = data['displayIcon']
@@ -128,12 +124,12 @@ class Border(BaseModel):
         return f'<{self.__class__.__name__} {joined}>'
 
     @property
-    def display_icon(self) -> Asset:
+    def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the border's display icon."""
         return Asset._from_url(client=self._client, url=self._display_icon) if self._display_icon else None
 
     @property
-    def small_icon(self) -> Asset:
+    def small_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the border's small icon."""
         return Asset._from_url(client=self._client, url=self._small_icon) if self._small_icon else None
 
@@ -165,12 +161,12 @@ class SeasonCompetitive(BaseModel):
     @property
     def start_time(self) -> datetime.datetime:
         """:class: `datetime.datetime` Returns the season's start time."""
-        return utils.parse_iso_datetime(self._start_time_iso)
+        return utils.parse_iso_datetime(str(self._start_time_iso))
 
     @property
     def end_time(self) -> datetime.datetime:
         """:class: `datetime.datetime` Returns the season's end time."""
-        return utils.parse_iso_datetime(self._end_time_iso)
+        return utils.parse_iso_datetime(str(self._end_time_iso))
 
     @property
     def season(self) -> Optional[Season]:

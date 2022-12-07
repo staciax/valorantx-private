@@ -23,11 +23,9 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Mapping, Optional, TypedDict, Union
+from typing import TYPE_CHECKING, Any, List, Optional, TypedDict
 
 if TYPE_CHECKING:
-    import datetime
-
     from .player import PlayerIdentity
 
 

@@ -41,7 +41,7 @@ def _flatten_error_dict(d: Dict[str, Any], key: str = '') -> Dict[str, str]:
             try:
                 _errors: List[Dict[str, Any]] = v['_errors']
             except KeyError:
-                items.extend(_flatten_error_dict(v, new_key).items())  # type: ignore
+                items.extend(_flatten_error_dict(v, new_key).items())
             else:
                 items.append((new_key, ' '.join(x.get('message', '') for x in _errors)))
         else:
@@ -97,7 +97,7 @@ class HTTPException(ValorantException):
 
     def __init__(self, response: ClientResponse, message: Optional[Union[str, Dict[str, Any]]]):
         self.response: ClientResponse = response
-        self.status: int = response.status  # type: ignore # This attribute is filled by the library even if using requests # noqa: E501
+        self.status: int = response.status  # This attribute is filled by the library even if using requests # noqa: E501
         self.code: int
         self.text: str
         if isinstance(message, dict):

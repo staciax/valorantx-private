@@ -63,7 +63,7 @@ class Contract(BaseModel):
     def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
+        self._display_name: Optional[Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
         self._ship_it: bool = data.get('shipIt', False)
         self.free_reward_schedule_uuid: str = data['freeRewardScheduleUuid']
@@ -77,7 +77,7 @@ class Contract(BaseModel):
         return f'<Contract display_name={self.display_name!r}>'
 
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, Union[ContractU, Contract]) and self.uuid == other.uuid
+        return isinstance(other, (ContractU, Contract)) and self.uuid == other.uuid
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
@@ -125,7 +125,7 @@ class ContractU(Contract):
         self.highest_rewarded_level: int = contract['ContractProgression']['HighestRewardedLevel'][
             self.free_reward_schedule_uuid
         ]
-        self.progression_level_reached: int = contract['ProgressionLevelReached']
+        self.progression_level_reached: int = contract.get('ProgressionLevelReached', 0)
         self.progression_towards_next_level: int = contract['ProgressionTowardsNextLevel']
         self.reward_per_chapter: int = min(len(chapter.rewards) for chapter in self.content.chapters)
         self.total_chapters: int = len(self.content.chapters)
@@ -204,10 +204,12 @@ class ContractU(Contract):
     def get_next_reward(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
         """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the next reward."""
         reward = self.next_tier_reward
-        if reward:
-            return reward.get_reward()
-        else:
-            return None
+        return reward.get_reward() if reward is not None else None
+
+    def get_latest_reward(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
+        """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the latest reward."""
+        reward = self.latest_tier_reward
+        return reward.get_reward() if reward is not None else None
 
     @classmethod
     def _from_contract(cls, client: Client, contract: ContractUPayload) -> Self:
@@ -218,7 +220,7 @@ class ContractU(Contract):
 class ProcessedMatch:
     def __init__(self, data: ProcessedMatchPayload) -> None:
         self.id: str = data.get('ID', '')
-        self._start_time: Union[datetime.datetime, str] = data.get('StartTime')
+        self._start_time: Union[datetime.datetime, int] = data.get('StartTime')  # TODO: int or str?
         self.xp_grants: Optional[Any] = data.get('XPGrants')
         self.reward_grants: Optional[Any] = data.get('RewardGrants')
         self.mission_deltas: Optional[Any] = data.get('MissionDeltas')
@@ -243,7 +245,7 @@ class ProcessedMatch:
     @property
     def start_time(self) -> datetime.datetime:
         """:class: `datetime.datetime` Returns the match's start time."""
-        return utils.parse_iso_datetime(self._start_time)
+        return utils.parse_iso_datetime(str(self._start_time))
 
     def could_progress_missions(self) -> bool:
         """:class: `bool` Returns whether the match could progress missions."""
@@ -266,10 +268,14 @@ class Contracts(BaseModel):
         ]
         self.processed_matches: List[ProcessedMatch] = [ProcessedMatch(match) for match in data['ProcessedMatches']]
         self.active_special_contract_id: Optional[str] = data.get('ActiveSpecialContract')
-        self.missions: List[MissionU] = [MissionU._from_mission(self._client, mission) for mission in data['Missions']]
+        self.missions: List[MissionU] = []
         self.mission_metadata: Optional[MissionMeta] = (
             MissionMeta(data['MissionMetadata']) if data.get('MissionMetadata') else None
         )
+        for m in data['Missions']:
+            mission = MissionU._from_mission(self._client, m)
+            if mission is not None:
+                self.missions.append(mission)
 
     def special_contract(self) -> Optional[ContractU]:
         """:class: `ContractA` Returns the active special contract."""
@@ -295,7 +301,7 @@ class Contracts(BaseModel):
                 raise InvalidContractType(f'No contract found with uuid {contract!r}')
             contract = try_contract
 
-        if isinstance(contract, Union[Contract, ContractU]):
+        if isinstance(contract, (Contract, ContractU)):
 
             if not isinstance(contract, ContractU):
                 for c in self.contracts:
@@ -308,9 +314,10 @@ class Contracts(BaseModel):
             if contract == self.special_contract():
                 return contract
 
-            if contract.progression_level_reached == 10:
-                _log.warning(f'Contract {contract.display_name!r} is already at max level')
-                return contract
+            if isinstance(contract, ContractU):
+                if contract.current_tier == 10:
+                    _log.warning(f'Contract {contract.display_name!r} is already at max level')
+                    return contract
         else:
             raise TypeError(f'Expected ContractA, ContractU, or str, got {type(contract)}')
 
@@ -367,7 +374,7 @@ class Content:
         self.relation_uuid: Optional[str] = data.get('relationUuid')
         self._chapters: Optional[List[Any]] = data.get('chapters')
         self.premium_reward_schedule_uuid: Optional[str] = data.get('premiumRewardScheduleUuid')
-        self.premium_vp_cost: int = data.get('premiumVPCost')
+        self.premium_vp_cost: int = data.get('premiumVPCost', 0)
 
     def __repr__(self) -> str:
         return f'<Content relation={self.relation!r}>'
@@ -392,7 +399,7 @@ class Content:
         return chapters
 
     @property
-    def relation(self) -> Union[Agent, Season, Event]:
+    def relation(self) -> Optional[Union[Agent, Season, Event]]:
         """:class: `Any` Returns the relation."""
         if self.relation_type == RelationType.agent:
             return self._client.get_agent(uuid=self.relation_uuid)
@@ -466,8 +473,8 @@ class Level:
 class Reward:
     def __init__(self, client: Client, data: Dict[str, Any], is_free: bool = False, index: int = 0) -> None:
         self._client: Client = client
-        self.type: str = data.get('type')
-        self.uuid: str = data.get('uuid')
+        self.type: str = data.get('type', '')
+        self.uuid: str = data.get('uuid', '')
         self.amount: int = data.get('amount', 0)
         self._is_highlighted: bool = data.get('isHighlighted', False)
         self._is_free: bool = is_free
@@ -503,7 +510,7 @@ class Reward:
         elif self.type == str(RewardType.player_title):
             return self._client.get_player_title(uuid=self.uuid)
         elif self.type == str(RewardType.spray):
-            return self._client.get_spray(uuid=self.uuid)
+            return self._client.get_spray(uuid=self.uuid, level=False)
         elif self.type == str(RewardType.currency):
             return self._client.get_currency(uuid=self.uuid)
         else:

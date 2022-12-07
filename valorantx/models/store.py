@@ -33,9 +33,9 @@ from .weapons import SkinNightMarket
 if TYPE_CHECKING:
     from ..client import Client
     from ..types.store import (
-        BonusStore as BonusStorePayload,
         BonusStoreOffer as BonusStoreOfferPayload,
-        Bundle as BundlePayload,
+        BonusStoreT as BonusStorePayload,
+        BundleT as BundlePayload,
         Entitlement as EntitlementPayload,
         EntitlementsByTypes as EntitlementsByTypesPayload,
         FeaturedBundle as FeaturedBundlePayload,
@@ -67,16 +67,13 @@ __all__ = (
 
 
 class StoreFront:
-
-    __slot__ = ()
-
     def __init__(self, *, client: Any, data: StoreFrontPayload) -> None:
         self._client = client
         self._featured_bundle: FeaturedBundlePayload = data['FeaturedBundle']
         self._bundle: BundlePayload = self._featured_bundle['Bundle']
-        self._bundles: List[BundlePayload] = self._featured_bundle.get('Bundles', [])
+        self._bundles: List[BundlePayload] = self._featured_bundle['Bundles']
         self._skins_panel_layout: SkinsPanelLayoutPayload = data['SkinsPanelLayout']
-        self._bonus_store: BonusStorePayload = data.get('BonusStore')
+        self._bonus_store: Optional[BonusStorePayload] = data.get('BonusStore')
 
     def __repr__(self) -> str:
         attrs = [
@@ -90,11 +87,11 @@ class StoreFront:
 
     def get_bundle(self) -> FeaturedBundle:
         """:class:`.models.Bundle`: The bundle in the featured panel."""
-        return FeaturedBundle._from_store(client=self._client, bundle=self._bundle)
+        return FeaturedBundle._from_store(client=self._client, bundle=self._bundle)  # type: ignore
 
-    def get_bundles(self) -> Union[List[FeaturedBundle]]:
+    def get_bundles(self) -> List[FeaturedBundle]:
         """:class:`.models.Bundle`: The list of bundles in the featured panel."""
-        return [FeaturedBundle._from_store(client=self._client, bundle=bundle) for bundle in self._bundles]
+        return [FeaturedBundle._from_store(client=self._client, bundle=bundle) for bundle in self._bundles]  # type: ignore
 
     def get_store(self) -> StoreOffer:
         """:class:`.models.StoreOffer`: The store offer in the featured panel."""
@@ -106,7 +103,7 @@ class StoreFront:
 
     # alias
 
-    def get_skins(self, *, base_skin: bool = False) -> List[SkinLevel]:
+    def get_skins(self, *, base_skin: bool = False) -> Union[List[Skin], List[SkinLevel]]:
         """:class:`.models.SkinLevel`: The list of skins in the featured panel."""
         store = self.get_store()
         return store.get_skins(base_skin=base_skin)
@@ -120,7 +117,11 @@ class StoreOffer:
         self._client: Client = client
         self._skin_offers: List[str] = data['SingleItemOffers']
         self._duration: int = data['SingleItemOffersRemainingDurationInSeconds']
-        self._skins: List[SkinLevel] = [self._client.get_skin_level(uuid=uuid) for uuid in self._skin_offers]
+        self._skins: List[SkinLevel] = []
+        for uuid in self._skin_offers:
+            skin = self._client.get_skin_level(uuid=uuid)
+            if skin is not None:
+                self._skins.append(skin)
 
     def __repr__(self) -> str:
         return f'<StoreOffer skins={self._skins!r} duration={self.duration} reset_at={self.reset_at}>'
@@ -131,7 +132,7 @@ class StoreOffer:
     def __iter__(self) -> Iterator[SkinLevel]:
         return iter(self._skins)
 
-    def get_skins(self, *, base_skin: bool = False) -> List[Union[SkinLevel, Skin]]:
+    def get_skins(self, *, base_skin: bool = False) -> Union[List[SkinLevel], List[Skin]]:
         """The list of skins in the store offer
 
         Parameters
@@ -146,7 +147,12 @@ class StoreOffer:
         """
         if not base_skin:
             return self._skins
-        return [skin.get_skin() for skin in self._skins]
+        base_skins = []
+        for skin_lv in self._skins:
+            skin = skin_lv.get_skin()
+            if skin is not None:
+                base_skins.append(skin)
+        return base_skins
 
     @property
     def duration(self) -> float:
@@ -170,9 +176,11 @@ class NightMarket:
         self._client = client
         self._skin_offers: List[BonusStoreOfferPayload] = data['BonusStoreOffers']
         self.duration: int = data['BonusStoreRemainingDurationInSeconds']
-        self._skins: List[SkinNightMarket] = [
-            SkinNightMarket._from_data(client=self._client, skin_data=skin) for skin in self._skin_offers
-        ]
+        self._skins: List[SkinNightMarket] = []
+        for skin in self._skin_offers:
+            skin_nmk = SkinNightMarket._from_data(client=self._client, skin_data=skin)
+            if skin_nmk is not None:
+                self._skins.append(skin_nmk)
 
     def __repr__(self) -> str:
         return f'<NightMarket skins={self._skins!r} duration={self.duration}>'
@@ -302,7 +310,12 @@ class Entitlements:
     def get_agents(self) -> List[Agent]:
         """:class:`.models.Agent`: Returns a list of agents."""
         items = self.get_by_type(ItemType.agent)
-        return [self._client.get_agent(uuid=item.get('ItemID')) for item in items]
+        agents = []
+        for item in items:
+            agent = self._client.get_agent(uuid=item.get('ItemID'))
+            if agent is not None:
+                agents.append(agent)
+        return agents
 
     def get_skin_levels(self, level_one: bool = True) -> List[SkinLevel]:
         """:class:`.models.SkinLevel`: Returns a list of skin levels."""
@@ -311,8 +324,9 @@ class Entitlements:
         for item in items:
             skin = self._client.get_skin_level(uuid=item.get('ItemID'))
             if level_one:
-                if skin.is_level_one():
-                    skins.append(skin)
+                if skin is not None:
+                    if skin.is_level_one():
+                        skins.append(skin)
             else:
                 skins.append(skin)
         return skins
@@ -320,31 +334,62 @@ class Entitlements:
     def get_skin_chromas(self) -> List[SkinChroma]:
         """:class:`.models.SkinChroma`: Returns a list of skin chromas."""
         items = self.get_by_type(ItemType.skin_chroma)
-        return [self._client.get_skin_chroma(uuid=item.get('ItemID')) for item in items]
+        chromas = []
+        for item in items:
+            chroma = self._client.get_skin_chroma(uuid=item.get('ItemID'))
+            if chroma is not None:
+                chromas.append(chroma)
+
+        return chromas
 
     def get_buddy_levels(self) -> List[BuddyLevel]:
         """:class:`.models.BuddyLevel`: Returns a list of buddy levels."""
         items = self.get_by_type(ItemType.buddy_level)
         # instance_id = item.get('InstanceID')  # What is this?
         # TODO: amount buddy levels owned
-        return [self._client.get_buddy_level(uuid=item.get('ItemID')) for item in items]
+        buddy_levels = []
+        for item in items:
+            buddy = self._client.get_buddy_level(uuid=item.get('ItemID'))
+            if buddy is not None:
+                buddy_levels.append(buddy)
+        return buddy_levels
 
     def get_sprays(self) -> List[Spray]:
         """:class:`.models.Spray`: Returns a list of sprays."""
         items = self.get_by_type(ItemType.spray)
-        return [self._client.get_spray(uuid=item.get('ItemID')) for item in items]
+        sprays = []
+        for item in items:
+            spray = self._client.get_spray(uuid=item.get('ItemID'))
+            if spray is not None:
+                sprays.append(spray)
+        return sprays
 
     def get_player_cards(self) -> List[PlayerCard]:
         """:class:`.models.PlayerCard`: Returns a list of player cards."""
         items = self.get_by_type(ItemType.player_card)
-        return [self._client.get_player_card(uuid=item.get('ItemID')) for item in items]
+        player_cards = []
+        for item in items:
+            player_card = self._client.get_player_card(uuid=item.get('ItemID'))
+            if player_card is not None:
+                player_cards.append(player_card)
+        return player_cards
 
     def get_player_titles(self) -> List[PlayerTitle]:
         """:class:`.models.PlayerTitle`: Returns a list of player titles."""
         items = self.get_by_type(ItemType.player_title)
-        return [self._client.get_player_title(uuid=item.get('ItemID')) for item in items]
+        player_titles = []
+        for item in items:
+            player_title = self._client.get_player_title(uuid=item.get('ItemID'))
+            if player_title is not None:
+                player_titles.append(player_title)
+        return player_titles
 
     def get_contracts(self) -> List[Contract]:
         """:class:`.models.Contract`: Returns a list of contracts."""
         items = self.get_by_type(ItemType.contract)
-        return [self._client.get_contract(uuid=item.get('ItemID')) for item in items]
+        contracts = []
+        for item in items:
+            contract = self._client.get_contract(uuid=item.get('ItemID'))
+            if contract is not None:
+                contracts.append(contract)
+        return contracts

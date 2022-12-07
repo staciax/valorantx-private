@@ -77,8 +77,8 @@ class RiotAuth(_RiotAuth):
         self.multi_factor_email: Optional[str] = None
 
     @property
-    def puuid(self) -> Optional[str]:
-        return self.user_id
+    def puuid(self) -> str:
+        return self.user_id or ''
 
     @puuid.setter
     def puuid(self, value: str) -> None:

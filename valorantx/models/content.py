@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional
 
 from .. import utils
 from ..asset import Asset
@@ -93,12 +93,12 @@ class ContentSeason:
         return self._is_active
 
     @property
-    def start_time(self) -> datetime:
+    def start_time(self) -> datetime.datetime:
         """:class:`datetime.datetime` Returns the start time of the season."""
         return utils.parse_iso_datetime(self._start_time)
 
     @property
-    def end_time(self) -> datetime:
+    def end_time(self) -> datetime.datetime:
         """:class:`datetime.datetime` Returns the end time of the season."""
         return utils.parse_iso_datetime(self._end_time)
 
@@ -133,12 +133,12 @@ class ContentEvent:
         return self._is_active
 
     @property
-    def start_time(self) -> datetime:
+    def start_time(self) -> datetime.datetime:
         """:class:`datetime.datetime` Returns the start time of the event."""
         return utils.parse_iso_datetime(self._start_time)
 
     @property
-    def end_time(self) -> datetime:
+    def end_time(self) -> datetime.datetime:
         """:class:`datetime.datetime` Returns the end time of the event."""
         return utils.parse_iso_datetime(self._end_time)
 
@@ -147,7 +147,7 @@ class ContentTier(BaseModel):
     def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
+        self._display_name: Optional[Dict[str, str]] = data['displayName']
         self.dev_name: str = data['devName']
         self.rank: int = data['rank']
         self.juice_value: int = data['juiceValue']

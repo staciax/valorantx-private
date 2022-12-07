@@ -22,11 +22,10 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Mapping
 
 if TYPE_CHECKING:
     from ..client import Client
-    from .agent import Agent
 
 
 class CoreGamePlayer:

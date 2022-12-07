@@ -55,15 +55,15 @@ async def main():
                 print(repr(level))
 
         skin = client.get_skin('Glitchpop Odin')
-        print(repr(skin.base_weapon))
+        print(repr(skin.get_weapon()))
 
         skin_level = client.get_skin_level('Xenohunter Odin Level 2')
-        print(repr(skin_level.base_weapon))
-        print(repr(skin_level.base_skin))
+        print(repr(skin_level.get_weapon()))
+        print(repr(skin_level.get_skin()))
 
         skin_chroma = client.get_skin_chroma('Glitchpop Odin')
-        print(repr(skin_chroma.base_weapon))
-        print(repr(skin_chroma.base_skin))
+        print(repr(skin_chroma.get_weapon()))
+        print(repr(skin_chroma.get_skin()))
 
         all_bundles = client.get_all_bundles()
         print(list(sorted(all_bundles, key=lambda b: b.display_name)))
@@ -72,7 +72,7 @@ async def main():
         print(repr(ceremony))
 
         competitive_tier = client.get_competitive_tier('564d8e28-c226-3180-6285-e48a390db8b1')
-        print(repr(competitive_tier.tiers))
+        print(repr(competitive_tier.get_tiers()))
         print(repr(competitive_tier))
 
         currency = client.get_currency('VP')

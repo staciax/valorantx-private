@@ -52,12 +52,6 @@ class Player(_PlayerTag):
     # __slots__ = ()
 
     if TYPE_CHECKING:
-        name: str
-        # puuid: str
-        _puuid: Optional[str]
-        tag: str
-        region: str
-        _client: Client
         _player_card_id: Optional[str]
         _player_title_id: Optional[str]
         _level_border_id: Optional[str]
@@ -69,8 +63,8 @@ class Player(_PlayerTag):
         client: Client,
         data: Union[PlayerPayload, PartialPlayerPayload, Any],
     ) -> None:
-        self._client = client
-        self._puuid: str = data.get('puuid', None) or data.get('Subject') or data.get('subject', None)
+        self._client: Client = client
+        self._puuid: str = data.get('puuid', '') or data.get('Subject') or data.get('subject', '')
         self.name: Optional[str] = data.get('username') or data.get('gameName')
         self.tag: Optional[str] = data.get('tagline') or data.get('tagLine')
         self.region: Optional[str] = data.get('region')
@@ -136,7 +130,7 @@ class Player(_PlayerTag):
         return self.mmr
 
     @property
-    def last_update(self) -> datetime.datetime:
+    def last_update(self) -> Optional[datetime.datetime]:
         return self._last_updated
 
     @last_update.setter
@@ -158,7 +152,7 @@ class Player(_PlayerTag):
                     # TODO: return rank
         return self
 
-    def parse_name_tag(self, name: str, tag: str) -> None:
+    def parse_name_tag(self, name: Optional[str], tag: Optional[str]) -> None:
         self.name = name
         self.tag = tag
 
@@ -166,7 +160,7 @@ class Player(_PlayerTag):
 class ClientPlayer(Player):
     def __init__(self, *, client: Client, data: Union[PlayerPayload, Dict[str, Any]]) -> None:
         super().__init__(client=client, data=data)
-        self.locale: str = data.get('locale', None)
+        self.locale: str = 'en-US'
 
     def __repr__(self) -> str:
         return f'<ClientPlayer puuid={self.puuid!r} name={self.name!r} tagline={self.tag!r} region={self.region!r}'

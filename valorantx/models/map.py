@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional
 
 from ..asset import Asset
 from ..localization import Localization
@@ -58,8 +58,8 @@ class Location:
 
 class Callout:
     def __init__(self, data: Dict[str, Any]) -> None:
-        self._region_name: Union[str, Dict[str, str]] = data['regionName']
-        self._super_region_name: Union[str, Dict[str, str]] = data['superRegionName']
+        self._region_name: Dict[str, str] = data['regionName']
+        self._super_region_name: Dict[str, str] = data['superRegionName']
         self.location: Location = Location(data['location'])
 
     def __str__(self) -> str:
@@ -100,8 +100,8 @@ class Map(BaseModel):
     def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._coordinates: Union[str, Dict[str, str]] = data['coordinates']
+        self._display_name: Dict[str, str] = data['displayName']
+        self._coordinates: Dict[str, str] = data['coordinates']
         self._list_view_icon: Optional[str] = data['listViewIcon']
         self._splash: Optional[str] = data['splash']
         self.asset_path: str = data['assetPath']

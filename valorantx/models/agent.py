@@ -64,8 +64,8 @@ class Role:
     def __init__(self, client: Client, data: Dict[str, Any]) -> None:
         self._client = client
         self.uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._description: Union[str, Dict[str, str]] = data['description']
+        self._display_name: Dict[str, str] = data['displayName']
+        self._description: Dict[str, str] = data['description']
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
 
@@ -124,8 +124,8 @@ class Ability:
     def __init__(self, client: Client, data: Dict[str, Any]) -> None:
         self._client = client
         self.slot: AbilityType = try_enum(AbilityType, data['slot'])
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._description: Union[str, Dict[str, str]] = data['description']
+        self._display_name: Dict[str, str] = data['displayName']
+        self._description: Dict[str, str] = data['description']
         self._display_icon: str = data['displayIcon']
 
     def __repr__(self) -> str:
@@ -241,30 +241,30 @@ class VoiceLineLocalization:
     def __init__(
         self,
         untranslated: Dict[str, Any],
-        locale: Union[str, Locale] = None,
+        locale: Optional[Union[str, Locale]] = None,
     ) -> None:
         self.ut = untranslated
         self._locale = locale
 
         # locale code
-        self.ar_AE: Optional[VoiceLine] = VoiceLine(self.ut.get('ar-AE')) if self.ut.get('ar-AE') else None
-        self.de_DE: Optional[VoiceLine] = VoiceLine(self.ut.get('de-DE')) if self.ut.get('de-DE') else None
-        self.en_US: Optional[VoiceLine] = VoiceLine(self.ut.get('en-US')) if self.ut.get('en-US') else None
-        self.es_ES: Optional[VoiceLine] = VoiceLine(self.ut.get('es-ES')) if self.ut.get('es-ES') else None
-        self.es_MX: Optional[VoiceLine] = VoiceLine(self.ut.get('es-MX')) if self.ut.get('es-MX') else None
-        self.fr_FR: Optional[VoiceLine] = VoiceLine(self.ut.get('fr-FR')) if self.ut.get('fr-FR') else None
-        self.id_ID: Optional[VoiceLine] = VoiceLine(self.ut.get('id-ID')) if self.ut.get('id-ID') else None
-        self.it_IT: Optional[VoiceLine] = VoiceLine(self.ut.get('it-IT')) if self.ut.get('it-IT') else None
-        self.ja_JP: Optional[VoiceLine] = VoiceLine(self.ut.get('ja-JP')) if self.ut.get('ja-JP') else None
-        self.ko_KR: Optional[VoiceLine] = VoiceLine(self.ut.get('ko-KR')) if self.ut.get('ko-KR') else None
-        self.pl_PL: Optional[VoiceLine] = VoiceLine(self.ut.get('pl-PL')) if self.ut.get('pl-PL') else None
-        self.pt_BR: Optional[VoiceLine] = VoiceLine(self.ut.get('pt-BR')) if self.ut.get('pt-BR') else None
-        self.ru_RU: Optional[VoiceLine] = VoiceLine(self.ut.get('ru-RU')) if self.ut.get('ru-RU') else None
-        self.th_TH: Optional[VoiceLine] = VoiceLine(self.ut.get('th-TH')) if self.ut.get('th-TH') else None
-        self.tr_TR: Optional[VoiceLine] = VoiceLine(self.ut.get('tr-TR')) if self.ut.get('tr-TR') else None
-        self.vi_VN: Optional[VoiceLine] = VoiceLine(self.ut.get('vi-VN')) if self.ut.get('vi-VN') else None
-        self.zh_CN: Optional[VoiceLine] = VoiceLine(self.ut.get('zh-CN')) if self.ut.get('zh-CN') else None
-        self.zh_TW: Optional[VoiceLine] = VoiceLine(self.ut.get('zh-TW')) if self.ut.get('zh-TW') else None
+        self.ar_AE: Optional[VoiceLine] = VoiceLine(self.ut['ar-AE']) if self.ut.get('ar-AE') else None
+        self.de_DE: Optional[VoiceLine] = VoiceLine(self.ut['de-DE']) if self.ut.get('de-DE') else None
+        self.en_US: Optional[VoiceLine] = VoiceLine(self.ut['en-US']) if self.ut.get('en-US') else None
+        self.es_ES: Optional[VoiceLine] = VoiceLine(self.ut['es-ES']) if self.ut.get('es-ES') else None
+        self.es_MX: Optional[VoiceLine] = VoiceLine(self.ut['es-MX']) if self.ut.get('es-MX') else None
+        self.fr_FR: Optional[VoiceLine] = VoiceLine(self.ut['fr-FR']) if self.ut.get('fr-FR') else None
+        self.id_ID: Optional[VoiceLine] = VoiceLine(self.ut['id-ID']) if self.ut.get('id-ID') else None
+        self.it_IT: Optional[VoiceLine] = VoiceLine(self.ut['it-IT']) if self.ut.get('it-IT') else None
+        self.ja_JP: Optional[VoiceLine] = VoiceLine(self.ut['ja-JP']) if self.ut.get('ja-JP') else None
+        self.ko_KR: Optional[VoiceLine] = VoiceLine(self.ut['ko-KR']) if self.ut.get('ko-KR') else None
+        self.pl_PL: Optional[VoiceLine] = VoiceLine(self.ut['pl-PL']) if self.ut.get('pl-PL') else None
+        self.pt_BR: Optional[VoiceLine] = VoiceLine(self.ut['pt-BR']) if self.ut.get('pt-BR') else None
+        self.ru_RU: Optional[VoiceLine] = VoiceLine(self.ut['ru-RU']) if self.ut.get('ru-RU') else None
+        self.th_TH: Optional[VoiceLine] = VoiceLine(self.ut['th-TH']) if self.ut.get('th-TH') else None
+        self.tr_TR: Optional[VoiceLine] = VoiceLine(self.ut['tr-TR']) if self.ut.get('tr-TR') else None
+        self.vi_VN: Optional[VoiceLine] = VoiceLine(self.ut['vi-VN']) if self.ut.get('vi-VN') else None
+        self.zh_CN: Optional[VoiceLine] = VoiceLine(self.ut['zh-CN']) if self.ut.get('zh-CN') else None
+        self.zh_TW: Optional[VoiceLine] = VoiceLine(self.ut['zh-TW']) if self.ut.get('zh-TW') else None
 
     def __repr__(self) -> str:
         attrs = [
@@ -417,8 +417,8 @@ class Agent(BaseModel):
     def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._description: Union[str, Dict[str, str]] = data['description']
+        self._display_name: Dict[str, str] = data['displayName']
+        self._description: Dict[str, str] = data['description']
         self.developer_name: str = data['developerName']
         self.character_tags: Optional[str] = data['characterTags']
         self._display_icon: str = data['displayIcon']
@@ -454,14 +454,15 @@ class Agent(BaseModel):
         return self.name_localizations.american_english
 
     @property
-    def description_localizations(self) -> Localization:
+    def description_localizations(self) -> Optional[Localization]:
         """:class: `Localization` Returns the agent's descriptions."""
         return Localization(self._description, locale=self._client.locale)
 
     @property
-    def description(self) -> str:
+    def description(self) -> Optional[str]:
         """:class: `str` Returns the agent's description."""
-        return self.description_localizations.american_english
+        if self.description_localizations is not None:
+            return self.description_localizations.american_english
 
     @property
     def display_icon(self) -> Asset:

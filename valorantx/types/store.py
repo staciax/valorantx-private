@@ -20,10 +20,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+from __future__ import annotations
 
-from typing import List, TypedDict, Union
+from typing import TYPE_CHECKING, List, TypedDict, Union
 
-from typing_extensions import NotRequired
+if TYPE_CHECKING:
+    from typing_extensions import NotRequired
 
 
 class Item(TypedDict):
@@ -41,7 +43,7 @@ class BundleItem(TypedDict):
     IsPromoItem: bool
 
 
-class Bundle(TypedDict):
+class BundleT(TypedDict):
     ID: str
     DataAssetID: str
     CurrencyID: str
@@ -51,8 +53,8 @@ class Bundle(TypedDict):
 
 
 class FeaturedBundle(TypedDict):
-    Bundle: Bundle
-    Bundles: List[Bundle]
+    Bundle: BundleT
+    Bundles: List[BundleT]
     BundleRemainingDurationInSeconds: int
 
 
@@ -98,7 +100,7 @@ class BonusStoreOffer(TypedDict):
     IsSeen: bool
 
 
-class BonusStore(TypedDict):
+class BonusStoreT(TypedDict):
     BonusStoreOffers: List[BonusStoreOffer]
     BonusStoreRemainingDurationInSeconds: int
 
@@ -106,7 +108,7 @@ class BonusStore(TypedDict):
 class StoreFront(TypedDict, total=False):
     FeaturedBundle: FeaturedBundle
     SkinsPanelLayout: SkinsPanelLayout
-    BonusStore: NotRequired[BonusStore]
+    BonusStore: NotRequired[BonusStoreT]
 
 
 Balances = TypedDict(

@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional
 
 from ..asset import Asset
 from ..enums import ItemType, SpraySlotID
@@ -45,7 +45,7 @@ class Spray(BaseModel):
     def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs: Any) -> None:
         super().__init__(client=client, data=data, **kwargs)
         self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._display_name: Dict[str, str] = data['displayName']
         self._category: Optional[str] = data['category']
         self._theme_uuid: Optional[str] = data['themeUuid']
         self._display_icon: Optional[str] = data['displayIcon']
@@ -139,8 +139,9 @@ class Spray(BaseModel):
         """:class: `bool` Returns whether the spray is favorited."""
         return self._is_favorite
 
-    def to_favorite(self) -> None:
+    def to_favorite(self) -> bool:
         self._is_favorite = True
+        return self.is_favorite()
 
     async def add_favorite(self, *, force: bool = False) -> bool:
         """coro Adds the spray to the user's favorites."""
@@ -172,14 +173,14 @@ class SprayLevel(BaseModel):
     def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._base_spray_uuid: Optional[str] = data['SprayID']
+        self._base_spray_uuid: str = data['SprayID']
         self._spray_level: int = data['sprayLevel']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._display_name: Dict[str, str] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
         self._asset_path: str = data['assetPath']
         self._price: int = 0
         self.type: ItemType = ItemType.spray_level
-        self._base_spray: Optional[Spray] = self._client.get_spray(self._base_spray_uuid)
+        self._base_spray: Optional[Spray] = self._client.get_spray(uuid=self._base_spray_uuid, level=False)
 
     def __str__(self) -> str:
         return self.display_name
@@ -233,9 +234,9 @@ class SprayLevel(BaseModel):
         """:class: `bool` Returns whether the spray is favorited."""
         return self._base_spray.is_favorite()
 
-    def to_favorite(self) -> None:
+    def to_favorite(self) -> bool:
         """Sets the spray as favorited."""
-        self._base_spray.to_favorite()
+        return self._base_spray.to_favorite()
 
     async def add_favorite(self, *, force: bool = False) -> bool:
         """|coro|
@@ -278,7 +279,7 @@ class SprayBundle(Spray, BaseFeaturedBundleItem):
         return f'<{self.__class__.__name__} {joined}>'
 
     @classmethod
-    def _from_bundle(cls, client: Client, uuid: str, bundle: Dict[str, Any]) -> Optional[Self]:
+    def _from_bundle(cls, client: Client, uuid: str, bundle: FeaturedBundleItemPayload) -> Optional[Self]:
         """Returns the spray level with the given UUID."""
         data = client._assets.get_spray(uuid)
         return cls(client=client, data=data, bundle=bundle) if data else None

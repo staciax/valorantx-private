@@ -28,10 +28,7 @@ import logging
 import os
 import shutil
 from functools import cache as _cache, wraps
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, TypeVar
-
-from typing_extensions import Concatenate, ParamSpec
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional
 
 from .enums import CurrencyType, ItemType
 from .errors import AuthRequired
@@ -46,9 +43,6 @@ __all__ = (
     'Assets',
 )
 # fmt: on
-
-P = ParamSpec('P')
-R = TypeVar('R')
 
 _log = logging.getLogger(__name__)
 
@@ -70,26 +64,30 @@ def _find(value: Any, key: Any) -> bool:
         for key_value in key.values():
             if _find(value, key_value):
                 return True
+        return False
     elif isinstance(value, dict) and isinstance(key, str):
         for value_value in value.values():
             if _find(value_value, key):
                 return True
+        return False
     elif isinstance(value, dict) and isinstance(key, dict):
         for key_value in key.values():
             if _find(value, key_value):
                 return True
+        return False
     elif isinstance(value, list) and isinstance(key, str):
         for list_value in value:
             if _find(list_value, key):
                 return True
+        return False
     else:
         return False
 
 
 def _finder():
-    def decorator(function: Callable[Concatenate[Assets, P], R]) -> Callable[P, R]:
+    def decorator(function: Callable[..., Any]) -> Callable[..., Mapping[Any, Any]]:
         @wraps(function)
-        def wrapper(self: Assets, *args: ParamSpec.args, **kwargs: ParamSpec.kwargs) -> Any:
+        def wrapper(self: Assets, *args: Any, **kwargs: Any) -> Any:
 
             if not args and not kwargs:
                 return function(self, uuid=None)
@@ -108,7 +106,11 @@ def _finder():
             finder_keys = [x for x in list(kwargs.keys())]
             # inspired by https://github.com/MinshuG/valorant-api/blob/b739850d2722247b56b9e4d12caa8b3c326ce141/valorant_api/base_list.py#L17  # noqa: E501
 
-            get_key = function.__doc__.split(',')[0].strip()
+            doc = function.__doc__
+            if doc is None:
+                get_key = '...'
+            else:
+                get_key = doc.split(',')[0].strip()
             data = Assets.ASSET_CACHE.get(get_key, {})
 
             if not data:
@@ -214,7 +216,7 @@ def _finder():
 
 class Assets:
 
-    _cache_dir: Optional[Path] = os.path.join(os.getcwd(), '.valorantx_cache')
+    _cache_dir: str = os.path.join(os.getcwd(), '.valorantx_cache')
 
     ASSET_CACHE = {}
     OFFER_CACHE = {}
@@ -262,163 +264,163 @@ class Assets:
     @_finder()
     def get_agent(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """agents, Get an agent by UUID."""
-        data = self.get_asset('agents')
+        data = self.get_asset('agents') or {}
         return data.get(uuid)
 
     @_finder()
     def get_buddy(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """buddies, Get a buddy by UUID."""
-        data = self.get_asset('buddies')
+        data = self.get_asset('buddies') or {}
         return data.get(uuid)
 
     @_finder()
     def get_buddy_level(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """buddies_levels, Get a buddy level by UUID."""
-        data = self.get_asset('buddies_levels')
+        data = self.get_asset('buddies_levels') or {}
         return data.get(uuid)
 
     @_finder()
     def get_bundle(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """bundles, Get a bundle by UUID."""
-        data = self.get_asset('bundles')
+        data = self.get_asset('bundles') or {}
         return data.get(uuid)
 
     @_finder()
     def get_ceremony(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """ceremonies, Get a ceremony by UUID."""
-        data = self.get_asset('ceremonies')
+        data = self.get_asset('ceremonies') or {}
         return data.get(uuid)
 
     @_finder()
     def get_competitive_tier(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """competitive_tiers, Get a competitive tier by UUID."""
-        data = self.get_asset('competitive_tiers')
+        data = self.get_asset('competitive_tiers') or {}
         return data.get(uuid)
 
     @_finder()
     def get_content_tier(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """content_tiers, Get a content tier by UUID."""
-        data = self.get_asset('content_tiers')
+        data = self.get_asset('content_tiers') or {}
         return data.get(uuid)
 
     @_finder()
     def get_contract(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """contracts, Get a contract by UUID."""
-        data = self.get_asset('contracts')
+        data = self.get_asset('contracts') or {}
         return data.get(uuid)
 
     @_finder()
     def get_currency(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """currencies, Get a currency by UUID."""
-        data = self.get_asset('currencies')
+        data = self.get_asset('currencies') or {}
         return data.get(uuid)
 
     @_finder()
     def get_event(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """events, Get an event by UUID."""
-        data = self.get_asset('events')
+        data = self.get_asset('events') or {}
         return data.get(uuid)
 
     @_finder()
     def get_game_mode(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """game_modes, Get a game mode by UUID."""
-        data = self.get_asset('game_modes')
+        data = self.get_asset('game_modes') or {}
         return data.get(uuid)
 
     @_finder()
     def get_game_mode_equippable(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """game_modes_equippables, Get a game mode equippable by UUID."""
-        data = self.get_asset('game_modes_equippables')
+        data = self.get_asset('game_modes_equippables') or {}
         return data.get(uuid)
 
     @_finder()
     def get_gear(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """gear, Get a gear by UUID."""
-        data = self.get_asset('gear')
+        data = self.get_asset('gear') or {}
         return data.get(uuid)
 
     @_finder()
     def get_level_border(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """level_borders, Get a level border by UUID."""
-        data = self.get_asset('level_borders')
+        data = self.get_asset('level_borders') or {}
         return data.get(uuid)
 
     @_finder()
     def get_map(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """maps, Get a map by UUID."""
-        data = self.get_asset('maps')
+        data = self.get_asset('maps') or {}
         return data.get(uuid)
 
     @_finder()
     def get_mission(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """missions, Get a mission by UUID."""
-        data = self.get_asset('missions')
+        data = self.get_asset('missions') or {}
         return data.get(uuid)
 
     @_finder()
     def get_player_card(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """player_cards, Get a player card by UUID."""
-        data = self.get_asset('player_cards')
+        data = self.get_asset('player_cards') or {}
         return data.get(uuid)
 
     @_finder()
     def get_player_title(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """player_titles, Get a player title by UUID."""
-        data = self.get_asset('player_titles')
+        data = self.get_asset('player_titles') or {}
         return data.get(uuid)
 
     @_finder()
     def get_season(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """seasons, Get a season by UUID."""
-        data = self.get_asset('seasons')
+        data = self.get_asset('seasons') or {}
         return data.get(uuid)
 
     @_finder()
     def get_season_competitive(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """seasons_competitive, Get a season competitive by UUID."""
-        data = self.get_asset('seasons_competitive')
+        data = self.get_asset('seasons_competitive') or {}
         return data.get(uuid)
 
     @_finder()
     def get_spray(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """sprays, Get a spray by UUID."""
-        data = self.get_asset('sprays')
+        data = self.get_asset('sprays') or {}
         return data.get(uuid)
 
     @_finder()
     def get_spray_level(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """sprays_levels, Get a spray level by UUID."""
-        data = self.get_asset('sprays_levels')
+        data = self.get_asset('sprays_levels') or {}
         return data.get(uuid)
 
     @_finder()
     def get_theme(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """themes, Get a theme by UUID."""
-        data = self.get_asset('themes')
+        data = self.get_asset('themes') or {}
         return data.get(uuid)
 
     @_finder()
     def get_weapon(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """weapons, Get a weapon by UUID."""
-        data = self.get_asset('weapons')
+        data = self.get_asset('weapons') or {}
         return data.get(uuid)
 
     @_finder()
     def get_skin(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """weapon_skins, Get a weapon skin by UUID."""
-        data = self.get_asset('weapon_skins')
+        data = self.get_asset('weapon_skins') or {}
         return data.get(uuid)
 
     @_finder()
     def get_skin_level(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """weapon_skins_levels, Get a weapon skin level by UUID."""
-        data = self.get_asset('weapon_skins_levels')
+        data = self.get_asset('weapon_skins_levels') or {}
         return data.get(uuid)
 
     @_finder()
     def get_skin_chroma(self, uuid: str) -> Optional[Mapping[str, Any]]:
         """weapon_skins_chromas, Get a weapon skin chroma by UUID."""
-        data = self.get_asset('weapon_skins_chromas')
+        data = self.get_asset('weapon_skins_chromas') or {}
         return data.get(uuid)
 
     def get_item_price(self, uuid: str) -> int:
@@ -566,6 +568,7 @@ class Assets:
                 return False
             else:
                 return True
+        return False
 
     def __mkdir_assets_dir(self) -> bool:
         """Make the assets' directory."""
@@ -579,6 +582,7 @@ class Assets:
             else:
                 _log.info(f'Created asset directory')
                 return True
+        return False
 
     def __dump(self, data: Mapping[str, Any], filename: str) -> None:
         """Dump data to a file."""

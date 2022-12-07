@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional
 
 from ..asset import Asset
 from ..enums import ItemType
@@ -44,7 +44,7 @@ class Buddy(BaseModel):
     def __init__(self, *, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._display_name: Dict[str, str] = data['displayName']
         self._is_hidden_if_not_owned: bool = data['isHiddenIfNotOwned']
         self._theme_uuid: Optional[str] = data['themeUuid']
         self._display_icon: Optional[str] = data['displayIcon']
@@ -71,7 +71,7 @@ class Buddy(BaseModel):
         return self.name_localizations.american_english
 
     @property
-    def theme(self) -> Theme:
+    def theme(self) -> Optional[Theme]:
         """:class: `Theme` Returns the buddy's theme."""
         return self._client.get_theme(uuid=self._theme_uuid)
 
@@ -145,7 +145,7 @@ class BuddyLevel(BaseModel):
         self._uuid: str = data['uuid']
         self._base_buddy_uuid: Optional[str] = data['BuddyID']
         self.level: int = data['charmLevel']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._display_name: Dict[str, str] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
         self._price: int = self._client.get_item_price(self.uuid)
@@ -212,7 +212,7 @@ class BuddyLevel(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the buddy level with the given UUID."""
-        data = client._assets.get_buddy_level(uuid)
+        data = client._assets.get_buddy_level(uuid=uuid)
         return cls(client=client, data=data) if data else None
 
 

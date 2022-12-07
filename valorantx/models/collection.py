@@ -321,10 +321,9 @@ class SkinCollection:
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
 
-    def __iter__(self) -> Iterator[SkinL]:
-        return iter(
-            [self.melee, *self.sidearms, *self.smgs, *self.shotguns, *self.rifles, *self.snipers, *self.machine_guns]
-        )
+    def __iter__(self) -> Iterator[Optional[SkinL]]:
+        skin_l = [self.melee, *self.sidearms, *self.smgs, *self.shotguns, *self.rifles, *self.snipers, *self.machine_guns]
+        return iter(skin_l)
 
     def _update(self, loadout: List[SkinL]) -> None:
         for skin in loadout:
@@ -334,7 +333,7 @@ class SkinCollection:
                     setattr(self, base_weapon.display_name.lower(), skin)
 
     @property
-    def sidearms(self) -> List[SkinL]:
+    def sidearms(self) -> List[Optional[SkinL]]:
         return [
             self.classic,
             self.shorty,
@@ -344,26 +343,26 @@ class SkinCollection:
         ]
 
     @property
-    def smgs(self) -> List[SkinL]:
+    def smgs(self) -> List[Optional[SkinL]]:
         return [self.stinger, self.spectre]
 
     @property
-    def shotguns(self) -> List[SkinL]:
+    def shotguns(self) -> List[Optional[SkinL]]:
         return [self.bucky, self.judge]
 
     @property
-    def rifles(self) -> List[SkinL]:
+    def rifles(self) -> List[Optional[SkinL]]:
         return [self.bulldog, self.guardian, self.phantom, self.vandal]
 
     @property
-    def snipers(self) -> List[SkinL]:
+    def snipers(self) -> List[Optional[SkinL]]:
         return [self.marshal, self.operator]
 
     @property
-    def machine_guns(self) -> List[SkinL]:
+    def machine_guns(self) -> List[Optional[SkinL]]:
         return [self.ares, self.odin]
 
-    def to_list(self) -> List[SkinL]:
+    def to_list(self) -> List[Optional[SkinL]]:
         return [self.melee, *self.sidearms, *self.smgs, *self.shotguns, *self.rifles, *self.snipers, *self.machine_guns]
 
 
@@ -376,8 +375,9 @@ class SprayCollection:
     def __repr__(self) -> str:
         return f'<SprayCollection slot_1={self.slot_1!r}, slot_2={self.slot_2!r} slot_3={self.slot_3!r}>'
 
-    def __iter__(self) -> Iterator[SprayL]:
-        return iter([self.slot_1, self.slot_2, self.slot_3])
+    def __iter__(self) -> Iterator[Optional[SprayL]]:
+        spray_l = [self.slot_1, self.slot_2, self.slot_3]
+        return iter(spray_l)
 
     def __eq__(self, other: object) -> bool:
         return (
@@ -411,7 +411,7 @@ class SprayCollection:
     def slot_3(self) -> Optional[SprayL]:
         return self._slot_3
 
-    def to_list(self) -> List[SprayL]:
+    def to_list(self) -> List[Optional[SprayL]]:
         return [self.slot_1, self.slot_2, self.slot_3]
 
 

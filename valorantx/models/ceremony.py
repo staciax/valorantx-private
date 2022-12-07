@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional
 
 from ..localization import Localization
 from .base import BaseModel
@@ -44,7 +44,7 @@ class Ceremony(BaseModel):
     def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._display_name: Dict[str, str] = data['displayName']
         self.asset_path: str = data['assetPath']
 
     def __str__(self) -> str:

@@ -44,9 +44,9 @@ class Mission(BaseModel):
     def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
-        self._title: Optional[Union[str, Dict[str, str]]] = data['title']
-        self._type: Optional[str] = data['type']
+        self._display_name: Optional[Dict[str, str]] = data['displayName']
+        self._title: Optional[Dict[str, str]] = data['title']
+        self._type: Optional[str] = data.get('type')
         self.xp: int = data['xpGrant']
         self.progress_to_complete: int = data['progressToComplete']
         self._activation_date_iso: str = data['activationDate']
@@ -87,7 +87,7 @@ class Mission(BaseModel):
     @property
     def type(self) -> Optional[MissionType]:
         """Optional[:class: `MissionType`] Returns the mission's type."""
-        if self._type is None:
+        if self._type == '':
             return None
         type_strip = self._type.removeprefix('EAresMissionType::')
         return try_enum(MissionType, type_strip)
@@ -114,7 +114,7 @@ class MissionU(Mission):
         super().__init__(client=client, data=data)
         self._objectives: Dict[str, int] = mission['Objectives']
         self._complete: bool = mission['Complete']
-        self._expiration_time_iso: Optional[str] = mission.get('ExpirationTime')
+        self._expiration_time_iso: Optional[Union[datetime.datetime, str]] = mission.get('ExpirationTime')
         self.current_progress: int = 0
         self.left_progress: int = 0
         self.total_progress: int = 0
@@ -152,20 +152,20 @@ class MissionU(Mission):
     @property
     def expiration_time(self) -> Optional[datetime.datetime]:
         """:class: `datetime.datetime` Returns the contract's expiration time."""
-        return utils.parse_iso_datetime(self._expiration_time_iso) if self._expiration_time_iso else None
+        return utils.parse_iso_datetime(str(self._expiration_time_iso)) if self._expiration_time_iso else None
 
     @classmethod
     def _from_mission(cls, client: Client, mission: MissionUPayload) -> Optional[Self]:
         """Returns the mission with the given UUID."""
-        data = client._assets.get_mission(mission['ID'])
+        data = client._assets.get_mission(uuid=mission['ID'])
         return cls(client=client, data=data, mission=mission) if data else None
 
 
 class MissionMeta:
     def __init__(self, data: MissionMetaPayload) -> None:
         self.NPE_completed: bool = data.get('NPECompleted', False)
-        self._weekly_check_point: Union[datetime, str] = data.get('WeeklyCheckpoint')
-        self._weekly_refill_time: Union[datetime, str] = data.get('WeeklyRefillTime')
+        self._weekly_check_point: Union[datetime.datetime, str] = data.get('WeeklyCheckpoint')
+        self._weekly_refill_time: Union[datetime.date, str] = data.get('WeeklyRefillTime')
 
     def __bool__(self) -> bool:
         return self.NPE_completed
@@ -192,9 +192,9 @@ class MissionMeta:
     @property
     def weekly_check_point(self) -> Optional[datetime.datetime]:
         """:class: `datetime.datetime` Returns the weekly check point."""
-        return utils.parse_iso_datetime(self._weekly_check_point) if self._weekly_check_point else None
+        return utils.parse_iso_datetime(str(self._weekly_check_point)) if self._weekly_check_point else None
 
     @property
     def weekly_refill_time(self) -> Optional[datetime.datetime]:
         """:class: `datetime.datetime` Returns the weekly refill time."""
-        return utils.parse_iso_datetime(self._weekly_refill_time) if self._weekly_refill_time else None
+        return utils.parse_iso_datetime(str(self._weekly_refill_time)) if self._weekly_refill_time else None

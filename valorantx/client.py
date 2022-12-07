@@ -33,12 +33,12 @@ from typing import (
     Dict,
     Iterator,
     List,
-    Mapping,
     Optional,
     Tuple,
     Type,
     TypeVar,
     Union,
+    overload,
 )
 
 from . import utils
@@ -131,8 +131,8 @@ _loop: Any = _LoopSentinel()
 # link: https://github.com/Rapptz/discord.py/blob/9ea6ee8887b65f21ccc0bcf013786f4ea61ba608/discord/client.py#L111
 
 
-def _authorize_required(func):
-    def wrapper(self: Optional[Client] = MISSING, *args: Any, **kwargs: Any) -> Any:
+def _authorize_required(func: Callable[..., Any]) -> Callable[[], Any]:
+    def wrapper(self: Client = MISSING, *args: Any, **kwargs: Any) -> Any:
         if not self.is_authorized():
             client_func = f'Client.{func.__name__}'
             raise AuthRequired(f"{client_func!r} requires authorization")
@@ -152,7 +152,6 @@ class Client:
 
         # config
         self._closed: bool = False
-        self._ready: bool = False
         self._version: Version = MISSING
         self._season: Season = MISSING
 
@@ -312,6 +311,7 @@ class Client:
 
         if self.version is MISSING:
             self.version = await self.get_valorant_version()
+
         self.http._riot_client_version = self.version.riot_client_version
 
         await self._assets.fetch_assets(reload=reload, version=self.version)
@@ -367,8 +367,10 @@ class Client:
             content = await self.fetch_content()
             for season in reversed(content.get_seasons()):
                 if season.is_active():
-                    self._season = self.get_season(uuid=season.id)
-                    break
+                    get_season = self.get_season(uuid=season.id)
+                    if get_season is not None:
+                        self.season = get_season
+                        break
 
     async def authorize_from_data(self, data: Dict) -> None:
         self._is_authorized = True
@@ -384,8 +386,10 @@ class Client:
             content = await self.fetch_content()
             for season in content.get_seasons():
                 if season.is_active():
-                    self._season = self.get_season(uuid=season.id)
-                    break
+                    get_season = self.get_season(uuid=season.id)
+                    if get_season is not None:
+                        self.season = get_season
+                        break
 
     def is_authorized(self) -> bool:
         """:class:`bool`: Whether the client is authorized."""
@@ -445,7 +449,7 @@ class Client:
         self._locale = try_enum(Locale, locale) if isinstance(locale, str) else locale
 
     @property
-    def version(self) -> Optional[Version]:
+    def version(self) -> Version:
         """:class:`Version`: The version of the client."""
         return self._version
 
@@ -576,6 +580,14 @@ class Client:
         data = self._assets.get_season_competitive(*args, **kwargs)
         return SeasonCompetitive(client=self, data=data) if data else None
 
+    @overload
+    def get_spray(self, uuid: str, level=False) -> Optional[Spray]:
+        ...
+
+    @overload
+    def get_spray(self, uuid: str, level=True) -> Optional[Union[Spray, SprayLevel]]:
+        ...
+
     def get_spray(self, *args: Any, **kwargs: Any) -> Optional[Union[Spray, SprayLevel]]:
         """:class:`Optional[Union[Spray, SprayLevel]]`: Gets a spray from the assets."""
         level = kwargs.get('level', True)
@@ -596,6 +608,18 @@ class Client:
         """Optional[:class:`Weapon`]: Gets a weapon from the assets."""
         data = self._assets.get_weapon(*args, **kwargs)
         return Weapon(client=self, data=data) if data else None
+
+    @overload
+    def get_skin(self, uuid: str, level=False) -> Optional[Union[Skin, SkinChroma]]:
+        ...
+
+    @overload
+    def get_skin(self, uuid: str, chroma=False) -> Optional[Union[Skin, SkinLevel]]:
+        ...
+
+    @overload
+    def get_skin(self, uuid: str, level=False, chroma=False) -> Optional[Skin]:
+        ...
 
     def get_skin(self, *args: Any, **kwargs: Any) -> Optional[Union[Skin, SkinLevel, SkinChroma]]:
         """Optional[:class:`Union[Skin, SkinLevel, SkinChroma]`]: Gets a skin from the assets."""
@@ -630,6 +654,8 @@ class Client:
         for ss_com in ss_com_all:
             if ss_com.season == season:
                 ss_com_tiers = ss_com.competitive_tiers
+                if ss_com_tiers is None:
+                    return None
                 for tier in ss_com_tiers.tiers:
                     if tier.tier == tier_number:
                         return tier
@@ -645,6 +671,8 @@ class Client:
             The agent.
         """
         data = self._assets.get_asset('agents')
+        if data is None:
+            return
         for item in data.values():
             yield Agent(client=self, data=item)
 
@@ -657,6 +685,8 @@ class Client:
             The buddy.
         """
         data = self._assets.get_asset('buddies')
+        if data is None:
+            return
         for item in data.values():
             yield Buddy(client=self, data=item)
 
@@ -669,6 +699,8 @@ class Client:
             The buddy level.
         """
         data = self._assets.get_asset('buddies_levels')
+        if data is None:
+            return
         for item in data.values():
             yield BuddyLevel(client=self, data=item)
 
@@ -681,6 +713,8 @@ class Client:
             The bundle.
         """
         data = self._assets.get_asset('bundles')
+        if data is None:
+            return
         for item in data.values():
             yield Bundle(client=self, data=item)
 
@@ -693,6 +727,8 @@ class Client:
             The player title.
         """
         data = self._assets.get_asset('player_titles')
+        if data is None:
+            return
         for item in data.values():
             yield PlayerTitle(client=self, data=item)
 
@@ -705,6 +741,8 @@ class Client:
             The player card.
         """
         data = self._assets.get_asset('player_cards')
+        if data is None:
+            return
         for item in data.values():
             yield PlayerCard(client=self, data=item)
 
@@ -717,6 +755,8 @@ class Client:
             The skin.
         """
         data = self._assets.get_asset('weapon_skins')
+        if data is None:
+            return
         for item in data.values():
             yield Skin(client=self, data=item)
 
@@ -729,6 +769,8 @@ class Client:
             The skin level.
         """
         data = self._assets.get_asset('weapon_skins_levels')
+        if data is None:
+            return
         for item in data.values():
             yield SkinLevel(client=self, data=item)
 
@@ -741,6 +783,8 @@ class Client:
             The skin chroma.
         """
         data = self._assets.get_asset('weapon_skins_chromas')
+        if data is None:
+            return
         for item in data.values():
             yield SkinChroma(client=self, data=item)
 
@@ -753,6 +797,8 @@ class Client:
             The spray.
         """
         data = self._assets.get_asset('sprays')
+        if data is None:
+            return
         for item in data.values():
             yield Spray(client=self, data=item)
 
@@ -765,6 +811,8 @@ class Client:
             The spray level.
         """
         data = self._assets.get_asset('sprays_levels')
+        if data is None:
+            return
         for item in data.values():
             yield SprayLevel(client=self, data=item)
 
@@ -777,6 +825,8 @@ class Client:
             The weapon.
         """
         data = self._assets.get_asset('weapons')
+        if data is None:
+            return
         for item in data.values():
             yield Weapon(client=self, data=item)
 
@@ -789,8 +839,38 @@ class Client:
             The season.
         """
         data = self._assets.get_asset('seasons_competitive')
+        if data is None:
+            return
         for item in data.values():
             yield SeasonCompetitive(client=self, data=item)
+
+    def get_all_events(self) -> Iterator[Event]:
+        """Gets all events from the assets.
+
+        Yields
+        -------
+        :class:`Event`
+            The event.
+        """
+        data = self._assets.get_asset('events')
+        if data is None:
+            return
+        for item in data.values():
+            yield Event(client=self, data=item)
+
+    def get_all_seasons(self) -> Iterator[Season]:
+        """Gets all seasons from the assets.
+
+        Yields
+        -------
+        :class:`Season`
+            The season.
+        """
+        data = self._assets.get_asset('seasons')
+        if data is None:
+            return
+        for item in data.values():
+            yield Season(client=self, data=item)
 
     def get_item_price(
         self, item: Union[str, Skin, SkinChroma, SkinLevel, PlayerCard, Buddy, BuddyLevel, Spray, SprayLevel]
@@ -876,7 +956,7 @@ class Client:
 
     # player endpoints
 
-    async def fetch_name_by_puuid(self, puuid: Optional[Union[List[str, str]]] = None) -> List[NameService]:
+    async def fetch_name_by_puuid(self, puuid: Optional[Union[List[str], str]] = None) -> List[NameService]:
         """|coro|
 
         Fetches the name history of a player by their puuid.
@@ -954,7 +1034,7 @@ class Client:
         return collection
 
     @_authorize_required
-    def put_loadout(self, loadout: Mapping) -> Any:  # TODO: loadout object
+    async def put_loadout(self, loadout: Any) -> None:  # TODO: loadout object
         """|coro|
 
         Puts the loadout for the current user.
@@ -969,7 +1049,8 @@ class Client:
         :class:`Any`
             The response from the API.
         """
-        return self.http.put_player_loadout(loadout)
+        # await self.http.put_player_loadout(loadout)
+        pass
 
     @_authorize_required
     async def fetch_mmr(self, puuid: Optional[str] = None) -> MMR:
@@ -994,7 +1075,7 @@ class Client:
     async def fetch_match_history(
         self,
         puuid: Optional[str] = None,
-        queue: Optional[str, QueueType] = None,
+        queue: Optional[Union[str, QueueType]] = None,
         *,
         start: int = 0,
         end: int = 15,
@@ -1178,7 +1259,7 @@ class Client:
         :class:`Favorites`
             The favorites items for the current user.
         """
-        if isinstance(item, (Buddy, PlayerCard, Skin, Spray)):
+        if isinstance(item, (Buddy, PlayerCard, Skin, Spray, LevelBorder)):
             uuid = item.uuid
         else:
             uuid = item if utils.is_uuid(item) else ''
@@ -1193,7 +1274,7 @@ class Client:
 
         Parameters
         ----------
-        item: Union[:class:`str`, :class:`Buddy`, :class:`PlayerCard`, :class:`Skin`, :class:`Spray`]
+        item: Union[:class:`str`, :class:`Buddy`, :class:`PlayerCard`, :class:`Skin`, :class:`Spray`, :class:`LevelBorder`]
             The item to remove as a favorite.
 
         Returns
@@ -1201,7 +1282,7 @@ class Client:
         :class:`Favorites`
             The favorites items for the current user.
         """
-        if isinstance(item, (Buddy, PlayerCard, Skin, Spray)):
+        if isinstance(item, (Buddy, PlayerCard, Skin, Spray, LevelBorder)):
             uuid = item.uuid
         else:
             uuid = item if utils.is_uuid(item) else ''
@@ -1219,7 +1300,7 @@ class Client:
         if isinstance(party_id, PartyPlayer):
             party_id = party_id.id
 
-        data = await self.http.fetch_party(party_id=party_id)
+        data = await self.http.fetch_party(party_id=str(party_id))
         party = Party(client=self, data=data)
         await party.update_member_display_name()
         return party

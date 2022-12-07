@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional
 
 from ..asset import Asset
 from ..enums import ItemType
@@ -49,7 +49,7 @@ class PlayerCard(BaseModel):
     def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs: Any) -> None:
         super().__init__(client=client, data=data, **kwargs)
         self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._display_name: Dict[str, str] = data['displayName']
         self._is_hidden_if_not_owned: bool = data.get('isHiddenIfNotOwned', False)
         self._display_icon: Optional[str] = data['displayIcon']
         self._small_icon: Optional[str] = data['smallArt']
@@ -156,7 +156,7 @@ class PlayerCard(BaseModel):
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
-        data = client._assets.get_player_card(uuid)
+        data = client._assets.get_player_card(uuid=uuid)
         return cls(client=client, data=data) if data else None
 
 

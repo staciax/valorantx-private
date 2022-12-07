@@ -26,8 +26,6 @@ from __future__ import annotations
 import abc
 from typing import TYPE_CHECKING, Any, Mapping, Optional
 
-from ..enums import MeleeWeaponID
-
 if TYPE_CHECKING:
     from ..client import Client
     from ..types.store import FeaturedBundleItem as FeaturedBundleItemPayload
@@ -50,7 +48,7 @@ class BaseModel(abc.ABC):
     def __init__(self, client: Client, data: Optional[Mapping[str, Any]], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._client: Client = client
-        self._uuid: str = data.get('uuid') if data is not None else ''
+        self._uuid: str = data.get('uuid', '') if data is not None else ''
         self._extras: Optional[Mapping[str, Any]] = kwargs
 
     def __repr__(self) -> str:

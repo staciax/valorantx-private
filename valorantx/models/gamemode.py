@@ -46,11 +46,12 @@ class GameMode(BaseModel):
     def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._display_name: Dict[str, str] = data['displayName']
         self._allows_match_timeouts: bool = data.get('allowsMatchTimeouts', False)
         self._is_team_voice_allowed: bool = data.get('isTeamVoiceAllowed', False)
         self._is_minimap_hidden: bool = data.get('isMinimapHidden', False)
         self._orb_count: int = data.get('orbCount', 0)
+        self._rounds_per_half: int = data.get('roundsPerHalf', -1)
         self._team_roles: Optional[List[str]] = data.get('teamRoles')
         self._game_feature_overrides: Optional[List[Dict[str, Any]]]
         self._game_rule_bool_overrides: Optional[List[Dict[str, Any]]]
@@ -103,9 +104,15 @@ class GameMode(BaseModel):
         """:class: `bool` Returns whether the game mode hides the minimap."""
         return self._is_minimap_hidden
 
+    @property
     def orb_count(self) -> int:
         """:class: `int` Returns the game mode's orb count."""
         return self._orb_count
+
+    @property
+    def rounds_per_half(self) -> int:
+        """:class: `int` Returns the game mode's rounds per half."""
+        return self._rounds_per_half
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -118,7 +125,7 @@ class GameModeEquippable(BaseModel):
     def __init__(self, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._display_name: Dict[str, str] = data['displayName']
         self._category: Optional[str] = data['category']
         self._display_icon: str = data['displayIcon']
         self._kill_stream_icon: str = data['killStreamIcon']

@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional
 
 from ..localization import Localization
 from .base import BaseModel
@@ -44,8 +44,8 @@ class PlayerTitle(BaseModel):
     def __init__(self, *, client: Client, data: Mapping[str, Any]) -> None:
         super().__init__(client=client, data=data)
         self._uuid: str = data['uuid']
-        self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._title_text: Union[str, Dict[str, str]] = data['titleText']
+        self._display_name: Dict[str, str] = data['displayName']
+        self._title_text: Dict[str, str] = data['titleText']
         self._is_hidden_if_not_owned: bool = data.get('isHiddenIfNotOwned', False)
         self.asset_path: str = data['assetPath']
 
@@ -82,5 +82,5 @@ class PlayerTitle(BaseModel):
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the player title with the given UUID."""
-        data = client._assets.get_player_title(uuid)
+        data = client._assets.get_player_title(uuid=uuid)
         return cls(client=client, data=data) if data else None

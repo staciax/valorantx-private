@@ -75,7 +75,7 @@ def _to_dict(text: str) -> dict:
     return json.loads(text)
 
 
-async def json_or_text(response: ClientResponse) -> Union[Mapping[str, Any], Dict[str, Any], str]:
+async def json_or_text(response: ClientResponse) -> Any:
     text = await response.text(encoding='utf-8')
     if 'Content-Type' in response.headers:
         if response.headers['Content-Type'] == 'application/data':
