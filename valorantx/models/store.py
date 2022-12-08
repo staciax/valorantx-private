@@ -38,7 +38,6 @@ if TYPE_CHECKING:
         BundleT as BundlePayload,
         Entitlement as EntitlementPayload,
         EntitlementsByTypes as EntitlementsByTypesPayload,
-        FeaturedBundle as FeaturedBundlePayload,
         Offer as OfferPayload,
         Offers as OffersPayload,
         Reward as RewardPayload,
@@ -69,9 +68,8 @@ __all__ = (
 class StoreFront:
     def __init__(self, *, client: Any, data: StoreFrontPayload) -> None:
         self._client = client
-        self._featured_bundle: FeaturedBundlePayload = data['FeaturedBundle']
-        self._bundle: BundlePayload = self._featured_bundle['Bundle']
-        self._bundles: List[BundlePayload] = self._featured_bundle['Bundles']
+        self._bundle: BundlePayload = data['FeaturedBundle']['Bundle']
+        self._bundles: List[BundlePayload] = data["FeaturedBundle"]['Bundles']
         self._skins_panel_layout: SkinsPanelLayoutPayload = data['SkinsPanelLayout']
         self._bonus_store: Optional[BonusStorePayload] = data.get('BonusStore')
 
