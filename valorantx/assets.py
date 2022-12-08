@@ -438,7 +438,7 @@ class Assets:
 
         self._is_with_price = with_price
 
-        get_version = version or await self._client.get_valorant_version()
+        get_version = version or await self._client.fetch_version()
 
         if get_version != self._client.version:
             self._client.version = get_version

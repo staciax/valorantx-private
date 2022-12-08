@@ -310,7 +310,7 @@ class Client:
         _log.debug('Setting up client')
 
         if self.version is MISSING:
-            self.version = await self.get_valorant_version()
+            self.version = await self.fetch_version()
 
         self.http._riot_client_version = self.version.riot_client_version
 
@@ -913,18 +913,33 @@ class Client:
 
         return self._assets.get_item_price(uuid)
 
-    async def get_valorant_version(self) -> Version:
+    @staticmethod
+    async def http_fetch_version(http: Optional[HTTPClient] = None) -> Version:
         """|coro|
 
-        Gets the current version of Valorant.
+        Fetches the current valorant version directly from the API.
 
         Returns
         -------
         :class:`Version`
             The current version of Valorant.
         """
-        data = await self.http.asset_valorant_version()
-        return Version(client=self, data=data)
+        if http is None:
+            http = HTTPClient()
+        data = await http.asset_valorant_version()
+        return Version(data=data)
+
+    async def fetch_version(self) -> Version:
+        """|coro|
+
+        Fetches the current valorant version.
+
+        Returns
+        -------
+        :class:`Version`
+            The current version of Valorant.
+        """
+        return await self.http_fetch_version(self.http)
 
     # patch notes
 

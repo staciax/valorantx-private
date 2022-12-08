@@ -116,7 +116,7 @@ class Route:
 
 
 class HTTPClient:
-    def __init__(self, loop: asyncio.AbstractEventLoop) -> None:
+    def __init__(self, loop: asyncio.AbstractEventLoop = MISSING) -> None:
         self.loop: asyncio.AbstractEventLoop = loop
         # self.user: Optional[ClientPlayer] = None
         self._session: aiohttp.ClientSession = MISSING

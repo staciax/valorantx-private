@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from .. import utils
 
@@ -41,8 +41,7 @@ __all__ = (
 
 
 class Version:
-    def __init__(self, client: Client, data: VersionPayload) -> None:
-        self._client: Client = client
+    def __init__(self, data: VersionPayload) -> None:
         self.manifest_id: str = data['data']['manifestId']
         self.branch: str = data['data']['branch']
         self.version: str = data['data']['version']
