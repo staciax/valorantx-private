@@ -50,12 +50,34 @@ class Currency(BaseModel):
         self._display_icon: Optional[str] = data.get('displayIcon')
         self._large_icon: Optional[str] = data.get('largeIcon')
         self.asset_path: str = data['assetPath']
+        self._value: int = 0
 
     def __str__(self) -> str:
         return self.display_name
 
     def __repr__(self) -> str:
-        return f'<Currency display_name={self.display_name!r}>'
+        return f'<Currency display_name={self.display_name!r} value={self.value!r}>'
+
+    def __int__(self) -> int:
+        return self.value
+
+    def __lt__(self, other: object) -> bool:
+        return isinstance(other, Currency) and self.value < other.value
+
+    def __le__(self, other: object) -> bool:
+        return isinstance(other, Currency) and self.value <= other.value
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Currency) and self.value == other.value
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __gt__(self, other: object) -> bool:
+        return isinstance(other, Currency) and self.value > other.value
+
+    def __ge__(self, other: object) -> bool:
+        return isinstance(other, Currency) and self.value >= other.value
 
     @property
     def name_localizations(self) -> Localization:
@@ -86,6 +108,15 @@ class Currency(BaseModel):
     def large_icon(self) -> Optional[Asset]:
         """:class: `Optional[Asset]` Returns the agent's large icon."""
         return Asset._from_url(client=self._client, url=self._large_icon) if self._large_icon else None
+
+    @property
+    def value(self) -> int:
+        """:class: `int` Returns the agent's value."""
+        return self._value
+
+    @value.setter
+    def value(self, value: int) -> None:
+        self._value = value
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

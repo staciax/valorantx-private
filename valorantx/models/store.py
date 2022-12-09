@@ -49,6 +49,7 @@ if TYPE_CHECKING:
     from .agent import Agent
     from .buddy import BuddyLevel
     from .contract import Contract
+    from .currency import Currency
     from .player_card import PlayerCard
     from .player_title import PlayerTitle
     from .spray import Spray
@@ -205,7 +206,15 @@ class NightMarket:
 class Wallet:
     def __init__(self, *, client: Client, data: WalletPayload) -> None:
         self._client = client
-        self.balances = data['Balances']
+        self._balances = data['Balances']
+        self._valorant_value: int = self._balances.get('85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741', 0)
+        self._radiant_value: int = self._balances.get('e59aa87c-4cbf-517a-5983-6e81511be9b7', 0)
+        self._valorant_points: Optional[Currency] = self._client.get_currency(uuid='85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741')
+        self._radiant_points: Optional[Currency] = self._client.get_currency(uuid='e59aa87c-4cbf-517a-5983-6e81511be9b7')
+        if self._valorant_points is not None:
+            self._valorant_points.value = self._valorant_value
+        if self._radiant_points is not None:
+            self._radiant_points.value = self._radiant_value
 
     def __repr__(self) -> str:
         return f'<Wallet valorant_points={self.valorant_points!r} radiant_points={self.radiant_points!r}>'
@@ -220,12 +229,18 @@ class Wallet:
     @property
     def valorant_points(self) -> int:
         """Returns the valorant points for the wallet"""
-        return self.balances.get('85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741', 0)
+        return self._valorant_value
 
     @property
     def radiant_points(self) -> int:
         """Returns the radiant points for the wallet"""
-        return self.balances.get('e59aa87c-4cbf-517a-5983-6e81511be9b7', 0)
+        return self._radiant_value
+
+    def get_valorant(self) -> Optional[Currency]:
+        return self._valorant_points
+
+    def get_radiant(self) -> Optional[Currency]:
+        return self._radiant_points
 
 
 class Reward:
