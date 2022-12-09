@@ -235,7 +235,7 @@ class SeasonalInfo:
     def tier(self) -> Optional[Tier]:
         """:class: `Tier` Returns the tier."""
         ss_com = self._client.get_season_competitive(seasonUuid=self.season_id)
-        if ss_com:
+        if ss_com is not None:
             com_tiers = ss_com.competitive_tiers
             if com_tiers is not None:
                 for tier in com_tiers.tiers:
@@ -262,9 +262,10 @@ class QueueSkill:
 
     def get_seasonal_info(self) -> Optional[List[SeasonalInfo]]:
         """:class: `list` Returns the seasonal info."""
-        if self._seasonal_info_list is None:
-            return None
-        return [SeasonalInfo(client=self._client, data=seasonal_info) for seasonal_info in self._seasonal_info_list.values()]
+        if self._seasonal_info_list is not None:
+            return [
+                SeasonalInfo(client=self._client, data=seasonal_info) for seasonal_info in self._seasonal_info_list.values()
+            ]
 
 
 class QueueSkills:
@@ -354,26 +355,23 @@ class MMR(BaseModel):
         """:class: `LatestCompetitiveUpdate` Returns the latest competitive update."""
         return self._latest_competitive_update
 
-    def get_last_rank_tier(self, season: Optional[Season] = None) -> Optional[Tier]:
+    def get_latest_rank_tier(self, season: Optional[Season] = None) -> Optional[Tier]:
         """:class: `Tier` Returns the last rank tier."""
         if season is None:
             season = self._client.season
         competitive = self.queue_skills.competitive
         if competitive is not None:
             seasonal_info = competitive.get_seasonal_info()
-            if seasonal_info is None:
-                return None
-            for info in seasonal_info:
-                if info.season == season:
-                    return info.tier
-        return None
+            if seasonal_info is not None:
+                for info in seasonal_info:
+                    if info.season == season:
+                        return info.tier
 
     def get_latest_competitive_season(self) -> Optional[SeasonalInfo]:
         """:class: `SeasonalInfo` Returns the latest competitive season."""
-        if self.queue_skills.competitive is None:
-            return None
-        seasonal_info = self.queue_skills.competitive.get_seasonal_info()
-        if seasonal_info is not None:
-            for si in seasonal_info:
-                if si.season == self._client.season:
-                    return si
+        if self.queue_skills.competitive is not None:
+            seasonal_info = self.queue_skills.competitive.get_seasonal_info()
+            if seasonal_info is not None:
+                for si in seasonal_info:
+                    if si.season == self._client.season:
+                        return si

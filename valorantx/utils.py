@@ -26,12 +26,12 @@ from __future__ import annotations
 import datetime
 import json
 import uuid
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Union
 
 if TYPE_CHECKING:
     from aiohttp import ClientResponse
 
-__all__ = (
+__all__: Tuple[str, ...] = (
     'is_uuid',
     'json_or_text',
     'MISSING',
@@ -75,16 +75,13 @@ def _to_dict(text: str) -> dict:
     return json.loads(text)
 
 
-async def json_or_text(response: ClientResponse) -> Any:
-    text = await response.text(encoding='utf-8')
-    if 'Content-Type' in response.headers:
-        if response.headers['Content-Type'] == 'application/data':
-            return await response.json()
+# source: https://github.com/Rapptz/discord.py/blob/master/discord/http.py
+async def json_or_text(response: ClientResponse) -> Union[Dict[str, Any], str]:
+    text = await response.text(encoding="utf-8")
+    if response.content_type == "application/json":
+        return json.loads(text)
 
-    try:
-        return _to_dict(text)
-    except (json.JSONDecodeError, TypeError):
-        return text
+    return text
 
 
 class _MissingSentinel:

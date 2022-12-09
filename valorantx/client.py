@@ -372,7 +372,7 @@ class Client:
                         self.season = get_season
                         break
 
-    async def authorize_from_data(self, data: Dict) -> None:
+    async def authorize_from_data(self, data: Dict[str, Any]) -> None:
         self._is_authorized = True
         riot_auth = await self.http.token_login(data)
         payload = dict(
@@ -413,7 +413,7 @@ class Client:
         self._closed = False
         self._ready.clear()
         self._assets.clear()
-        self.http.clear()
+        self._http.clear()
 
     async def close(self) -> None:
         """|coro|
@@ -424,7 +424,7 @@ class Client:
         if self._closed:
             return
         self._closed = True
-        await self.http.close()
+        await self._http.close()
 
     def is_closed(self) -> bool:
         """:class:`bool`: Indicates if the client is closed."""
@@ -1049,7 +1049,7 @@ class Client:
         return collection
 
     @_authorize_required
-    async def put_loadout(self, loadout: Any) -> None:  # TODO: loadout object
+    async def put_loadout(self, loadout: Mapping[str, Any]) -> None:  # TODO: loadout object
         """|coro|
 
         Puts the loadout for the current user.

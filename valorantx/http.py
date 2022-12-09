@@ -50,9 +50,10 @@ else:
 MISSING = utils.MISSING
 
 if TYPE_CHECKING:
+    from .types import collection, competitive, contract, match, party, player, store, version, weapons, xp
+
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
-    from .types import collection, competitive, contract, match, party, player, store, version, weapons, xp
 
 _log = logging.getLogger(__name__)
 
@@ -226,7 +227,7 @@ class HTTPClient:
         await self.__build_headers()
         return self._riot_auth
 
-    async def token_login(self, data: Dict[str, str]) -> RiotAuth:
+    async def token_login(self, data: Dict[str, Any]) -> RiotAuth:
         """Riot Auth login."""
 
         self._riot_auth.from_data(data)

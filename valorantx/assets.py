@@ -28,7 +28,7 @@ import logging
 import os
 import shutil
 from functools import cache as _cache, wraps
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Tuple
 
 from .enums import CurrencyType, ItemType
 from .errors import AuthRequired
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from .models.version import Version
 
 # fmt: off
-__all__ = (
+__all__: Tuple[str, ...] = (
     'Assets',
 )
 # fmt: on

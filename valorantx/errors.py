@@ -31,6 +31,32 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 if TYPE_CHECKING:
     from aiohttp import ClientResponse
 
+__all__: Tuple[str, ...] = (
+    'ValorantException',
+    'HandshakeError',
+    'ResponseError',
+    'PhaseError',
+    'HTTPException',
+    'AuthFailure',
+    'Forbidden',
+    'NotFound',
+    'InternalServerError',
+    'RateLimited',
+    'RiotAuthError',
+    'RiotAuthenticationError',
+    'RiotRatelimitError',
+    'RiotMultifactorError',
+    'RiotUnknownResponseTypeError',
+    'RiotUnknownErrorTypeError',
+    'AuthRequired',
+    'InvalidContractType',
+    'InvalidRelationType',
+    'PartyNotOwner',
+    'NotInPreGame',
+    'NotInCoreGame',
+    'InvalidPuuid',
+)
+
 
 def _flatten_error_dict(d: Dict[str, Any], key: str = '') -> Dict[str, str]:
     items: List[Tuple[str, str]] = []
@@ -146,17 +172,9 @@ class NotFound(HTTPException):
     pass
 
 
-class RiotServerError(HTTPException):
-    """Exception that's raised for when a 500 range status code occurs.
-    Subclass of :exc:`HTTPException`.
-    """
-
-    pass
-
-
-class ValorantAPIServerError(HTTPException):
-    """Exception that's raised for when a 500 range status code occurs.
-    Subclass of :exc:`HTTPException`.
+class InternalServerError(HTTPException):
+    """Exception that's raised for when status code 500 occurs.
+    Subclass of :exc:`HTTPException`
     """
 
     pass

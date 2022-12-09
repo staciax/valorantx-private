@@ -22,11 +22,12 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, TypedDict
-
-from typing_extensions import NotRequired
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, TypedDict
 
 from .player import Player
+
+if TYPE_CHECKING:
+    from typing_extensions import NotRequired
 
 
 class MatchHistoryList(TypedDict):

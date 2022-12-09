@@ -56,7 +56,7 @@ if TYPE_CHECKING:
         Team as MatchTeamPayload,
         XpModification as xpModificationPayload,
     )
-    from .agent import Agent, AgentAbility  # noqa
+    from .agent import Agent, AgentAbility
     from .competitive import Tier
     from .gamemode import GameMode
     from .gear import Gear
@@ -1021,7 +1021,7 @@ class MatchPlayer(Player):
             return tier
         season = self.match.get_season()
         mmr = await self._client.fetch_mmr(puuid=self.puuid)
-        return mmr.get_last_rank_tier(season=season)
+        return mmr.get_latest_rank_tier(season=season)
 
 
 class Coach(Player):

@@ -23,13 +23,13 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Tuple, Union
 
 from . import utils
 from .enums import Locale
 
 # fmt: off
-__all__ = (
+__all__: Tuple[str, ...] = (
     "Localization",
 )
 # fmt: on

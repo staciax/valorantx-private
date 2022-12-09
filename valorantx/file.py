@@ -26,10 +26,10 @@ from __future__ import annotations
 
 import io
 import os
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 # fmt: off
-__all__ = (
+__all__: Tuple[str, ...] = (
     'File',
 )
 # fmt: on

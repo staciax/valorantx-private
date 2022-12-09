@@ -163,7 +163,7 @@ else:
 
 # --
 
-__all__ = (
+__all__: Tuple[str, ...] = (
     'AbilityType',
     'AgentType',
     'ContractRewardType',
