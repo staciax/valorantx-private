@@ -30,7 +30,7 @@ import enum
 import logging
 import sys
 from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, List, Mapping, NoReturn, Optional, TypeVar, Union
-from urllib.parse import urlencode
+from urllib.parse import quote as _uriquote
 
 import aiohttp
 
@@ -44,7 +44,7 @@ try:
 except ImportError:
     pass
 else:
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # type: ignore
     # disable urllib3 warnings that might arise from making requests to 127.0.0.1
 
 MISSING = utils.MISSING
@@ -107,12 +107,8 @@ class Route:
 
         if parameters:
 
-            # pop params that are None or ''
-            for k, v in list(parameters.items()):
-                if v is None or v == '':
-                    parameters.pop(k)
+            url = url.format_map({k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
 
-            url = url + '?' + urlencode(parameters)
         self.url: str = url
 
 
@@ -130,6 +126,22 @@ class HTTPClient:
 
         user_agent = 'valorantx (https://github.com/staciax/valorantx {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
+
+    @property
+    def region(self) -> Region:
+        return self._region
+
+    @region.setter
+    def region(self, region: Region) -> None:
+        self._region = region
+
+    @property
+    def puuid(self) -> str:
+        return self._puuid
+
+    @puuid.setter
+    def puuid(self, puuid: str) -> None:
+        self._puuid = puuid
 
     def clear(self) -> None:
         if self._session and self._session.closed:
@@ -260,71 +272,93 @@ class HTTPClient:
         return self.request(Route('GET', '/version', EndpointType.valorant_api), is_asset=True)
 
     def asset_get_agents(self) -> Response[Mapping[str, Any]]:
-        r = Route('GET', '/agents', EndpointType.valorant_api, isPlayableCharacter=True, language='all')
-        return self.request(r, is_asset=True)
+        return self.request(
+            Route('GET', '/agents', EndpointType.valorant_api),
+            params={'isPlayableCharacter': 'True', 'language': 'all'},
+            is_asset=True,
+        )
 
     def asset_get_buddies(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/buddies', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(Route('GET', '/buddies', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True)
 
     def asset_get_bundles(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/bundles', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(Route('GET', '/bundles', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True)
 
     def asset_get_ceremonies(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/ceremonies', EndpointType.valorant_api, language='all'), is_asset=True)
+
+        return self.request(
+            Route('GET', '/ceremonies', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True
+        )
 
     def asset_get_events(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/events', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(Route('GET', '/events', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True)
 
     def asset_get_competitive_tiers(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/competitivetiers', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(
+            Route('GET', '/competitivetiers', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True
+        )
 
     def asset_get_content_tiers(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/contenttiers', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(
+            Route('GET', '/contenttiers', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True
+        )
 
     def asset_get_contracts(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/contracts', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(Route('GET', '/contracts', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True)
 
     def asset_get_currencies(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/currencies', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(
+            Route('GET', '/currencies', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True
+        )
 
     def asset_get_game_modes(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/gamemodes', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(Route('GET', '/gamemodes', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True)
 
     def asset_get_game_modes_equippables(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/gamemodes/equippables', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(
+            Route('GET', '/gamemodes/equippables', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True
+        )
 
     def asset_get_gear(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/gear', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(Route('GET', '/gear', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True)
 
     def asset_get_level_borders(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/levelborders', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(
+            Route('GET', '/levelborders', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True
+        )
 
     def asset_get_maps(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/maps', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(Route('GET', '/maps', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True)
 
     def asset_get_missions(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/missions', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(Route('GET', '/missions', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True)
 
     def asset_get_player_cards(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/playercards', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(
+            Route('GET', '/playercards', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True
+        )
 
     def asset_get_player_titles(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/playertitles', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(
+            Route('GET', '/playertitles', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True
+        )
 
     def asset_get_seasons(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/seasons', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(Route('GET', '/seasons', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True)
 
     def asset_get_seasons_competitive(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/seasons/competitive', EndpointType.valorant_api), is_asset=True)
+        return self.request(
+            Route('GET', '/seasons/competitive', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True
+        )
 
     def asset_get_sprays(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/sprays', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(Route('GET', '/sprays', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True)
 
     def asset_get_themes(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/themes', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(Route('GET', '/themes', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True)
 
     def asset_get_weapons(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/weapons', EndpointType.valorant_api, language='all'), is_asset=True)
+        return self.request(Route('GET', '/weapons', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True)
 
     # valtracker endpoint
 
@@ -340,9 +374,10 @@ class HTTPClient:
         """
         r = Route(
             'GET',
-            f'/page-data/{str(locale).lower()}/news/tags/patch-notes/page-data.json',
+            '/page-data/{locale}/news/tags/patch-notes/page-data.json',
             EndpointType.play_valorant,
-            self._region,
+            self.region,
+            locale=str(locale).lower(),
         )
         return self.request(r)
 
@@ -353,14 +388,14 @@ class HTTPClient:
         Content_FetchContent
         Get names and ids for game content such as agents, maps, guns, etc.
         """
-        return self.request(Route('GET', '/content-service/v3/content', EndpointType.shard, self._region))
+        return self.request(Route('GET', '/content-service/v3/content', EndpointType.shard, self.region))
 
     def fetch_account_xp(self) -> Response[xp.AccountXP]:
         """
         AccountXP_GetPlayer
         Get the account level, XP, and XP history for the active player
         """
-        return self.request(Route('GET', f'/account-xp/v1/players/{self._puuid}', EndpointType.pd, self._region))
+        return self.request(Route('GET', '/account-xp/v1/players/{puuid}', EndpointType.pd, self.region, puuid=self.puuid))
 
     def fetch_player_loadout(self) -> Response[collection.Loadout]:
         """
@@ -368,7 +403,13 @@ class HTTPClient:
         Get the player's current loadout
         """
         return self.request(
-            Route('GET', f'/personalization/v2/players/{self._puuid}/playerloadout', EndpointType.pd, self._region)
+            Route(
+                'GET',
+                '/personalization/v2/players/{puuid}/playerloadout',
+                EndpointType.pd,
+                self.region,
+                puuid=self.puuid,
+            )
         )
 
     def put_player_loadout(self, loadout: Mapping) -> Response[collection.Loadout]:
@@ -377,7 +418,13 @@ class HTTPClient:
         Use the values from self._fetch_player_loadout() excluding properties like subject and version.
         Loadout changes take effect when starting a new game
         """
-        r = Route('PUT', f'/personalization/v2/players/{self._puuid}/playerloadout', EndpointType.pd, self._region)
+        r = Route(
+            'PUT',
+            '/personalization/v2/players/{puuid}/playerloadout',
+            EndpointType.pd,
+            self.region,
+            puuid=self.puuid,
+        )
         return self.request(r, json=loadout)
 
     def fetch_mmr(self, puuid: Optional[str] = None) -> Response[competitive.MatchmakingRating]:
@@ -386,7 +433,7 @@ class HTTPClient:
         Get the match making rating for a player
         """
         puuid = self.__check_puuid(puuid)
-        return self.request(Route('GET', f'/mmr/v1/players/{puuid}', EndpointType.pd, self._region))
+        return self.request(Route('GET', '/mmr/v1/players/{puuid}', EndpointType.pd, self.region, puuid=puuid))
 
     def fetch_match_history(
         self,
@@ -409,16 +456,13 @@ class HTTPClient:
         if isinstance(queue_id, QueueType):
             queue_id = str(queue_id)
 
-        r = Route(
-            'GET',
-            f'/match-history/v1/history/{puuid}',
-            EndpointType.pd,
-            self._region,
-            startIndex=start_index,
-            endIndex=end_index,
-            queue=queue_id,
-        )
-        return self.request(r)
+        r = Route('GET', '/match-history/v1/history/{puuid}', EndpointType.pd, self._region, puuid=puuid)
+        params = {
+            'startIndex': start_index,
+            'endIndex': end_index,
+            'queue': queue_id,
+        }
+        return self.request(r, params=params)
 
     def fetch_match_details(self, match_id: str) -> Response[match.MatchDetails]:
         """
@@ -426,7 +470,15 @@ class HTTPClient:
         Includes everything that the in-game match details screen shows including damage and kill positions,
         same as the official API w/ a production key
         """
-        return self.request(Route('GET', f'/match-details/v1/matches/{match_id}', EndpointType.pd, self._region))
+        return self.request(
+            Route(
+                'GET',
+                '/match-details/v1/matches/{match_id}',
+                EndpointType.pd,
+                self.region,
+                match_id=match_id,
+            )
+        )
 
     def fetch_competitive_updates(
         self,
@@ -444,16 +496,10 @@ class HTTPClient:
         puuid = self.__check_puuid(puuid)
         if isinstance(queue_id, QueueType):
             queue_id = str(queue_id)
-        r = Route(
-            'GET',
-            f'/mmr/v1/players/{puuid}/competitiveupdates',
-            EndpointType.pd,
-            self._region,
-            startIndex=start_index,
-            endIndex=end_index,
-            queue=queue_id,
-        )
-        return self.request(r)
+        r = Route('GET', '/mmr/v1/players/{puuid}/competitiveupdates', EndpointType.pd, region=self._region, puuid=puuid)
+        params = {'startIndex': start_index, 'endIndex': end_index, 'queue': queue_id}
+
+        return self.request(r, params=params)
 
     def fetch_leaderboard(
         self,
@@ -474,34 +520,36 @@ class HTTPClient:
 
         r = Route(
             'GET',
-            f'/mmr/v1/leaderboards/affinity/{str(region)}/queue/competitive/season/{season_id}',
+            '/mmr/v1/leaderboards/affinity/{l_region}/queue/competitive/season/{season}',
             EndpointType.pd,
-            self._region,
-            startIndex=start_index,
-            size=size,
+            region=self._region,
+            l_region=str(region),
+            season=season_id,
         )
-        return self.request(r)
+        params = {'startIndex': start_index, 'size': size}
+
+        return self.request(r, params=params)
 
     def fetch_player_restrictions(self) -> Response[Mapping[str, Any]]:
         """
         Restrictions_FetchPlayerRestrictionsV3
         Checks for any gameplay penalties on the account
         """
-        return self.request(Route('GET', '/restrictions/v3/penalties', EndpointType.pd, self._region))
+        return self.request(Route('GET', '/restrictions/v3/penalties', EndpointType.pd, self.region))
 
     def fetch_item_progression_definitions(self) -> Response[Mapping[str, Any]]:
         """
         ItemProgressionDefinitionsV2_Fetch
         Get details for item upgrades
         """
-        return self.request(Route('GET', '/contract-definitions/v3/item-upgrades', EndpointType.pd, self._region))
+        return self.request(Route('GET', '/contract-definitions/v3/item-upgrades', EndpointType.pd, self.region))
 
     def fetch_config(self) -> Response[Mapping[str, Any]]:
         """
         Config_FetchConfig
         Get various internal game configuration settings set by Riot
         """
-        return self.request(Route('GET', '/v1/config/{region}', EndpointType.shard, self._region))
+        return self.request(Route('GET', '/v1/config/{region}', EndpointType.shard, self.region))
 
     def fetch_name_by_puuid(self, puuid: Optional[Union[List[str], str]] = None) -> Response[List[player.NameService]]:
         """
@@ -516,7 +564,7 @@ class HTTPClient:
         if isinstance(puuid, str):
             puuid = [puuid]
 
-        return self.request(Route('PUT', '/name-service/v2/players', EndpointType.pd, self._region), json=puuid)
+        return self.request(Route('PUT', '/name-service/v2/players', EndpointType.pd, self.region), json=puuid)
 
     # contract endpoints
 
@@ -525,14 +573,14 @@ class HTTPClient:
         ContractDefinitions_Fetch
         Get names and descriptions for contracts
         """
-        return self.request(Route('GET', '/contract-definitions/v3/definitions', EndpointType.pd, self._region))
+        return self.request(Route('GET', '/contract-definitions/v3/definitions', EndpointType.pd, self.region))
 
     def contracts_fetch(self) -> Response[contract.Contracts]:
         """
         Contracts_Fetch
         Get a list of contracts and completion status including match history
         """
-        return self.request(Route('GET', f'/contracts/v1/contracts/{self._puuid}', EndpointType.pd, self._region))
+        return self.request(Route('GET', '/contracts/v1/contracts/{puuid}', EndpointType.pd, self.region, puuid=self.puuid))
 
     def contracts_activate(self, contract_id: str) -> Response[contract.Contracts]:
         """
@@ -541,7 +589,14 @@ class HTTPClient:
 
         {contract id}: The ID of the contract to activate. Can be found from the ContractDefinitions_Fetch endpoint.
         """
-        r = Route('POST', f'/contracts/v1/contracts/{self._puuid}/special/{contract_id}', EndpointType.pd, self._region)
+        r = Route(
+            'POST',
+            '/contracts/v1/contracts/{puuid}/special/{contract}',
+            EndpointType.pd,
+            self.region,
+            puuid=self.puuid,
+            contract=contract_id,
+        )
         return self.request(r)
 
     def contracts_fetch_active_story(self) -> Response[Mapping[str, Any]]:
@@ -549,14 +604,14 @@ class HTTPClient:
         ContractDefinitions_FetchActiveStory
         Get the battlepass contracts
         """
-        return self.request(Route('GET', '/contract-definitions/v2/definitions/story', EndpointType.pd, self._region))
+        return self.request(Route('GET', '/contract-definitions/v2/definitions/story', EndpointType.pd, self.region))
 
     def item_progress_fetch_definitions(self) -> Response[Mapping[str, Any]]:
         """
         ItemProgressDefinitionsV2_Fetch
         Fetch definitions for skin upgrade progressions
         """
-        return self.request(Route('GET', '/contract-definitions/v3/item-upgrades', EndpointType.pd, self._region))
+        return self.request(Route('GET', '/contract-definitions/v3/item-upgrades', EndpointType.pd, self.region))
 
     def contracts_unlock_item_progress(self, progression_id: str) -> Response[Mapping[str, Any]]:
         """
@@ -564,7 +619,14 @@ class HTTPClient:
         Unlock an item progression
         """
         return self.request(
-            Route('POST', f'/contracts/v2/item-upgrades/{progression_id}/{self._puuid}', EndpointType.pd, self._region)
+            Route(
+                'POST',
+                '/contracts/v2/item-upgrades/{progression}/{puuid}',
+                EndpointType.pd,
+                self.region,
+                puuid=self.puuid,
+                progression=progression_id,
+            )
         )
 
     # store endpoints
@@ -574,14 +636,14 @@ class HTTPClient:
         Store_GetOffers
         Get prices for all store items
         """
-        return self.request(Route('GET', '/store/v1/offers/', EndpointType.pd, self._region))
+        return self.request(Route('GET', '/store/v1/offers/', EndpointType.pd, self.region))
 
     def store_fetch_storefront(self) -> Response[store.StoreFront]:
         """
         Store_GetStorefrontV2
         Get the currently available items in the store
         """
-        return self.request(Route('GET', f'/store/v2/storefront/{self._puuid}', EndpointType.pd, self._region))
+        return self.request(Route('GET', '/store/v2/storefront/{puuid}', EndpointType.pd, self.region, puuid=self.puuid))
 
     def store_fetch_wallet(self) -> Response[store.Wallet]:
         """
@@ -590,14 +652,14 @@ class HTTPClient:
         Valorant points have the id 85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741
         and Radianite points have the id e59aa87c-4cbf-517a-5983-6e81511be9b7
         """
-        return self.request(Route('GET', f'/store/v1/wallet/{self._puuid}', EndpointType.pd, self._region))
+        return self.request(Route('GET', '/store/v1/wallet/{puuid}', EndpointType.pd, self.region, puuid=self.puuid))
 
     def store_fetch_order(self, order_id: str) -> Response[Mapping[str, Any]]:
         """
         Store_GetOrder
         {order id}: The ID of the order. Can be obtained when creating an order.
         """
-        return self.request(Route('GET', f'/store/v1/order/{order_id}', EndpointType.pd, self._region))
+        return self.request(Route('GET', '/store/v1/order/{order}', EndpointType.pd, self.region, order=order_id))
 
     def store_fetch_entitlements(
         self, item_type: Optional[Union[str, ItemType]] = None
@@ -619,9 +681,10 @@ class HTTPClient:
 
         r = Route(
             'GET',
-            f'/store/v1/entitlements/{self._puuid}' + (f'/{str(item_type)}' if item_type is not None else ''),
+            '/store/v1/entitlements/{puuid}' + ('/{item_type}'.format(item_type=item_type) if item_type is not None else ''),
             EndpointType.pd,
-            self._region,
+            region=self._region,
+            puuid=self.puuid,
         )
         return self.request(r)
 
@@ -634,7 +697,7 @@ class HTTPClient:
         Party_FetchPlayer
         Get the Party ID that a given player belongs to
         """
-        return self.request(Route('GET', f'/parties/v1/players/{self._puuid}', EndpointType.glz, self._region))
+        return self.request(Route('GET', '/parties/v1/players/{puuid}', EndpointType.glz, self.region, puuid=self.puuid))
 
     def party_remove_player(self, puuid: str) -> Response[NoReturn]:
         """
@@ -642,14 +705,14 @@ class HTTPClient:
         Removes a player from the current party
         """
         puuid = self.__check_puuid(puuid)
-        return self.request(Route('DELETE', f'/parties/v1/players/{puuid}', EndpointType.glz, self._region))
+        return self.request(Route('DELETE', '/parties/v1/players/{puuid}', EndpointType.glz, self.region, puuid=puuid))
 
     def fetch_party(self, party_id: str) -> Response[party.Party]:
         """
         Party_FetchParty
         Get details about a given party id
         """
-        r = Route('GET', f'/parties/v1/parties/{party_id}', EndpointType.glz, self._region)
+        r = Route('GET', '/parties/v1/parties/{party_id}', EndpointType.glz, self.region, party_id=party_id)
         return self.request(r)
 
     def party_set_member_ready(self, party_id: str, ready: bool) -> Response[Mapping[str, Any]]:
@@ -657,8 +720,15 @@ class HTTPClient:
         Party_SetMemberReady
         Sets whether a party member is ready for queueing or not
         """
-        payload = {"ready": ready}
-        r = Route('POST', f'/parties/v1/parties/{party_id}/members/{self._puuid}/setReady', EndpointType.glz, self._region)
+        r = Route(
+            'POST',
+            '/parties/v1/parties/{party_id}/members/{puuid}/setReady',
+            EndpointType.glz,
+            self.region,
+            party_id=party_id,
+            puuid=self.puuid,
+        )
+        payload = {'ready': ready}
         return self.request(r, json=payload)
 
     def party_refresh_competitive_tier(self, party_id: str) -> Response[Mapping[str, Any]]:
@@ -668,9 +738,11 @@ class HTTPClient:
         """
         r = Route(
             'POST',
-            f'/parties/v1/parties/{party_id}/members/{self._puuid}/refreshCompetitiveTier',
+            '/parties/v1/parties/{party_id}/members/{puuid}/refreshCompetitiveTier',
             EndpointType.glz,
-            self._region,
+            region=self._region,
+            party_id=party_id,
+            puuid=self.puuid,
         )
         return self.request(r)
 
@@ -681,9 +753,11 @@ class HTTPClient:
         """
         r = Route(
             'POST',
-            f'/parties/v1/parties/{party_id}/members/{self._puuid}/refreshPlayerIdentity',
+            '/parties/v1/parties/{party_id}/members/{puuid}/refreshPlayerIdentity',
             EndpointType.glz,
-            self._region,
+            region=self._region,
+            party_id=party_id,
+            puuid=self.puuid,
         )
         return self.request(r)
 
@@ -694,9 +768,11 @@ class HTTPClient:
         """
         r = Route(
             'POST',
-            f'/parties/v1/parties/{party_id}/members/{self._puuid}/refreshPings',
+            '/parties/v1/parties/{party_id}/members/{puuid}/refreshPings',
             EndpointType.glz,
-            self._region,
+            region=self._region,
+            party_id=party_id,
+            puuid=self.puuid,
         )
         return self.request(r)
 
@@ -705,8 +781,8 @@ class HTTPClient:
         Party_ChangeQueue
         Sets the matchmaking queue for the party
         """
-        payload = {"queueID": str(queue_id)}
-        r = Route('POST', f'/parties/v1/parties/{party_id}/queue', EndpointType.glz, self._region)
+        r = Route('POST', '/parties/v1/parties/{party_id}/queue', EndpointType.glz, self.region, party_id=party_id)
+        payload = {'queueID': str(queue_id)}
         return self.request(r, json=payload)
 
     def party_start_custom_game(self, party_id: str) -> Response[Mapping[str, Any]]:
@@ -714,7 +790,7 @@ class HTTPClient:
         Party_StartCustomGame
         Starts a custom game
         """
-        r = Route('POST', f'/parties/v1/parties/{party_id}/startcustomgame', EndpointType.glz, self._region)
+        r = Route('POST', '/parties/v1/parties/{party_id}/startcustomgame', EndpointType.glz, self.region, party_id=party_id)
         return self.request(r)
 
     def party_enter_matchmaking_queue(self, party_id: str) -> Response[Mapping[str, Any]]:
@@ -722,7 +798,13 @@ class HTTPClient:
         Party_EnterMatchmakingQueue
         Enters the matchmaking queue
         """
-        r = Route('POST', f'/parties/v1/parties/{party_id}/matchmaking/join', EndpointType.glz, self._region)
+        r = Route(
+            'POST',
+            '/parties/v1/parties/{party_id}/matchmaking/join',
+            EndpointType.glz,
+            self.region,
+            party_id=party_id,
+        )
         return self.request(r)
 
     def party_leave_matchmaking_queue(self, party_id: str) -> Response[Mapping[str, Any]]:
@@ -730,7 +812,13 @@ class HTTPClient:
         Party_LeaveMatchmakingQueue
         Leaves the matchmaking queue
         """
-        r = Route('POST', f'/parties/v1/parties/{party_id}/matchmaking/leave', EndpointType.glz, self._region)
+        r = Route(
+            'POST',
+            '/parties/v1/parties/{party_id}/matchmaking/leave',
+            EndpointType.glz,
+            self.region,
+            party_id=party_id,
+        )
         return self.request(r)
 
     def set_party_accessibility(self, party_id: str, open_join: bool) -> Response[party.Party]:
@@ -738,8 +826,8 @@ class HTTPClient:
         Party_SetAccessibility
         Changes the party accessibility to be open or closed
         """
+        r = Route('POST', '/parties/v1/parties/{party_id}/accessibility', EndpointType.glz, self.region, party_id=party_id)
         payload = {"accessibility": ("OPEN" if open_join else "CLOSED")}
-        r = Route('POST', f'/parties/v1/parties/{party_id}/accessibility', EndpointType.glz, self._region)
         return self.request(r, json=payload)
 
     def party_set_custom_game_settings(self, party_id: str, settings: Mapping) -> Response[Mapping[str, Any]]:
@@ -756,7 +844,13 @@ class HTTPClient:
         }
         """
         # TODO: Object settings
-        r = Route('POST', f'/parties/v1/parties/{party_id}/customgamesettings', EndpointType.glz, self._region)
+        r = Route(
+            'POST',
+            '/parties/v1/parties/{party_id}/customgamesettings',
+            EndpointType.glz,
+            self.region,
+            party_id=party_id,
+        )
         return self.request(r, json=settings)
 
     def party_invite_by_display_name(self, party_id: str, name: str, tag: str) -> Response[Mapping[str, Any]]:
@@ -765,7 +859,15 @@ class HTTPClient:
         Invites a player to the party with their display name
         omit the "#" in tag
         """
-        r = Route('POST', f'/parties/v1/parties/{party_id}/invites/name/{name}/tag/{tag}', EndpointType.glz, self._region)
+        r = Route(
+            'POST',
+            '/parties/v1/parties/{party_id}/invites/name/{name}/tag/{tag}',
+            EndpointType.glz,
+            self.region,
+            party_id=party_id,
+            name=name,
+            tag=tag,
+        )
         return self.request(r)
 
     def party_request_to_join(self, party_id: str, other_puuid: str) -> Response[Mapping[str, Any]]:
@@ -773,8 +875,8 @@ class HTTPClient:
         Party_RequestToJoinParty
         Requests to join a party
         """
-        payload = {"Subjects": [other_puuid]}
-        r = Route('POST', f'/parties/v1/parties/{party_id}/request', EndpointType.glz, self._region)
+        r = Route('POST', '/parties/v1/parties/{party_id}/request', EndpointType.glz, self.region, party_id=party_id)
+        payload = {'Subjects': [other_puuid]}
         return self.request(r, json=payload)
 
     def party_decline_request(self, party_id: str, request_id: str) -> Response[Mapping[str, Any]]:
@@ -783,7 +885,14 @@ class HTTPClient:
         Declines a party request
         {request id}: The ID of the party request. Can be found from the Requests array on the Party_FetchParty endpoint.
         """
-        r = Route('POST', f'/parties/v1/parties/{party_id}/request/{request_id}/decline', EndpointType.glz, self._region)
+        r = Route(
+            'POST',
+            '/parties/v1/parties/{party_id}/request/{request_id}/decline',
+            EndpointType.glz,
+            self.region,
+            party_id=party_id,
+            request_id=request_id,
+        )
         return self.request(r)
 
     def party_join(self, party_id: str) -> Response[Mapping[str, Any]]:
@@ -791,7 +900,14 @@ class HTTPClient:
         Party_PlayerJoin
         Join a party
         """
-        r = Route('POST', f'/parties/v1/players/{self._puuid}/joinparty/{party_id}', EndpointType.glz, self._region)
+        r = Route(
+            'POST',
+            '/parties/v1/players/{puuid}/joinparty/{party_id}',
+            EndpointType.glz,
+            self.region,
+            puuid=self.puuid,
+            party_id=party_id,
+        )
         return self.request(r)
 
     def party_leave(self, party_id: str) -> Response[Mapping[str, Any]]:
@@ -799,7 +915,14 @@ class HTTPClient:
         Party_PlayerLeave
         Leave a party
         """
-        r = Route('POST', f'/parties/v1/players/{self._puuid}/leaveparty/{party_id}', EndpointType.glz, self._region)
+        r = Route(
+            'POST',
+            '/parties/v1/players/{puuid}/leaveparty/{party_id}',
+            EndpointType.glz,
+            self.region,
+            puuid=self.puuid,
+            party_id=party_id,
+        )
         return self.request(r)
 
     def party_fetch_custom_game_configs(self) -> Response[Mapping[str, Any]]:
@@ -807,7 +930,7 @@ class HTTPClient:
         Party_FetchCustomGameConfigs
         Get information about the available game modes
         """
-        r = Route('GET', f'/parties/v1/parties/customgameconfigs', EndpointType.glz, self._region)
+        r = Route('GET', f'/parties/v1/parties/customgameconfigs', EndpointType.glz, self.region)
         return self.request(r)
 
     def party_fetch_muc_token(self, party_id: str) -> Response[Mapping[str, Any]]:
@@ -815,7 +938,7 @@ class HTTPClient:
         Party_FetchMUCToken
         Get a token for party chat
         """
-        r = Route('GET', f'/parties/v1/parties/{party_id}/muctoken', EndpointType.glz, self._region)
+        r = Route('GET', '/parties/v1/parties/{party_id}/muctoken', EndpointType.glz, self.region, party_id=party_id)
         return self.request(r)
 
     def party_fetch_voice_token(self, party_id: str) -> Response[Mapping[str, Any]]:
@@ -823,7 +946,7 @@ class HTTPClient:
         Party_FetchVoiceToken
         Get a token for party voice
         """
-        r = Route('GET', f'/parties/v1/parties/{party_id}/voicetoken', EndpointType.glz, self._region)
+        r = Route('GET', '/parties/v1/parties/{party_id}/voicetoken', EndpointType.glz, self.region, party_id=party_id)
         return self.request(r)
 
     def party_transfer_owner(self, party_id: str, puuid: str) -> Response[Mapping[str, Any]]:
@@ -831,7 +954,14 @@ class HTTPClient:
         Party_TransferOwner
         Transfer party ownership
         """
-        r = Route('POST', f'/parties/v1/parties/{party_id}/members/{puuid}/owner', EndpointType.glz, self._region)
+        r = Route(
+            'POST',
+            '/parties/v1/parties/{party_id}/members/{puuid}/owner',
+            EndpointType.glz,
+            self.region,
+            party_id=party_id,
+            puuid=puuid,
+        )
         return self.request(r)
 
     def party_leave_from_party(self, party_id: str, puuid: str) -> Response[Mapping[str, Any]]:
@@ -839,7 +969,14 @@ class HTTPClient:
         Party_LeaveFromParty
         Kick a player from the party
         """
-        r = Route('DELETE', f'/parties/v1/parties/{party_id}/members/{puuid}', EndpointType.glz, self._region)
+        r = Route(
+            'DELETE',
+            '/parties/v1/parties/{party_id}/members/{puuid}',
+            EndpointType.glz,
+            self.region,
+            party_id=party_id,
+            puuid=puuid,
+        )
         return self.request(r)
 
     # queue endpoints
@@ -849,7 +986,7 @@ class HTTPClient:
         QueueMatchmaking_FetchQueue
         Get information about the current queue
         """
-        r = Route('GET', f'/matchmaking/v1/queues/configs ', EndpointType.glz, self._region)
+        r = Route('GET', f'/matchmaking/v1/queues/configs ', EndpointType.glz, self.region)
         return self.request(r)
 
     # favorite endpoints
@@ -859,7 +996,7 @@ class HTTPClient:
         FetchFavorite
         Get the favorite list of the authenticated user
         """
-        r = Route('GET', f'/favorites/v1/players/{self._puuid}/favorites', EndpointType.pd, self._region)
+        r = Route('GET', '/favorites/v1/players/{puuid}/favorites', EndpointType.pd, self.region, puuid=self.puuid)
         return self.request(r)
 
     def favorite_post(self, item_id: str) -> Response[weapons.Favorites]:
@@ -867,10 +1004,8 @@ class HTTPClient:
         PostFavorite
         Add a player to the favorite list of the authenticated user
         """
-        payload = {
-            "ItemID": item_id,
-        }
-        r = Route('POST', f'/favorites/v1/players/{self._puuid}/favorites', EndpointType.pd, self._region)
+        r = Route('POST', '/favorites/v1/players/{puuid}/favorites', EndpointType.pd, self.region, puuid=self.puuid)
+        payload = {'ItemID': item_id}
         return self.request(r, json=payload)
 
     def favorite_delete(self, item_id: str) -> Response[weapons.Favorites]:
@@ -881,9 +1016,11 @@ class HTTPClient:
         item_id_without_dashes = str(item_id).replace('-', '')
         r = Route(
             'DELETE',
-            f'/favorites/v1/players/{self._puuid}/favorites/{item_id_without_dashes}',
+            '/favorites/v1/players/{puuid}/favorites/{item_id}',
             EndpointType.pd,
-            self._region,
+            region=self._region,
+            puuid=self.puuid,
+            item_id=item_id_without_dashes,
         )
         return self.request(r)
 
@@ -895,7 +1032,7 @@ class HTTPClient:
         Pregame_GetPlayer
         Get the ID of a game in the pre-game stage
         """
-        r = Route('GET', f'/pregame/v1/players/{self._puuid}', EndpointType.glz, self._region)
+        r = Route('GET', '/pregame/v1/players/{puuid}', EndpointType.glz, self.region, puuid=self.puuid)
         return self.request(r)
 
     def pregame_fetch_match(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
@@ -903,7 +1040,7 @@ class HTTPClient:
         Pregame_GetMatch
         Get info for a game in the pre-game stage
         """
-        r = Route('GET', f'/pregame/v1/matches/{match_id}', EndpointType.glz, self._region)
+        r = Route('GET', '/pregame/v1/matches/{match_id}', EndpointType.glz, self.region, match_id=match_id)
         return self.request(r)
 
     def pregame_fetch_match_loadouts(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
@@ -911,7 +1048,7 @@ class HTTPClient:
         Pregame_GetMatchLoadouts
         Get player skins and sprays for a game in the pre-game stage
         """
-        r = Route('GET', f'/pregame/v1/matches/{match_id}/loadouts', EndpointType.glz, self._region)
+        r = Route('GET', '/pregame/v1/matches/{match_id}/loadouts', EndpointType.glz, self.region, match_id=match_id)
         return self.request(r)
 
     def pregame_fetch_chat_token(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
@@ -919,7 +1056,7 @@ class HTTPClient:
         Pregame_FetchChatToken
         Get a chat token
         """
-        r = Route('GET', f'/pregame/v1/matches/{match_id}/chattoken', EndpointType.glz, self._region)
+        r = Route('GET', '/pregame/v1/matches/{match_id}/chattoken', EndpointType.glz, self.region, match_id=match_id)
         return self.request(r)
 
     def pregame_fetch_voice_token(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
@@ -927,7 +1064,7 @@ class HTTPClient:
         Pregame_FetchVoiceToken
         Get a voice token
         """
-        r = Route('GET', f'/pregame/v1/matches/{match_id}/voicetoken', EndpointType.glz, self._region)
+        r = Route('GET', '/pregame/v1/matches/{match_id}/voicetoken', EndpointType.glz, self.region, match_id=match_id)
         return self.request(r)
 
     def pregame_select_character(self, agent_id: str, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
@@ -936,7 +1073,14 @@ class HTTPClient:
         Select an agent
         don't use this for instalocking :)
         """
-        r = Route('POST', f'/pregame/v1/matches/{match_id}/select/{agent_id}', EndpointType.glz, self._region)
+        r = Route(
+            'POST',
+            '/pregame/v1/matches/{match_id}/select/{agent_id}',
+            EndpointType.glz,
+            self.region,
+            match_id=match_id,
+            agent_id=agent_id,
+        )
         return self.request(r)
 
     def pregame_lock_character(self, agent_id: str, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
@@ -945,7 +1089,14 @@ class HTTPClient:
         Lock in an agent
         don't use this for instalocking :)
         """
-        r = Route('POST', f'/pregame/v1/matches/{match_id}/lock/{agent_id}', EndpointType.glz, self._region)
+        r = Route(
+            'POST',
+            '/pregame/v1/matches/{match_id}/lock/{agent_id}',
+            EndpointType.glz,
+            self.region,
+            match_id=match_id,
+            agent_id=agent_id,
+        )
         return self.request(r)
 
     def pregame_quit_match(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
@@ -953,7 +1104,7 @@ class HTTPClient:
         Pregame_QuitMatch
         Quit a match in the pre-game stage
         """
-        r = Route('POST', f'/pregame/v1/matches/{match_id}/quit', EndpointType.glz, self._region)
+        r = Route('POST', '/pregame/v1/matches/{match_id}/quit', EndpointType.glz, self.region, match_id=match_id)
         return self.request(r)
 
     # live game endpoints
@@ -964,7 +1115,7 @@ class HTTPClient:
         CoreGame_FetchPlayer
         Get the game ID for an ongoing game the player is in
         """
-        r = Route('GET', f'/core-game/v1/players/{self._puuid}', EndpointType.glz, self._region)
+        r = Route('GET', '/core-game/v1/players/{puuid}', EndpointType.glz, self.region, puuid=self.puuid)
         return self.request(r)
 
     def coregame_fetch_match(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
@@ -972,7 +1123,7 @@ class HTTPClient:
         CoreGame_FetchMatch
         Get information about an ongoing game
         """
-        r = Route('GET', f'/core-game/v1/matches/{match_id}', EndpointType.glz, self._region)
+        r = Route('GET', '/core-game/v1/matches/{match_id}', EndpointType.glz, self.region, match_id=match_id)
         return self.request(r)
 
     def coregame_fetch_match_loadouts(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
@@ -980,7 +1131,7 @@ class HTTPClient:
         CoreGame_FetchMatchLoadouts
         Get player skins and sprays for an ongoing game
         """
-        r = Route('GET', f'/core-game/v1/matches/{match_id}/loadouts', EndpointType.glz, self._region)
+        r = Route('GET', '/core-game/v1/matches/{match_id}/loadouts', EndpointType.glz, self.region, match_id=match_id)
         return self.request(r)
 
     def coregame_fetch_team_chat_muc_token(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
@@ -988,7 +1139,9 @@ class HTTPClient:
         CoreGame_FetchTeamChatMUCToken
         Get a token for team chat
         """
-        r = Route('GET', f'/core-game/v1/matches/{match_id}/teamchatmuctoken', EndpointType.glz, self._region)
+        r = Route(
+            'GET', '/core-game/v1/matches/{match_id}/teamchatmuctoken', EndpointType.glz, self.region, match_id=match_id
+        )
         return self.request(r)
 
     def coregame_fetch_all_chat_muc_token(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
@@ -996,7 +1149,9 @@ class HTTPClient:
         CoreGame_FetchAllChatMUCToken
         Get a token for all chat
         """
-        r = Route('GET', f'/core-game/v1/matches/{match_id}/allchatmuctoken', EndpointType.glz, self._region)
+        r = Route(
+            'GET', '/core-game/v1/matches/{match_id}/allchatmuctoken', EndpointType.glz, self.region, match_id=match_id
+        )
         return self.request(r)
 
     def coregame_disassociate_player(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
@@ -1004,7 +1159,14 @@ class HTTPClient:
         CoreGame_DisassociatePlayer
         Leave an in-progress game
         """
-        r = Route('GET', f'/core-game/v1/players/{self._puuid}/disassociate/{match_id}', EndpointType.glz, self._region)
+        r = Route(
+            'GET',
+            '/core-game/v1/players/{puuid}/disassociate/{match_id}',
+            EndpointType.glz,
+            self.region,
+            puuid=self.puuid,
+            match_id=match_id,
+        )
         return self.request(r)
 
     # local endpoints

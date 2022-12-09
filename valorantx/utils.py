@@ -78,10 +78,15 @@ def _to_dict(text: str) -> dict:
 # source: https://github.com/Rapptz/discord.py/blob/master/discord/http.py
 async def json_or_text(response: ClientResponse) -> Union[Dict[str, Any], str]:
     text = await response.text(encoding="utf-8")
-    if response.content_type == "application/json":
-        return json.loads(text)
+    if response.content_type == "application/json" or text.startswith("{") or text.startswith("["):
+        return _to_dict(text)
 
-    return text
+    try:
+        data = _to_dict(text)
+    except (json.JSONDecodeError, TypeError):
+        return text
+    else:
+        return data
 
 
 class _MissingSentinel:
