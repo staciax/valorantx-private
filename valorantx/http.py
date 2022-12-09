@@ -37,7 +37,7 @@ import aiohttp
 from . import __version__, utils
 from .auth import RiotAuth
 from .enums import ItemType, Locale, QueueType, Region, try_enum
-from .errors import Forbidden, HTTPException, NotFound, PhaseError, RateLimited, RiotServerError, ValorantAPIServerError
+from .errors import Forbidden, HTTPException, InternalServerError, NotFound, PhaseError, RateLimited
 
 try:
     import urllib3  # type: ignore
@@ -193,10 +193,7 @@ class HTTPClient:
                             raise NotFound(response, extra_exceptions)
                         raise NotFound(response, data)
                     elif response.status >= 500:
-                        if not is_asset:
-                            raise RiotServerError(response, data)
-                        else:
-                            raise ValorantAPIServerError(response, data)
+                        raise InternalServerError(response, data)
                     else:
                         raise HTTPException(response, data)
 
@@ -210,7 +207,7 @@ class HTTPClient:
         if response is not None:
             # We've run out of retries, raise.
             if response.status >= 500:
-                raise RiotServerError(response, data)
+                raise InternalServerError(response, data)
 
             raise HTTPException(response, data)
 
