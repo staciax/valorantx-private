@@ -127,9 +127,9 @@ class ContractU(Contract):
         ]
         self.progression_level_reached: int = contract.get('ProgressionLevelReached', 0)
         self.progression_towards_next_level: int = contract['ProgressionTowardsNextLevel']
-        self.reward_per_chapter: int = min(len(chapter.rewards) for chapter in self.content.chapters)
-        self.total_chapters: int = len(self.content.chapters)
-        self.maximum_tier: int = sum(len(chapter.rewards) for chapter in self.content.chapters)
+        self.reward_per_chapter: int = min(len(chapter.rewards) for chapter in self.content._chapters)
+        self.total_chapters: int = len(self.content._chapters)
+        self.maximum_tier: int = sum(len(chapter.rewards) for chapter in self.content._chapters)
 
         # TODO: new algorithm {'chapter': len(rewards), 'chapter': len(rewards), ...} for accuracy
         self.chapter: int = self.progression_level_reached // self.reward_per_chapter
@@ -170,7 +170,7 @@ class ContractU(Contract):
             return None
 
         try:
-            chapter = self.content.chapters[self.chapter]
+            chapter = self.content._chapters[self.chapter]
             return chapter.rewards[self.chapter_reward_index]
         except IndexError:
             return None
@@ -180,7 +180,7 @@ class ContractU(Contract):
         """:class: `Optional[Reward]` Returns the contract's latest tier reward."""
 
         try:
-            chapter = self.content.chapters[self.chapter - (1 if self.chapter_reward_index == 0 else 0)]
+            chapter = self.content._chapters[self.chapter - (1 if self.chapter_reward_index == 0 else 0)]
             return chapter.rewards[self.chapter_reward_index - 1]
         except IndexError:
             return None
@@ -190,11 +190,11 @@ class ContractU(Contract):
         """:class: `Iterator[Reward]` Returns the contract's rewards."""
 
         if self.maximum_tier <= self.current_tier == self.highest_rewarded_level:
-            for chapter in self.content.chapters:
+            for chapter in self.content._chapters:
                 yield from chapter.rewards
         else:
-            for i in range(0, len(self.content.chapters)):
-                chapter = self.content.chapters[i]
+            for i in range(0, len(self.content._chapters)):
+                chapter = self.content._chapters[i]
                 if i <= self.chapter:
                     if i == self.chapter:
                         yield from chapter.rewards[: self.chapter_reward_index]
@@ -204,12 +204,12 @@ class ContractU(Contract):
     def get_next_reward(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
         """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the next reward."""
         reward = self.next_tier_reward
-        return reward.get_reward() if reward is not None else None
+        return reward.get_item() if reward is not None else None
 
     def get_latest_reward(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
         """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the latest reward."""
         reward = self.latest_tier_reward
-        return reward.get_reward() if reward is not None else None
+        return reward.get_item() if reward is not None else None
 
     @classmethod
     def _from_contract(cls, client: Client, contract: ContractUPayload) -> Self:
@@ -338,6 +338,13 @@ class Contracts(BaseModel):
         """:class: `List[ContractU]` Returns all event contracts."""
         return [contract for contract in self.contracts if contract.content.relation_type == RelationType.event]
 
+    def get_contracts(self, relation_type: Optional[Union[RelationType, str]] = None) -> List[ContractU]:
+        """:class: `List[ContractU]` Returns all contracts of the given relation type."""
+        if relation_type is None:
+            return self.contracts
+        relation_type = RelationType(relation_type) if isinstance(relation_type, str) else relation_type
+        return [contract for contract in self.contracts if contract.content.relation_type == relation_type]
+
     @property
     def daily_mission(self) -> Iterator[MissionU]:
         """:class: `MissionU` Returns the daily mission."""
@@ -372,9 +379,19 @@ class Content:
         self._client: Client = client
         self.relation_type: RelationType = try_enum(RelationType, data['relationType'])
         self.relation_uuid: Optional[str] = data.get('relationUuid')
-        self._chapters: Optional[List[Any]] = data.get('chapters')
         self.premium_reward_schedule_uuid: Optional[str] = data.get('premiumRewardScheduleUuid')
         self.premium_vp_cost: int = data.get('premiumVPCost', 0)
+        self._chapters: List[Chapter] = []
+        self.relation: Optional[Union[Agent, Season, Event]] = None
+        if self.relation_type == RelationType.agent:
+            self.relation = client.get_agent(uuid=self.relation_uuid)
+        elif self.relation_type == RelationType.season:
+            self.relation = client.get_season(uuid=self.relation_uuid)
+        elif self.relation_type == RelationType.event:
+            self.relation = client.get_event(uuid=self.relation_uuid)
+        if chapters := data.get('chapters'):
+            for index, chapter in enumerate(chapters):
+                self._chapters.append(Chapter(client, data=chapter, index=index))
 
     def __repr__(self) -> str:
         return f'<Content relation={self.relation!r}>'
@@ -389,26 +406,9 @@ class Content:
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
-    @property
-    def chapters(self) -> List[Chapter]:
+    def get_chapters(self) -> List[Chapter]:
         """:class: `List[Chapter]` Returns the chapters."""
-        chapters = []
-        if self._chapters is not None:
-            for index, chapter in enumerate(self._chapters):
-                chapters.append(Chapter(self._client, data=chapter, index=index))
-        return chapters
-
-    @property
-    def relation(self) -> Optional[Union[Agent, Season, Event]]:
-        """:class: `Any` Returns the relation."""
-        if self.relation_type == RelationType.agent:
-            return self._client.get_agent(uuid=self.relation_uuid)
-        elif self.relation_type == RelationType.season:
-            return self._client.get_season(uuid=self.relation_uuid)
-        elif self.relation_type == RelationType.event:
-            return self._client.get_event(uuid=self.relation_uuid)
-        else:
-            _log.warning(f'Unknown relation type {self.relation_type!r} with uuid {self.relation_uuid!r}')
+        return self._chapters
 
 
 class Chapter:
@@ -517,6 +517,6 @@ class Reward:
             _log.warning(f'Unknown contract reward type {self.type!r} with uuid {self.uuid!r}')
             return None
 
-    def get_reward(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
+    def get_item(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
         """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the reward."""
         return self._reward

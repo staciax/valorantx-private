@@ -39,6 +39,7 @@ from typing import (
     TypeVar,
     Union,
     overload,
+    Mapping,
 )
 
 from . import utils
