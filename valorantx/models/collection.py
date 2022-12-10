@@ -32,7 +32,6 @@ from .spray import SprayLevelLoadout, SprayLoadout
 from .weapons import SkinChromaLoadout, SkinLevelLoadout, SkinLoadout
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
 
     from ..client import Client
     from ..types.collection import (
@@ -49,8 +48,8 @@ if TYPE_CHECKING:
     from .spray import Spray
     from .weapons import Skin
 
-    SprayL: TypeAlias = Union[SprayLoadout, SprayLevelLoadout]
-    SkinL: TypeAlias = Union[SkinLoadout, SkinLevelLoadout, SkinChromaLoadout]
+    SprayL = Union[SprayLoadout, SprayLevelLoadout]
+    SkinL = Union[SkinLoadout, SkinLevelLoadout, SkinChromaLoadout]
 
 __all__ = (
     'Collection',

@@ -89,14 +89,12 @@ class Spray(BaseModel):
     @property
     def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon."""
-        if self._full_icon is None:
-            return None
-        return Asset._from_url(client=self._client, url=self._full_icon)
+        return Asset._from_url(client=self._client, url=self._display_icon)
 
     @property
     def full_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's full icon."""
-        if self._full_icon is None:
+        if self._full_icon is not None:
             return None
         return Asset._from_url(client=self._client, url=self._full_icon)
 
