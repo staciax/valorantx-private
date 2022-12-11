@@ -410,6 +410,12 @@ class Content:
         """:class: `List[Chapter]` Returns the chapters."""
         return self._chapters
 
+    def get_all_rewards(self) -> List[Reward]:
+        """:class: `List[Reward]` Returns all rewards."""
+        rewards = []
+        for chapter in self.get_chapters():
+            rewards.extend(chapter.rewards)
+        return rewards
 
 class Chapter:
     def __init__(self, client: Client, data: Dict[str, Any], index: int) -> None:
