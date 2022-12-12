@@ -54,6 +54,8 @@ if TYPE_CHECKING:
     from .spray import Spray
     from .weapons import SkinLevel
 
+    Item = Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]
+
 __all__ = ('Contract', 'ContractU', 'Contracts')
 
 _log = logging.getLogger(__name__)
@@ -127,9 +129,9 @@ class ContractU(Contract):
         ]
         self.progression_level_reached: int = contract.get('ProgressionLevelReached', 0)
         self.progression_towards_next_level: int = contract['ProgressionTowardsNextLevel']
-        self.reward_per_chapter: int = min(len(chapter.rewards) for chapter in self.content._chapters)
+        self.reward_per_chapter: int = min(len(chapter._rewards) for chapter in self.content._chapters)
         self.total_chapters: int = len(self.content._chapters)
-        self.maximum_tier: int = sum(len(chapter.rewards) for chapter in self.content._chapters)
+        self.maximum_tier: int = sum(len(chapter._rewards) for chapter in self.content._chapters)
 
         # TODO: new algorithm {'chapter': len(rewards), 'chapter': len(rewards), ...} for accuracy
         self.chapter: int = self.progression_level_reached // self.reward_per_chapter
@@ -171,7 +173,7 @@ class ContractU(Contract):
 
         try:
             chapter = self.content._chapters[self.chapter]
-            return chapter.rewards[self.chapter_reward_index]
+            return chapter._rewards[self.chapter_reward_index]
         except IndexError:
             return None
 
@@ -181,7 +183,7 @@ class ContractU(Contract):
 
         try:
             chapter = self.content._chapters[self.chapter - (1 if self.chapter_reward_index == 0 else 0)]
-            return chapter.rewards[self.chapter_reward_index - 1]
+            return chapter._rewards[self.chapter_reward_index - 1]
         except IndexError:
             return None
 
@@ -191,15 +193,15 @@ class ContractU(Contract):
 
         if self.maximum_tier <= self.current_tier == self.highest_rewarded_level:
             for chapter in self.content._chapters:
-                yield from chapter.rewards
+                yield from chapter._rewards
         else:
             for i in range(0, len(self.content._chapters)):
                 chapter = self.content._chapters[i]
                 if i <= self.chapter:
                     if i == self.chapter:
-                        yield from chapter.rewards[: self.chapter_reward_index]
+                        yield from chapter._rewards[: self.chapter_reward_index]
                     else:
-                        yield from chapter.rewards
+                        yield from chapter._rewards
 
     def get_next_reward(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
         """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the next reward."""
@@ -414,7 +416,7 @@ class Content:
         """:class: `List[Reward]` Returns all rewards."""
         rewards = []
         for chapter in self.get_chapters():
-            rewards.extend(chapter.rewards)
+            rewards.extend(chapter._rewards)
         return rewards
 
 class Chapter:
@@ -423,6 +425,7 @@ class Chapter:
         self.index: int = index
         self._is_epilogue: bool = data.get('isEpilogue', False)
         self.levels: List[Level] = [Level(client=client, data=level, chapter_index=index) for level in data['levels']]
+        self._rewards: List[Reward] = [level.reward for level in self.levels]
         self.free_rewards: List[Reward] = (
             [Reward(client=client, data=reward, is_free=True, index=index) for reward in data['freeRewards']]
             if data.get('freeRewards') is not None
@@ -450,14 +453,12 @@ class Chapter:
     def __ge__(self, other: object) -> bool:
         return isinstance(other, Chapter) and self.index >= other.index
 
-    @property
-    def rewards(self) -> List[Reward]:
-        """:class: `List[Reward]` Returns the rewards."""
-        return [level.reward for level in self.levels]
-
     def is_epilogue(self) -> bool:
         return self._is_epilogue
 
+    def get_rewards(self) -> List[Reward]:
+        """:class: `List[Reward]` Returns the rewards."""
+        return self._rewards
 
 class Level:
     def __init__(self, client: Client, data: Dict[str, Any], chapter_index: int = 0) -> None:
@@ -475,16 +476,30 @@ class Level:
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
-
 class Reward:
     def __init__(self, client: Client, data: Dict[str, Any], is_free: bool = False, index: int = 0) -> None:
         self._client: Client = client
-        self.type: str = data.get('type', '')
-        self.uuid: str = data.get('uuid', '')
+        self.type: str = data['type']
+        self.uuid: str = data['uuid']
         self.amount: int = data.get('amount', 0)
         self._is_highlighted: bool = data.get('isHighlighted', False)
         self._is_free: bool = is_free
         self.chapter_index: int = index
+        self._reward: Optional[Item] = None
+        if self.type == str(RewardType.skin_level):
+            self._reward = self._client.get_skin_level(uuid=self.uuid)
+        elif self.type == str(RewardType.buddy_level):
+            self._reward = self._client.get_buddy_level(uuid=self.uuid)
+        elif self.type == str(RewardType.player_card):
+            self._reward = self._client.get_player_card(uuid=self.uuid)
+        elif self.type == str(RewardType.player_title):
+            self._reward = self._client.get_player_title(uuid=self.uuid)
+        elif self.type == str(RewardType.spray):
+            self._reward = self._client.get_spray(uuid=self.uuid, level=False)
+        elif self.type == str(RewardType.currency):
+            self._reward = self._client.get_currency(uuid=self.uuid)
+        else:
+            _log.warning(f'Unknown contract reward type {self.type!r} with uuid {self.uuid!r}')
 
     def __repr__(self) -> str:
         return f'<Reward reward={self._reward!r}>'
@@ -495,6 +510,10 @@ class Reward:
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
+    def get_item(self) -> Optional[Item]:
+        """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the reward."""
+        return self._reward
+
     def is_highlighted(self) -> bool:
         """:class: `bool` Returns whether the reward is highlighted."""
         return self._is_highlighted
@@ -502,27 +521,3 @@ class Reward:
     def is_free(self) -> bool:
         """:class: `bool` Returns whether the reward is free."""
         return self._is_free
-
-    # special case for the free rewards
-
-    @property
-    def _reward(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
-        if self.type == str(RewardType.skin_level):
-            return self._client.get_skin_level(uuid=self.uuid)
-        elif self.type == str(RewardType.buddy_level):
-            return self._client.get_buddy_level(uuid=self.uuid)
-        elif self.type == str(RewardType.player_card):
-            return self._client.get_player_card(uuid=self.uuid)
-        elif self.type == str(RewardType.player_title):
-            return self._client.get_player_title(uuid=self.uuid)
-        elif self.type == str(RewardType.spray):
-            return self._client.get_spray(uuid=self.uuid, level=False)
-        elif self.type == str(RewardType.currency):
-            return self._client.get_currency(uuid=self.uuid)
-        else:
-            _log.warning(f'Unknown contract reward type {self.type!r} with uuid {self.uuid!r}')
-            return None
-
-    def get_item(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
-        """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the reward."""
-        return self._reward
