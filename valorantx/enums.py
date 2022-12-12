@@ -468,6 +468,7 @@ class ContractRewardType(Enum):
     player_card = 'PlayerCard'
     player_title = 'Title'
     spray = 'Spray'
+    agent = 'Character'
 
     def __str__(self) -> str:
         return str(self.value)

@@ -33,13 +33,13 @@ from typing import (
     Dict,
     Iterator,
     List,
+    Mapping,
     Optional,
     Tuple,
     Type,
     TypeVar,
     Union,
     overload,
-    Mapping,
 )
 
 from . import utils

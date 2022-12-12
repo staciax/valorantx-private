@@ -419,6 +419,7 @@ class Content:
             rewards.extend(chapter._rewards)
         return rewards
 
+
 class Chapter:
     def __init__(self, client: Client, data: Dict[str, Any], index: int) -> None:
         self._client: Client = client
@@ -460,6 +461,7 @@ class Chapter:
         """:class: `List[Reward]` Returns the rewards."""
         return self._rewards
 
+
 class Level:
     def __init__(self, client: Client, data: Dict[str, Any], chapter_index: int = 0) -> None:
         self.reward: Reward = Reward(client=client, data=data['reward'], index=chapter_index)
@@ -476,28 +478,31 @@ class Level:
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
+
 class Reward:
     def __init__(self, client: Client, data: Dict[str, Any], is_free: bool = False, index: int = 0) -> None:
         self._client: Client = client
-        self.type: str = data['type']
+        self.type: RewardType = try_enum(RewardType, data['type'])
         self.uuid: str = data['uuid']
         self.amount: int = data.get('amount', 0)
         self._is_highlighted: bool = data.get('isHighlighted', False)
         self._is_free: bool = is_free
         self.chapter_index: int = index
         self._reward: Optional[Item] = None
-        if self.type == str(RewardType.skin_level):
+        if self.type == RewardType.skin_level:
             self._reward = self._client.get_skin_level(uuid=self.uuid)
-        elif self.type == str(RewardType.buddy_level):
+        elif self.type == RewardType.buddy_level:
             self._reward = self._client.get_buddy_level(uuid=self.uuid)
-        elif self.type == str(RewardType.player_card):
+        elif self.type == RewardType.player_card:
             self._reward = self._client.get_player_card(uuid=self.uuid)
-        elif self.type == str(RewardType.player_title):
+        elif self.type == RewardType.player_title:
             self._reward = self._client.get_player_title(uuid=self.uuid)
-        elif self.type == str(RewardType.spray):
+        elif self.type == RewardType.spray:
             self._reward = self._client.get_spray(uuid=self.uuid, level=False)
-        elif self.type == str(RewardType.currency):
+        elif self.type == RewardType.currency:
             self._reward = self._client.get_currency(uuid=self.uuid)
+        elif self.type == RewardType.agent:
+            self._reward = self._client.get_agent(uuid=self.uuid)
         else:
             _log.warning(f'Unknown contract reward type {self.type!r} with uuid {self.uuid!r}')
 
