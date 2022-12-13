@@ -460,8 +460,9 @@ class HTTPClient:
         params = {
             'startIndex': start_index,
             'endIndex': end_index,
-            'queue': queue_id,
         }
+        if queue_id is not None:
+            params['queue'] = queue_id
         return self.request(r, params=params)
 
     def fetch_match_details(self, match_id: str) -> Response[match.MatchDetails]:
@@ -497,7 +498,9 @@ class HTTPClient:
         if isinstance(queue_id, QueueType):
             queue_id = str(queue_id)
         r = Route('GET', '/mmr/v1/players/{puuid}/competitiveupdates', EndpointType.pd, region=self._region, puuid=puuid)
-        params = {'startIndex': start_index, 'endIndex': end_index, 'queue': queue_id}
+        params = {'startIndex': start_index, 'endIndex': end_index}
+        if queue_id is not None:
+            params['queue'] = queue_id
 
         return self.request(r, params=params)
 
