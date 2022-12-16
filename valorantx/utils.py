@@ -70,19 +70,14 @@ def string_escape(string: str) -> str:
     return string
 
 
-def _to_dict(text: str) -> dict:
-    """Convert text to dict"""
-    return json.loads(text)
-
-
 # source: https://github.com/Rapptz/discord.py/blob/master/discord/http.py
 async def json_or_text(response: ClientResponse) -> Union[Dict[str, Any], str]:
     text = await response.text(encoding="utf-8")
     if response.content_type == "application/json" or text.startswith("{") or text.startswith("["):
-        return _to_dict(text)
+        return json.loads(text)
 
     try:
-        data = _to_dict(text)
+        data = json.loads(text)
     except (json.JSONDecodeError, TypeError):
         return text
     else:
