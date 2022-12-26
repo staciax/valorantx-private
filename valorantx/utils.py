@@ -73,16 +73,19 @@ def string_escape(string: str) -> str:
 # source: https://github.com/Rapptz/discord.py/blob/master/discord/http.py
 async def json_or_text(response: ClientResponse) -> Union[Dict[str, Any], str]:
     text = await response.text(encoding="utf-8")
-    if response.content_type == "application/json" or text.startswith("{") or text.startswith("["):
-        return json.loads(text)
-
     try:
-        data = json.loads(text)
-    except (json.JSONDecodeError, TypeError):
-        return text
-    else:
-        return data
+        if response.headers['content-type'] == 'application/json':
+            return json.loads(text)
+    except KeyError:
+        pass
 
+    # try to parse it as json anyway
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    
+    return text
 
 class _MissingSentinel:
     __slots__ = ()
