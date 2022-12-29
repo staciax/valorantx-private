@@ -67,6 +67,8 @@ class EndpointType(enum.Enum):
     valtracker_gg = 5
 
 
+# http-client inspired by https://github.com/Rapptz/discord.py/blob/master/discord/http.pyS
+
 class Route:
 
     BASE_PD_URL: ClassVar[str] = 'https://pd.{shard}.a.pvp.net'
@@ -74,7 +76,7 @@ class Route:
     BASE_SHARD_URL: ClassVar[str] = 'https://shared.{shard}.a.pvp.net'
     BASE_PLAY_VALORANT_URL: ClassVar[str] = 'https://playvalorant.com'
     BASE_VALORANT_API_URL: ClassVar[str] = 'https://valorant-api.com/v1'
-    BASE_VALTRACKER_GG_URL: ClassVar[str] = 'https://api.valtracker.gg'  # add-on bundle items
+    BASE_VALTRACKER_GG_URL: ClassVar[str] = 'https://api.valtracker.gg/v0'  # add-on bundle items
 
     def __init__(
         self,
