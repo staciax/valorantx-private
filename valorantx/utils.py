@@ -74,6 +74,7 @@ def _to_dict(text: str) -> Dict[Any, Any]:
     """Convert text to dict"""
     return json.loads(text)
 
+
 # source: https://github.com/Rapptz/discord.py/blob/master/discord/http.py
 async def json_or_text(response: ClientResponse) -> Union[Dict[str, Any], str]:
     text = await response.text(encoding="utf-8")
@@ -88,8 +89,9 @@ async def json_or_text(response: ClientResponse) -> Union[Dict[str, Any], str]:
         return _to_dict(text)
     except json.JSONDecodeError:
         pass
-    
+
     return text
+
 
 # source: https://github.com/Rapptz/discord.py/blob/master/discord/utils.py
 class _MissingSentinel:

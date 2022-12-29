@@ -104,7 +104,7 @@ class MatchPlayerStats(TypedDict):
     abilityCasts: AbilityCasts
 
 
-class XpModification(TypedDict):
+class XPModification(TypedDict):
     Value: float
     ID: str
 
@@ -301,6 +301,6 @@ class PlayerMatch(Player):
     preferredLevelBorder: str
     accountLevel: int
     sessionPlaytimeMinutes: int
-    xpModifications: List[XpModification]
+    xpModifications: List[XPModification]
     behaviorFactors: BehaviorFactors
     newPlayerExperienceDetails: NewPlayerExperienceDetails

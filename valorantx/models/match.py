@@ -54,7 +54,7 @@ if TYPE_CHECKING:
         PlayerStatKill as PlayerStatKillPayload,
         RoundDamage as RoundDamagePayload,
         Team as MatchTeamPayload,
-        XpModification as xpModificationPayload,
+        XPModification as XPModificationPayload,
     )
     from .agent import Agent, AgentAbility
     from .competitive import Tier
@@ -847,7 +847,7 @@ class MatchPlayer(Player):
         self.session_playtime_minutes: int = data.get('sessionPlaytimeMinutes', 0)
 
         # TODO: Model this
-        self.xp_modifications: List[xpModificationPayload] = data.get('xpModifications', [])
+        self.xp_modifications: List[XPModificationPayload] = data.get('xpModifications', [])
         self.new_player_exp_details: NewPlayerExperienceDetailsPayload = data['newPlayerExperienceDetails']
 
         self.last_update = match.started_at

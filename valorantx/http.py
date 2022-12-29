@@ -69,6 +69,7 @@ class EndpointType(enum.Enum):
 
 # http-client inspired by https://github.com/Rapptz/discord.py/blob/master/discord/http.pyS
 
+
 class Route:
 
     BASE_PD_URL: ClassVar[str] = 'https://pd.{shard}.a.pvp.net'

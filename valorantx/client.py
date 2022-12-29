@@ -288,8 +288,6 @@ class Client:
     async def wait_until_ready(self) -> None:
         """|coro|
         Waits until the client's internal cache is all ready.
-        .. warning::
-            Calling this inside :meth:`setup_hook` can lead to a deadlock.
         """
         if self._ready is not MISSING:
             await self._ready.wait()
@@ -308,7 +306,7 @@ class Client:
         self.loop = loop
         self.http.loop = loop
         self._ready = asyncio.Event()
-        await self.setup()
+        await self.init()
         return self
 
     async def __aexit__(
@@ -320,7 +318,7 @@ class Client:
         if not self.is_closed():
             await self.close()
 
-    async def setup(self, *, reload: bool = False) -> None:
+    async def init(self, *, reload: bool = False) -> None:
 
         _log.debug('Setting up client')
 
@@ -333,7 +331,7 @@ class Client:
 
         self._ready.set()
 
-        _log.debug('Client setup complete')
+        _log.debug('Client is ready')
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
