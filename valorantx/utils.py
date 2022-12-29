@@ -91,6 +91,7 @@ async def json_or_text(response: ClientResponse) -> Union[Dict[str, Any], str]:
     
     return text
 
+# source: https://github.com/Rapptz/discord.py/blob/master/discord/utils.py
 class _MissingSentinel:
     __slots__ = ()
 
