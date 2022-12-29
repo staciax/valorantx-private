@@ -200,11 +200,10 @@ class Localization:
             return self.untranslated.get(str(self._locale), self.default)
         return self.default
 
-    def from_locale(self, value: str):
+    def from_locale(self, value: str) -> str:
         """:class:`str`: Returns the locale from the locale code."""
-        try:
-            locale = getattr(self, value.replace('-', '_'))
-        except AttributeError:
-            if isinstance(self.untranslated, dict):
-                return self.untranslated.get(value, self.default)
-        return self.default
+        return (
+            getattr(self, value.replace('-', '_'))
+            if hasattr(self, value.replace('-', '_'))
+            else self.untranslated.get(value, self.default)
+        )
