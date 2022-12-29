@@ -190,8 +190,7 @@ class Localization:
             return self.untranslated
         elif isinstance(self.untranslated, dict):
             return self.untranslated.get('en-US', '')
-        else:
-            return ''
+        return ''
 
     @property
     def locale(self) -> str:
@@ -205,5 +204,5 @@ class Localization:
         return (
             getattr(self, value.replace('-', '_'))
             if hasattr(self, value.replace('-', '_'))
-            else self.untranslated.get(value, self.default)
+            else (self.untranslated.get(value, self.default) if isinstance(self.untranslated, dict) else self.default)
         )
