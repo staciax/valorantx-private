@@ -285,6 +285,20 @@ class Client:
         _log.debug('%s has successfully been registered as an event', coro.__name__)
         return coro
 
+    async def wait_until_ready(self) -> None:
+        """|coro|
+        Waits until the client's internal cache is all ready.
+        .. warning::
+            Calling this inside :meth:`setup_hook` can lead to a deadlock.
+        """
+        if self._ready is not MISSING:
+            await self._ready.wait()
+        else:
+            raise RuntimeError(
+                'Client has not been properly initialised. '
+                'Please use the login method or asynchronous context manager before calling this method'
+            )
+
     # end events
 
     async def __aenter__(self) -> Self:
@@ -324,20 +338,6 @@ class Client:
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
         return self._ready is not MISSING and self._ready.is_set()
-
-    async def wait_until_ready(self) -> None:
-        """|coro|
-        Waits until the client's internal cache is all ready.
-        .. warning::
-            Calling this inside :meth:`setup_hook` can lead to a deadlock.
-        """
-        if self._ready is not MISSING:
-            await self._ready.wait()
-        else:
-            raise RuntimeError(
-                'Client has not been properly initialised. '
-                'Please use the login method or asynchronous context manager before calling this method'
-            )
 
     async def authorize(self, username: Optional[str], password: Optional[str]) -> None:
         """|coro|
