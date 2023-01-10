@@ -199,10 +199,12 @@ class Localization:
             return self.untranslated.get(str(self._locale), self.default)
         return self.default
 
-    def from_locale(self, value: str) -> str:
+    def from_locale(self, locale: Union[Locale, str]) -> str:
         """:class:`str`: Returns the locale from the locale code."""
+        if isinstance(locale, Locale):
+            locale = str(locale)
         return (
-            getattr(self, value.replace('-', '_'))
-            if hasattr(self, value.replace('-', '_'))
-            else (self.untranslated.get(value, self.default) if isinstance(self.untranslated, dict) else self.default)
+            getattr(self, locale.replace('-', '_'))
+            if hasattr(self, locale.replace('-', '_'))
+            else (self.untranslated.get(locale, self.default) if isinstance(self.untranslated, dict) else self.default)
         )

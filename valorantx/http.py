@@ -1,7 +1,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2021 colinh (valclient)
+Copyright (c) 2021-2022 colinh(valclient)
 Copyright (c) 2015-present Rapptz(discord.py)
 Copyright (c) 2022-present xStacia
 

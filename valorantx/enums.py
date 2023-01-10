@@ -317,6 +317,7 @@ class MapType(Enum):
     fracture = 'b529448b-4d60-346e-e89e-00a4c527a405'
     haven = '2bee0dc9-4ffe-519b-1cbd-7fbe763a6047'
     icebox = 'e2ad5c54-4114-a870-9641-8ea21279579a'
+    lotus = ''
     split = 'd960549e-485c-e861-8d71-aa9d1aed12a2'
     pearl = 'fd267378-4d1d-484f-ff52-77821ed10dc2'
     the_range = 'ee613ee9-28b7-4beb-9666-08db13bb2244'
@@ -343,6 +344,7 @@ class MapURL(Enum):
     fracture = '/Game/Maps/Canyon/Canyon'
     haven = '/Game/Maps/Triad/Triad'
     icebox = '/Game/Maps/Port/Port'
+    lotus = ''
     split = '/Game/Maps/Bonsai/Bonsai'
     pearl = '/Game/Maps/Pitt/Pitt'
     the_range = '/Game/Maps/Poveglia/Range'
@@ -547,6 +549,7 @@ class LevelBorderID(Enum):
 
 class BundleID(Enum):
     Abyssal = 'afa6651a-4b93-b7f8-b136-b6b081fc3258'
+    Araxys = ''
     Arcane = '2270b116-4255-8a14-4486-db9de4979b89'
     Avalanche = '0dee7ef6-d3ea-400a-b15c-5b9524243439'
     BlastX = 'a31f7d1f-89d8-47ae-875b-1ae2117655c2'
