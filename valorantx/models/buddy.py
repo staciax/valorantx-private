@@ -152,7 +152,6 @@ class BuddyLevel(BaseModel):
         self.level_number: int = data.get('levelNumber', 0)
         self._base_buddy: Optional[Buddy] = self._client.get_buddy(uuid=self._base_buddy_uuid, level=False)
         self.type: ItemType = ItemType.buddy_level
-        self._is_favorite: bool = False
 
     def __str__(self) -> str:
         return self.display_name

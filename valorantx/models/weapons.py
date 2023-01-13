@@ -333,6 +333,10 @@ class Weapon(BaseModel):
         """:class: `bool` Returns whether the weapon is a melee weapon."""
         return self._is_melee
 
+    def get_skins(self) -> List[Skin]:
+        """:class: `list` Returns the weapon's skins."""
+        return self.skins
+
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the weapon with the given UUID."""
