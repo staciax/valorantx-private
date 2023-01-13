@@ -41,7 +41,8 @@ __all__ = (
 
 
 class Version:
-    def __init__(self, data: VersionPayload) -> None:
+    def __init__(self, client: Optional[Client], data: VersionPayload) -> None:
+        self._client: Optional[Client] = client
         self.manifest_id: str = data['data']['manifestId']
         self.branch: str = data['data']['branch']
         self.version: str = data['data']['version']

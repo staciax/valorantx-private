@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, List, Mapping, Union
+from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Union
 
 from .. import utils
 
@@ -131,7 +131,7 @@ class HistoryXP:
     def __hash__(self) -> int:
         return hash(self.id)
 
-    async def fetch_match_details(self) -> MatchDetails:
+    async def fetch_match_details(self) -> Optional[MatchDetails]:
         return await self._client.fetch_match_details(self.id)
 
 

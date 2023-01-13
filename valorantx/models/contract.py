@@ -54,7 +54,7 @@ if TYPE_CHECKING:
     from .spray import Spray
     from .weapons import SkinLevel
 
-    Item = Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]
+    Item = Union[Agent, SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]
 
 __all__ = ('Contract', 'ContractU', 'Contracts')
 

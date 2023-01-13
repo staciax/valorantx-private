@@ -28,6 +28,7 @@ import logging
 from typing import (
     TYPE_CHECKING,
     Any,
+    Awaitable,
     Callable,
     Coroutine,
     Dict,
@@ -99,9 +100,9 @@ from .models import (
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from typing_extensions import Self
+    from typing_extensions import ParamSpec, Self
 
-    # item = TypeVar('item', bound=ItemType)
+    P = ParamSpec('P')
 
 # fmt: off
 __all__ = (
@@ -109,13 +110,15 @@ __all__ = (
 )
 # fmt: on
 
+T = TypeVar('T')
 Coro = TypeVar('Coro', bound=Callable[..., Coroutine[Any, Any, Any]])
 
 _log = logging.getLogger(__name__)
 
 MISSING: Any = utils.MISSING
 
-
+# -- from discord.py
+# link: https://github.com/Rapptz/discord.py/blob/9ea6ee8887b65f21ccc0bcf013786f4ea61ba608/discord/client.py#L111
 class _LoopSentinel:
     __slots__ = ()
 
@@ -128,18 +131,21 @@ class _LoopSentinel:
 
 
 _loop: Any = _LoopSentinel()
-# source: discord.py
-# link: https://github.com/Rapptz/discord.py/blob/9ea6ee8887b65f21ccc0bcf013786f4ea61ba608/discord/client.py#L111
+
+# --
 
 
-def _authorize_required(func: Callable[..., Any]) -> Callable[[], Any]:
-    def wrapper(self: Client = MISSING, *args: Any, **kwargs: Any) -> Any:
-        if not self.is_authorized():
-            client_func = f'Client.{func.__name__}'
-            raise AuthRequired(f"{client_func!r} requires authorization")
-        return func(self, *args, **kwargs)
+def _authorize_required(fn: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
+    async def inner(*args: P.args, **kwargs: P.kwargs) -> T:
+        for arg in args:
+            if isinstance(arg, Client):
+                if not arg.is_authorized():
+                    client_func = f'Client.{fn.__name__}'
+                    raise AuthRequired(f"{client_func!r} requires authorization")
+                break
+        return await fn(*args, **kwargs)
 
-    return wrapper
+    return inner
 
 
 class Client:
@@ -484,6 +490,18 @@ class Client:
         data = self._assets.get_agent(*args, **kwargs)
         return Agent(client=self, data=data) if data else None
 
+    @overload
+    def get_buddy(self, uuid: Optional[str], level=False) -> Optional[Buddy]:
+        ...
+
+    @overload
+    def get_buddy(self, uuid: Optional[str], level=True) -> Optional[Union[Buddy, BuddyLevel]]:
+        ...
+
+    @overload
+    def get_buddy(self, *args: Any, **kwargs: Any) -> Optional[Union[Buddy, BuddyLevel]]:
+        ...
+
     def get_buddy(self, *args: Any, **kwargs: Any) -> Optional[Union[Buddy, BuddyLevel]]:
         """:class:`Optional[Union[Buddy, BuddyLevel]]`: Gets a buddy from the assets."""
         data = self._assets.get_buddy(*args, **kwargs)
@@ -580,11 +598,11 @@ class Client:
         return SeasonCompetitive(client=self, data=data) if data else None
 
     @overload
-    def get_spray(self, uuid: str, level=False) -> Optional[Spray]:
+    def get_spray(self, uuid: Optional[str], level=False) -> Optional[Spray]:
         ...
 
     @overload
-    def get_spray(self, uuid: str, level=True) -> Optional[Union[Spray, SprayLevel]]:
+    def get_spray(self, uuid: Optional[str], level=True) -> Optional[Union[Spray, SprayLevel]]:
         ...
 
     def get_spray(self, *args: Any, **kwargs: Any) -> Optional[Union[Spray, SprayLevel]]:
@@ -609,15 +627,15 @@ class Client:
         return Weapon(client=self, data=data) if data else None
 
     @overload
-    def get_skin(self, uuid: str, level=False) -> Optional[Union[Skin, SkinChroma]]:
+    def get_skin(self, uuid: Optional[str], level=False) -> Optional[Union[Skin, SkinChroma]]:
         ...
 
     @overload
-    def get_skin(self, uuid: str, chroma=False) -> Optional[Union[Skin, SkinLevel]]:
+    def get_skin(self, uuid: Optional[str], chroma=False) -> Optional[Union[Skin, SkinLevel]]:
         ...
 
     @overload
-    def get_skin(self, uuid: str, level=False, chroma=False) -> Optional[Skin]:
+    def get_skin(self, uuid: Optional[str], level=False, chroma=False) -> Optional[Skin]:
         ...
 
     def get_skin(self, *args: Any, **kwargs: Any) -> Optional[Union[Skin, SkinLevel, SkinChroma]]:
@@ -926,7 +944,7 @@ class Client:
         if http is None:
             http = HTTPClient()
         data = await http.asset_valorant_version()
-        return Version(data=data)
+        return Version(client=None, data=data)
 
     async def fetch_version(self) -> Version:
         """|coro|
@@ -1036,6 +1054,7 @@ class Client:
         :class:`Collection`
             The collection for the current user.
         """
+
         data = await self.http.fetch_player_loadout()
         collection = Collection(client=self, data=data)
 
@@ -1306,7 +1325,7 @@ class Client:
     # party endpoint
 
     @_authorize_required
-    async def fetch_party(self, party_id: Optional[Union[Party, str]] = None) -> Party:
+    async def fetch_party(self, party_id: Optional[Union[Party, PartyPlayer, str]] = None) -> Party:
 
         if party_id is None:
             party_id = await self.fetch_party_player()
