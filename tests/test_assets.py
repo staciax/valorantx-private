@@ -47,23 +47,28 @@ async def main():
         weapon = client.get_weapon('Operator')
         print(repr(weapon))
 
-        for skin in weapon.skins:
-            print(repr(skin))
-            for chroma in skin.chromas:
-                print(repr(chroma))
-            for level in skin.levels:
-                print(repr(level))
+        if weapon is not None:
+            for skin in weapon.get_skins():
+                print(repr(skin))
+                for chroma in skin.chromas:
+                    print(repr(chroma))
+                for level in skin.levels:
+                    print(repr(level))
 
         skin = client.get_skin('Glitchpop Odin')
-        print(repr(skin.get_weapon()))
+        if skin is not None:
+            print(repr(skin.get_weapon()))
 
         skin_level = client.get_skin_level('Xenohunter Odin Level 2')
-        print(repr(skin_level.get_weapon()))
-        print(repr(skin_level.get_skin()))
+        if skin_level is not None:
+            print(repr(skin_level.get_weapon()))
+            print(repr(skin_level.get_skin()))
+
 
         skin_chroma = client.get_skin_chroma('Glitchpop Odin')
-        print(repr(skin_chroma.get_weapon()))
-        print(repr(skin_chroma.get_skin()))
+        if skin_chroma is not None:
+            print(repr(skin_chroma.get_weapon()))
+            print(repr(skin_chroma.get_skin()))
 
         all_bundles = client.get_all_bundles()
         print(list(sorted(all_bundles, key=lambda b: b.display_name)))
@@ -72,8 +77,9 @@ async def main():
         print(repr(ceremony))
 
         competitive_tier = client.get_competitive_tier('564d8e28-c226-3180-6285-e48a390db8b1')
-        print(repr(competitive_tier.get_tiers()))
-        print(repr(competitive_tier))
+        if competitive_tier is not None:
+            print(repr(competitive_tier.get_tiers()))
+            print(repr(competitive_tier))
 
         currency = client.get_currency('VP')
         print(repr(currency))

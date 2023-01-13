@@ -333,6 +333,10 @@ class Weapon(BaseModel):
         """:class: `bool` Returns whether the weapon is a melee weapon."""
         return self._is_melee
 
+    def get_skins(self) -> List[Skin]:
+        """:class: `list` Returns the weapon's skins."""
+        return self.skins
+
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
         """Returns the weapon with the given UUID."""
@@ -341,8 +345,8 @@ class Weapon(BaseModel):
 
 
 class Skin(BaseModel):
-    def __init__(self, *, client: Client, data: Mapping[str, Any]) -> None:
-        super().__init__(client=client, data=data)
+    def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs) -> None:
+        super().__init__(client=client, data=data, **kwargs)
         self._uuid = data['uuid']
         self._base_weapon_uuid: Optional[str] = data.get('WeaponID')
         self._display_name: Dict[str, str] = data['displayName']
@@ -477,7 +481,7 @@ class Skin(BaseModel):
         ...
 
     @classmethod
-    def _from_uuid(cls, client: Client, uuid: str, all_type: bool = False) -> Union[Self, SkinLevel, SkinChroma]:
+    def _from_uuid(cls, client: Client, uuid: str, all_type: bool = False) -> Optional[Union[Self, SkinLevel, SkinChroma]]:
         """Returns the skin with the given UUID."""
         data = client._assets.get_skin(uuid)
         if not all_type:
@@ -604,7 +608,9 @@ class SkinChroma(BaseModel):
         :class:`bool`
             Whether the skin was added to the user's favorites.
         """
-        return await self._base_skin.add_favorite(force=force)
+        if self._base_skin is not None:
+            return await self._base_skin.add_favorite(force=force)
+        return False
 
     async def remove_favorite(self, *, force: bool = False) -> bool:
         """|coro|
@@ -619,7 +625,9 @@ class SkinChroma(BaseModel):
         :class:`bool`
             Whether the skin was removed from the user's favorites.
         """
-        return await self._base_skin.remove_favorite(force=force)
+        if self._base_skin is not None:
+            return await self._base_skin.remove_favorite(force=force)
+        return False
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -744,7 +752,9 @@ class SkinLevel(BaseModel):
         :class:`bool`
             Whether the skin was added to the user's favorites.
         """
-        return await self._base_skin.add_favorite(force=force)
+        if self._base_skin is not None:
+            return await self._base_skin.add_favorite(force=force)
+        return False
 
     async def remove_favorite(self, *, force: bool = False) -> bool:
         """|coro|
@@ -759,7 +769,9 @@ class SkinLevel(BaseModel):
         :class:`bool`
             Whether the skin was removed from the user's favorites.
         """
-        return await self._base_skin.remove_favorite(force=force)
+        if self._base_skin is not None:
+            return await self._base_skin.remove_favorite(force=force)
+        return False
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -809,7 +821,9 @@ class SkinNightMarket(SkinLevel):
 
 
 class SkinBundle(SkinLevel, BaseFeaturedBundleItem):
-    def __init__(self, *, client: Client, data: Mapping[str, Any], bundle: FeaturedBundleItemPayload) -> None:
+    def __init__(
+        self, *, client: Client, data: Mapping[str, Any], bundle: Union[FeaturedBundleItemPayload, Dict[str, Any]]
+    ) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 
     def __repr__(self) -> str:

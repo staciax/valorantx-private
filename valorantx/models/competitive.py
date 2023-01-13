@@ -197,7 +197,7 @@ class LatestCompetitiveUpdate:
         """:class: `Season` Returns the season."""
         return self._client.get_season(uuid=self._season_id)
 
-    async def fetch_match_details(self) -> MatchDetails:
+    async def fetch_match_details(self) -> Optional[MatchDetails]:
         """coro :class: `MatchDetails` Returns the match details."""
         return await self._client.fetch_match_details(self.match_id)
 

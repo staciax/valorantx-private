@@ -139,17 +139,18 @@ class Player(_PlayerTag):
 
     async def fetch_data(self) -> Self:
         match_history = await self._client.fetch_match_history(puuid=self.puuid, end=1)
-        for match in match_history:
-            for player in match._players:
-                if player.puuid == self.puuid:
-                    self.name = player.name
-                    self.tag = player.tag
-                    self.player_card = player.player_card
-                    self.player_title = player.player_title
-                    self.level_border = player.level_border
-                    self.account_level = player.account_level
-                    self.last_update = match.started_at
-                    # TODO: return rank
+        if match_history is not None:
+            for match in match_history:
+                for player in match._players:
+                    if player.puuid == self.puuid:
+                        self.name = player.name
+                        self.tag = player.tag
+                        self.player_card = player.player_card
+                        self.player_title = player.player_title
+                        self.level_border = player.level_border
+                        self.account_level = player.account_level
+                        self.last_update = match.started_at
+                        # TODO: return rank
         return self
 
     def parse_name_tag(self, name: Optional[str], tag: Optional[str]) -> None:

@@ -41,7 +41,8 @@ async def main():
         loadout = await client.fetch_collection()
         print(repr(loadout.get_skins()))
         for skin in loadout.get_skins():
-            print(skin.display_name, skin.display_icon)
+            if skin is not None:
+                print(skin.display_name, skin.display_icon)
 
 
 if __name__ == '__main__':

@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
 
 from ..asset import Asset
 from ..enums import ItemType
@@ -161,7 +161,9 @@ class PlayerCard(BaseModel):
 
 
 class PlayerCardBundle(PlayerCard, BaseFeaturedBundleItem):
-    def __init__(self, *, client: Client, data: Mapping[str, Any], bundle: FeaturedBundleItemPayload) -> None:
+    def __init__(
+        self, *, client: Client, data: Mapping[str, Any], bundle: Union[FeaturedBundleItemPayload, Dict[str, Any]]
+    ) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 
     def __repr__(self) -> str:

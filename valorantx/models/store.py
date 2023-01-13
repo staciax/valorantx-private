@@ -69,9 +69,9 @@ __all__ = (
 class StoreFront:
     def __init__(self, *, client: Any, data: StoreFrontPayload) -> None:
         self._client = client
-        self._bundle: BundlePayload = data['FeaturedBundle']['Bundle']
-        self._bundles: List[BundlePayload] = data["FeaturedBundle"]['Bundles']
-        self._skins_panel_layout: SkinsPanelLayoutPayload = data['SkinsPanelLayout']
+        self._bundle: BundlePayload = data['FeaturedBundle']['Bundle']  # type: ignore
+        self._bundles: List[BundlePayload] = data["FeaturedBundle"]['Bundles']  # type: ignore
+        self._skins_panel_layout: SkinsPanelLayoutPayload = data['SkinsPanelLayout']  # type: ignore
         self._bonus_store: Optional[BonusStorePayload] = data.get('BonusStore')
 
     def __repr__(self) -> str:
@@ -263,7 +263,7 @@ class Offer:
     def __init__(self, data: OfferPayload) -> None:
         self.id: str = data['OfferID']
         self._is_direct_purchase: bool = data['IsDirectPurchase']
-        self.cost: int = data['Cost'][str(CurrencyType.valorant)]
+        self.cost: int = data['Cost'][str(CurrencyType.valorant)]  # type: ignore
         self.rewards: List[Reward] = [Reward(reward) for reward in data['Rewards']]
 
     def __repr__(self) -> str:

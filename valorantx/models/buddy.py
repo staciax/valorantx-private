@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from ..asset import Asset
 from ..enums import ItemType
@@ -150,7 +150,7 @@ class BuddyLevel(BaseModel):
         self.asset_path: str = data['assetPath']
         self._price: int = self._client.get_item_price(self.uuid)
         self.level_number: int = data.get('levelNumber', 0)
-        self._base_buddy: Optional[Buddy] = self._client.get_buddy(self._base_buddy_uuid)
+        self._base_buddy: Optional[Buddy] = self._client.get_buddy(uuid=self._base_buddy_uuid, level=False)
         self.type: ItemType = ItemType.buddy_level
 
     def __str__(self) -> str:
@@ -189,7 +189,8 @@ class BuddyLevel(BaseModel):
 
     def is_favorite(self) -> bool:
         """:class: `bool` Returns whether the buddy is favorited."""
-        return self._base_buddy.is_favorite() if self._base_buddy else False
+        self._is_favorite = self._base_buddy.is_favorite() if self._base_buddy else False
+        return self._is_favorite
 
     def to_favorite(self) -> None:
         if self._base_buddy:
@@ -217,7 +218,9 @@ class BuddyLevel(BaseModel):
 
 
 class BuddyBundle(BuddyLevel, BaseFeaturedBundleItem):
-    def __init__(self, *, client: Client, data: Mapping[str, Any], bundle: FeaturedBundleItemPayload) -> None:
+    def __init__(
+        self, *, client: Client, data: Mapping[str, Any], bundle: Union[FeaturedBundleItemPayload, Dict[str, Any]]
+    ) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 
     def __repr__(self) -> str:
