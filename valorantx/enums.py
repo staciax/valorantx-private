@@ -200,7 +200,7 @@ class AssetType(Enum):
 
 EmptyTitleID: uuid.UUID = uuid.UUID('d13e579c-435e-44d4-cec2-6eae5a3c5ed4')
 MeleeWeaponID: uuid.UUID = uuid.UUID('2f59173c-4bed-b6c3-2191-dea9b58be9c7')
-
+# TODO: to SCREAMING_SNAKE_CASE
 
 class Region(Enum):
     NA = 'na'
@@ -300,7 +300,7 @@ class QueueType(Enum):
     unrated = 'unrated'
     replication = 'onefa'
     new_map = 'newmap'
-    swiftplay = '...'
+    swiftplay = 'swiftplay'
 
     def __str__(self) -> str:
         return str(self.value)
@@ -317,7 +317,7 @@ class MapType(Enum):
     fracture = 'b529448b-4d60-346e-e89e-00a4c527a405'
     haven = '2bee0dc9-4ffe-519b-1cbd-7fbe763a6047'
     icebox = 'e2ad5c54-4114-a870-9641-8ea21279579a'
-    lotus = ''
+    lotus = '2fe4ed3a-450a-948b-6d6b-e89a78e680a9'
     split = 'd960549e-485c-e861-8d71-aa9d1aed12a2'
     pearl = 'fd267378-4d1d-484f-ff52-77821ed10dc2'
     the_range = 'ee613ee9-28b7-4beb-9666-08db13bb2244'
@@ -344,7 +344,7 @@ class MapURL(Enum):
     fracture = '/Game/Maps/Canyon/Canyon'
     haven = '/Game/Maps/Triad/Triad'
     icebox = '/Game/Maps/Port/Port'
-    lotus = ''
+    lotus = '/Game/Maps/Jam/Jam'
     split = '/Game/Maps/Bonsai/Bonsai'
     pearl = '/Game/Maps/Pitt/Pitt'
     the_range = '/Game/Maps/Poveglia/Range'
