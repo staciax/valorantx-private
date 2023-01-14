@@ -36,7 +36,6 @@ from typing import (
     List,
     Mapping,
     Optional,
-    Tuple,
     Type,
     TypeVar,
     Union,
@@ -150,146 +149,17 @@ def _authorize_required(fn: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[
 
 class Client:
     def __init__(self, *, locale: Union[Locale, str] = Locale.american_english, **kwargs: Any) -> None:
-
         self._locale: Locale = try_enum(Locale, locale) if isinstance(locale, str) else locale
         self._reload_assets: bool = kwargs.get('reload_assets', False)
-
         self.loop: asyncio.AbstractEventLoop = _loop
         self.user: ClientPlayer = MISSING
-
-        # config
         self._closed: bool = False
         self._version: Version = MISSING
         self._season: Season = MISSING
-
         self._is_authorized: bool = False
-
-        # http client
         self._http: HTTPClient = HTTPClient(self.loop)
-
-        # assets
         self._assets: Assets = Assets(client=self)
-
-        # events
-        self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
-
         self._ready: asyncio.Event = MISSING
-
-    # events
-
-    # source code from https://github.com/Rapptz/discord.py
-
-    def _schedule_event(
-        self,
-        coro: Callable[..., Coroutine[Any, Any, Any]],
-        event_name: str,
-        *args: Any,
-        **kwargs: Any,
-    ) -> asyncio.Task:
-        wrapped = self._run_event(coro, event_name, *args, **kwargs)
-        # Schedules the task
-        return self.loop.create_task(wrapped, name=f'valorantx: {event_name}')
-
-    async def _run_event(
-        self,
-        coro: Callable[..., Coroutine[Any, Any, Any]],
-        event_name: str,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        # TODO: docs
-        try:
-            await coro(*args, **kwargs)
-        except asyncio.CancelledError:
-            pass
-        except Exception:  # noqa
-            try:
-                await self.on_error(event_name, *args, **kwargs)
-            except asyncio.CancelledError:
-                pass
-
-    def dispatch(self, event: str, /, *args: Any, **kwargs: Any) -> None:
-        _log.debug('Dispatching event %s', event)
-        method = 'on_' + event
-
-        listeners = self._listeners.get(event)
-        if listeners:
-            removed = []
-            for i, (future, condition) in enumerate(listeners):
-                if future.cancelled():
-                    removed.append(i)
-                    continue
-
-                try:
-                    result = condition(*args)
-                except Exception as exc:
-                    future.set_exception(exc)
-                    removed.append(i)
-                else:
-                    if result:
-                        if len(args) == 0:
-                            future.set_result(None)
-                        elif len(args) == 1:
-                            future.set_result(args[0])
-                        else:
-                            future.set_result(args)
-                        removed.append(i)
-
-            if len(removed) == len(listeners):
-                self._listeners.pop(event)
-            else:
-                for idx in reversed(removed):
-                    del listeners[idx]
-
-        try:
-            coro = getattr(self, method)
-        except AttributeError:
-            pass
-        else:
-            self._schedule_event(coro, method, *args, **kwargs)
-
-    async def on_error(self, event_method: str, /, *args: Any, **kwargs: Any) -> None:
-        """|coro|
-
-        The default error handler provided by the client.
-
-        By default, this logs to the library logger however it could be
-        overridden to have a different implementation.
-        Check :func:`~valorant.on_error` for more details.
-        """
-
-        _log.exception('Ignoring exception in %s', event_method)
-
-    def event(self, coro: Coro, /) -> Coro:
-        """A decorator that registers an event to listen to.
-
-        You can find more info about the events on the :ref:`documentation below <discord-api-events>`.
-
-        The events must be a :ref:`coroutine <coroutine>`, if not, :exc:`TypeError` is raised.
-
-        Example
-        ---------
-
-        .. code-block:: python3
-
-            @client.event
-            async def on_ready():
-                print('Ready!')
-
-        ``coro`` parameter is now positional-only.
-
-        Raises
-        --------
-        TypeError
-            The coroutine passed is not actually a coroutine.
-        """
-
-        if not asyncio.iscoroutinefunction(coro):
-            raise TypeError('event registered must be a coroutine function')
-
-        setattr(self, coro.__name__, coro)
-        _log.debug('%s has successfully been registered as an event', coro.__name__)
-        return coro
 
     async def wait_until_ready(self) -> None:
         """|coro|
@@ -306,12 +176,6 @@ class Client:
     # end events
 
     async def __aenter__(self) -> Self:
-        # do something
-
-        loop = asyncio.get_running_loop()
-        self.loop = loop
-        self.http.loop = loop
-        self._ready = asyncio.Event()
         await self.init()
         return self
 
@@ -327,6 +191,11 @@ class Client:
     async def init(self, *, reload: bool = False) -> None:
 
         _log.debug('Setting up client')
+
+        loop = asyncio.get_running_loop()
+        self.loop = loop
+        self.http.loop = loop
+        self._ready = asyncio.Event()
 
         if self.version is MISSING:
             self.version = await self.fetch_version()
@@ -1358,9 +1227,7 @@ class Client:
         if match is None:
             match = await self.fetch_pregame_player()
         data = await self.http.pregame_fetch_match(match_id=match)
-        ...
 
     @_authorize_required
     async def fetch_pregame_player(self) -> Any:
         data = await self.http.pregame_fetch_player()
-        ...
