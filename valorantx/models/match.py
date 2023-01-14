@@ -25,7 +25,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
+from typing import TYPE_CHECKING, Any, AsyncIterator, Dict, Iterator, List, Optional
 
 from .. import utils
 from ..enums import AbilityType, GameModeType, MapType, QueueType, RoundResultCode, RoundResultType, try_enum
@@ -88,6 +88,13 @@ class MatchHistory:
 
     def __len__(self) -> int:
         return len(self._match_details)
+
+    # async def details(self) -> AsyncIterator[MatchDetails]:
+    #     for match in self._match_history:
+    #         match_id = match['MatchID']
+    #         match_details = await self._client.fetch_match_details(match_id)
+    #         if match_details is not None:
+    #             yield match_details
 
     async def fetch_details(self) -> List[MatchDetails]:
         """:class:`List[MatchDetails]`: Fetches the match details for each match in the history."""
