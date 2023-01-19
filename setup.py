@@ -16,9 +16,7 @@ readme = ''
 with open('README.md') as f:
     readme = f.read()
 
-extras_require = {
-    'local': ['urllib3>=1.26.12,<1.27'],
-}
+extras_require = {'local': ['urllib3>=1.26.12,<1.27'], 'dev': ['black', 'isort', 'pytest-asyncio']}
 
 packages = ['valorantx', 'valorantx.models', 'valorantx.types']
 
