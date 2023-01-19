@@ -28,15 +28,21 @@ import logging
 import os
 import shutil
 from functools import cache as _cache, wraps
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Tuple, TypeVar
 
 from .enums import CurrencyType, ItemType
 from .errors import AuthRequired
 from .utils import MISSING, is_uuid
 
 if TYPE_CHECKING:
+    from typing_extensions import ParamSpec
+
     from .client import Client
     from .models.version import Version
+
+    P = ParamSpec('P')
+
+T = TypeVar('T')
 
 # fmt: off
 __all__: Tuple[str, ...] = (
@@ -85,9 +91,9 @@ def _find(value: Any, key: Any) -> bool:
 
 
 def _finder():
-    def decorator(function: Callable[..., Any]) -> Callable[..., Mapping[Any, Any]]:
+    def decorator(function: Callable[P, T]) -> Callable[..., Mapping[Any, Any]]:
         @wraps(function)
-        def wrapper(self: Assets, *args: Any, **kwargs: Any) -> Any:
+        def wrapper(self: Assets, *args: P.args, **kwargs: P.kwargs) -> T:
 
             if not args and not kwargs:
                 return function(self, uuid=None)
