@@ -168,14 +168,14 @@ __all__: Tuple[str, ...] = (
     'AgentType',
     'ContractRewardType',
     'CurrencyType',
-    'EmptyTitleID',
+    'EMPTY_TITLE_ID',
     'GameModeType',
     'GameModeURL',
     'ItemType',
     'LevelBorderID',
     'Locale',
     'MapType',
-    'MeleeWeaponID',
+    'MELEE_WEAPON_ID',
     'MissionType',
     'QueueType',
     'Region',
@@ -198,9 +198,8 @@ class AssetType(Enum):
     # TODO: add more
 
 
-EmptyTitleID: uuid.UUID = uuid.UUID('d13e579c-435e-44d4-cec2-6eae5a3c5ed4')
-MeleeWeaponID: uuid.UUID = uuid.UUID('2f59173c-4bed-b6c3-2191-dea9b58be9c7')
-# TODO: to SCREAMING_SNAKE_CASE
+EMPTY_TITLE_ID: uuid.UUID = uuid.UUID('d13e579c-435e-44d4-cec2-6eae5a3c5ed4')
+MELEE_WEAPON_ID: uuid.UUID = uuid.UUID('2f59173c-4bed-b6c3-2191-dea9b58be9c7')
 
 
 class Region(Enum):
@@ -397,7 +396,7 @@ class GameModeURL(Enum):
     snowball_fight = '/Game/GameModes/SnowballFight/SnowballFightGameMode.SnowballFightGameMode_C'
     practice = '/Game/GameModes/ShootingRange/ShootingRangeGameMode.ShootingRangeGameMode_C'
     on_boarding = '/Game/GameModes/NewPlayerExperience/NPEGameMode.NPEGameMode_C'
-    swiftplay = '/Game/GameModes/_Development/Swiftplay_EndOfRoundCredits/Swiftplay_EoRCredits_GameMode.Swiftplay_EoRCredits_GameMode_C'  # TODO: fix this on release 
+    swiftplay = '/Game/GameModes/_Development/Swiftplay_EndOfRoundCredits/Swiftplay_EoRCredits_GameMode.Swiftplay_EoRCredits_GameMode_C'  # TODO: fix this on release
 
     def __str__(self) -> str:
         return str(self.value)
@@ -626,7 +625,7 @@ class BundleID(Enum):
     valorant_go_vol_1 = 'b37b6a01-40f9-af81-ed34-fd8563539d44'
     valorant_go_vol_2 = '5c8b9297-465f-080c-3c0d-c9b9811432ed'
     wasteland = '4e3a244b-4482-0541-3eab-b8912cdb72d6'
-    winter_wunderland = '79d2f4b9-4066-8b5b-884f-1d95b33d2ac5'
+    winterwunderland = '79d2f4b9-4066-8b5b-884f-1d95b33d2ac5'
     xenohunter = '3941ad01-4e3b-46e0-ba3a-ab94f7c67f98'
 
     def __str__(self) -> str:
