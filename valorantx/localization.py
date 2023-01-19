@@ -199,8 +199,10 @@ class Localization:
             return self.untranslated.get(str(self._locale), self.default)
         return self.default
 
-    def from_locale(self, locale: Union[Locale, str]) -> str:
+    def from_locale(self, locale: Optional[Union[Locale, str]] = None) -> str:
         """:class:`str`: Returns the locale from the locale code."""
+        if locale is None:
+            return self.locale
         if isinstance(locale, Locale):
             locale = str(locale)
         return (
