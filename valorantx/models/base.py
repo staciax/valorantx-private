@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 __all__ = (
     'BaseModel',
-    'BaseFeaturedBundleItem',
+    'FeaturedBundleItem',
 )
 
 
@@ -69,7 +69,7 @@ class BaseModel(abc.ABC):
         return self._uuid
 
 
-class BaseFeaturedBundleItem:
+class FeaturedBundleItem:
 
     if TYPE_CHECKING:
         _client: Client

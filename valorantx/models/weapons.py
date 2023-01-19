@@ -27,9 +27,9 @@ from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union, ove
 
 from .. import utils
 from ..asset import Asset
-from ..enums import CurrencyType, ItemType, MeleeWeaponID
+from ..enums import MELEE_WEAPON_ID, CurrencyType, ItemType, Locale
 from ..localization import Localization
-from .base import BaseFeaturedBundleItem, BaseModel
+from .base import BaseModel, FeaturedBundleItem
 
 if TYPE_CHECKING:
     import datetime
@@ -203,6 +203,7 @@ class ShopData:
         self._new_image: Optional[str] = data['newImage']
         self._new_image_2: Optional[str] = data['newImage2']
         self.asset_path: str = data['assetPath']
+        self._category_text_localized: Localization = Localization(self._category_text, locale=self._client.locale)
         if self._client is not None:
             self._weapon.cost = self.cost
 
@@ -222,15 +223,13 @@ class ShopData:
     def grid_position(self) -> Optional[GridPosition]:
         return GridPosition(self._grid_position) if self._grid_position else None
 
-    @property
-    def category_text_localizations(self) -> Localization:
-        """:class: `Localization` Returns the weapon's shop category text."""
-        return Localization(self._category_text, locale=self._client.locale)
+    def category_text_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._category_text_localized.from_locale(locale)
 
     @property
     def category_text(self) -> str:
         """:class: `str` Returns the weapon's shop category text."""
-        return self.category_text_localizations.american_english
+        return self._category_text_localized.locale
 
     def can_be_trashed(self) -> bool:
         """:class: `bool` Returns whether the weapon can be trashed."""
@@ -270,7 +269,8 @@ class Weapon(BaseModel):
         self._cost: int = 0
         self._skins: List[Dict[str, Any]] = data['skins']
         self.type: ItemType = ItemType.weapon
-        self._is_melee: bool = True if self.uuid == str(MeleeWeaponID) else False
+        self._is_melee: bool = True if self.uuid == str(MELEE_WEAPON_ID) else False
+        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -278,15 +278,13 @@ class Weapon(BaseModel):
     def __repr__(self) -> str:
         return f"<Weapon display_name={self.display_name!r}>"
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the weapon's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the weapon's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
     def category(self) -> str:
@@ -363,6 +361,7 @@ class Skin(BaseModel):
         self._price: int = 0
         self._is_favorite: bool = False
         self.type: ItemType = ItemType.skin
+        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -370,15 +369,13 @@ class Skin(BaseModel):
     def __repr__(self) -> str:
         return f"<Skin display_name={self.display_name!r}>"
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the skin's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the skin's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
     def theme(self) -> Optional[Theme]:
@@ -513,6 +510,7 @@ class SkinChroma(BaseModel):
         self._base_skin: Optional[Skin] = (
             self._client.get_skin(uuid=self._base_skin_uuid, level=False, chroma=False) if self._base_skin_uuid else None
         )
+        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -520,15 +518,14 @@ class SkinChroma(BaseModel):
     def __repr__(self) -> str:
         return f"<SkinChroma display_name={self.display_name!r}>"
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the skin's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        """Returns the skin's display name localized to the given locale."""
+        return self._display_name_localized.from_locale(locale=locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the skin's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
     def display_icon(self) -> Optional[Asset]:
@@ -660,6 +657,7 @@ class SkinLevel(BaseModel):
         self._base_skin: Optional[Skin] = (
             self._client.get_skin(uuid=self._base_skin_uuid, level=False, chroma=False) if self._base_skin_uuid else None
         )
+        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -667,15 +665,13 @@ class SkinLevel(BaseModel):
     def __repr__(self) -> str:
         return f"<SkinLevel display_name={self.display_name!r} level={self.level!r}>"
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the skin's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale=locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the skin's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
     def level(self) -> str:
@@ -823,7 +819,7 @@ class SkinNightMarket(SkinLevel):
         return cls(client=client, data=data, extras=skin_data)
 
 
-class SkinBundle(SkinLevel, BaseFeaturedBundleItem):
+class SkinBundle(SkinLevel, FeaturedBundleItem):
     def __init__(
         self, *, client: Client, data: Mapping[str, Any], bundle: Union[FeaturedBundleItemPayload, Dict[str, Any]]
     ) -> None:

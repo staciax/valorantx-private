@@ -27,6 +27,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from .. import utils
 from ..asset import Asset
+from ..enums import Locale
 from ..localization import Localization
 from .base import BaseModel
 
@@ -52,6 +53,7 @@ class Season(BaseModel):
         self._parent_uuid: Optional[str] = data['parentUuid']
         self.asset_path: str = data['assetPath']
         self._parent: Optional[Season] = self._client.get_season(uuid=self._parent_uuid)
+        self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -71,15 +73,13 @@ class Season(BaseModel):
     def id(self) -> str:
         return self._uuid
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the season's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the season's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
     def type(self) -> Optional[str]:

@@ -26,9 +26,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
 
 from ..asset import Asset
-from ..enums import ItemType
+from ..enums import ItemType, Locale
 from ..localization import Localization
-from .base import BaseFeaturedBundleItem, BaseModel
+from .base import BaseModel, FeaturedBundleItem
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -60,6 +60,7 @@ class PlayerCard(BaseModel):
         self._price = self._client.get_item_price(self.uuid)
         self._is_favorite: bool = False
         self.type: ItemType = ItemType.player_card
+        self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -67,15 +68,13 @@ class PlayerCard(BaseModel):
     def __repr__(self) -> str:
         return f"<PlayerCard display_name={self.display_name!r}>"
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Translator` Returns the player card's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the player card's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
     def display_icon(self) -> Optional[Asset]:
@@ -160,7 +159,7 @@ class PlayerCard(BaseModel):
         return cls(client=client, data=data) if data else None
 
 
-class PlayerCardBundle(PlayerCard, BaseFeaturedBundleItem):
+class PlayerCardBundle(PlayerCard, FeaturedBundleItem):
     def __init__(
         self, *, client: Client, data: Mapping[str, Any], bundle: Union[FeaturedBundleItemPayload, Dict[str, Any]]
     ) -> None:

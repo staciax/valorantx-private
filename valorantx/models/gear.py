@@ -23,9 +23,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
 
 from ..asset import Asset
+from ..enums import Locale
 from ..localization import Localization
 from .base import BaseModel
 
@@ -59,6 +60,8 @@ class Gear(BaseModel):
         self._new_image: Optional[str] = self._shop['newImage']
         self._new_image_2: Optional[str] = self._shop['newImage2']
         self.shop_asset_path: str = self._shop['assetPath']
+        self._display_name_localized = Localization(self._display_name, locale=client.locale)
+        self._description_localized = Localization(self._description, locale=client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -69,25 +72,21 @@ class Gear(BaseModel):
     def __repr__(self) -> str:
         return f'<Gear display_name={self.display_name!r}>'
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the gear's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
+
+    def description_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._description_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the gear's name."""
-        return self.name_localizations.american_english
-
-    @property
-    def description_localizations(self) -> Localization:
-        """:class: `Localization` Returns the gear's descriptions."""
-        return Localization(self._description, locale=self._client.locale)
+        return self._display_name_localized.locale
 
     @property
     def description(self) -> str:
         """:class: `str` Returns the gear's description."""
-        return self.description_localizations.american_english
+        return self._description_localized.locale
 
     @property
     def display_icon(self) -> Asset:

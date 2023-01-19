@@ -27,7 +27,7 @@ import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from ..asset import Asset
-from ..enums import ItemType
+from ..enums import ItemType, Locale
 from ..localization import Localization
 from .base import BaseModel
 from .buddy import BuddyBundle
@@ -68,6 +68,13 @@ class Bundle(BaseModel):
         self._price: int = 0
         self._discount_price: int = 0
         self._items: List[Union[Skin, Buddy, Spray, PlayerCard]] = []
+        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
+        self._display_name_sub_text_localized: Localization = Localization(
+            self._display_name_sub_text, locale=self._client.locale
+        )
+        self._description_localized: Localization = Localization(self._description, locale=self._client.locale)
+        self._description_extra_localized: Localization = Localization(self._description_extra, locale=self._client.locale)
+        self._description_promo_localized: Localization = Localization(self._description_promo, locale=self._client.locale)
 
         if not is_featured_bundle:
             if data.get('Items') is not None:
@@ -96,61 +103,42 @@ class Bundle(BaseModel):
             elif item_type == ItemType.player_card.value:
                 self._items.append(PlayerCardBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the bundle's name localizations."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
+
+    def display_name_sub_text_localized(self, locale: Optional[Union[Locale, str]] = None) -> Optional[str]:
+        return self._display_name_sub_text_localized.from_locale(locale) if self._description is not None else None
+
+    def description_localized(self, locale: Optional[Union[Locale, str]] = None) -> Optional[str]:
+        return self._description_localized.from_locale(locale) if self._description is not None else None
+
+    def description_extra_localized(self, locale: Optional[Union[Locale, str]] = None) -> Optional[str]:
+        return self._description_extra_localized.from_locale(locale) if self._description_extra is not None else None
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the bundle's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
-    def name_sub_localizations(self) -> Localization:
-        """:class: `Localization` Returns the bundle's sub name localizations."""
-        return Localization(self._display_name_sub_text, locale=self._client.locale)
-
-    @property
-    def display_sub_name(self) -> str:
+    def display_sub_name(self) -> Optional[str]:
         """:class: `str` Returns the bundle's sub name."""
-        return self.name_sub_localizations.american_english
+        return self._display_name_sub_text_localized.locale if self._display_name_sub_text is not None else None
 
     @property
-    def description_localizations(self) -> Localization:
-        """:class: `Localization` Returns the bundle's description localizations."""
-        return Localization(self._description, locale=self._client.locale)
-
-    @property
-    def description(self) -> str:
+    def description(self) -> Optional[str]:
         """:class: `str` Returns the bundle's description."""
-        return self.description_localizations.american_english
-
-    @property
-    def description_extra_localizations(self) -> Optional[Localization]:
-        """:class: `Localization` Returns the bundle's description extra localizations."""
-        if self._description_extra is None:
-            return None
-        return Localization(self._description_extra, locale=self._client.locale)
+        return self._description_localized.locale if self._description is not None else None
 
     @property
     def description_extra(self) -> Optional[str]:
         """:class: `str` Returns the bundle's description extra localizations."""
-        if self.description_extra_localizations is not None:
-            return self.description_extra_localizations.american_english
-
-    @property
-    def description_promo_localizations(self) -> Optional[Localization]:
-        """:class: `Localization` Returns the bundle's description promo localizations."""
-        if self._description_promo is None:
-            return None
-        return Localization(self._description_promo, locale=self._client.locale)
+        return self._description_extra_localized.locale if self._description_extra is not None else None
 
     @property
     def description_promo(self) -> Optional[str]:
         """:class: `str` Returns the bundle's description promo."""
-        if self.description_promo_localizations is not None:
-            return self.description_promo_localizations.american_english
+        return self._description_promo_localized.locale if self._description_promo is not None else None
 
     @property
     def display_icon(self) -> Asset:

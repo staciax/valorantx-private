@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Mapping, Optional, 
 
 from .. import utils
 from ..asset import Asset
-from ..enums import ContractRewardType as RewardType, MissionType, RelationType, try_enum
+from ..enums import ContractRewardType as RewardType, Locale, MissionType, RelationType, try_enum
 from ..errors import InvalidContractType, InvalidRelationType
 from ..localization import Localization
 from .base import BaseModel
@@ -71,6 +71,7 @@ class Contract(BaseModel):
         self.free_reward_schedule_uuid: str = data['freeRewardScheduleUuid']
         self.asset_path: str = data['assetPath']
         self._content: Dict[Any, Any] = data['content']
+        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -84,20 +85,18 @@ class Contract(BaseModel):
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
+
     @property
     def id(self) -> str:
         """:class: `str` Returns the contract id."""
         return self.uuid
 
     @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the contract's names."""
-        return Localization(self._display_name, locale=self._client.locale)
-
-    @property
     def display_name(self) -> str:
         """:class: `str` Returns the contract's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
     def display_icon(self) -> Asset:

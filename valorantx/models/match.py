@@ -25,7 +25,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import datetime
-from typing import TYPE_CHECKING, Any, AsyncIterator, Dict, Iterator, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
 
 from .. import utils
 from ..enums import AbilityType, GameModeType, MapType, QueueType, RoundResultCode, RoundResultType, try_enum

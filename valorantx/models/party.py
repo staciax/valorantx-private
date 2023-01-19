@@ -25,7 +25,7 @@ from __future__ import annotations
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from ..enums import QueueType, Region, try_enum
+from ..enums import Region, try_enum
 from ..errors import InvalidPuuid, PartyNotOwner
 from ..utils import is_uuid
 

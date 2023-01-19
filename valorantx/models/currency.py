@@ -23,9 +23,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
 
 from ..asset import Asset
+from ..enums import Locale
 from ..localization import Localization
 from .base import BaseModel
 
@@ -51,6 +52,8 @@ class Currency(BaseModel):
         self._large_icon: Optional[str] = data.get('largeIcon')
         self.asset_path: str = data['assetPath']
         self._value: int = 0
+        self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
+        self._display_name_singular_localized: Localization = Localization(self._display_name_singular, locale=client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -79,25 +82,21 @@ class Currency(BaseModel):
     def __ge__(self, other: object) -> bool:
         return isinstance(other, Currency) and self.value >= other.value
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the agent's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
+
+    def display_name_singular_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_singular_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the agent's name."""
-        return self.name_localizations.american_english
-
-    @property
-    def name_singular_localizations(self) -> Localization:
-        """:class: `Localization` Returns the agent's singular names."""
-        return Localization(self._display_name_singular, locale=self._client.locale)
+        return self._display_name_localized.locale
 
     @property
     def name_singular(self) -> str:
         """:class: `str` Returns the agent's singular name."""
-        return self.name_singular_localizations.american_english
+        return self._display_name_singular_localized.locale
 
     @property
     def display_icon(self) -> Optional[Asset]:
