@@ -857,7 +857,7 @@ class BaseLoadout:
         """Returns the get_buddy for this skin"""
         if self._buddy is None:
             self._buddy = self._client.get_buddy(uuid=self._buddy_uuid) if self._buddy_uuid else None  # type: ignore
-        return self._buddy  # type: ignore
+        return self._buddy
 
     def get_buddy_level(self) -> Optional[BuddyLevel]:
         """Returns the get_buddy level for this skin"""
