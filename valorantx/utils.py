@@ -119,7 +119,7 @@ def parse_iso_datetime(iso: str) -> datetime.datetime:
         dt = datetime.datetime.strptime(iso, '%Y-%m-%dT%H:%M:%S.%fZ')
     except ValueError:
         dt = datetime.datetime.strptime(iso, '%Y-%m-%dT%H:%M:%SZ')
-    return dt.replace(tzinfo=datetime.timezone.utc)  # or None
+    return dt.replace(tzinfo=datetime.timezone.utc)
 
 
 def percent(*args: int) -> List[Union[int, float]]:
