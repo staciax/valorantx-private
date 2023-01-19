@@ -55,6 +55,9 @@ __all__ = (
     'Weapon',
 )
 
+# TODO: rework this file
+# TODO: patch 6.x support variants favorites colors of skins
+
 # --- sup models ---
 
 
