@@ -16,7 +16,8 @@ line_length = 125
 include = [
     "valorantx",
     "valorantx/models",
-    "valorantx/types"
+    "valorantx/types",
+    "valorantx/ext/scrapers"
 ]
 exclude = [
     "**/__pycache__",

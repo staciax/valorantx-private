@@ -23,12 +23,12 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from ..asset import Asset
-from ..enums import ItemType, SpraySlotID
+from ..enums import ItemType, Locale, SpraySlotID
 from ..localization import Localization
-from .base import BaseFeaturedBundleItem, BaseModel
+from .base import BaseModel, FeaturedBundleItem
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -58,6 +58,7 @@ class Spray(BaseModel):
         self._price: int = self._client.get_item_price(self.uuid)
         self._is_favorite: bool = False
         self.type: ItemType = ItemType.spray
+        self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -65,15 +66,13 @@ class Spray(BaseModel):
     def __repr__(self) -> str:
         return f"<Spray display_name={self.display_name!r}>"
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Translator` Returns the skin's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the skin's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
     def category(self) -> Optional[str]:
@@ -179,6 +178,7 @@ class SprayLevel(BaseModel):
         self._price: int = 0
         self.type: ItemType = ItemType.spray_level
         self._base_spray: Optional[Spray] = self._client.get_spray(uuid=self._base_spray_uuid, level=False)
+        self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -186,15 +186,13 @@ class SprayLevel(BaseModel):
     def __repr__(self) -> str:
         return f'<SprayLevel display_name={self.display_name!r} base={self._base_spray!r}>'
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the spray's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the spray's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
     def level(self) -> int:
@@ -271,7 +269,7 @@ class SprayLevel(BaseModel):
         return cls(client=client, data=data) if data else None
 
 
-class SprayBundle(Spray, BaseFeaturedBundleItem):
+class SprayBundle(Spray, FeaturedBundleItem):
     def __init__(self, *, client: Client, data: Mapping[str, Any], bundle: FeaturedBundleItemPayload) -> None:
         super().__init__(client=client, data=data, bundle=bundle)
 

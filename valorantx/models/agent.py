@@ -68,6 +68,8 @@ class Role:
         self._description: Dict[str, str] = data['description']
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
+        self._display_name_localized: Localization = Localization(self._description, locale=self._client.locale)
+        self._description_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __repr__(self) -> str:
         return f'<Role display_name={self.display_name!r}>'
@@ -81,25 +83,21 @@ class Role:
     def __hash__(self) -> int:
         return hash(self.uuid)
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the agent role's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
+
+    def description_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._description_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the agent role's name."""
-        return self.name_localizations.american_english
-
-    @property
-    def description_localizations(self) -> Localization:
-        """:class: `Localization` Returns the agent role's descriptions."""
-        return Localization(self._description, locale=self._client.locale)
+        return self._display_name_localized.locale
 
     @property
     def description(self) -> str:
         """:class: `str` Returns the agent role's description."""
-        return self.description_localizations.american_english
+        return self._description_localized.locale
 
     @property
     def display_icon(self) -> Optional[Asset]:
@@ -127,6 +125,8 @@ class Ability:
         self._display_name: Dict[str, str] = data['displayName']
         self._description: Dict[str, str] = data['description']
         self._display_icon: str = data['displayIcon']
+        self._name_localized: Localization = Localization(self._description, locale=self._client.locale)
+        self._description_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __repr__(self) -> str:
         return f'<Ability display_name={self.display_name!r}>'
@@ -137,25 +137,21 @@ class Ability:
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the agent role's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._name_localized.from_locale(locale)
+
+    def description_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._description_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the agent role's name."""
-        return self.name_localizations.american_english
-
-    @property
-    def description_localizations(self) -> Localization:
-        """:class: `Localization` Returns the agent role's descriptions."""
-        return Localization(self._description, locale=self._client.locale)
+        return self._name_localized.locale
 
     @property
     def description(self) -> str:
         """:class: `str` Returns the agent role's description."""
-        return self.description_localizations.american_english
+        return self._description_localized.locale
 
     @property
     def display_icon(self) -> Asset:
@@ -436,6 +432,8 @@ class Agent(BaseModel):
         self._role: Dict[str, str] = data['role']
         self._abilities: List[Dict[Any, Any]] = data.get('abilities', [])
         self._voice_line: Dict[str, Any] = data['voiceLine']
+        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
+        self._description_localized: Localization = Localization(self._description, locale=self._client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -443,26 +441,21 @@ class Agent(BaseModel):
     def __repr__(self) -> str:
         return f'<Agent display_name={self.display_name!r}>'
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the agent's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
+
+    def description_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._description_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the agent's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
-    def description_localizations(self) -> Optional[Localization]:
-        """:class: `Localization` Returns the agent's descriptions."""
-        return Localization(self._description, locale=self._client.locale)
-
-    @property
-    def description(self) -> Optional[str]:
+    def description(self) -> str:
         """:class: `str` Returns the agent's description."""
-        if self.description_localizations is not None:
-            return self.description_localizations.american_english
+        return self._description_localized.locale
 
     @property
     def display_icon(self) -> Asset:

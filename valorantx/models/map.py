@@ -23,9 +23,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from ..asset import Asset
+from ..enums import Locale
 from ..localization import Localization
 from .base import BaseModel
 
@@ -57,10 +58,12 @@ class Location:
 
 
 class Callout:
-    def __init__(self, data: Dict[str, Any]) -> None:
+    def __init__(self, client: Client, data: Dict[str, Any]) -> None:
         self._region_name: Dict[str, str] = data['regionName']
         self._super_region_name: Dict[str, str] = data['superRegionName']
         self.location: Location = Location(data['location'])
+        self._region_name_localized: Localization = Localization(self._region_name, locale=client.locale)
+        self._super_region_name_localized: Localization = Localization(self._super_region_name, locale=client.locale)
 
     def __str__(self) -> str:
         return self.region_name
@@ -77,23 +80,19 @@ class Callout:
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Callout) and self.region_name == other.region_name and self.location == other.location
 
-    @property
-    def region_name_localizations(self) -> Localization:
-        """:class:`Localization`: The name of the region."""
-        return Localization(self._region_name)
+    def region_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._region_name_localized.from_locale(locale)
 
-    @property
-    def super_region_name_localizations(self) -> Localization:
-        """:class:`Localization`: The name of the super region."""
-        return Localization(self._super_region_name)
-
-    @property
-    def super_region_name(self) -> str:
-        return self.super_region_name_localizations.american_english
+    def super_region_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._super_region_name_localized.from_locale(locale)
 
     @property
     def region_name(self) -> str:
-        return self.region_name_localizations.american_english
+        return self._region_name_localized.locale
+
+    @property
+    def super_region_name(self) -> str:
+        return self._super_region_name_localized.locale
 
 
 class Map(BaseModel):
@@ -110,7 +109,9 @@ class Map(BaseModel):
         self.y_multiplier: float = data['yMultiplier']
         self.x_scalar_to_add: float = data['xScalarToAdd']
         self.y_scalar_to_add: float = data['yScalarToAdd']
-        self.callouts: List[Callout] = [Callout(callout) for callout in data['callouts']]
+        self.callouts: List[Callout] = [Callout(client, callout) for callout in data['callouts']]
+        self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
+        self._coordinates_localized: Localization = Localization(self._coordinates, locale=client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -118,25 +119,21 @@ class Map(BaseModel):
     def __repr__(self) -> str:
         return f'<Map display_name={self.display_name!r}>'
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the mission's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
+
+    def coordinates_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._coordinates_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the mission's name."""
-        return self.name_localizations.american_english
-
-    @property
-    def coordinate_localizations(self) -> Localization:
-        """:class: `Localization` Returns the mission's coordinates."""
-        return Localization(self._coordinates, locale=self._client.locale)
+        return self._display_name_localized.locale
 
     @property
     def coordinates(self) -> str:
         """:class: `str` Returns the mission's coordinates."""
-        return self.coordinate_localizations.american_english
+        return self._coordinates_localized.locale
 
     @property
     def list_view_icon(self) -> Optional[Asset]:

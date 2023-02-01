@@ -26,9 +26,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from ..asset import Asset
-from ..enums import ItemType
+from ..enums import ItemType, Locale
 from ..localization import Localization
-from .base import BaseFeaturedBundleItem, BaseModel
+from .base import BaseModel, FeaturedBundleItem
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -53,6 +53,7 @@ class Buddy(BaseModel):
         self._price: int = 0
         self._is_favorite: bool = False
         self.type: ItemType = ItemType.buddy
+        self._name_localized = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -60,15 +61,13 @@ class Buddy(BaseModel):
     def __repr__(self) -> str:
         return f'<Buddy display_name={self.display_name!r}>'
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the buddy's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._name_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the buddy's name."""
-        return self.name_localizations.american_english
+        return self._name_localized.locale
 
     @property
     def theme(self) -> Optional[Theme]:
@@ -152,6 +151,7 @@ class BuddyLevel(BaseModel):
         self.level_number: int = data.get('levelNumber', 0)
         self._base_buddy: Optional[Buddy] = self._client.get_buddy(uuid=self._base_buddy_uuid, level=False)
         self.type: ItemType = ItemType.buddy_level
+        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -159,15 +159,13 @@ class BuddyLevel(BaseModel):
     def __repr__(self) -> str:
         return f'<BuddyLevel display_name={self.display_name!r} base={self._base_buddy!r}>'
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the buddy's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the buddy's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
     def display_icon(self) -> Optional[Asset]:
@@ -217,7 +215,7 @@ class BuddyLevel(BaseModel):
         return cls(client=client, data=data) if data else None
 
 
-class BuddyBundle(BuddyLevel, BaseFeaturedBundleItem):
+class BuddyBundle(BuddyLevel, FeaturedBundleItem):
     def __init__(
         self, *, client: Client, data: Mapping[str, Any], bundle: Union[FeaturedBundleItemPayload, Dict[str, Any]]
     ) -> None:

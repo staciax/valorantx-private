@@ -26,7 +26,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
-from ..enums import EmptyTitleID, ItemType
+from ..enums import EMPTY_TITLE_ID, ItemType
 from .base import BaseModel
 from .spray import SprayLevelLoadout, SprayLoadout
 from .weapons import SkinChromaLoadout, SkinLevelLoadout, SkinLoadout
@@ -100,7 +100,7 @@ class Identity:
     @property
     def player_title(self) -> Optional[PlayerTitle]:
         """:class:`PlayerTitle`: The player title."""
-        if not self._player_title == str(EmptyTitleID):  # TODO: Fix this
+        if not self._player_title == str(EMPTY_TITLE_ID):  # TODO: Fix this
             return self._client.get_player_title(self._player_title)
         return None
 

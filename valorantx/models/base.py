@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 __all__ = (
     'BaseModel',
-    'BaseFeaturedBundleItem',
+    'FeaturedBundleItem',
 )
 
 
@@ -67,8 +67,7 @@ class BaseModel(abc.ABC):
         """:class:`str`: The uuid of the object."""
         return self._uuid
 
-
-class BaseFeaturedBundleItem:
+class FeaturedBundleItem:
     if TYPE_CHECKING:
         _client: Client
 

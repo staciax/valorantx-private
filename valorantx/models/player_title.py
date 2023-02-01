@@ -23,8 +23,9 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
 
+from ..enums import Locale
 from ..localization import Localization
 from .base import BaseModel
 
@@ -48,6 +49,8 @@ class PlayerTitle(BaseModel):
         self._title_text: Dict[str, str] = data['titleText']
         self._is_hidden_if_not_owned: bool = data.get('isHiddenIfNotOwned', False)
         self.asset_path: str = data['assetPath']
+        self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
+        self._title_text_localized: Localization = Localization(self._title_text, locale=client.locale)
 
     def __str__(self) -> str:
         return self.text
@@ -55,25 +58,21 @@ class PlayerTitle(BaseModel):
     def __repr__(self) -> str:
         return f"<PlayerTitle display_name={self.display_name!r} text={self.text!r}>"
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Translator` Returns the player title's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
+
+    def title_text_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._title_text_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the player title's name."""
-        return self.name_localizations.american_english
-
-    @property
-    def text_localizations(self) -> Localization:
-        """:class: `Translator` Returns the player title's title text."""
-        return Localization(self._title_text, locale=self._client.locale)
+        return self._display_name_localized.locale
 
     @property
     def text(self) -> str:
         """:class: `str` Returns the player title's title text."""
-        return self.text_localizations.american_english
+        return self._title_text_localized.locale
 
     def is_hidden_if_not_owned(self) -> bool:
         """:class: `bool` Returns whether the player title is hidden if not owned."""

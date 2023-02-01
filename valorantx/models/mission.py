@@ -27,7 +27,7 @@ import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from .. import utils
-from ..enums import MissionType, try_enum
+from ..enums import Locale, MissionType, try_enum
 from ..localization import Localization
 from .base import BaseModel
 
@@ -54,6 +54,8 @@ class Mission(BaseModel):
         self.tags: Optional[List[str]] = data['tags']
         self.objectives: List[Dict[str, Any]] = data.get('objectives', [])
         self.asset_path: str = data['assetPath']
+        self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
+        self._title_localized: Localization = Localization(self._title, locale=client.locale)
 
     def __str__(self) -> str:
         return self.title
@@ -64,25 +66,21 @@ class Mission(BaseModel):
     def __int__(self) -> int:
         return self.xp
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the mission's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
+
+    def title_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._title_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the mission's name."""
-        return self.name_localizations.american_english
-
-    @property
-    def title_localizations(self) -> Localization:
-        """:class: `Localization` Returns the mission's titles."""
-        return Localization(self._title, locale=self._client.locale)
+        return self._display_name_localized.locale
 
     @property
     def title(self) -> str:
         """:class: `str` Returns the mission's title."""
-        return self.title_localizations.american_english
+        return self._title_localized.locale
 
     @property
     def type(self) -> Optional[MissionType]:

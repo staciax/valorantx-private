@@ -26,7 +26,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from ..asset import Asset
-from ..enums import GameModeType
+from ..enums import GameModeType, Locale
 from ..localization import Localization
 from .base import BaseModel
 
@@ -57,6 +57,7 @@ class GameMode(BaseModel):
         self._game_rule_bool_overrides: Optional[List[Dict[str, Any]]]
         self._display_icon: Optional[str] = data.get('displayIcon')
         self.asset_path: str = data['assetPath']
+        self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -75,15 +76,13 @@ class GameMode(BaseModel):
     # def __contains__(self, item: Union[GameMode, GameModeType]) -> bool:
     #     ...
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the game mode's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the game mode's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
     def display_icon(self) -> Optional[Asset]:
@@ -130,6 +129,7 @@ class GameModeEquippable(BaseModel):
         self._display_icon: str = data['displayIcon']
         self._kill_stream_icon: str = data['killStreamIcon']
         self.asset_path: str = data['assetPath']
+        self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -137,15 +137,13 @@ class GameModeEquippable(BaseModel):
     def __repr__(self) -> str:
         return f'<GameModeEquippable display_name={self.display_name!r}>'
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the game mode's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the game mode's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
     def category(self) -> Optional[str]:

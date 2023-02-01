@@ -23,9 +23,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
 
 from .. import utils
+from ..enums import Locale
 from ..localization import Localization
 from .base import BaseModel
 
@@ -52,6 +53,8 @@ class Event(BaseModel):
         self._start_time_iso: str = data['startTime']
         self._end_time_iso: str = data['endTime']
         self.asset_path: str = data['assetPath']
+        self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
+        self._short_display_name_localized: Localization = Localization(self._short_display_name, locale=client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -59,25 +62,21 @@ class Event(BaseModel):
     def __repr__(self) -> str:
         return f'<Event display_name={self.display_name!r}>'
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the agent's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
+
+    def short_display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._short_display_name_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the agent's name."""
-        return self.name_localizations.american_english
-
-    @property
-    def short_name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the agent's short names."""
-        return Localization(self._short_display_name, locale=self._client.locale)
+        return self._display_name_localized.locale
 
     @property
     def short_name(self) -> str:
         """:class: `str` Returns the agent's short name."""
-        return self.short_name_localizations.american_english
+        return self._short_display_name_localized.locale
 
     @property
     def start_time(self) -> datetime.datetime:

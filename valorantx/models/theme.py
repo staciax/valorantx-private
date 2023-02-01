@@ -23,9 +23,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
 
 from ..asset import Asset
+from ..enums import Locale
 from ..localization import Localization
 from .base import BaseModel
 
@@ -49,6 +50,7 @@ class Theme(BaseModel):
         self._display_icon: Optional[str] = data['displayIcon']
         self._store_featured_image: Optional[str] = data['storeFeaturedImage']
         self.asset_path: str = data['assetPath']
+        self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -56,15 +58,13 @@ class Theme(BaseModel):
     def __repr__(self) -> str:
         return f'<Theme display_name={self.display_name!r}>'
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the ceremony's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the ceremony's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
     def display_icon(self) -> Optional[Asset]:

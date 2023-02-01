@@ -24,10 +24,11 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from .. import utils
 from ..asset import Asset
+from ..enums import Locale
 from ..localization import Localization
 from .base import BaseModel
 
@@ -155,6 +156,7 @@ class ContentTier(BaseModel):
         self.highlight_color: str = data['highlightColor']
         self._display_icon: str = data['displayIcon']
         self.asset_path: str = data['assetPath']
+        self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -162,15 +164,13 @@ class ContentTier(BaseModel):
     def __repr__(self) -> str:
         return f'<ContentTier display_name={self.display_name!r}>'
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the content tier's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the content tier's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.locale
 
     @property
     def highlight_color_rgb(self) -> str:

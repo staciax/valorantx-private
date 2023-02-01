@@ -23,10 +23,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from ..asset import Asset
-from ..enums import MapType
+from ..enums import Locale, MapType
 from ..localization import Localization
 from .base import BaseModel
 
@@ -60,6 +60,8 @@ class Tier:
         self._large_icon: Optional[str] = data['largeIcon']
         self._rank_triangle_down_icon: Optional[str] = data['rankTriangleDownIcon']
         self._rank_triangle_up_icon: Optional[str] = data['rankTriangleUpIcon']
+        self._name_locale: Localization = Localization(self._name, locale=self._client.locale)
+        self._division_name_localized: Localization = Localization(self._division_name, locale=self._client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -88,15 +90,16 @@ class Tier:
     def __ge__(self, other: object) -> bool:
         return isinstance(other, Tier) and self.tier >= other.tier
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the tier's names."""
-        return Localization(self._name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._name_locale.from_locale(locale)
+
+    def division_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._division_name_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the tier's name."""
-        return self.name_localizations.american_english
+        return self._name_locale.locale
 
     @property
     def division(self) -> Optional[str]:
@@ -104,14 +107,9 @@ class Tier:
         return self._division.removeprefix('ECompetitiveDivision::') if self._division else None
 
     @property
-    def division_name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the tier's division names."""
-        return Localization(self._division_name, locale=self._client.locale)
-
-    @property
     def division_name(self) -> str:
         """:class: `str` Returns the tier's division."""
-        return self.division_name_localizations.american_english
+        return self._division_name_localized.locale
 
     @property
     def small_icon(self) -> Optional[Asset]:

@@ -23,8 +23,9 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
 
+from ..enums import Locale
 from ..localization import Localization
 from .base import BaseModel
 
@@ -46,6 +47,7 @@ class Ceremony(BaseModel):
         self._uuid: str = data['uuid']
         self._display_name: Dict[str, str] = data['displayName']
         self.asset_path: str = data['assetPath']
+        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
         return self.display_name
@@ -53,15 +55,13 @@ class Ceremony(BaseModel):
     def __repr__(self) -> str:
         return f'<Ceremony display_name={self.display_name!r}>'
 
-    @property
-    def name_localizations(self) -> Localization:
-        """:class: `Localization` Returns the ceremony's names."""
-        return Localization(self._display_name, locale=self._client.locale)
+    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
+        return self._display_name_localized.from_locale(locale)
 
     @property
     def display_name(self) -> str:
         """:class: `str` Returns the ceremony's name."""
-        return self.name_localizations.american_english
+        return self._display_name_localized.from_locale(self._client.locale)
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
