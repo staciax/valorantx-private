@@ -78,6 +78,18 @@ class Localization:
     def __hash__(self) -> int:
         return hash(self.untranslated)
 
+    def __lt__(self, other: Localization) -> bool:
+        return self.locale < other.locale
+
+    def __le__(self, other: Localization) -> bool:
+        return self.locale <= other.locale
+
+    def __gt__(self, other: Localization) -> bool:
+        return self.locale > other.locale
+
+    def __ge__(self, other: Localization) -> bool:
+        return self.locale >= other.locale
+
     @property
     def arabic(self) -> str:
         """:class:`str`: Returns the Arabic locale."""
