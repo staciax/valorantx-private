@@ -27,7 +27,7 @@ import json
 import logging
 import os
 import shutil
-from functools import cache as _cache, wraps
+from functools import lru_cache, wraps
 from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Tuple, TypeVar
 
 from .enums import CurrencyType, ItemType
@@ -91,7 +91,7 @@ def _find(value: Any, key: Any) -> bool:
 
 
 def _finder():
-    def decorator(function: Callable[P, T]) -> Callable[..., Mapping[Any, Any]]:
+    def decorator(function: Callable[P, T]) -> Callable[P, T]:
         @wraps(function)
         def wrapper(self: Assets, *args: P.args, **kwargs: P.kwargs) -> T:
             if not args and not kwargs:
@@ -107,7 +107,7 @@ def _finder():
                     value = '...'
                 new_kwargs[key] = value
 
-            kwargs = new_kwargs
+            kwargs = new_kwargs  # type: ignore
             finder_keys = [x for x in list(kwargs.keys())]
             # inspired by https://github.com/MinshuG/valorant-api/blob/b739850d2722247b56b9e4d12caa8b3c326ce141/valorant_api/base_list.py#L17  # noqa: E501
 
