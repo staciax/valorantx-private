@@ -32,7 +32,6 @@ from .spray import SprayLevelLoadout, SprayLoadout
 from .weapons import SkinChromaLoadout, SkinLevelLoadout, SkinLoadout
 
 if TYPE_CHECKING:
-
     from ..client import Client
     from ..types.collection import (
         Favorites as FavoritesPayload,
@@ -243,7 +242,6 @@ class Collection(BaseModel):
 
         favorite = await self._client.fetch_favorites()
         for i_fav in favorite.items:
-
             if i_fav.type == ItemType.skin:
                 for i_skin in self._skins:
                     if i_skin is not None:

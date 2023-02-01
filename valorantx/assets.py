@@ -27,7 +27,7 @@ import json
 import logging
 import os
 import shutil
-from functools import cache as _cache, wraps
+from functools import lru_cache, wraps
 from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Tuple
 
 from .enums import CurrencyType, ItemType
@@ -88,7 +88,6 @@ def _finder():
     def decorator(function: Callable[..., Any]) -> Callable[..., Mapping[Any, Any]]:
         @wraps(function)
         def wrapper(self: Assets, *args: Any, **kwargs: Any) -> Any:
-
             if not args and not kwargs:
                 return function(self, uuid=None)
 
@@ -131,15 +130,12 @@ def _finder():
 
             maybe = []
             for key, value in data.items():
-
                 if isinstance(value, dict):
                     for k, v in value.items():
-
                         if isinstance(k, str):
                             k = k.lower()
 
                         if k in finder_keys:
-
                             if isinstance(v, str):
                                 if _find(v, kwargs[k]):
                                     return function(self, key)
@@ -147,7 +143,6 @@ def _finder():
                                     maybe.append(key)
 
                             elif isinstance(v, int):
-
                                 if is_level_border:
                                     next_level = v + 19
 
@@ -215,7 +210,6 @@ def _finder():
 
 
 class Assets:
-
     _cache_dir: str = os.path.join(os.getcwd(), '.valorantx_cache')
 
     ASSET_CACHE = {}
@@ -546,13 +540,12 @@ class Assets:
         if with_price:
             _log.info("Offers reloaded")
 
-    @_cache
+    @lru_cache()
     def __get_dir(self) -> str:
         """:class:`str`: Get the asset directory."""
         return os.path.join(Assets._cache_dir, self._client.version.version)
 
-    @staticmethod
-    @_cache
+    @lru_cache()
     def __get_special_dir() -> str:
         """:class:`str`: The special weapon directory."""
         path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
@@ -625,7 +618,6 @@ class Assets:
         skin_chroma_payload = {}
 
         try:
-
             for item in data['data']:
                 uuid = item['uuid']
 
@@ -643,7 +635,6 @@ class Assets:
                     Assets.ASSET_CACHE['sprays_levels'] = spray_level_payload
 
                 elif filename.startswith('weapons'):
-
                     for skin in item['skins']:
                         skin['WeaponID'] = uuid
                         skin_payload[skin['uuid']] = skin

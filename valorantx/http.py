@@ -71,7 +71,6 @@ class EndpointType(enum.Enum):
 
 
 class Route:
-
     BASE_PD_URL: ClassVar[str] = 'https://pd.{shard}.a.pvp.net'
     BASE_GLZ_URL: ClassVar[str] = 'https://glz-{region}-1.{shard}.a.pvp.net'
     BASE_SHARD_URL: ClassVar[str] = 'https://shared.{shard}.a.pvp.net'
@@ -109,7 +108,6 @@ class Route:
             url = self.BASE_VALTRACKER_GG_URL + path
 
         if parameters:
-
             url = url.format_map({k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
 
         self.url: str = url
@@ -288,7 +286,6 @@ class HTTPClient:
         return self.request(Route('GET', '/bundles', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True)
 
     def asset_get_ceremonies(self) -> Response[Mapping[str, Any]]:
-
         return self.request(
             Route('GET', '/ceremonies', EndpointType.valorant_api), params={'language': 'all'}, is_asset=True
         )
@@ -1184,7 +1181,6 @@ class HTTPClient:
         return self._puuid if puuid is None else puuid
 
     async def __build_headers(self) -> None:
-
         if self._riot_client_version == '':
             self._riot_client_version = await self._get_current_version()
 

@@ -671,7 +671,6 @@ class Opponent:
 
     def __fill_stats(self) -> None:
         for kill in self.match.kills:
-
             if kill.killer == self.player and kill.victim == self.opponent:
                 self.kills += 1
                 self.opponent_deaths += 1
@@ -695,7 +694,6 @@ class Opponent:
 
         for round_result in self.match.round_results:
             for stat in round_result.player_stats:
-
                 if stat.player == self.player:
                     for dmg in stat.damage:
                         if dmg.receiver == self.opponent:
@@ -863,9 +861,7 @@ class MatchPlayer(Player):
         return f'<PlayerMatch display_name={self.display_name!r} agent={self.agent!r} team={self.team!r}>'
 
     def fill_player_stats(self) -> None:
-
         for round_result in self.match.round_results:
-
             # spikes
             if round_result.spike.is_planted():
                 if round_result.spike.plater() == self:

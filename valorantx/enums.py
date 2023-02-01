@@ -397,7 +397,7 @@ class GameModeURL(Enum):
     snowball_fight = '/Game/GameModes/SnowballFight/SnowballFightGameMode.SnowballFightGameMode_C'
     practice = '/Game/GameModes/ShootingRange/ShootingRangeGameMode.ShootingRangeGameMode_C'
     on_boarding = '/Game/GameModes/NewPlayerExperience/NPEGameMode.NPEGameMode_C'
-    swiftplay = '/Game/GameModes/_Development/Swiftplay_EndOfRoundCredits/Swiftplay_EoRCredits_GameMode.Swiftplay_EoRCredits_GameMode_C'  # TODO: fix this on release 
+    swiftplay = '/Game/GameModes/_Development/Swiftplay_EndOfRoundCredits/Swiftplay_EoRCredits_GameMode.Swiftplay_EoRCredits_GameMode_C'  # TODO: fix this on release
 
     def __str__(self) -> str:
         return str(self.value)
@@ -456,7 +456,6 @@ class SpraySlotID(Enum):
 
     @classmethod
     def slot_number(cls, slot_id: str) -> int:
-
         if slot_id == cls.slot_1.value:
             return 1
         elif slot_id == cls.slot_2.value:

@@ -143,7 +143,6 @@ class PatchNotes:
 
 
 class PatchNote:
-
     BASE_URL = 'https://playvalorant.com'
 
     def __init__(self, *, client: Client, data: Any, locale: Union[str, Locale]) -> None:
