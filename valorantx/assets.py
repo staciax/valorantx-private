@@ -546,13 +546,12 @@ class Assets:
         if with_price:
             _log.info("Offers reloaded")
 
-    @_cache
+    @lru_cache()
     def __get_dir(self) -> str:
         """:class:`str`: Get the asset directory."""
         return os.path.join(Assets._cache_dir, self._client.version.version)
 
-    @staticmethod
-    @_cache
+    @lru_cache()
     def __get_special_dir() -> str:
         """:class:`str`: The special weapon directory."""
         path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
