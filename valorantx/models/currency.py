@@ -56,7 +56,7 @@ class Currency(BaseModel):
         self._display_name_singular_localized: Localization = Localization(self._display_name_singular, locale=client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f'<Currency display_name={self.display_name!r} value={self.value!r}>'
@@ -89,14 +89,14 @@ class Currency(BaseModel):
         return self._display_name_singular_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the agent's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
-    def name_singular(self) -> str:
+    def name_singular(self) -> Localization:
         """:class: `str` Returns the agent's singular name."""
-        return self._display_name_singular_localized.locale
+        return self._display_name_singular_localized
 
     @property
     def display_icon(self) -> Optional[Asset]:

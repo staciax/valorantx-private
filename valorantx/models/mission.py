@@ -58,7 +58,7 @@ class Mission(BaseModel):
         self._title_localized: Localization = Localization(self._title, locale=client.locale)
 
     def __str__(self) -> str:
-        return self.title
+        return self.title.locale
 
     def __repr__(self) -> str:
         return f'<Mission title={self.title!r}>'
@@ -73,22 +73,21 @@ class Mission(BaseModel):
         return self._title_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the mission's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
-    def title(self) -> str:
+    def title(self) -> Localization:
         """:class: `str` Returns the mission's title."""
-        return self._title_localized.locale
+        return self._title_localized
 
     @property
     def type(self) -> Optional[MissionType]:
         """Optional[:class: `MissionType`] Returns the mission's type."""
-        if self._type == '':
+        if self._type == '' or self._type is None:
             return None
-        type_strip = self._type.removeprefix('EAresMissionType::')
-        return try_enum(MissionType, type_strip)
+        return try_enum(MissionType, utils.removeprefix(self._type, 'EAresMissionType::'))
 
     @property
     def activation_date(self) -> Optional[datetime.datetime]:

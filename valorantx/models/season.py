@@ -56,7 +56,7 @@ class Season(BaseModel):
         self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         attrs = [('display_name', self.display_name), ('type', self.type)]
@@ -77,9 +77,9 @@ class Season(BaseModel):
         return self._display_name_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the season's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
     def type(self) -> Optional[str]:

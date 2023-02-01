@@ -56,7 +56,7 @@ class Buddy(BaseModel):
         self._name_localized = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f'<Buddy display_name={self.display_name!r}>'
@@ -65,9 +65,9 @@ class Buddy(BaseModel):
         return self._name_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the buddy's name."""
-        return self._name_localized.locale
+        return self._name_localized
 
     @property
     def theme(self) -> Optional[Theme]:
@@ -154,7 +154,7 @@ class BuddyLevel(BaseModel):
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f'<BuddyLevel display_name={self.display_name!r} base={self._base_buddy!r}>'
@@ -163,9 +163,9 @@ class BuddyLevel(BaseModel):
         return self._display_name_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the buddy's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
     def display_icon(self) -> Optional[Asset]:

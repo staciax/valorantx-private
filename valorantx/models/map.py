@@ -66,7 +66,7 @@ class Callout:
         self._super_region_name_localized: Localization = Localization(self._super_region_name, locale=client.locale)
 
     def __str__(self) -> str:
-        return self.region_name
+        return self.region_name.locale
 
     def __repr__(self) -> str:
         attrs = [
@@ -87,12 +87,12 @@ class Callout:
         return self._super_region_name_localized.from_locale(locale)
 
     @property
-    def region_name(self) -> str:
-        return self._region_name_localized.locale
+    def region_name(self) -> Localization:
+        return self._region_name_localized
 
     @property
-    def super_region_name(self) -> str:
-        return self._super_region_name_localized.locale
+    def super_region_name(self) -> Localization:
+        return self._super_region_name_localized
 
 
 class Map(BaseModel):
@@ -114,7 +114,7 @@ class Map(BaseModel):
         self._coordinates_localized: Localization = Localization(self._coordinates, locale=client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f'<Map display_name={self.display_name!r}>'
@@ -126,14 +126,14 @@ class Map(BaseModel):
         return self._coordinates_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the mission's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
-    def coordinates(self) -> str:
+    def coordinates(self) -> Localization:
         """:class: `str` Returns the mission's coordinates."""
-        return self._coordinates_localized.locale
+        return self._coordinates_localized
 
     @property
     def list_view_icon(self) -> Optional[Asset]:

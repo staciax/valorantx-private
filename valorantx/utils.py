@@ -143,3 +143,11 @@ def calculate_level_xp(level: int) -> int:
 
 
 # --
+
+
+def removeprefix(string: str, prefix: str) -> str:
+    """Remove prefix from string"""
+    # python 3.8 is not supported .removeprefix()
+    if string.startswith(prefix):
+        return string[len(prefix) :]
+    return string

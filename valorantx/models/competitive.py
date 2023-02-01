@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
+from .. import utils
 from ..asset import Asset
 from ..enums import Locale, MapType
 from ..localization import Localization
@@ -64,7 +65,7 @@ class Tier:
         self._division_name_localized: Localization = Localization(self._division_name, locale=self._client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f'<Tier tier={self.tier!r} display_name={self.display_name!r} division={self.division!r}>'
@@ -97,19 +98,19 @@ class Tier:
         return self._division_name_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the tier's name."""
-        return self._name_locale.locale
+        return self._name_locale
 
     @property
     def division(self) -> Optional[str]:
         """:class: `str` Returns the tier's division."""
-        return self._division.removeprefix('ECompetitiveDivision::') if self._division else None
+        return utils.removeprefix(self._division, 'ECompetitiveDivision::') if self._division else None
 
     @property
-    def division_name(self) -> str:
+    def division_name(self) -> Localization:
         """:class: `str` Returns the tier's division."""
-        return self._division_name_localized.locale
+        return self._division_name_localized
 
     @property
     def small_icon(self) -> Optional[Asset]:

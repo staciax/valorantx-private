@@ -81,7 +81,7 @@ class Bundle(BaseModel):
                 self._bundle_items(data['Items'])
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f'<Bundle display_name={self.display_name!r}>'
@@ -95,13 +95,13 @@ class Bundle(BaseModel):
             self._discount_price += item.get('DiscountedPrice', 0)
 
             if item_type == ItemType.skin_level.value:
-                self._items.append(SkinBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))
+                self._items.append(SkinBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))  # type: ignore
             elif item_type == ItemType.spray.value:
-                self._items.append(SprayBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))
+                self._items.append(SprayBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))  # type: ignore
             elif item_type == ItemType.buddy_level.value:
-                self._items.append(BuddyBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))
+                self._items.append(BuddyBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))  # type: ignore
             elif item_type == ItemType.player_card.value:
-                self._items.append(PlayerCardBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))
+                self._items.append(PlayerCardBundle._from_bundle(client=self._client, uuid=item_uuid, bundle=item))  # type: ignore
 
     def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
         return self._display_name_localized.from_locale(locale)
@@ -116,29 +116,29 @@ class Bundle(BaseModel):
         return self._description_extra_localized.from_locale(locale) if self._description_extra is not None else None
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the bundle's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
-    def display_sub_name(self) -> Optional[str]:
+    def display_sub_name(self) -> Optional[Localization]:
         """:class: `str` Returns the bundle's sub name."""
-        return self._display_name_sub_text_localized.locale if self._display_name_sub_text is not None else None
+        return self._display_name_sub_text_localized if self._display_name_sub_text is not None else None
 
     @property
-    def description(self) -> Optional[str]:
+    def description(self) -> Optional[Localization]:
         """:class: `str` Returns the bundle's description."""
-        return self._description_localized.locale if self._description is not None else None
+        return self._description_localized if self._description is not None else None
 
     @property
-    def description_extra(self) -> Optional[str]:
+    def description_extra(self) -> Optional[Localization]:
         """:class: `str` Returns the bundle's description extra localizations."""
-        return self._description_extra_localized.locale if self._description_extra is not None else None
+        return self._description_extra_localized if self._description_extra is not None else None
 
     @property
-    def description_promo(self) -> Optional[str]:
+    def description_promo(self) -> Optional[Localization]:
         """:class: `str` Returns the bundle's description promo."""
-        return self._description_promo_localized.locale if self._description_promo is not None else None
+        return self._description_promo_localized if self._description_promo is not None else None
 
     @property
     def display_icon(self) -> Asset:
@@ -215,4 +215,6 @@ class FeaturedBundle(Bundle):
         """Creates a bundle from a store response."""
         uuid = bundle['DataAssetID']
         data = client._assets.get_bundle(uuid)
+        if data is None:
+            raise ValueError(f'Bundle with uuid {uuid} not found.')
         return cls(client=client, data=data, bundle=bundle)

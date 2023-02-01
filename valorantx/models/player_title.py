@@ -53,7 +53,7 @@ class PlayerTitle(BaseModel):
         self._title_text_localized: Localization = Localization(self._title_text, locale=client.locale)
 
     def __str__(self) -> str:
-        return self.text
+        return self.text.locale
 
     def __repr__(self) -> str:
         return f"<PlayerTitle display_name={self.display_name!r} text={self.text!r}>"
@@ -65,14 +65,14 @@ class PlayerTitle(BaseModel):
         return self._title_text_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the player title's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
-    def text(self) -> str:
+    def text(self) -> Localization:
         """:class: `str` Returns the player title's title text."""
-        return self._title_text_localized.locale
+        return self._title_text_localized
 
     def is_hidden_if_not_owned(self) -> bool:
         """:class: `bool` Returns whether the player title is hidden if not owned."""

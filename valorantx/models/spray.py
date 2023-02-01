@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
+from .. import utils
 from ..asset import Asset
 from ..enums import ItemType, Locale, SpraySlotID
 from ..localization import Localization
@@ -61,7 +62,7 @@ class Spray(BaseModel):
         self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f"<Spray display_name={self.display_name!r}>"
@@ -70,14 +71,14 @@ class Spray(BaseModel):
         return self._display_name_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the skin's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
     def category(self) -> Optional[str]:
         """:class: `str` Returns the skin's category."""
-        return self._category.removeprefix('EAresSprayCategory::') if self._category else None
+        return utils.removeprefix(self._category, 'EAresSprayCategory::') if self._category is not None else None
 
     @property
     def theme(self) -> Optional[Theme]:
@@ -181,7 +182,7 @@ class SprayLevel(BaseModel):
         self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f'<SprayLevel display_name={self.display_name!r} base={self._base_spray!r}>'
@@ -190,9 +191,9 @@ class SprayLevel(BaseModel):
         return self._display_name_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the spray's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
     def level(self) -> int:

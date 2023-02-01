@@ -334,8 +334,8 @@ class SkinCollection:
         for skin in loadout:
             base_weapon = skin.get_weapon()
             if base_weapon is not None:
-                if hasattr(self, base_weapon.display_name.lower()):
-                    setattr(self, base_weapon.display_name.lower(), skin)
+                if hasattr(self, base_weapon.display_name.locale.lower()):
+                    setattr(self, base_weapon.display_name.locale.lower(), skin)
 
     @property
     def sidearms(self) -> List[Optional[SkinL]]:

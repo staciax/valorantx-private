@@ -64,7 +64,7 @@ class Gear(BaseModel):
         self._description_localized = Localization(self._description, locale=client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __int__(self) -> int:
         return self.cost
@@ -79,14 +79,14 @@ class Gear(BaseModel):
         return self._description_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the gear's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
-    def description(self) -> str:
+    def description(self) -> Localization:
         """:class: `str` Returns the gear's description."""
-        return self._description_localized.locale
+        return self._description_localized
 
     @property
     def display_icon(self) -> Asset:

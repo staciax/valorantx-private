@@ -74,7 +74,7 @@ class Contract(BaseModel):
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f'<Contract display_name={self.display_name!r}>'
@@ -94,9 +94,9 @@ class Contract(BaseModel):
         return self.uuid
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the contract's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
     def display_icon(self) -> Asset:
@@ -202,12 +202,12 @@ class ContractU(Contract):
                     else:
                         yield from chapter._rewards
 
-    def get_next_reward(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
+    def get_next_reward(self) -> Optional[Union[Agent, SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
         """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the next reward."""
         reward = self.next_tier_reward
         return reward.get_item() if reward is not None else None
 
-    def get_latest_reward(self) -> Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
+    def get_latest_reward(self) -> Optional[Union[Agent, SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
         """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the latest reward."""
         reward = self.latest_tier_reward
         return reward.get_item() if reward is not None else None
@@ -215,6 +215,8 @@ class ContractU(Contract):
     @classmethod
     def _from_contract(cls, client: Client, contract: ContractUPayload) -> Self:
         data = client._assets.get_contract(contract['ContractDefinitionID'])
+        if data is None:
+            raise ValueError(f'Contract with uuid {contract["ContractDefinitionID"]!r} not found.')
         return cls(client=client, data=data, contract=contract)
 
 

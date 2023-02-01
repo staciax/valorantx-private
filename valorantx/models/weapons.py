@@ -136,20 +136,20 @@ class DamageRange:
 
 class WeaponStats:
     def __init__(self, data: Dict[str, Any]) -> None:
-        self.fire_rate: int = data['fireRate']
-        self.magazine_size: int = data['magazineSize']
-        self.run_speed_multiplier: float = data['runSpeedMultiplier']
-        self.equip_time_seconds: float = data['equipTimeSeconds']
-        self.reload_time_seconds: int = data['reloadTimeSeconds']
-        self.first_bullet_accuracy: float = data['firstBulletAccuracy']
-        self.shotgun_pellet_count: int = data['shotgunPelletCount']
-        self._wall_penetration: str = data['wallPenetration']
-        self._feature: str = data['feature']
-        self._fire_mode: Optional[str] = data['fireMode']
-        self._alt_fire_type: str = data['altFireType']
+        self.fire_rate: int = data.get('fireRate', 0)
+        self.magazine_size: int = data.get('magazineSize', 0)
+        self.run_speed_multiplier: float = data.get('runSpeedMultiplier', 0)
+        self.equip_time_seconds: float = data.get('equipTimeSeconds', 0)
+        self.reload_time_seconds: int = data.get('reloadTimeSeconds', 0)
+        self.first_bullet_accuracy: float = data.get('firstBulletAccuracy', 0)
+        self.shotgun_pellet_count: int = data.get('shotgunPelletCount', 0)
+        self._wall_penetration: Optional[str] = data.get('wallPenetration')
+        self._feature: Optional[str] = data.get('feature')
+        self._fire_mode: Optional[str] = data.get('fireMode')
+        self._alt_fire_type: Optional[str] = data.get('altFireType')
         self.ads_stats: Optional[AdsStats] = AdsStats(data['adsStats']) if data.get('adsStats') else None
-        self.alt_shotgun_stats: AltShotgunStats = data['altShotgunStats']
-        self.air_burst_stats: AirBurstStats = data['airBurstStats']
+        self.alt_shotgun_stats: AltShotgunStats = AltShotgunStats(data['altShotgunStats'])
+        self.air_burst_stats: AirBurstStats = AirBurstStats(data['airBurstStats'])
         self.damage_ranges: List[DamageRange] = [DamageRange(x) for x in data['damageRanges']]
 
     def __repr__(self) -> str:
@@ -174,20 +174,28 @@ class WeaponStats:
         return f'<{self.__class__.__name__} {joined}>'
 
     @property
-    def fire_mode(self) -> str:
-        return self._fire_mode.removeprefix('EWeaponFireModeDisplayType::')
+    def fire_mode(self) -> Optional[str]:
+        if self._fire_mode is not None:
+            return utils.removeprefix(self._fire_mode, 'EWeaponFireModeDisplayType::')
+        return None
 
     @property
-    def wall_penetration(self) -> str:
-        return self._wall_penetration.removeprefix('EWallPenetrationDisplayType::')
+    def wall_penetration(self) -> Optional[str]:
+        if self._wall_penetration is not None:
+            return utils.removeprefix(self._wall_penetration, 'EWallPenetrationDisplayType::')
+        return None
 
     @property
-    def feature(self) -> str:
-        return self._feature.removeprefix('WeaponStatsFeature::')
+    def feature(self) -> Optional[str]:
+        if self._feature is not None:
+            return utils.removeprefix(self._feature, 'WeaponStatsFeature::')
+        return None
 
     @property
-    def alt_fire_type(self) -> str:
-        return self._alt_fire_type.removeprefix('EWeaponAltFireDisplayType::')
+    def alt_fire_type(self) -> Optional[str]:
+        if self._alt_fire_type is not None:
+            return utils.removeprefix(self._alt_fire_type, 'EWeaponAltFireDisplayType::')
+        return None
 
 
 class ShopData:
@@ -227,9 +235,9 @@ class ShopData:
         return self._category_text_localized.from_locale(locale)
 
     @property
-    def category_text(self) -> str:
+    def category_text(self) -> Localization:
         """:class: `str` Returns the weapon's shop category text."""
-        return self._category_text_localized.locale
+        return self._category_text_localized
 
     def can_be_trashed(self) -> bool:
         """:class: `bool` Returns whether the weapon can be trashed."""
@@ -273,7 +281,7 @@ class Weapon(BaseModel):
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f"<Weapon display_name={self.display_name!r}>"
@@ -282,14 +290,15 @@ class Weapon(BaseModel):
         return self._display_name_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the weapon's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
     def category(self) -> str:
         """:class: `str` Returns the weapon's category."""
-        return self._category.removeprefix("EEquippableCategory::")
+        #  self._category.removeprefix("EEquippableCategory::")
+        return utils.removeprefix(self._category, "EEquippableCategory::")
 
     @property
     def display_icon(self) -> Asset:
@@ -364,7 +373,7 @@ class Skin(BaseModel):
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f"<Skin display_name={self.display_name!r}>"
@@ -373,9 +382,9 @@ class Skin(BaseModel):
         return self._display_name_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the skin's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
     def theme(self) -> Optional[Theme]:
@@ -484,7 +493,7 @@ class Skin(BaseModel):
     def _from_uuid(cls, client: Client, uuid: str, all_type: bool = False) -> Optional[Union[Self, SkinLevel, SkinChroma]]:
         """Returns the skin with the given UUID."""
         data = client._assets.get_skin(uuid)
-        if not all_type:
+        if not all_type and data is not None:
             return cls(client=client, data=data)
         else:
             return client.get_skin_level(uuid) or client.get_skin_chroma(uuid)
@@ -513,7 +522,7 @@ class SkinChroma(BaseModel):
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f"<SkinChroma display_name={self.display_name!r}>"
@@ -523,9 +532,9 @@ class SkinChroma(BaseModel):
         return self._display_name_localized.from_locale(locale=locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the skin's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
     def display_icon(self) -> Optional[Asset]:
@@ -534,7 +543,7 @@ class SkinChroma(BaseModel):
         display_icon = self._display_icon or (base_skin.display_icon if base_skin else None)
         weapon = self.get_weapon()
         if weapon is not None:
-            if self.display_name.removeprefix('Standard ') == weapon.display_name:
+            if utils.removeprefix(self.display_name.locale, 'Standard ') == weapon.display_name:
                 display_icon = weapon.display_icon or display_icon
         return Asset._from_url(client=self._client, url=str(display_icon)) if display_icon else None
 
@@ -660,7 +669,7 @@ class SkinLevel(BaseModel):
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return str(self.display_name)
 
     def __repr__(self) -> str:
         return f"<SkinLevel display_name={self.display_name!r} level={self.level!r}>"
@@ -669,16 +678,16 @@ class SkinLevel(BaseModel):
         return self._display_name_localized.from_locale(locale=locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the skin's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
     def level(self) -> str:
         """:class: `str` Returns the skin's level."""
         if self._level is None:
             return 'Normal'
-        return self._level.removeprefix('EEquippableSkinLevelItem::')
+        return utils.removeprefix(self._level, 'EEquippableSkinLevelItem::')
 
     @property
     def display_icon(self) -> Optional[Asset]:
@@ -816,6 +825,8 @@ class SkinNightMarket(SkinLevel):
         """Returns the skin with the given UUID."""
         uuid = skin_data['Offer']['OfferID']  # type: ignore
         data = client._assets.get_skin_level(uuid)
+        if data is None:
+            raise ValueError(f'Invalid skin UUID: {uuid}')
         return cls(client=client, data=data, extras=skin_data)
 
 
@@ -849,12 +860,17 @@ class BaseLoadout:
 
     def is_random(self) -> bool:
         """:class:`bool` Returns whether the skin is random."""
-        return True if 'Random' in self.asset_path else False  # type: ignore
+        try:
+            asset_path = getattr(self, 'asset_path')
+        except AttributeError:
+            return False
+        else:
+            return 'Random' in asset_path
 
     def get_buddy(self) -> Optional[Buddy]:
         """Returns the get_buddy for this skin"""
         if self._buddy is None:
-            self._buddy = self._client.get_buddy(uuid=self._buddy_uuid) if self._buddy_uuid else None  # type: ignore
+            self._buddy = self._client.get_buddy(uuid=self._buddy_uuid) if self._buddy_uuid else None
         return self._buddy
 
     def get_buddy_level(self) -> Optional[BuddyLevel]:

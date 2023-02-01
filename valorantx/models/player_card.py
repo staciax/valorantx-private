@@ -63,7 +63,7 @@ class PlayerCard(BaseModel):
         self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f"<PlayerCard display_name={self.display_name!r}>"
@@ -72,9 +72,9 @@ class PlayerCard(BaseModel):
         return self._display_name_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the player card's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
     def display_icon(self) -> Optional[Asset]:

@@ -159,7 +159,7 @@ class ContentTier(BaseModel):
         self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f'<ContentTier display_name={self.display_name!r}>'
@@ -168,9 +168,9 @@ class ContentTier(BaseModel):
         return self._display_name_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the content tier's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
     def highlight_color_rgb(self) -> str:

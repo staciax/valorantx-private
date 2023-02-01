@@ -74,6 +74,9 @@ class Role:
     def __repr__(self) -> str:
         return f'<Role display_name={self.display_name!r}>'
 
+    def __str__(self) -> str:
+        return self.display_name.locale
+
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Role) and other.uuid == self.uuid
 
@@ -90,14 +93,14 @@ class Role:
         return self._description_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the agent role's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
-    def description(self) -> str:
+    def description(self) -> Localization:
         """:class: `str` Returns the agent role's description."""
-        return self._description_localized.locale
+        return self._description_localized
 
     @property
     def display_icon(self) -> Optional[Asset]:
@@ -131,6 +134,9 @@ class Ability:
     def __repr__(self) -> str:
         return f'<Ability display_name={self.display_name!r}>'
 
+    def __str__(self) -> str:
+        return self.display_name.locale
+
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Ability) and other.slot == self.slot
 
@@ -144,14 +150,14 @@ class Ability:
         return self._description_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the agent role's name."""
-        return self._name_localized.locale
+        return self._name_localized
 
     @property
-    def description(self) -> str:
+    def description(self) -> Localization:
         """:class: `str` Returns the agent role's description."""
-        return self._description_localized.locale
+        return self._description_localized
 
     @property
     def display_icon(self) -> Asset:
@@ -436,7 +442,7 @@ class Agent(BaseModel):
         self._description_localized: Localization = Localization(self._description, locale=self._client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f'<Agent display_name={self.display_name!r}>'
@@ -448,14 +454,14 @@ class Agent(BaseModel):
         return self._description_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the agent's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
-    def description(self) -> str:
+    def description(self) -> Localization:
         """:class: `str` Returns the agent's description."""
-        return self._description_localized.locale
+        return self._description_localized
 
     @property
     def display_icon(self) -> Asset:

@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
+from .. import utils
 from ..asset import Asset
 from ..enums import GameModeType, Locale
 from ..localization import Localization
@@ -60,7 +61,7 @@ class GameMode(BaseModel):
         self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f'<GameMode display_name={self.display_name!r}>'
@@ -80,9 +81,9 @@ class GameMode(BaseModel):
         return self._display_name_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the game mode's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
     def display_icon(self) -> Optional[Asset]:
@@ -132,7 +133,7 @@ class GameModeEquippable(BaseModel):
         self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f'<GameModeEquippable display_name={self.display_name!r}>'
@@ -141,14 +142,14 @@ class GameModeEquippable(BaseModel):
         return self._display_name_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the game mode's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
     def category(self) -> Optional[str]:
         """:class: `str` Returns the game mode's category."""
-        return self._category.removeprefix('EEquippableCategory::') if self._category else None
+        return utils.removeprefix(self._category, 'EEquippableCategory::') if self._category else None
 
     @property
     def display_icon(self) -> Asset:
@@ -161,10 +162,10 @@ class GameModeEquippable(BaseModel):
         return Asset._from_url(client=self._client, url=self._kill_stream_icon)
 
     @property
-    def get_weapon(self) -> Weapon:
+    def get_weapon(self) -> Optional[Weapon]:
         """:class: `Weapon` Returns the game mode's weapon."""
         data = self._client._assets.get_weapon(uuid=self._uuid)
-        return Weapon(client=self._client, data=data)
+        return Weapon(client=self._client, data=data) if data else None
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

@@ -50,7 +50,7 @@ class Ceremony(BaseModel):
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f'<Ceremony display_name={self.display_name!r}>'
@@ -59,9 +59,9 @@ class Ceremony(BaseModel):
         return self._display_name_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the ceremony's name."""
-        return self._display_name_localized.from_locale(self._client.locale)
+        return self._display_name_localized
 
     @classmethod
     def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

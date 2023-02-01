@@ -57,7 +57,7 @@ class Event(BaseModel):
         self._short_display_name_localized: Localization = Localization(self._short_display_name, locale=client.locale)
 
     def __str__(self) -> str:
-        return self.display_name
+        return self.display_name.locale
 
     def __repr__(self) -> str:
         return f'<Event display_name={self.display_name!r}>'
@@ -69,14 +69,14 @@ class Event(BaseModel):
         return self._short_display_name_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> str:
+    def display_name(self) -> Localization:
         """:class: `str` Returns the agent's name."""
-        return self._display_name_localized.locale
+        return self._display_name_localized
 
     @property
-    def short_name(self) -> str:
+    def short_name(self) -> Localization:
         """:class: `str` Returns the agent's short name."""
-        return self._short_display_name_localized.locale
+        return self._short_display_name_localized
 
     @property
     def start_time(self) -> datetime.datetime:

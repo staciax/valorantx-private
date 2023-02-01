@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from ..enums import Region, try_enum
 from ..errors import InvalidPuuid, PartyNotOwner
-from ..utils import is_uuid
+from ..utils import is_uuid, removeprefix
 
 # from .match import Platform
 from .player import Player
@@ -374,8 +374,7 @@ class Ping:
     @cached_property
     def region(self) -> Region:
         pod_split = self.game_pod_id.split('-')
-        region_str = pod_split[-4].removeprefix('prod.')
-        return try_enum(Region, region_str)
+        return try_enum(Region, removeprefix(pod_split[-4], 'prod.'))
 
     @cached_property
     def server(self) -> str:

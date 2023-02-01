@@ -67,6 +67,7 @@ class BaseModel(abc.ABC):
         """:class:`str`: The uuid of the object."""
         return self._uuid
 
+
 class FeaturedBundleItem:
     if TYPE_CHECKING:
         _client: Client
