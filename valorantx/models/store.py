@@ -109,7 +109,6 @@ class StoreFront:
 
 
 class StoreOffer:
-
     __slot__ = ()
 
     def __init__(self, *, client: Any, data: SkinsPanelLayoutPayload) -> None:
@@ -168,7 +167,6 @@ class StoreOffer:
 
 
 class NightMarket:
-
     __slot__ = ()
 
     def __init__(self, *, client: Client, data: BonusStorePayload) -> None:

@@ -838,7 +838,6 @@ class SkinBundle(SkinLevel, FeaturedBundleItem):
 
 
 class BaseLoadout:
-
     if TYPE_CHECKING:
         _client: Client
 

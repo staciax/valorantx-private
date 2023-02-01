@@ -94,7 +94,6 @@ def _finder():
     def decorator(function: Callable[P, T]) -> Callable[..., Mapping[Any, Any]]:
         @wraps(function)
         def wrapper(self: Assets, *args: P.args, **kwargs: P.kwargs) -> T:
-
             if not args and not kwargs:
                 return function(self, uuid=None)
 
@@ -137,15 +136,12 @@ def _finder():
 
             maybe = []
             for key, value in data.items():
-
                 if isinstance(value, dict):
                     for k, v in value.items():
-
                         if isinstance(k, str):
                             k = k.lower()
 
                         if k in finder_keys:
-
                             if isinstance(v, str):
                                 if _find(v, kwargs[k]):
                                     return function(self, key)
@@ -153,7 +149,6 @@ def _finder():
                                     maybe.append(key)
 
                             elif isinstance(v, int):
-
                                 if is_level_border:
                                     next_level = v + 19
 
@@ -221,7 +216,6 @@ def _finder():
 
 
 class Assets:
-
     _cache_dir: str = os.path.join(os.getcwd(), '.valorantx_cache')
 
     ASSET_CACHE = {}
@@ -631,7 +625,6 @@ class Assets:
         skin_chroma_payload = {}
 
         try:
-
             for item in data['data']:
                 uuid = item['uuid']
 
@@ -649,7 +642,6 @@ class Assets:
                     Assets.ASSET_CACHE['sprays_levels'] = spray_level_payload
 
                 elif filename.startswith('weapons'):
-
                     for skin in item['skins']:
                         skin['WeaponID'] = uuid
                         skin_payload[skin['uuid']] = skin

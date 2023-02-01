@@ -116,6 +116,7 @@ _log = logging.getLogger(__name__)
 
 MISSING: Any = utils.MISSING
 
+
 # -- from discord.py
 # link: https://github.com/Rapptz/discord.py/blob/9ea6ee8887b65f21ccc0bcf013786f4ea61ba608/discord/client.py#L111
 class _LoopSentinel:
@@ -189,7 +190,6 @@ class Client:
             await self.close()
 
     async def init(self, *, reload: bool = False) -> None:
-
         _log.debug('Setting up client')
 
         loop = asyncio.get_running_loop()
@@ -1195,7 +1195,6 @@ class Client:
 
     @_authorize_required
     async def fetch_party(self, party_id: Optional[Union[Party, PartyPlayer, str]] = None) -> Party:
-
         if party_id is None:
             party_id = await self.fetch_party_player()
 

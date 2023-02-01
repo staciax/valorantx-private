@@ -94,7 +94,6 @@ class Matchmaking:
 
 
 class Party:
-
     id: str
     muc_name: str
     voice_room_id: str

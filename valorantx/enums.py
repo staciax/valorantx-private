@@ -455,7 +455,6 @@ class SpraySlotID(Enum):
 
     @classmethod
     def slot_number(cls, slot_id: str) -> int:
-
         if slot_id == cls.slot_1.value:
             return 1
         elif slot_id == cls.slot_2.value:

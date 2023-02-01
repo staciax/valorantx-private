@@ -38,7 +38,6 @@ __all__ = (
 
 
 class BaseModel(abc.ABC):
-
     __slots__ = (
         '_uuid',
         '_client',
@@ -70,7 +69,6 @@ class BaseModel(abc.ABC):
 
 
 class FeaturedBundleItem:
-
     if TYPE_CHECKING:
         _client: Client
 

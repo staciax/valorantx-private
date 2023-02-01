@@ -48,7 +48,6 @@ class _PlayerTag:
 
 
 class Player(_PlayerTag):
-
     # __slots__ = ()
 
     if TYPE_CHECKING:

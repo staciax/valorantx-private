@@ -43,7 +43,6 @@ MISSING = utils.MISSING
 
 
 class AssetMixin:
-
     __slots__ = ()
     url: str
     _client: Client
@@ -160,7 +159,6 @@ class Asset(AssetMixin):
 
     @classmethod
     def _from_url(cls, client: Client, url: Optional[str] = None, *, animated: bool = False) -> Self:
-
         if url is None:
             raise TypeError('Expected URL, not NoneType')
 

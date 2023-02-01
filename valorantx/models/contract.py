@@ -303,7 +303,6 @@ class Contracts(BaseModel):
             contract = try_contract
 
         if isinstance(contract, (Contract, ContractU)):
-
             if not isinstance(contract, ContractU):
                 for c in self.contracts:
                     if c == contract:
