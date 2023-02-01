@@ -20,7 +20,7 @@ extras_require = {
     'local': ['urllib3>=1.26.12,<1.27'],
 }
 
-packages = ['valorantx', 'valorantx.models', 'valorantx.types']
+packages = ['valorantx', 'valorantx.models', 'valorantx.types', 'valorantx.ext.scrapers']
 
 setup(
     name='valorantx',
