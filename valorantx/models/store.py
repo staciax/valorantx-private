@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 
 from ..enums import CurrencyType, ItemType
 from .bundle import FeaturedBundle
@@ -67,7 +67,7 @@ __all__ = (
 
 
 class StoreFront:
-    def __init__(self, *, client: Any, data: StoreFrontPayload) -> None:
+    def __init__(self, *, client: Client, data: StoreFrontPayload) -> None:
         self._client = client
         self._bundle: BundlePayload = data['FeaturedBundle']['Bundle']  # type: ignore
         self._bundles: List[BundlePayload] = data["FeaturedBundle"]['Bundles']  # type: ignore
@@ -111,7 +111,7 @@ class StoreFront:
 class StoreOffer:
     __slot__ = ()
 
-    def __init__(self, *, client: Any, data: SkinsPanelLayoutPayload) -> None:
+    def __init__(self, *, client: Client, data: SkinsPanelLayoutPayload) -> None:
         self._client: Client = client
         self._skin_offers: List[str] = data['SingleItemOffers']
         self._duration: int = data['SingleItemOffersRemainingDurationInSeconds']
