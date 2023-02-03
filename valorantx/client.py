@@ -154,6 +154,7 @@ class Client:
         self._reload_assets: bool = kwargs.get('reload_assets', False)
         self.loop: asyncio.AbstractEventLoop = _loop
         self.user: ClientPlayer = MISSING
+        self._fetch_assets_on_startup: bool = kwargs.get('fetch_assets_on_startup', True)
         self._closed: bool = False
         self._version: Version = MISSING
         self._season: Season = MISSING
@@ -189,7 +190,7 @@ class Client:
         if not self.is_closed():
             await self.close()
 
-    async def init(self, *, reload: bool = False) -> None:
+    async def init(self) -> None:
         _log.debug('Setting up client')
 
         loop = asyncio.get_running_loop()
@@ -202,7 +203,8 @@ class Client:
 
         self.http._riot_client_version = self.version.riot_client_version
 
-        await self._assets.fetch_assets(reload=reload, version=self.version)
+        if self._fetch_assets_on_startup:
+            await self._assets.fetch_assets(reload=True, version=self.version)
 
         self._ready.set()
 
