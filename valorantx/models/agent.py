@@ -128,8 +128,8 @@ class Ability:
         self._display_name: Dict[str, str] = data['displayName']
         self._description: Dict[str, str] = data['description']
         self._display_icon: str = data['displayIcon']
-        self._name_localized: Localization = Localization(self._description, locale=self._client.locale)
-        self._description_localized: Localization = Localization(self._display_name, locale=self._client.locale)
+        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
+        self._description_localized: Localization = Localization(self._description, locale=self._client.locale)
 
     def __repr__(self) -> str:
         return f'<Ability display_name={self.display_name!r}>'
@@ -144,7 +144,7 @@ class Ability:
         return not self.__eq__(other)
 
     def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
-        return self._name_localized.from_locale(locale)
+        return self._display_name_localized.from_locale(locale)
 
     def description_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
         return self._description_localized.from_locale(locale)
@@ -152,7 +152,7 @@ class Ability:
     @property
     def display_name(self) -> Localization:
         """:class: `str` Returns the agent role's name."""
-        return self._name_localized
+        return self._display_name_localized
 
     @property
     def description(self) -> Localization:
