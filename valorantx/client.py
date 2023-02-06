@@ -760,6 +760,16 @@ class Client:
         for item in data.values():
             yield Season(client=self, data=item)
 
+    def get_all_tiers(self, season: Optional[Season] = None) -> Iterator[Tier]:
+        season = season or self.season
+        if season is not None:
+            sc = self.get_season_competitive(seasonUuid=season.id)
+            if sc is not None:
+                c_tiers = sc.get_competitive_tiers()
+                if c_tiers is not None:
+                    for tier in c_tiers.get_tiers():
+                        yield tier
+
     def get_item_price(
         self, item: Union[str, Skin, SkinChroma, SkinLevel, PlayerCard, Buddy, BuddyLevel, Spray, SprayLevel]
     ) -> int:
