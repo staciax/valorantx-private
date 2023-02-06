@@ -84,7 +84,7 @@ class Season(BaseModel):
     @property
     def type(self) -> Optional[str]:
         """:class: `str` Returns the season's type."""
-        return self._type.removeprefix('EAresSeasonType::') if self._type else None
+        return utils.removeprefix(self._type, 'EAresSeasonType::') if self._type else None
 
     @property
     def start_time(self) -> datetime.datetime:
@@ -173,7 +173,6 @@ class SeasonCompetitive(BaseModel):
         """:class: `Season` Returns the season."""
         return self._season
 
-    @property
-    def competitive_tiers(self) -> Optional[CompetitiveTier]:
+    def get_competitive_tiers(self) -> Optional[CompetitiveTier]:
         """:class: `CompetitiveTier` Returns the competitive tiers."""
         return self._competitive_tiers

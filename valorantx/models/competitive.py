@@ -147,10 +147,6 @@ class CompetitiveTier(BaseModel):
     def __repr__(self) -> str:
         return f'<CompetitiveTier asset_object_name={self.asset_object_name!r}>'
 
-    @property
-    def tiers(self) -> List[Tier]:
-        return self.get_tiers()
-
     def get_tiers(self) -> List[Tier]:
         """:class: `list` Returns the competitive tier's tiers."""
         return [Tier(client=self._client, data=tier) for tier in self._tiers]
@@ -235,9 +231,9 @@ class SeasonalInfo:
         """:class: `Tier` Returns the tier."""
         ss_com = self._client.get_season_competitive(seasonUuid=self.season_id)
         if ss_com is not None:
-            com_tiers = ss_com.competitive_tiers
+            com_tiers = ss_com.get_competitive_tiers()
             if com_tiers is not None:
-                for tier in com_tiers.tiers:
+                for tier in com_tiers.get_tiers():
                     if tier.tier == self.competitive_tier_number:
                         return tier
 
