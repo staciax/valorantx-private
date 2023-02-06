@@ -155,10 +155,10 @@ class HTTPClient:
         re_authorize = kwargs.pop('re_authorize', True)
         extra_exceptions = kwargs.pop('exceptions', None)
 
-        if not kwargs.get('asset'):
-            kwargs['headers'] = {'User-Agent': self.user_agent}
-        else:
-            if kwargs.get('headers') is None:
+        if kwargs.get('headers') is None:
+            if kwargs.get('asset'):
+                kwargs['headers'] = {'User-Agent': self.user_agent}
+            else:
                 kwargs['headers'] = self._headers
 
         response: Optional[aiohttp.ClientResponse] = None
