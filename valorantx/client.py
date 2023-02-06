@@ -541,10 +541,10 @@ class Client:
         ss_com_all = self.get_all_season_competitive()
         for ss_com in ss_com_all:
             if ss_com.season == season:
-                ss_com_tiers = ss_com.competitive_tiers
+                ss_com_tiers = ss_com.get_competitive_tiers()
                 if ss_com_tiers is None:
                     return None
-                for tier in ss_com_tiers.tiers:
+                for tier in ss_com_tiers.get_tiers():
                     if tier.tier == tier_number:
                         return tier
 
