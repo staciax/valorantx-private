@@ -182,6 +182,7 @@ __all__: Tuple[str, ...] = (
     'RelationType',
     'RoundResultCode',
     'RoundResultType',
+    'SeasonType',
     'Shard',
     'SpraySlotID',
     'WeaponType',
@@ -490,6 +491,11 @@ class MissionType(Enum):
     @property
     def full(self) -> str:
         return f'AresMissionType::{self.value}'
+
+
+class SeasonType(Enum):
+    episode = 'episode'
+    act = 'act'
 
 
 class Locale(Enum):

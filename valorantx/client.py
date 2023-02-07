@@ -44,7 +44,7 @@ from typing import (
 
 from . import utils
 from .assets import Assets
-from .enums import ItemType, Locale, QueueType, try_enum
+from .enums import ItemType, Locale, QueueType, SeasonType, try_enum
 from .errors import AuthRequired
 from .http import HTTPClient
 from .models import (
@@ -158,6 +158,7 @@ class Client:
         self._closed: bool = False
         self._version: Version = MISSING
         self._season: Season = MISSING
+        self._act: Season = MISSING
         self._is_authorized: bool = False
         self._http: HTTPClient = HTTPClient(self.loop)
         self._assets: Assets = Assets(client=self)
@@ -214,6 +215,21 @@ class Client:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
         return self._ready is not MISSING and self._ready.is_set()
 
+    async def set_season(self) -> None:
+        """|coro|
+        Sets the current season and act.
+        """
+        if self.is_ready():
+            content = await self.fetch_content()
+            for season in reversed(content.get_seasons()):
+                if season.is_active():
+                    _season = self.get_season(uuid=season.id)
+                    if _season is not None:
+                        if season.type == SeasonType.episode:
+                            self.season = _season
+                        elif season.type == SeasonType.act:
+                            self.act = _season
+
     async def authorize(self, username: Optional[str], password: Optional[str]) -> None:
         """|coro|
 
@@ -239,14 +255,8 @@ class Client:
             region=riot_auth.region,
         )
         self.user = ClientPlayer(client=self, data=payload)
-        if self.is_ready():
-            content = await self.fetch_content()
-            for season in reversed(content.get_seasons()):
-                if season.is_active():
-                    get_season = self.get_season(uuid=season.id)
-                    if get_season is not None:
-                        self.season = get_season
-                        break
+
+        await self.set_season()
 
     async def authorize_from_data(self, data: Dict[str, Any]) -> None:
         self._is_authorized = True
@@ -258,14 +268,8 @@ class Client:
             region=riot_auth.region,
         )
         self.user = ClientPlayer(client=self, data=payload)
-        if self.is_ready():
-            content = await self.fetch_content()
-            for season in content.get_seasons():
-                if season.is_active():
-                    get_season = self.get_season(uuid=season.id)
-                    if get_season is not None:
-                        self.season = get_season
-                        break
+
+        await self.set_season()
 
     def is_authorized(self) -> bool:
         """:class:`bool`: Whether the client is authorized."""
@@ -345,6 +349,17 @@ class Client:
         if not isinstance(value, Season):
             raise TypeError(f"Expected Season, got {type(value).__name__}")
         self._season = value
+
+    @property
+    def act(self) -> Optional[Season]:
+        """:class:`Season`: The act of the client."""
+        return self._act
+
+    @act.setter
+    def act(self, value: Season) -> None:
+        if not isinstance(value, Season):
+            raise TypeError(f"Expected Season, got {type(value).__name__}")
+        self._act = value
 
     # assets
 

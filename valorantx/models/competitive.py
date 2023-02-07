@@ -350,16 +350,16 @@ class MMR(BaseModel):
         """:class: `LatestCompetitiveUpdate` Returns the latest competitive update."""
         return self._latest_competitive_update
 
-    def get_latest_rank_tier(self, season: Optional[Season] = None) -> Optional[Tier]:
+    def get_latest_rank_tier(self, season_act: Optional[Season] = None) -> Optional[Tier]:
         """:class: `Tier` Returns the last rank tier."""
-        if season is None:
-            season = self._client.season
+        if season_act is None:
+            season_act = self._client.act
         competitive = self.queue_skills.competitive
         if competitive is not None:
             seasonal_info = competitive.get_seasonal_info()
             if seasonal_info is not None:
                 for info in seasonal_info:
-                    if info.season == season:
+                    if info.season == season_act:
                         return info.tier
 
     def get_latest_competitive_season(self) -> Optional[SeasonalInfo]:

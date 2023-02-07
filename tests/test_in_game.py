@@ -22,7 +22,7 @@ async def main():
         for skin in sf.get_store():
             print(skin.display_name)
             print(skin.display_icon)
-            print(skin.name_localizations.japanese)
+            print(skin.display_name_localized.japanese)
             print(skin.price)
 
         history = await client.fetch_match_history(queue=valorantx.QueueType.deathmatch)

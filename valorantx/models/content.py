@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union
 
 from .. import utils
 from ..asset import Asset
-from ..enums import Locale
+from ..enums import Locale, SeasonType, try_enum
 from ..localization import Localization
 from .base import BaseModel
 
@@ -75,7 +75,7 @@ class ContentSeason:
     def __init__(self, data: Mapping[str, Any]) -> None:
         self.id: str = data['ID']
         self.name: str = data['Name']
-        self.type: str = data['Type']
+        self.type: SeasonType = try_enum(SeasonType, data['Type'])
         self._is_active: bool = data['IsActive']
         self._start_time: str = data['StartTime']
         self._end_time: str = data['EndTime']
