@@ -149,12 +149,18 @@ def _authorize_required(fn: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[
 
 
 class Client:
-    def __init__(self, *, locale: Union[Locale, str] = Locale.american_english, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        *,
+        locale: Union[Locale, str] = Locale.american_english,
+        reload_assets: bool = False,
+        fetch_assets_on_startup: bool = False,
+    ) -> None:
         self._locale: Locale = try_enum(Locale, locale) if isinstance(locale, str) else locale
-        self._reload_assets: bool = kwargs.get('reload_assets', False)
         self.loop: asyncio.AbstractEventLoop = _loop
         self.user: ClientPlayer = MISSING
-        self._fetch_assets_on_startup: bool = kwargs.get('fetch_assets_on_startup', True)
+        self._reload_assets: bool = reload_assets
+        self._fetch_assets_on_startup: bool = fetch_assets_on_startup
         self._closed: bool = False
         self._version: Version = MISSING
         self._season: Season = MISSING
@@ -163,6 +169,10 @@ class Client:
         self._http: HTTPClient = HTTPClient(self.loop)
         self._assets: Assets = Assets(client=self)
         self._ready: asyncio.Event = MISSING
+
+    @property
+    def me(self) -> ClientPlayer:
+        return self.user
 
     async def wait_until_ready(self) -> None:
         """|coro|
