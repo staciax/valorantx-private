@@ -558,6 +558,7 @@ class LevelBorderID(Enum):
 
 class BundleID(Enum):
     abyssal = 'afa6651a-4b93-b7f8-b136-b6b081fc3258'
+    altitude = 'a4937ee9-4148-8ff2-2c11-c28891880306'
     araxys = 'a4c613c9-4970-61ca-e52a-918ae22f5315'
     arcane = '2270b116-4255-8a14-4486-db9de4979b89'
     avalanche = '0dee7ef6-d3ea-400a-b15c-5b9524243439'
