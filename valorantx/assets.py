@@ -86,16 +86,15 @@ def _find(value: Any, key: Any) -> bool:
             if _find(list_value, key):
                 return True
         return False
-    else:
-        return False
+    return False
 
 
 def _finder():
     def decorator(function: Callable[P, T]) -> Callable[P, T]:
         @wraps(function)
-        def wrapper(self: Assets, *args: P.args, **kwargs: P.kwargs) -> T:
+        def wrapper(cls: Assets, *args: P.args, **kwargs: P.kwargs) -> T:
             if not args and not kwargs:
-                return function(self, uuid=None)
+                return function(cls, uuid=None)
 
             new_kwargs = {}
             for key, value in kwargs.items():
@@ -119,7 +118,7 @@ def _finder():
             data = Assets.ASSET_CACHE.get(get_key, {})
 
             if not data:
-                return function(self, *args, **kwargs)
+                return function(cls, *args, **kwargs)
 
             is_level_border = False
             if len(finder_keys) == 0:
@@ -144,7 +143,7 @@ def _finder():
                         if k in finder_keys:
                             if isinstance(v, str):
                                 if _find(v, kwargs[k]):
-                                    return function(self, key)
+                                    return function(cls, key)
                                 elif v.startswith(kwargs[k]):
                                     maybe.append(key)
 
@@ -156,16 +155,16 @@ def _finder():
                                         next_level += 1
 
                                     if int(kwargs[k]) < next_level:
-                                        return function(self, key)
+                                        return function(cls, key)
 
                                 else:
                                     if _find(v, kwargs[k]):
-                                        return function(self, key)
+                                        return function(cls, key)
 
                             elif isinstance(v, dict):
                                 for kk, vv in v.items():
                                     if _find(vv, kwargs[k]):
-                                        return function(self, key)
+                                        return function(cls, key)
                                     elif vv.startswith(kwargs[k]):
                                         maybe.append(key)
 
@@ -174,7 +173,7 @@ def _finder():
                                 for vv in v:
                                     if isinstance(vv, str):
                                         if _find(vv, kwargs[k]):
-                                            return function(self, key)
+                                            return function(cls, key)
                                         elif vv.startswith(kwargs[k]):
                                             maybe.append(key)
 
@@ -185,7 +184,7 @@ def _finder():
                                 if isinstance(key, str):
                                     key = key.lower()
                                 if arg == key:
-                                    return function(self, key)
+                                    return function(cls, key)
 
             # 2nd loop
             for key, value in data.items():
@@ -193,7 +192,7 @@ def _finder():
                     for v_ in value.values():
                         for arg in args:
                             if _find(v_, arg):
-                                return function(self, key)
+                                return function(cls, key)
 
                             if isinstance(value, dict):
                                 for v_find in value.values():
@@ -207,8 +206,8 @@ def _finder():
 
             # 1st choice in maybe
             if len(maybe) > 0:
-                return function(self, maybe[0])
-            return function(self, uuid=None)
+                return function(cls, maybe[0])
+            return function(cls, uuid=None)
 
         return wrapper
 
