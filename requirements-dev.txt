@@ -1,0 +1,14 @@
+# unit test
+pytest-asyncio
+# flake8
+
+# formatter
+black
+isort
+
+# env
+python-dotenv
+
+# docs
+# sphinx
+# sphinx-rtd-theme
