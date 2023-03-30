@@ -212,8 +212,9 @@ class Localization:
             return self.locale
         if isinstance(locale, Locale):
             locale = str(locale)
-        return (
-            getattr(self, locale.replace('-', '_'))
-            if hasattr(self, locale.replace('-', '_'))
-            else (self.untranslated.get(locale, self.default) if isinstance(self.untranslated, dict) else self.default)
-        )
+
+        if hasattr(self, locale.replace('-', '_')):
+            return getattr(self, locale.replace('-', '_'))
+        elif isinstance(self.untranslated, dict):
+            return self.untranslated.get(locale, self.default)
+        return self.default

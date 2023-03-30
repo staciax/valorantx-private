@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
@@ -475,29 +476,38 @@ class Assets:
         if not asset_path.endswith(get_version.version) or len(os.listdir(self.__get_dir())) == 0 or force:
             _log.info(f"Fetching assets for version {get_version.version!r}")
 
-            self.__dump(await self._client.http.asset_get_agents(), 'agents')
-            self.__dump(await self._client.http.asset_get_buddies(), 'buddies')
-            self.__dump(await self._client.http.asset_get_bundles(), 'bundles')
-            self.__dump(await self._client.http.asset_get_ceremonies(), 'ceremonies')
-            self.__dump(await self._client.http.asset_get_competitive_tiers(), 'competitive_tiers')
-            self.__dump(await self._client.http.asset_get_content_tiers(), 'content_tiers')
-            self.__dump(await self._client.http.asset_get_contracts(), 'contracts')
-            self.__dump(await self._client.http.asset_get_currencies(), 'currencies')
-            self.__dump(await self._client.http.asset_get_events(), 'events')
-            self.__dump(await self._client.http.asset_get_game_modes(), 'game_modes')
-            self.__dump(await self._client.http.asset_get_game_modes_equippables(), 'game_modes_equippables')
-            self.__dump(await self._client.http.asset_get_gear(), 'gear')
-            self.__dump(await self._client.http.asset_get_level_borders(), 'level_borders')
-            self.__dump(await self._client.http.asset_get_maps(), 'maps')
-            self.__dump(await self._client.http.asset_get_missions(), 'missions')
-            self.__dump(await self._client.http.asset_get_player_cards(), 'player_cards')
-            self.__dump(await self._client.http.asset_get_player_titles(), 'player_titles')
-            self.__dump(await self._client.http.asset_get_seasons(), 'seasons')
-            self.__dump(await self._client.http.asset_get_seasons_competitive(), 'seasons_competitive')
-            self.__dump(await self._client.http.asset_get_sprays(), 'sprays')
-            self.__dump(await self._client.http.asset_get_themes(), 'themes')
-            self.__dump(await self._client.http.asset_get_weapons(), 'weapons')
-            self.__dump(await self._client.http.asset_get_bundle_items(), 'bundles_2nd')
+            tasks = [
+                self._client.http.asset_get_agents,
+                self._client.http.asset_get_buddies,
+                self._client.http.asset_get_bundles,
+                self._client.http.asset_get_ceremonies,
+                self._client.http.asset_get_competitive_tiers,
+                self._client.http.asset_get_content_tiers,
+                self._client.http.asset_get_contracts,
+                self._client.http.asset_get_currencies,
+                self._client.http.asset_get_events,
+                self._client.http.asset_get_game_modes,
+                self._client.http.asset_get_game_modes_equippables,
+                self._client.http.asset_get_gear,
+                self._client.http.asset_get_level_borders,
+                self._client.http.asset_get_maps,
+                self._client.http.asset_get_missions,
+                self._client.http.asset_get_player_cards,
+                self._client.http.asset_get_player_titles,
+                self._client.http.asset_get_seasons,
+                self._client.http.asset_get_seasons_competitive,
+                self._client.http.asset_get_sprays,
+                self._client.http.asset_get_themes,
+                self._client.http.asset_get_weapons,
+                self._client.http.asset_get_bundles_2nd,
+            ]
+
+            results = await asyncio.gather(*[func() for func in tasks])
+            for func, result in zip(tasks, results):
+                assert result is not None
+                func_name = func.__name__.split('_')[2:]
+                func_name = '_'.join(func_name)
+                self.__dump(result, func_name)
 
         if reload:
             self.reload(with_price=with_price)

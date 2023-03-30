@@ -520,6 +520,9 @@ class Locale(Enum):
     chinese_simplified = 'zh-CN'
     chinese_traditional = 'zh-TW'
 
+    # aliases
+    english = american_english
+
     def __str__(self) -> str:
         return str(self.value)
 

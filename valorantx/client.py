@@ -310,7 +310,6 @@ class Client:
 
         Closes the client session and logs out.
         """
-
         if self._closed:
             return
         self._closed = True
