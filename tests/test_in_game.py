@@ -1,62 +1,95 @@
-import asyncio
-import logging
-import os
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pytest
-from dotenv import load_dotenv
-
-load_dotenv()
 
 import valorantx
 
-# logging
-logging.basicConfig(level=logging.ERROR)
 
-client = valorantx.Client(locale=valorantx.Locale.thai)
-
-
+@pytest.mark.usefixtures('client_class')
+@pytest.mark.usefixtures('riot_account')
 @pytest.mark.asyncio
-async def test_in_game() -> None:
-    async with client:
-        username = os.getenv('VALORANT_USERNAME')
-        assert username is not None
-        password = os.getenv('VALORANT_PASSWORD')
-        assert password is not None
-        await client.authorize(username, password)
+class TestInGame:
+    if TYPE_CHECKING:
+        client: valorantx.Client
+        riot_username: str
+        riot_password: str
 
-        await client.fetch_assets(reload=True)  # 'with_price=True' is requires authorization
-        # after `client.fetch_assets`, you can comment above line and use below line
-        # `client.reload_assets(with_price=True)` # will reload assets without authorization
-        # if new version available, please use `await client.fetch_assets(with_price=True)` again
+    async def test_init(self) -> None:
+        await self.client.init()
 
-        sf = await client.fetch_store_front()
+    async def test_auth(self) -> None:
+        await self.client.authorize(self.riot_username, self.riot_password)
+
+    async def test_store_front(self) -> None:
+        sf = await self.client.fetch_store_front()
         assert sf is not None
         assert sf.get_store() is not None
         for skin in sf.get_store():
             assert skin is not None
-            assert skin.display_name is not None
-            assert skin.display_icon is not None
             assert skin.price is not None
+            assert isinstance(skin.price, int)
 
-        history = await client.fetch_match_history(queue=valorantx.QueueType.deathmatch)
-        print(repr(history))
+        assert sf.get_bundles() is not None
+        for bundle in sf.get_bundles():
+            assert bundle is not None
+            assert bundle.price is not None
+            assert isinstance(bundle.price, int)
 
-        content = await client.fetch_content()
-        print(repr(content.get_seasons()))
+        if nmk := sf.get_nightmarket():
+            assert nmk is not None
+            assert nmk.get_skins() is not None
+            for skin in nmk.get_skins():
+                assert skin is not None
+                assert skin.price is not None
+                assert isinstance(skin.price, int)
 
-        wallet = await client.fetch_wallet()
-        print(repr(wallet))
+    async def test_wallet(self) -> None:
+        wallet = await self.client.fetch_wallet()
+        assert wallet is not None
 
+    async def test_content(self) -> None:
+        content = await self.client.fetch_content()
+        assert content is not None
+
+    async def test_match_history(self) -> None:
+        history = await self.client.fetch_match_history(queue=valorantx.QueueType.unrated, with_details=True)
+        assert history is not None
+        assert isinstance(history.get_match_details(), list)
+        for match in history.get_match_details():
+            assert match is not None
+
+    async def test_patch_notes(self) -> None:
         for locale in valorantx.Locale:
-            patch_note = await client.fetch_patch_notes(locale=locale)
-            print(repr(patch_note.get_latest_patch_note()))
+            patch_note = await self.client.fetch_patch_notes(locale=locale)
+            assert patch_note is not None
 
-        loadout = await client.fetch_collection()
-        print(repr(loadout.get_skins()))
+    async def test_collection(self) -> None:
+        loadout = await self.client.fetch_collection()
+        assert loadout is not None
+        assert loadout.get_skins() is not None
         for skin in loadout.get_skins():
-            if skin is not None:
-                print(skin.display_name, skin.display_icon)
+            assert skin is not None
 
+        assert loadout.get_sprays() is not None
+        for spray in loadout.get_sprays():
+            assert spray is not None
 
-if __name__ == '__main__':
-    asyncio.run(test_in_game())
+        assert loadout.get_player_title() is not None
+        assert loadout.get_player_card() is not None
+
+        if loadout.get_level_border() is not None:
+            assert isinstance(loadout.get_level_border(), valorantx.LevelBorder)
+
+    async def test_close(self) -> None:
+        await self.client.close()
+        assert self.client._closed
+        assert self.client.http._session.closed
+
+    async def test_clear(self) -> None:
+        self.client.clear()
+        assert not self.client._ready.is_set()
+        assert not self.client._assets.ASSET_CACHE
+        assert not self.client._assets.OFFER_CACHE
+        assert self.client.http._session is valorantx.utils.MISSING

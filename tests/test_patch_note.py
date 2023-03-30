@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 from valorantx.ext.scrapers import patchnote
 
+
 @pytest.mark.asyncio
 async def test_in_patch_note_scraper(client: Client) -> None:
     tasks = []

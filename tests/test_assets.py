@@ -1,7 +1,7 @@
 import pytest
 
 import valorantx
-import pytest
+
 
 @pytest.mark.asyncio
 async def test_assets(client: valorantx.Client):
