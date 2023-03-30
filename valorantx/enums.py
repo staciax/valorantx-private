@@ -274,6 +274,7 @@ class AgentType(Enum):
     chamber = '22697a3d-45bf-8dd7-4fec-84a9e28c69d7'
     cypher = '117ed9e3-49f3-6512-3ccf-0cada7e3823b'
     fade = 'dade69b4-4f5a-8528-247b-219e5a1facd6'
+    gekko = 'e370fa57-4757-3604-3648-499e1f642d3f'
     harbor = '95b78ed7-4637-86d9-7e41-71ba8c293152'
     jett = 'add6443a-41bd-e414-f6ad-e58d267f4e95'
     kay_o = '601dbbe7-43ce-be57-2a40-4abd24953621'
@@ -519,6 +520,9 @@ class Locale(Enum):
     chinese_simplified = 'zh-CN'
     chinese_traditional = 'zh-TW'
 
+    # aliases
+    english = american_english
+
     def __str__(self) -> str:
         return str(self.value)
 
@@ -557,6 +561,7 @@ class LevelBorderID(Enum):
 
 class BundleID(Enum):
     abyssal = 'afa6651a-4b93-b7f8-b136-b6b081fc3258'
+    altitude = 'a4937ee9-4148-8ff2-2c11-c28891880306'
     araxys = 'a4c613c9-4970-61ca-e52a-918ae22f5315'
     arcane = '2270b116-4255-8a14-4486-db9de4979b89'
     avalanche = '0dee7ef6-d3ea-400a-b15c-5b9524243439'
@@ -592,6 +597,7 @@ class BundleID(Enum):
     neptune = 'ce15405a-4471-3290-1a16-abab355f97da'
     nunca_olvidados = 'a4d5c5f5-4647-d984-011d-dea2ef7b56c5'
     oni = 'ebfb909d-45ba-c514-3369-55bf014ba293'
+    oni_2_0 = 'b7d754d4-44aa-4663-afc3-84a5cccc3c9d"'
     origin = '54f8793c-4daa-6e45-bcfd-e9bfc742dc30'
     prelude_to_chaos = '526f7d0c-414b-24bb-bcd0-10aed1f3e824'
     pride = '7b6b00f0-4fb9-7395-067d-44bcb4e20d9a'
@@ -606,6 +612,7 @@ class BundleID(Enum):
     reaver = '81d85522-4651-4f66-72de-5fa057b3514c'
     reaver_2 = 'f7dcf7e1-485e-0524-ec82-0d97b2c8b40b'
     recon = 'b6b1b7ea-4a10-f810-a416-03adbb69d379'
+    reverie = '9a4ad6ad-4aa9-695a-b73e-cf874223db0c'
     ruination = 'ae0c9cc4-4c03-f8d6-745c-84953db684fc'
     run_it_back = '332d705c-4852-11e5-c590-88b1f6e47f72'
     run_it_Back_2 = 'bcdd8956-4588-f586-fda8-fd991c593449'
@@ -632,6 +639,7 @@ class BundleID(Enum):
     wasteland = '4e3a244b-4482-0541-3eab-b8912cdb72d6'
     winterwunderland = '79d2f4b9-4066-8b5b-884f-1d95b33d2ac5'
     xenohunter = '3941ad01-4e3b-46e0-ba3a-ab94f7c67f98'
+    vct_lock_in = '2654d506-4d05-e7e9-c996-63ac6fdaf767'
 
     def __str__(self) -> str:
         return str(self.value)

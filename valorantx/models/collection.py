@@ -484,6 +484,8 @@ class Favorites:
                             self._buddies.append(item)  # type: ignore
                         elif item.type == ItemType.level_border:
                             self._level_borders.append(item)  # type: ignore
+                        else:
+                            _log.warning(f'Unknown item type: {item.type}')
                         self.items.append(item)  # type: ignore
 
     def get_skins(self) -> List[Skin]:

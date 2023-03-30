@@ -87,8 +87,9 @@ class FeaturedBundleItem:
     def is_melee(self) -> bool:
         """:class: `bool` Returns whether the bundle is a melee weapon."""
         if hasattr(self, 'get_weapon'):
-            if callable(self.get_weapon):
-                weapon = self.get_weapon()
+            get_weapon = getattr(self, 'get_weapon')
+            if callable(get_weapon):
+                weapon = get_weapon()
                 return weapon.is_melee()
         return False
 

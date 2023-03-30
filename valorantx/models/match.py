@@ -455,10 +455,9 @@ class SpikePlant:
         self._planter: Optional[str] = data.get('bombPlanter', None)
         self.site: str = data.get('plantSite', '')
         self.round_time: int = data.get('plantRoundTime', 0)
-        self.location: Optional[Location] = Location(data['plantLocation']) if data.get('plantLocation') else None
-        self.player_locations: List[MatchPlayerLocation] = (
-            [MatchPlayerLocation(x) for x in data['plantPlayerLocations']] if data.get('plantPlayerLocations') else []
-        )
+        self.location: Optional[Location] = None
+        self.player_locations: List[MatchPlayerLocation] = []
+        self._update(data)
 
     def __repr__(self) -> str:
         attrs = [
@@ -473,6 +472,14 @@ class SpikePlant:
     def __str__(self) -> str:
         return self.site
 
+    def _update(self, data: MatchRoundResultPayload):
+        plant_location = data.get('plantLocation')
+        if plant_location:
+            self.location: Optional[Location] = Location(plant_location)
+        plant_player_locations = data.get('plantPlayerLocations')
+        if plant_player_locations:
+            self.player_locations: List[MatchPlayerLocation] = [MatchPlayerLocation(ppl) for ppl in plant_player_locations]
+
     def planter(self) -> Optional[MatchPlayer]:
         """:class:`MatchPlayer`: Returns the player that planted the spike."""
         return self.match.get_player(self._planter)
@@ -483,10 +490,9 @@ class SpikeDefuse:
         self.match: MatchDetails = match
         self._defuser: Optional[str] = data.get('bombDefuser', None)
         self.round_time: int = data.get('defuseRoundTime', 0)
-        self.location: Optional[Location] = Location(data['defuseLocation']) if data.get('defuseLocation') else None
-        self.player_locations: List[MatchPlayerLocation] = (
-            [MatchPlayerLocation(x) for x in data['defusePlayerLocations']] if data.get('defusePlayerLocations') else []
-        )
+        self.location: Optional[Location] = None
+        self.player_locations: List[MatchPlayerLocation] = []
+        self._update(data)
 
     def __repr__(self) -> str:
         attrs = [
@@ -496,6 +502,14 @@ class SpikeDefuse:
         ]
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
+
+    def _update(self, data: MatchRoundResultPayload):
+        defuse_location = data.get('defuseLocation')
+        if defuse_location:
+            self.location: Optional[Location] = Location(defuse_location)
+        defuse_player_locations = data.get('defusePlayerLocations')
+        if defuse_player_locations:
+            self.player_locations: List[MatchPlayerLocation] = [MatchPlayerLocation(x) for x in defuse_player_locations]
 
     def defuser(self) -> Optional[MatchPlayer]:
         """:class:`MatchPlayer`: Returns the player that defused the spike."""
@@ -541,13 +555,11 @@ class RoundResult:
         self.spike: Spike = Spike(match, data)
         self.result_code: RoundResultCode = try_enum(RoundResultCode, data.get('roundResultCode'))
         self.ceremony: Optional[str] = data.get('roundCeremony', None)  # TODO: Implement ceremony
-        self.player_economies: List[PlayerEconomy] = (
-            [PlayerEconomy(match, economy) for economy in data['playerEconomies']] if data.get('playerEconomies') else []
-        )
+        self.player_economies: List[PlayerEconomy] = [
+            PlayerEconomy(self.match, economy) for economy in data.get('playerEconomies', [])
+        ]
         self.player_stats: List[PlayerStat] = [PlayerStat(match, player) for player in data.get('playerStats', [])]
-        self.player_scores: List[PlayerScore] = (
-            [PlayerScore(match, player) for player in data['playerScores']] if data.get('playerScores') else []
-        )
+        self.player_scores: List[PlayerScore] = [PlayerScore(self.match, player) for player in data.get('playerScores', [])]
         if self.result_code == RoundResultCode.surrendered:
             self.match._is_surrendered = True
 
@@ -1024,7 +1036,7 @@ class MatchPlayer(Player):
             return tier
         season = self.match.get_season()
         mmr = await self._client.fetch_mmr(puuid=self.puuid)
-        return mmr.get_latest_rank_tier(season=season)
+        return mmr.get_latest_rank_tier(season_act=season)
 
 
 class Coach(Player):

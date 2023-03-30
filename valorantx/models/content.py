@@ -155,6 +155,7 @@ class ContentTier(BaseModel):
         self.juice_cost: int = data['juiceCost']
         self.highlight_color: str = data['highlightColor']
         self._display_icon: str = data['displayIcon']
+        # self._old_display_icon: str = ''
         self.asset_path: str = data['assetPath']
         self._display_name_localized: Localization = Localization(self._display_name, locale=client.locale)
 

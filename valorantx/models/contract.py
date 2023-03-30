@@ -304,24 +304,24 @@ class Contracts(BaseModel):
                 raise InvalidContractType(f'No contract found with uuid {contract!r}')
             contract = try_contract
 
-        if isinstance(contract, (Contract, ContractU)):
-            if not isinstance(contract, ContractU):
-                for c in self.contracts:
-                    if c == contract:
-                        contract = c
-
-            if contract.content.relation_type != RelationType.agent:
-                raise InvalidRelationType(f'Contract {contract.display_name!r} is not an agent contract')
-
-            if contract == self.special_contract():
-                return contract
-
-            if isinstance(contract, ContractU):
-                if contract.current_tier == 10:
-                    _log.warning(f'Contract {contract.display_name!r} is already at max level')
-                    return contract
-        else:
+        if not isinstance(contract, (Contract, ContractU)):
             raise TypeError(f'Expected ContractA, ContractU, or str, got {type(contract)}')
+
+        if not isinstance(contract, ContractU):
+            for c in self.contracts:
+                if c == contract:
+                    contract = c
+
+        if contract.content.relation_type != RelationType.agent:
+            raise InvalidRelationType(f'Contract {contract.display_name!r} is not an agent contract')
+
+        if contract == self.special_contract():
+            return contract
+
+        if isinstance(contract, ContractU):
+            if contract.current_tier == 10:
+                _log.warning(f'Contract {contract.display_name!r} is already at max level')
+                return contract
 
         # update the active special contract
         data = await self._client.http.contracts_activate(contract.uuid)

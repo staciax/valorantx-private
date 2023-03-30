@@ -349,7 +349,7 @@ class HTTPClient:
 
     # valtracker endpoint
 
-    def asset_get_bundle_items(self) -> Response[Mapping[str, Any]]:
+    def asset_get_bundles_2nd(self) -> Response[Mapping[str, Any]]:
         return self.request(Route('GET', '/bundles', EndpointType.valtracker_gg), asset=True)
 
     # play valorant endpoints
