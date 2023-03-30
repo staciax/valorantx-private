@@ -91,11 +91,11 @@ def _find(value: Any, key: Any) -> bool:
 
 
 def _finder():
-    def decorator(function: Callable[P, T]) -> Callable[P, T]:
-        @wraps(function)
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
+        @wraps(func)
         def wrapper(cls: Assets, *args: P.args, **kwargs: P.kwargs) -> T:
             if not args and not kwargs:
-                return function(cls, uuid=None)
+                return func(cls, uuid=None)  # type: ignore
 
             new_kwargs = {}
             for key, value in kwargs.items():
@@ -111,7 +111,7 @@ def _finder():
             finder_keys = [x for x in list(kwargs.keys())]
             # inspired by https://github.com/MinshuG/valorant-api/blob/b739850d2722247b56b9e4d12caa8b3c326ce141/valorant_api/base_list.py#L17  # noqa: E501
 
-            doc = function.__doc__
+            doc = func.__doc__
             if doc is None:
                 get_key = '...'
             else:
@@ -119,7 +119,7 @@ def _finder():
             data = Assets.ASSET_CACHE.get(get_key, {})
 
             if not data:
-                return function(cls, *args, **kwargs)
+                return func(cls, *args, **kwargs)  # type: ignore
 
             is_level_border = False
             if len(finder_keys) == 0:
@@ -144,28 +144,28 @@ def _finder():
                         if k in finder_keys:
                             if isinstance(v, str):
                                 if _find(v, kwargs[k]):
-                                    return function(cls, key)
-                                elif v.startswith(kwargs[k]):
+                                    return func(cls, key)  # type: ignore
+                                elif v.startswith(kwargs[k]):  # type: ignore
                                     maybe.append(key)
 
                             elif isinstance(v, int):
                                 if is_level_border:
                                     next_level = v + 19
 
-                                    if int(kwargs[k]) > 20:
+                                    if int(kwargs[k]) > 20:  # type: ignore
                                         next_level += 1
 
-                                    if int(kwargs[k]) < next_level:
-                                        return function(cls, key)
+                                    if int(kwargs[k]) < next_level:  # type: ignore
+                                        return func(cls, key)  # type: ignore
 
                                 else:
                                     if _find(v, kwargs[k]):
-                                        return function(cls, key)
+                                        return func(cls, key)  # type: ignore
 
                             elif isinstance(v, dict):
                                 for kk, vv in v.items():
                                     if _find(vv, kwargs[k]):
-                                        return function(cls, key)
+                                        return func(cls, key)  # type: ignore
                                     elif vv.startswith(kwargs[k]):
                                         maybe.append(key)
 
@@ -174,8 +174,8 @@ def _finder():
                                 for vv in v:
                                     if isinstance(vv, str):
                                         if _find(vv, kwargs[k]):
-                                            return function(cls, key)
-                                        elif vv.startswith(kwargs[k]):
+                                            return func(cls, key)  # type: ignore
+                                        elif vv.startswith(kwargs[k]):  # type: ignore
                                             maybe.append(key)
 
                         else:
@@ -185,7 +185,7 @@ def _finder():
                                 if isinstance(key, str):
                                     key = key.lower()
                                 if arg == key:
-                                    return function(cls, key)
+                                    return func(cls, key)  # type: ignore
 
             # 2nd loop
             for key, value in data.items():
@@ -193,7 +193,7 @@ def _finder():
                     for v_ in value.values():
                         for arg in args:
                             if _find(v_, arg):
-                                return function(cls, key)
+                                return func(cls, key)  # type: ignore
 
                             if isinstance(value, dict):
                                 for v_find in value.values():
@@ -207,10 +207,10 @@ def _finder():
 
             # 1st choice in maybe
             if len(maybe) > 0:
-                return function(cls, maybe[0])
-            return function(cls, uuid=None)
+                return func(cls, maybe[0])  # type: ignore
+            return func(cls, uuid=None)  # type: ignore
 
-        return wrapper
+        return wrapper  # type: ignore
 
     return decorator
 
