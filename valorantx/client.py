@@ -153,14 +153,12 @@ class Client:
         self,
         *,
         locale: Union[Locale, str] = Locale.american_english,
-        reload_assets: bool = False,
-        fetch_assets_on_startup: bool = False,
+        assets_on_startup: bool = False,
     ) -> None:
         self._locale: Locale = try_enum(Locale, locale) if isinstance(locale, str) else locale
         self.loop: asyncio.AbstractEventLoop = _loop
         self.user: ClientPlayer = MISSING
-        self._reload_assets: bool = reload_assets
-        self._fetch_assets_on_startup: bool = fetch_assets_on_startup
+        self._fetch_assets_on_startup: bool = assets_on_startup
         self._closed: bool = False
         self._version: Version = MISSING
         self._season: Season = MISSING
@@ -169,6 +167,7 @@ class Client:
         self._http: HTTPClient = HTTPClient(self.loop)
         self._assets: Assets = Assets(client=self)
         self._ready: asyncio.Event = MISSING
+        self._auth_ready: asyncio.Event = MISSING
 
     @property
     def me(self) -> ClientPlayer:
@@ -185,6 +184,18 @@ class Client:
                 'Client has not been properly initialised. '
                 'Please use the login method or asynchronous context manager before calling this method'
             )
+
+    # async def wait_until_auth_ready(self) -> None:
+    #     """|coro|
+    #     Waits until the client's internal cache is all ready.
+    #     """
+    #     if self._auth_ready is not MISSING:
+    #         await self._auth_ready.wait()
+    #     else:
+    #         raise RuntimeError(
+    #             'Client has not been properly initialised. '
+    #             'Please use the login method or asynchronous context manager before calling this method'
+    #         )
 
     # end events
 
@@ -208,6 +219,7 @@ class Client:
         self.loop = loop
         self.http.loop = loop
         self._ready = asyncio.Event()
+        # self._auth_ready = asyncio.Event()
 
         if self.version is MISSING:
             self.version = await self.fetch_version()
@@ -215,30 +227,43 @@ class Client:
         self.http._riot_client_version = self.version.riot_client_version
 
         if self._fetch_assets_on_startup:
-            await self._assets.fetch_assets(reload=True, version=self.version)
+            self.loop.create_task(self._assets.fetch_assets(reload=True, force=False, version=self.version))
 
         self._ready.set()
 
         _log.debug('Client is ready')
 
+        # async def _auth_ready() -> None:
+        #     await self.wait_until_auth_ready()
+        #     await self.set_season()
+        #     print('Client is authorized')
+        # self.loop.create_task(_auth_ready())
+
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
         return self._ready is not MISSING and self._ready.is_set()
 
-    async def set_season(self) -> None:
+    async def _set_season(self) -> None:
         """|coro|
         Sets the current season and act.
         """
-        if self.is_ready():
-            content = await self.fetch_content()
-            for season in reversed(content.get_seasons()):
-                if season.is_active():
-                    _season = self.get_season(uuid=season.id)
-                    if _season is not None:
-                        if season.type == SeasonType.episode:
-                            self.season = _season
-                        elif season.type == SeasonType.act:
-                            self.act = _season
+        if not self.is_ready():
+            return
+
+        if not self._assets.is_fetched():
+            return
+
+        content = await self.fetch_content()
+        for season in reversed(content.get_seasons()):
+            if not season.is_active():
+                continue
+
+            _season = self.get_season(uuid=season.id)
+            if _season is not None:
+                if season.type == SeasonType.episode:
+                    self.season = _season
+                elif season.type == SeasonType.act:
+                    self.act = _season
 
     async def authorize(self, username: Optional[str], password: Optional[str]) -> None:
         """|coro|
@@ -266,7 +291,10 @@ class Client:
         )
         self.user = ClientPlayer(client=self, data=payload)
 
-        await self.set_season()
+        try:
+            self.loop.create_task(self._set_season())
+        except Exception as e:
+            _log.exception('Failed to set season', exc_info=e)
 
     async def authorize_from_data(self, data: Dict[str, Any]) -> None:
         self._is_authorized = True
@@ -279,7 +307,12 @@ class Client:
         )
         self.user = ClientPlayer(client=self, data=payload)
 
-        await self.set_season()
+        try:
+            self.loop.create_task(self._set_season())
+        except Exception as e:
+            _log.exception('Failed to set season', exc_info=e)
+
+        # TODO: fix auth function it same 2 function
 
     def is_authorized(self) -> bool:
         """:class:`bool`: Whether the client is authorized."""
@@ -304,6 +337,10 @@ class Client:
         self._ready.clear()
         self._assets.clear()
         self._http.clear()
+        self._is_authorized = False
+        self.user = MISSING
+        self.season = MISSING
+        self.act = MISSING
 
     async def close(self) -> None:
         """|coro|
@@ -539,15 +576,15 @@ class Client:
         chroma = kwargs.get('chroma', False)
 
         data = self._assets.get_skin(*args, **kwargs)
-        return (
-            Skin(client=self, data=data)
-            if data
-            else (
-                self.get_skin_level(*args, **kwargs)
-                if level
-                else (self.get_skin_chroma(*args, **kwargs) if chroma else None)
-            )
-        )
+        if data is None:
+            level = None
+            chroma = None
+            if level:
+                level = self.get_skin_level(*args, **kwargs)
+            if chroma:
+                chroma = self.get_skin_chroma(*args, **kwargs)
+            return level or chroma
+        return Skin(client=self, data=data)
 
     def get_skin_level(self, *args: Any, **kwargs: Any) -> Optional[SkinLevel]:
         """Optional[:class:`SkinLevel`]: Gets a skin level from the assets."""
@@ -562,15 +599,21 @@ class Client:
     def get_tier(self, tier_number: int, season: Optional[Season] = None) -> Optional[Tier]:
         if season is None:
             season = self.season
+
+        if season is None:
+            return None
+
         ss_com_all = self.get_all_season_competitive()
         for ss_com in ss_com_all:
-            if ss_com.season == season:
-                ss_com_tiers = ss_com.get_competitive_tiers()
-                if ss_com_tiers is None:
-                    return None
-                for tier in ss_com_tiers.get_tiers():
-                    if tier.tier == tier_number:
-                        return tier
+            if ss_com.season != season:
+                continue
+            ss_com_tiers = ss_com.get_competitive_tiers()
+            if ss_com_tiers is None:
+                return None
+            for tier in ss_com_tiers.get_tiers():
+                if tier.tier == tier_number:
+                    return tier
+        return None
 
     # get all
 
@@ -786,13 +829,17 @@ class Client:
 
     def get_all_tiers(self, season: Optional[Season] = None) -> Iterator[Tier]:
         season = season or self.season
-        if season is not None:
-            sc = self.get_season_competitive(seasonUuid=season.id)
-            if sc is not None:
-                c_tiers = sc.get_competitive_tiers()
-                if c_tiers is not None:
-                    for tier in c_tiers.get_tiers():
-                        yield tier
+        if season is None:
+            return None
+        sc = self.get_season_competitive(seasonUuid=season.id)
+        if sc is None:
+            return None
+        c_tiers = sc.get_competitive_tiers()
+        if c_tiers is None:
+            return None
+        for tier in c_tiers.get_tiers():
+            yield tier
+        return None
 
     def get_item_price(
         self, item: Union[str, Skin, SkinChroma, SkinLevel, PlayerCard, Buddy, BuddyLevel, Spray, SprayLevel]
