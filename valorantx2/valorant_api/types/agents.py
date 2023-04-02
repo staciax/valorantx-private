@@ -1,5 +1,7 @@
 from typing import Dict, List, Optional, TypedDict, Union
 
+from .response import Response
+
 
 class Role(TypedDict):
     uuid: str
@@ -50,3 +52,6 @@ class Agent(TypedDict):
     role: Role
     abilities: List[Ability]
     voiceLine: VoiceLine
+
+
+Data = Response[Agent]

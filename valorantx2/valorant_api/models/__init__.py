@@ -6,4 +6,4 @@ Typings for the Valorant API
 :license: MIT, see LICENSE for more details.
 """
 
-from .agent import *
+from .agents import *

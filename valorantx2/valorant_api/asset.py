@@ -37,7 +37,7 @@ from .file import File
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .client import Client
+    from .cache import CacheState
 
 MISSING = utils.MISSING
 
@@ -45,7 +45,7 @@ MISSING = utils.MISSING
 class AssetMixin:
     __slots__ = ()
     url: str
-    _client: Client
+    _state: CacheState
 
     async def read(self):
         """|coro|
@@ -63,10 +63,10 @@ class AssetMixin:
         :class:`bytes`
             The content of the asset.
         """
-        if self._client is None:
+        if self._state is None:
             raise ValueError('Asset has no client')
 
-        return await self._client.http.read_from_url(self.url)
+        return await self._state.http.read_from_url(self.url)
 
     async def save(self, fp: Union[str, bytes, os.PathLike[Any], io.BufferedIOBase], *, seek_begin: bool = True) -> int:
         """|coro|
@@ -151,21 +151,21 @@ class Asset(AssetMixin):
 
     __slot__: Tuple[str, ...] = ('_client', '_url', '_video', '_animated')
 
-    def __init__(self, client: Client, url: str, *, animated: bool = False, video: bool = False) -> None:
-        self._client = client
+    def __init__(self, state: CacheState, url: str, *, animated: bool = False, video: bool = False) -> None:
+        self._state = state
         self._url = url
         self._video = video
         self._animated = animated
 
     @classmethod
-    def _from_url(cls, client: Client, url: Optional[str] = None, *, animated: bool = False) -> Self:
+    def _from_url(cls, state: CacheState, url: Optional[str] = None, *, animated: bool = False) -> Self:
         if url is None:
             raise TypeError('Expected URL, not NoneType')
 
         video = True if url.endswith('.mp4') else False
         if not animated and url.endswith('.gif'):
             animated = True
-        return cls(client=client, url=url, animated=animated, video=video)
+        return cls(state=state, url=url, animated=animated, video=video)
 
     def __str__(self) -> str:
         return str(self._url)

@@ -2,18 +2,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from valorantx2.asset import Asset
 from valorantx2.enums import AbilityType, Locale, try_enum
-from valorantx2.localization import Localization
 
+from ..asset import Asset
+from ..cache import CacheState
+from ..localization import Localization
 from .abc import BaseModel
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    # from typing_extensions import Self
 
-    from valorantx2.client import Client
-
-    from ..types.agent import (
+    from ..types.agents import (
         Ability as AbilityPayload,
         Agent as AgentPayload,
         Media as MediaPayload,
@@ -34,15 +33,15 @@ __all__ = (
 
 
 class Role(BaseModel):
-    def __init__(self, client: Client, data: RolePayload) -> None:
+    def __init__(self, state: CacheState, data: RolePayload) -> None:
         super().__init__(data['uuid'])
-        self._client = client
+        self._state = state
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._description: Union[str, Dict[str, str]] = data['description']
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
-        self._display_name_localized: Localization = Localization(self._description, locale=self._client.locale)
-        self._description_localized: Localization = Localization(self._display_name, locale=self._client.locale)
+        self._display_name_localized: Localization = Localization(self._description, locale=self._state.locale)
+        self._description_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 
     def __repr__(self) -> str:
         return f'<Role display_name={self.display_name!r}>'
@@ -78,18 +77,18 @@ class Role(BaseModel):
     @property
     def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the agent role's display icon."""
-        return Asset._from_url(client=self._client, url=self._display_icon)
+        return Asset._from_url(state=self._state, url=self._display_icon)
 
 
 class Ability:
-    def __init__(self, client: Client, data: AbilityPayload) -> None:
-        self._client = client
+    def __init__(self, state: CacheState, data: AbilityPayload) -> None:
+        self._state = state
         self.slot: AbilityType = try_enum(AbilityType, data['slot'])
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._description: Union[str, Dict[str, str]] = data['description']
         self._display_icon: str = data['displayIcon']
-        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
-        self._description_localized: Localization = Localization(self._description, locale=self._client.locale)
+        self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
+        self._description_localized: Localization = Localization(self._description, locale=self._state.locale)
 
     def __repr__(self) -> str:
         return f'<Ability display_name={self.display_name!r}>'
@@ -122,7 +121,7 @@ class Ability:
     @property
     def display_icon(self) -> Asset:
         """:class: `Asset` Returns the agent role's display icon."""
-        return Asset._from_url(client=self._client, url=self._display_icon)
+        return Asset._from_url(state=self._state, url=self._display_icon)
 
 
 class Media:
@@ -331,9 +330,9 @@ class VoiceLineLocalization:
 
 
 class Agent(BaseModel):
-    def __init__(self, client: Client, data: AgentPayload) -> None:
+    def __init__(self, state: CacheState, data: AgentPayload) -> None:
         super().__init__(data['uuid'])
-        self._client: Client = client
+        self._state: CacheState = state
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._description: Union[str, Dict[str, str]] = data['description']
         self.developer_name: str = data['developerName']
@@ -353,8 +352,8 @@ class Agent(BaseModel):
         self._role: RolePayload = data['role']
         self._abilities: List[AbilityPayload] = data.get('abilities') or []
         self._voice_line: VoiceLinePayload = data['voiceLine']
-        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
-        self._description_localized: Localization = Localization(self._description, locale=self._client.locale)
+        self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
+        self._description_localized: Localization = Localization(self._description, locale=self._state.locale)
 
     def __str__(self) -> str:
         return self.display_name.locale
@@ -381,47 +380,47 @@ class Agent(BaseModel):
     @property
     def display_icon(self) -> Asset:
         """:class: `Asset` Returns the agent's display icon."""
-        return Asset._from_url(client=self._client, url=self._display_icon)
+        return Asset._from_url(state=self._state, url=self._display_icon)
 
     @property
     def display_icon_small(self) -> Asset:
         """:class: `Asset` Returns the agent's display icon small."""
-        return Asset._from_url(client=self._client, url=self._display_icon_small)
+        return Asset._from_url(state=self._state, url=self._display_icon_small)
 
     @property
     def bust_portrait(self) -> Optional[Asset]:
         """:class: `Asset` Returns the agent's bust portrait."""
-        return Asset._from_url(client=self._client, url=self._bust_portrait) if self._bust_portrait else None
+        return Asset._from_url(state=self._state, url=self._bust_portrait) if self._bust_portrait else None
 
     @property
     def full_portrait(self) -> Optional[Asset]:
         """:class: `Asset` Returns the agent's full portrait."""
-        return Asset._from_url(client=self._client, url=self._full_portrait) if self._full_portrait else None
+        return Asset._from_url(state=self._state, url=self._full_portrait) if self._full_portrait else None
 
     @property
     def full_portrait_v2(self) -> Optional[Asset]:
         """:class: `Asset` Returns the agent's full portrait v2."""
-        return Asset._from_url(client=self._client, url=self._full_portrait_v2) if self._full_portrait_v2 else None
+        return Asset._from_url(state=self._state, url=self._full_portrait_v2) if self._full_portrait_v2 else None
 
     @property
     def killfeed_portrait(self) -> Asset:
         """:class: `Asset` Returns the agent's killfeed portrait."""
-        return Asset._from_url(client=self._client, url=self._killfeed_portrait)
+        return Asset._from_url(state=self._state, url=self._killfeed_portrait)
 
     @property
     def background(self) -> Optional[Asset]:
         """:class: `Asset` Returns the agent's background."""
-        return Asset._from_url(client=self._client, url=self._background) if self._background else None
+        return Asset._from_url(state=self._state, url=self._background) if self._background else None
 
     @property
     def role(self) -> Role:
         """:class: `AgentRole` Returns the agent's role."""
-        return Role(client=self._client, data=self._role)
+        return Role(state=self._state, data=self._role)
 
     @property
     def abilities(self) -> List[Ability]:
         """:class: `List[AgentAbility]` Returns the agent's abilities."""
-        return [Ability(client=self._client, data=ability) for ability in self._abilities]
+        return [Ability(state=self._state, data=ability) for ability in self._abilities]
 
     @property
     def voice_line(self) -> VoiceLineLocalization:
@@ -443,23 +442,3 @@ class Agent(BaseModel):
     def is_base_content(self) -> bool:
         """:class: `bool` Returns whether the agent is base content."""
         return self._is_base_content
-
-    @classmethod
-    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
-        """
-        Returns an agent from the given uuid.
-
-        Parameters
-        ----------
-        client: :class: `Client`
-            The client to use.
-        uuid: :class: `str`
-            The agent's uuid.
-
-        Returns
-        -------
-        Optional[:class: `Agent`]
-            The agent from the given uuid.
-        """
-        data = client._assets.get_agent(uuid)
-        return cls(client=client, data=data) if data else None

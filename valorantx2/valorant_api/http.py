@@ -9,7 +9,7 @@ from urllib.parse import quote as _uriquote
 
 import aiohttp
 
-from .. import utils, __version__
+from .. import __version__, utils
 from ..errors import Forbidden, HTTPException, InternalServerError, NotFound, PhaseError, RateLimited
 
 try:
@@ -23,7 +23,8 @@ else:
 MISSING = utils.MISSING
 
 if TYPE_CHECKING:
-    from .types import agent
+    from .types import agents, version
+
     # from .types import collection, competitive, contract, match, party, player, store, version, weapons, xp
 
     T = TypeVar('T')
@@ -33,15 +34,14 @@ _log = logging.getLogger(__name__)
 
 
 class EndpointType(enum.Enum):
-    play_valorant = 0
-    valorant_api = 1
-    valtracker_gg = 2
+    valorant_api = 0
+    valtracker_gg = 1
+
 
 # http-client inspired by https://github.com/Rapptz/discord.py/blob/master/discord/http.pyS
 
 
 class Route:
-    BASE_PLAY_VALORANT_URL: ClassVar[str] = 'https://playvalorant.com'
     BASE_VALORANT_API_URL: ClassVar[str] = 'https://valorant-api.com/v1'
     BASE_VALTRACKER_GG_URL: ClassVar[str] = 'https://api.valtracker.gg/v0'  # add-on bundle items
 
@@ -59,9 +59,7 @@ class Route:
 
         url = ''
 
-        if endpoint == EndpointType.play_valorant:
-            url = self.BASE_PLAY_VALORANT_URL + path
-        elif endpoint == EndpointType.valorant_api:
+        if endpoint == EndpointType.valorant_api:
             url = self.BASE_VALORANT_API_URL + path
         elif endpoint == EndpointType.valtracker_gg:
             url = self.BASE_VALTRACKER_GG_URL + path
@@ -73,10 +71,8 @@ class Route:
 
 
 class HTTPClient:
-    def __init__(self, loop: asyncio.AbstractEventLoop = MISSING) -> None:
-        self.loop: asyncio.AbstractEventLoop = loop
-        self._session: aiohttp.ClientSession = MISSING
-        self.region = ''
+    def __init__(self, session: aiohttp.ClientSession = MISSING) -> None:
+        self._session: aiohttp.ClientSession = session
         user_agent = 'valorantx (https://github.com/staciax/valorantx {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
 
@@ -108,10 +104,6 @@ class HTTPClient:
                         return data
 
                     if response.status == 400:
-                        if re_authorize:
-                            await self._riot_auth.reauthorize()
-
-                            return await self.request(route, asset=asset, re_authorize=False, **kwargs)
                         raise PhaseError(response, data)
 
                     # we are being rate limited
@@ -129,8 +121,6 @@ class HTTPClient:
                     if response.status == 403:
                         raise Forbidden(response, data)
                     elif response.status == 404:
-                        if extra_exceptions is not None:
-                            raise NotFound(response, extra_exceptions)
                         raise NotFound(response, data)
                     elif response.status >= 500:
                         raise InternalServerError(response, data)
@@ -181,7 +171,7 @@ class HTTPClient:
 
     # valorant-api.com
 
-    def get_agents(self) -> Response[agent.Agent]:
+    def get_agents(self) -> Response[agents.Data]:
         return self.request(
             Route('GET', '/agents', EndpointType.valorant_api),
             params={'isPlayableCharacter': 'True', 'language': 'all'},
@@ -214,7 +204,7 @@ class HTTPClient:
     def get_currencies(self) -> Response[Mapping[str, Any]]:
         return self.request(Route('GET', '/currencies', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
 
-    def asset_get_game_modes(self) -> Response[Mapping[str, Any]]:
+    def get_game_modes(self) -> Response[Mapping[str, Any]]:
         return self.request(Route('GET', '/gamemodes', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
 
     def get_game_modes_equippables(self) -> Response[Mapping[str, Any]]:
@@ -257,26 +247,10 @@ class HTTPClient:
     def get_weapons(self) -> Response[Mapping[str, Any]]:
         return self.request(Route('GET', '/weapons', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
 
-    def get_valorant_version(self) -> Response[version.Version]:
+    def get_valorant_version(self) -> Response[version.Data]:
         return self.request(Route('GET', '/version', EndpointType.valorant_api), asset=True)
 
     # valtracker endpoint
 
     def get_bundles_2nd(self) -> Response[Mapping[str, Any]]:
         return self.request(Route('GET', '/bundles', EndpointType.valtracker_gg), asset=True)
-
-    # play valorant endpoints
-
-    def fetch_patch_notes(self, locale: str = 'en-us') -> Response[Mapping[str, Any]]:
-        """
-        FetchPatchNote
-        Get the latest patch note
-        """
-        r = Route(
-            'GET',
-            '/page-data/{locale}/news/tags/patch-notes/page-data.json',
-            EndpointType.play_valorant,
-            self.region,
-            locale=str(locale).lower(),
-        )
-        return self.request(r)
