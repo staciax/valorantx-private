@@ -225,10 +225,10 @@ class Assets:
         self._client = client
         self.version: Version = MISSING
         self._is_with_price: bool = False
-        self._ready: bool = False
+        self._is_fetched: bool = False
 
-    def is_ready(self) -> bool:
-        return self._ready
+    def is_fetched(self) -> bool:
+        return self._is_fetched
 
     @staticmethod
     def clear_cache() -> None:
@@ -437,6 +437,8 @@ class Assets:
         """Fetch all assets."""
 
         self._is_with_price = with_price
+        # if not self._is_with_price and with_price:
+        #     self._is_with_price = True
 
         get_version = version or await self._client.fetch_version()
 
@@ -466,15 +468,9 @@ class Assets:
                 for offer in data.offers:
                     new_dict[offer.id] = offer.cost
                 self.__dump(new_dict, '_offers')
-        else:
-            if self._client.is_authorized():
-                if not self.OFFER_CACHE:
-                    _log.info('You can fetch items prices by calling `client.fetch_offers(with_price=True)`')
-            else:
-                _log.info('Skipping fetching items prices')
 
         if not asset_path.endswith(get_version.version) or len(os.listdir(self.__get_dir())) == 0 or force:
-            _log.info(f"Fetching assets for version {get_version.version!r}")
+            _log.info(f"fetching assets for version {get_version.version!r}")
 
             tasks = [
                 self._client.http.asset_get_agents,
@@ -512,7 +508,7 @@ class Assets:
         if reload:
             self.reload(with_price=with_price)
 
-        self._ready = True
+        self._is_fetched = True
 
     def reload(self, with_price: bool = False):
         """

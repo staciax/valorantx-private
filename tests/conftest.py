@@ -24,7 +24,7 @@ async def client() -> AsyncGenerator[valorantx.Client, None]:
         with contextlib.suppress(valorantx.errors.RiotAuthenticationError):
             await v_client.authorize(username, password)
 
-        await v_client.fetch_assets(reload=True)  # 'with_price=True' is requires authorization
+        await v_client.fetch_assets(reload=True, force=True)  # 'with_price=True' is requires authorization
         # after `client.fetch_assets`, you can comment above line and use below line
         # `client.reload_assets(with_price=True)` # will reload assets without authorization
         # if new version available, please use `await client.fetch_assets(with_price=True)` again
