@@ -173,84 +173,77 @@ class HTTPClient:
 
     def get_agents(self) -> Response[agents.Data]:
         return self.request(
-            Route('GET', '/agents', EndpointType.valorant_api),
-            params={'isPlayableCharacter': 'True', 'language': 'all'},
-            asset=True,
+            Route('GET', '/agents', EndpointType.valorant_api), params={'isPlayableCharacter': 'True', 'language': 'all'}
         )
+        # TODO; params to kwargs
 
     def get_buddies(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/buddies', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/buddies', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_bundles(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/bundles', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/bundles', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_ceremonies(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/ceremonies', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/ceremonies', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_events(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/events', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/events', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_competitive_tiers(self) -> Response[Mapping[str, Any]]:
-        return self.request(
-            Route('GET', '/competitivetiers', EndpointType.valorant_api), params={'language': 'all'}, asset=True
-        )
+        return self.request(Route('GET', '/competitivetiers', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_content_tiers(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/contenttiers', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/contenttiers', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_contracts(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/contracts', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/contracts', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_currencies(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/currencies', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/currencies', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_game_modes(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/gamemodes', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/gamemodes', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_game_modes_equippables(self) -> Response[Mapping[str, Any]]:
-        return self.request(
-            Route('GET', '/gamemodes/equippables', EndpointType.valorant_api), params={'language': 'all'}, asset=True
-        )
+        return self.request(Route('GET', '/gamemodes/equippables', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_gear(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/gear', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/gear', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_level_borders(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/levelborders', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/levelborders', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_maps(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/maps', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/maps', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_missions(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/missions', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/missions', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_player_cards(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/playercards', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/playercards', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_player_titles(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/playertitles', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/playertitles', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_seasons(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/seasons', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/seasons', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_seasons_competitive(self) -> Response[Mapping[str, Any]]:
-        return self.request(
-            Route('GET', '/seasons/competitive', EndpointType.valorant_api), params={'language': 'all'}, asset=True
-        )
+        return self.request(Route('GET', '/seasons/competitive', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_sprays(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/sprays', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/sprays', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_themes(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/themes', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/themes', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_weapons(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/weapons', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
+        return self.request(Route('GET', '/weapons', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_valorant_version(self) -> Response[version.Data]:
-        return self.request(Route('GET', '/version', EndpointType.valorant_api), asset=True)
+        return self.request(Route('GET', '/version', EndpointType.valorant_api))
 
     # valtracker endpoint
 
     def get_bundles_2nd(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/bundles', EndpointType.valtracker_gg), asset=True)
+        return self.request(Route('GET', '/bundles', EndpointType.valtracker_gg))
