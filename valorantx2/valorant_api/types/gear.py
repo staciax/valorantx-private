@@ -21,7 +21,7 @@ class ShopData(TypedDict):
     assetPath: str
 
 
-class Gear(Object):
+class Gear_(Object):
     displayName: Union[str, Dict[str, str]]
     description: Union[str, Dict[str, str]]
     displayIcon: str
@@ -29,4 +29,4 @@ class Gear(Object):
     shopData: ShopData
 
 
-Gears = Response[Gear]
+Gear = Response[Gear_]

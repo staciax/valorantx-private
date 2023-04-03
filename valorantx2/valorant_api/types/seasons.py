@@ -31,3 +31,6 @@ class CompetitiveSeason(Object):
     competitiveTiersUuid: str
     borders: List[Border]
     assetPath: str
+
+
+CompetitiveSeasons = Response[CompetitiveSeason]

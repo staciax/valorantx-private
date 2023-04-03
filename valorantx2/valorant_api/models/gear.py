@@ -9,7 +9,7 @@ from .abc import BaseModel
 
 if TYPE_CHECKING:
     from ..cache import CacheState
-    from ..types.gear import Gear as GearPayload, GridPosition as GridPositionPayload, ShopData as ShopDataPayload
+    from ..types.gear import Gear_ as GearPayload, GridPosition as GridPositionPayload, ShopData as ShopDataPayload
 
 # fmt: off
 __all__ = (
