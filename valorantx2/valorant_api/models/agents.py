@@ -73,7 +73,7 @@ class Role(BaseModel):
         return self._description_localized
 
     @property
-    def display_icon(self) -> Optional[Asset]:
+    def display_icon(self) -> Asset:
         """:class: `Asset` Returns the agent role's display icon."""
         return Asset._from_url(state=self._state, url=self._display_icon)
 
@@ -424,19 +424,19 @@ class Agent(BaseModel):
         return Asset._from_url(state=self._state, url=self._display_icon_small)
 
     @property
-    def bust_portrait(self) -> Optional[Asset]:
+    def bust_portrait(self) -> Asset:
         """:class: `Asset` Returns the agent's bust portrait."""
-        return Asset._from_url(state=self._state, url=self._bust_portrait) if self._bust_portrait else None
+        return Asset._from_url(state=self._state, url=self._bust_portrait)
 
     @property
-    def full_portrait(self) -> Optional[Asset]:
+    def full_portrait(self) -> Asset:
         """:class: `Asset` Returns the agent's full portrait."""
-        return Asset._from_url(state=self._state, url=self._full_portrait) if self._full_portrait else None
+        return Asset._from_url(state=self._state, url=self._full_portrait)
 
     @property
-    def full_portrait_v2(self) -> Optional[Asset]:
+    def full_portrait_v2(self) -> Asset:
         """:class: `Asset` Returns the agent's full portrait v2."""
-        return Asset._from_url(state=self._state, url=self._full_portrait_v2) if self._full_portrait_v2 else None
+        return Asset._from_url(state=self._state, url=self._full_portrait_v2)
 
     @property
     def killfeed_portrait(self) -> Asset:
@@ -444,9 +444,9 @@ class Agent(BaseModel):
         return Asset._from_url(state=self._state, url=self._killfeed_portrait)
 
     @property
-    def background(self) -> Optional[Asset]:
+    def background(self) -> Asset:
         """:class: `Asset` Returns the agent's background."""
-        return Asset._from_url(state=self._state, url=self._background) if self._background else None
+        return Asset._from_url(state=self._state, url=self._background)
 
     @property
     def role(self) -> Role:
