@@ -68,10 +68,6 @@ class HTTPClient:
         user_agent = 'valorantx (https://github.com/staciax/valorantx {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
 
-    def clear(self) -> None:
-        if self._session and self._session.closed:
-            self._session = MISSING
-
     async def request(self, route: Route, **kwargs: Any) -> Any:
         method = route.method
         url = route.url
@@ -138,6 +134,10 @@ class HTTPClient:
     async def close(self) -> None:
         if self._session is not MISSING:
             await self._session.close()
+
+    def clear(self) -> None:
+        if self._session and self._session.closed:
+            self._session = MISSING
 
     async def read_from_url(self, url: str) -> bytes:
         async with self._session.get(url) as resp:

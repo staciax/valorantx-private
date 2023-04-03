@@ -5,13 +5,11 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from valorantx2.enums import AbilityType, Locale, try_enum
 
 from ..asset import Asset
-from ..cache import CacheState
 from ..localization import Localization
 from .abc import BaseModel
 
 if TYPE_CHECKING:
-    # from typing_extensions import Self
-
+    from ..cache import CacheState
     from ..types.agents import (
         Ability as AbilityPayload,
         Agent as AgentPayload,
@@ -38,7 +36,7 @@ class Role(BaseModel):
         self._state = state
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._description: Union[str, Dict[str, str]] = data['description']
-        self._display_icon: Optional[str] = data['displayIcon']
+        self._display_icon: str = data['displayIcon']
         self.asset_path: str = data['assetPath']
         self._display_name_localized: Localization = Localization(self._description, locale=self._state.locale)
         self._description_localized: Localization = Localization(self._display_name, locale=self._state.locale)
@@ -86,7 +84,7 @@ class Ability:
         self.slot: AbilityType = try_enum(AbilityType, data['slot'])
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._description: Union[str, Dict[str, str]] = data['description']
-        self._display_icon: str = data['displayIcon']
+        self._display_icon: Optional[str] = data['displayIcon']
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
         self._description_localized: Localization = Localization(self._description, locale=self._state.locale)
 
@@ -119,8 +117,10 @@ class Ability:
         return self._description_localized
 
     @property
-    def display_icon(self) -> Asset:
+    def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the agent role's display icon."""
+        if self._display_icon is None:
+            return None
         return Asset._from_url(state=self._state, url=self._display_icon)
 
 
@@ -170,7 +170,7 @@ class VoiceLineLocalization:
     def __init__(
         self,
         untranslated: Any,
-        locale: Optional[Union[str, Locale]] = None,
+        locale: Locale = Locale.american_english,
     ) -> None:
         self.ut = untranslated
         self._locale = locale
@@ -227,6 +227,41 @@ class VoiceLineLocalization:
 
     def __hash__(self) -> int:
         return hash(self.ut)
+
+    def _dict(self) -> Dict[Locale, Optional[VoiceLine]]:
+        """:class:`Dict[Locale, VoiceLine]`: Returns all locales as a dictionary."""
+        voices = {
+            Locale.arabic: self.ar_AE,
+            Locale.german: self.de_DE,
+            Locale.american_english: self.en_US,
+            Locale.british_english: self.en_US,
+            Locale.english: self.en_US,
+            Locale.spanish: self.es_ES,
+            Locale.spanish_mexican: self.es_MX,
+            Locale.french: self.fr_FR,
+            Locale.indonesian: self.id_ID,
+            Locale.italian: self.it_IT,
+            Locale.japanese: self.ja_JP,
+            Locale.korean: self.ko_KR,
+            Locale.polish: self.pl_PL,
+            Locale.portuguese_brazil: self.pt_BR,
+            Locale.russian: self.ru_RU,
+            Locale.thai: self.th_TH,
+            Locale.turkish: self.tr_TR,
+            Locale.vietnamese: self.vi_VN,
+            Locale.chinese_simplified: self.zh_CN,
+            Locale.chinese_traditional: self.zh_TW,
+        }
+        return voices
+
+    def all(self) -> List[VoiceLine]:
+        """:class:`List[VoiceLine]`: Returns all locales as a list."""
+        return list([v for v in self._dict().values() if v is not None])
+
+    @property
+    def voice_locale(self) -> Optional[VoiceLine]:
+        """:class:`Optional[VoiceLine]`: Returns the voice locale of the current locale."""
+        return self._dict().get(self._locale)
 
     @property
     def arabic(self) -> Optional[VoiceLine]:
@@ -336,22 +371,23 @@ class Agent(BaseModel):
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._description: Union[str, Dict[str, str]] = data['description']
         self.developer_name: str = data['developerName']
-        self.character_tags: List[Union[str, Dict[str, str]]] = data['characterTags']
+        self.character_tags: Optional[List[Union[str, Dict[str, str]]]] = data['characterTags']
         self._display_icon: str = data['displayIcon']
         self._display_icon_small: str = data['displayIconSmall']
-        self._bust_portrait: Optional[str] = data['bustPortrait']
-        self._full_portrait: Optional[str] = data['fullPortrait']
-        self._full_portrait_v2: Optional[str] = data['fullPortraitV2']
+        self._bust_portrait: str = data['bustPortrait']
+        self._full_portrait: str = data['fullPortrait']
+        self._full_portrait_v2: str = data['fullPortraitV2']
         self._killfeed_portrait: str = data['killfeedPortrait']
-        self._background: Optional[str] = data['background']
+        self._background: str = data['background']
         self.background_gradient_colors: List[str] = data['backgroundGradientColors']
+        self.asset_path: str = data['assetPath']
         self._is_full_portrait_right_facing: bool = data['isFullPortraitRightFacing']
         self._is_playable_character: bool = data['isPlayableCharacter']
         self._is_available_for_test: bool = data['isAvailableForTest']
         self._is_base_content: bool = data['isBaseContent']
         self._role: RolePayload = data['role']
-        self._abilities: List[AbilityPayload] = data.get('abilities') or []
-        self._voice_line: VoiceLinePayload = data['voiceLine']
+        self._abilities: List[AbilityPayload] = data['abilities']
+        self._voice_line: Union[VoiceLinePayload, Dict[str, Optional[VoiceLinePayload]]] = data['voiceLine']
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
         self._description_localized: Localization = Localization(self._description, locale=self._state.locale)
 
@@ -423,7 +459,12 @@ class Agent(BaseModel):
         return [Ability(state=self._state, data=ability) for ability in self._abilities]
 
     @property
-    def voice_line(self) -> VoiceLineLocalization:
+    def voice_line(self) -> Optional[VoiceLine]:
+        """:class: `AgentVoiceLineLocalization` Returns the agent's voice line."""
+        return self.voice_line_localization.voice_locale
+
+    @property
+    def voice_line_localization(self) -> VoiceLineLocalization:
         """:class: `AgentVoiceLineLocalization` Returns the agent's voice line."""
         return VoiceLineLocalization(self._voice_line)
 

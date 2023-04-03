@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import enum
 import logging
-import sys
 from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, List, Mapping, NoReturn, Optional, TypeVar, Union
 from urllib.parse import quote as _uriquote
 
@@ -14,13 +13,14 @@ from .auth import RiotAuth
 from .enums import ItemType, Locale, QueueType, Region, try_enum
 from .errors import Forbidden, HTTPException, InternalServerError, NotFound, PhaseError, RateLimited
 
-try:
-    import urllib3  # type: ignore
-except ImportError:
-    pass
-else:
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # type: ignore
-    # disable urllib3 warnings that might arise from making requests to 127.0.0.1
+# try:
+#     import urllib3
+# except ImportError:
+#     pass
+# else:
+#     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+#     # disable urllib3 warnings that might arise from making requests to 127.0.0.1
+# enable when supported local client
 
 MISSING = utils.MISSING
 
@@ -38,8 +38,6 @@ class EndpointType(enum.Enum):
     glz = 1
     shard = 2
     play_valorant = 3
-    valorant_api = 4
-    valtracker_gg = 5
 
 
 # http-client inspired by https://github.com/Rapptz/discord.py/blob/master/discord/http.pyS
@@ -50,8 +48,6 @@ class Route:
     BASE_GLZ_URL: ClassVar[str] = 'https://glz-{region}-1.{shard}.a.pvp.net'
     BASE_SHARD_URL: ClassVar[str] = 'https://shared.{shard}.a.pvp.net'
     BASE_PLAY_VALORANT_URL: ClassVar[str] = 'https://playvalorant.com'
-    BASE_VALORANT_API_URL: ClassVar[str] = 'https://valorant-api.com/v1'
-    BASE_VALTRACKER_GG_URL: ClassVar[str] = 'https://api.valtracker.gg/v0'  # add-on bundle items
 
     def __init__(
         self,
@@ -77,10 +73,6 @@ class Route:
             url = self.BASE_SHARD_URL.format(shard=str(region.shard)) + path
         elif endpoint == EndpointType.play_valorant:
             url = self.BASE_PLAY_VALORANT_URL + path
-        elif endpoint == EndpointType.valorant_api:
-            url = self.BASE_VALORANT_API_URL + path
-        elif endpoint == EndpointType.valtracker_gg:
-            url = self.BASE_VALTRACKER_GG_URL + path
 
         if parameters:
             url = url.format_map({k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
@@ -99,9 +91,6 @@ class HTTPClient:
         self._puuid: str = self._riot_auth.puuid
         self._region: Region = try_enum(Region, self._riot_auth.region, Region.AP)
         self._riot_client_version: str = ''
-
-        user_agent = 'valorantx (https://github.com/staciax/valorantx {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
-        self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
 
     @property
     def region(self) -> Region:
@@ -126,15 +115,9 @@ class HTTPClient:
     async def request(self, route: Route, **kwargs: Any) -> Any:
         method = route.method
         url = route.url
-        asset = kwargs.pop('asset', False)
         re_authorize = kwargs.pop('re_authorize', True)
         extra_exceptions = kwargs.pop('exceptions', None)
-
-        if kwargs.get('headers') is None:
-            if kwargs.get('asset'):
-                kwargs['headers'] = {'User-Agent': self.user_agent}
-            else:
-                kwargs['headers'] = self._headers
+        kwargs['headers'] = self._headers
 
         response: Optional[aiohttp.ClientResponse] = None
         data: Optional[Union[Dict[str, Any], str]] = None
@@ -158,7 +141,8 @@ class HTTPClient:
                         if re_authorize:
                             await self._riot_auth.reauthorize()
                             await self.__build_headers()
-                            return await self.request(route, asset=asset, re_authorize=False, **kwargs)
+                            re_authorize = False
+                            continue
                         raise PhaseError(response, data)
 
                     # we are being rate limited
@@ -201,7 +185,7 @@ class HTTPClient:
         raise RuntimeError('Unreachable code in HTTP handling')
 
     async def close(self) -> None:
-        if self._session is not MISSING:
+        if self._session:
             await self._session.close()
 
     async def static_login(self, username: str, password: str) -> RiotAuth:
@@ -209,6 +193,8 @@ class HTTPClient:
         await self._riot_auth.authorize(username, password)
         self._puuid = self._riot_auth.puuid
         await self.__build_headers()
+        if self._session is MISSING:
+            self._session = aiohttp.ClientSession()
         return self._riot_auth
 
     async def token_login(self, data: Dict[str, Any]) -> RiotAuth:
@@ -217,6 +203,8 @@ class HTTPClient:
         self._riot_auth.from_data(data)
         self._puuid = self._riot_auth.puuid
         await self.__build_headers()
+        if self._session is MISSING:
+            self._session = aiohttp.ClientSession()
         return self._riot_auth
 
     async def read_from_url(self, url: str) -> bytes:
@@ -240,92 +228,6 @@ class HTTPClient:
                 raise Forbidden(resp, 'cannot retrieve asset')
             else:
                 raise HTTPException(resp, 'failed to get asset')
-
-    # valorant-api.com
-
-    def asset_valorant_version(self) -> Response[version.Version]:
-        return self.request(Route('GET', '/version', EndpointType.valorant_api), asset=True)
-
-    def asset_get_agents(self) -> Response[Mapping[str, Any]]:
-        return self.request(
-            Route('GET', '/agents', EndpointType.valorant_api),
-            params={'isPlayableCharacter': 'True', 'language': 'all'},
-            asset=True,
-        )
-
-    def asset_get_buddies(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/buddies', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_bundles(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/bundles', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_ceremonies(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/ceremonies', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_events(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/events', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_competitive_tiers(self) -> Response[Mapping[str, Any]]:
-        return self.request(
-            Route('GET', '/competitivetiers', EndpointType.valorant_api), params={'language': 'all'}, asset=True
-        )
-
-    def asset_get_content_tiers(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/contenttiers', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_contracts(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/contracts', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_currencies(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/currencies', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_game_modes(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/gamemodes', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_game_modes_equippables(self) -> Response[Mapping[str, Any]]:
-        return self.request(
-            Route('GET', '/gamemodes/equippables', EndpointType.valorant_api), params={'language': 'all'}, asset=True
-        )
-
-    def asset_get_gear(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/gear', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_level_borders(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/levelborders', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_maps(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/maps', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_missions(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/missions', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_player_cards(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/playercards', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_player_titles(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/playertitles', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_seasons(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/seasons', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_seasons_competitive(self) -> Response[Mapping[str, Any]]:
-        return self.request(
-            Route('GET', '/seasons/competitive', EndpointType.valorant_api), params={'language': 'all'}, asset=True
-        )
-
-    def asset_get_sprays(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/sprays', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_themes(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/themes', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    def asset_get_weapons(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/weapons', EndpointType.valorant_api), params={'language': 'all'}, asset=True)
-
-    # valtracker endpoint
-
-    def asset_get_bundles_2nd(self) -> Response[Mapping[str, Any]]:
-        return self.request(Route('GET', '/bundles', EndpointType.valtracker_gg), asset=True)
 
     # play valorant endpoints
 
@@ -1152,5 +1054,6 @@ class HTTPClient:
         self._headers['X-Riot-ClientVersion'] = self._riot_client_version
 
     async def _get_current_version(self) -> str:
-        resp = await self.asset_valorant_version()
-        return resp['data']['riotClientVersion']
+        ...
+        # resp = await self.asset_valorant_version()
+        # return resp['data']['riotClientVersion']

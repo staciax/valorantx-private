@@ -8,7 +8,9 @@ from .models import Agent
 if TYPE_CHECKING:
     from ..enums import Locale
     from .http import HTTPClient
-    from .types.agents import Agent as AgentPayload
+
+    # from .types.response import Response as ResponseData
+    from .types.agents import Agent as AgentPayload, Data as AgentData
 
 # class BaseCache(ABC):
 
@@ -27,6 +29,7 @@ class CacheState:
         self.http = http
         self._to_file: bool = to_file
         self._agents: Dict[str, Agent] = {}
+        self.cache: bool = True
 
     async def init(self) -> None:
         tasks = [
@@ -37,8 +40,11 @@ class CacheState:
             assert result is not None
             funcname = func.__name__.split('_')[1:]
             funcname = '_'.join(funcname)
-            parse_func = getattr(self, f'parse_{funcname}')
+            parse_func = getattr(self, f'add_{funcname}')
             parse_func(result)
+
+    def clear(self) -> None:
+        self._agents.clear()
 
     @property
     def agents(self) -> List[Agent]:
@@ -51,3 +57,10 @@ class CacheState:
         agent_id = data['uuid']
         self._agents[agent_id] = agent = Agent(state=self, data=data)
         return agent
+
+    def add_agents(self, data: AgentData) -> None:
+        agent_data = data['data']
+        for agent in agent_data:
+            existing = self.get_agent(agent['uuid'])
+            if existing is None:
+                self.store_agent(agent)

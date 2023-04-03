@@ -48,6 +48,9 @@ class Localization:
         """Returns the default locale."""
         return self.locale
 
+    def __repr__(self) -> str:
+        return self.__str__()
+
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Localization) and self.untranslated == other.untranslated
 
