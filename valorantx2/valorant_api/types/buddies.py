@@ -13,7 +13,7 @@ class Level(Object):
 
 
 class Buddy(Object):
-    displayName: str
+    displayName: Union[str, Dict[str, str]]
     isHiddenIfNotOwned: bool
     themeUuid: str
     displayIcon: str
@@ -21,5 +21,5 @@ class Buddy(Object):
     levels: List[Level]
 
 
-SprayLevel = Level
+BuddyLevel = Level
 Buddies = Response[Buddy]
