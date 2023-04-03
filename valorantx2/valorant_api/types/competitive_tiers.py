@@ -1,4 +1,4 @@
-from typing import Dict, TypedDict, Union
+from typing import Dict, List, TypedDict, Union
 
 from .object import Object
 from .response import Response
@@ -19,6 +19,7 @@ class Tier(TypedDict):
 
 class CompetitiveTier(Object):
     assetObjectName: str
+    tiers: List[Tier]
     assetPath: str
 
 
