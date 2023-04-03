@@ -1,10 +1,10 @@
 from typing import Dict, List, Optional, TypedDict, Union
 
+from .object import Object
 from .response import Response
 
 
-class Role(TypedDict):
-    uuid: str
+class Role(Object):
     displayName: Union[str, Dict[str, str]]
     description: Union[str, Dict[str, str]]
     displayIcon: str
@@ -15,7 +15,7 @@ class Ability(TypedDict):
     slot: str
     displayName: Union[str, Dict[str, str]]
     description: Union[str, Dict[str, str]]
-    displayIcon: str
+    displayIcon: Optional[str]
 
 
 class Media(TypedDict):
@@ -30,12 +30,11 @@ class VoiceLine(TypedDict):
     mediaList: List[Media]
 
 
-class Agent(TypedDict):
-    uuid: str
+class Agent(Object):
     displayName: Union[str, Dict[str, str]]
     description: Union[str, Dict[str, str]]
     developerName: str
-    characterTags: List[Union[str, Dict[str, str]]]
+    characterTags: Optional[List[Union[str, Dict[str, str]]]]
     displayIcon: str
     displayIconSmall: str
     bustPortrait: str
@@ -51,7 +50,7 @@ class Agent(TypedDict):
     isBaseContent: bool
     role: Role
     abilities: List[Ability]
-    voiceLine: VoiceLine
+    voiceLine: Union[VoiceLine, Dict[str, Optional[VoiceLine]]]
 
 
-Data = Response[Agent]
+Agents = Response[Agent]

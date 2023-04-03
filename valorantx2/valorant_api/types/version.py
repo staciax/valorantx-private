@@ -3,7 +3,7 @@ from typing import TypedDict
 from .response import Response
 
 
-class Version(TypedDict):
+class Version_(TypedDict):
     manifestId: str
     branch: str
     version: str
@@ -14,4 +14,4 @@ class Version(TypedDict):
     buildDate: str
 
 
-Data = Response[Version]
+Version = Response[Version_]
