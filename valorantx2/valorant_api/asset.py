@@ -31,7 +31,7 @@ from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 
 import yarl
 
-from . import utils
+from .. import utils
 from .file import File
 
 if TYPE_CHECKING:

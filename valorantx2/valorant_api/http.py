@@ -12,14 +12,6 @@ import aiohttp
 from .. import __version__, utils
 from ..errors import Forbidden, HTTPException, InternalServerError, NotFound, PhaseError, RateLimited
 
-try:
-    import urllib3  # type: ignore
-except ImportError:
-    pass
-else:
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # type: ignore
-    # disable urllib3 warnings that might arise from making requests to 127.0.0.1
-
 MISSING = utils.MISSING
 
 if TYPE_CHECKING:

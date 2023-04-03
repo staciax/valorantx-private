@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 from .models import Agent
@@ -25,11 +26,19 @@ class CacheState:
         self.locale = locale
         self.http = http
         self._to_file: bool = to_file
-
         self._agents: Dict[str, Agent] = {}
 
-    def find(self, **kwargs) -> ...:
-        ...
+    async def init(self) -> None:
+        tasks = [
+            self.http.get_agents,
+        ]
+        results = await asyncio.gather(*[task() for task in tasks])
+        for func, result in zip(tasks, results):
+            assert result is not None
+            funcname = func.__name__.split('_')[1:]
+            funcname = '_'.join(funcname)
+            parse_func = getattr(self, f'parse_{funcname}')
+            parse_func(result)
 
     @property
     def agents(self) -> List[Agent]:

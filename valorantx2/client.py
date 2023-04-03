@@ -148,82 +148,66 @@ class Client:
         self._http: HTTPClient = HTTPClient(self.loop)
         # self._assets: Assets = Assets(client=self)
         self._ready: asyncio.Event = MISSING
-        self._auth_ready: asyncio.Event = MISSING
+        # self._auth_ready: asyncio.Event = MISSING
         self.valorant_api: ValorantAPIClient = ValorantAPIClient(self._http._session, self._locale)
 
     # @property
     # def me(self) -> ClientPlayer:
     #     return self.user
 
-    # async def wait_until_ready(self) -> None:
-    #     """|coro|
-    #     Waits until the client's internal cache is all ready.
-    #     """
-    #     if self._ready is not MISSING:
-    #         await self._ready.wait()
-    #     else:
-    #         raise RuntimeError(
-    #             'Client has not been properly initialised. '
-    #             'Please use the login method or asynchronous context manager before calling this method'
-    #         )
+    async def wait_until_ready(self) -> None:
+        """|coro|
+        Waits until the client's internal cache is all ready.
+        """
+        if self._ready is not MISSING:
+            await self._ready.wait()
+        else:
+            raise RuntimeError(
+                'Client has not been properly initialised. '
+                'Please use the authorize method or asynchronous context manager before calling this method'
+            )
 
-    # async def wait_until_auth_ready(self) -> None:
-    #     """|coro|
-    #     Waits until the client's internal cache is all ready.
-    #     """
-    #     if self._auth_ready is not MISSING:
-    #         await self._auth_ready.wait()
-    #     else:
-    #         raise RuntimeError(
-    #             'Client has not been properly initialised. '
-    #             'Please use the login method or asynchronous context manager before calling this method'
-    #         )
+    async def __aenter__(self) -> Self:
+        await self.init()
+        return self
 
-    # end events
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        ...
+        # if not self.is_closed():
+        #    await self.close()
 
-    # async def __aenter__(self) -> Self:
-    #     await self.init()
-    #     return self
+    async def init(self) -> None:
+        _log.debug('Setting up client')
 
-    # async def __aexit__(
-    #     self,
-    #     exc_type: Optional[Type[BaseException]],
-    #     exc_value: Optional[BaseException],
-    #     traceback: Optional[TracebackType],
-    # ) -> None:
-    #     if not self.is_closed():
-    #         await self.close()
+        loop = asyncio.get_running_loop()
+        self.loop = loop
+        self._http.loop = loop
 
-    # async def init(self) -> None:
-    #     _log.debug('Setting up client')
+        # valorant-api
+        self.loop.create_task(self.valorant_api.init())
+        try:
+            await asyncio.wait_for(self.valorant_api.wait_until_ready(), timeout=15)
+        except asyncio.TimeoutError:
+            raise RuntimeError('Valorant API did not become ready in time')
 
-    #     loop = asyncio.get_running_loop()
-    #     self.loop = loop
-    #     self.http.loop = loop
-    #     self._ready = asyncio.Event()
-    #     # self._auth_ready = asyncio.Event()
+        # if self.version is MISSING:
+        #         self.version = await self.fetch_version()
 
-    #     if self.version is MISSING:
-    #         self.version = await self.fetch_version()
+        #     self.http._riot_client_version = self.version.riot_client_version
 
-    #     self.http._riot_client_version = self.version.riot_client_version
+        #     if self._fetch_assets_on_startup:
+        #         self.loop.create_task(self._assets.fetch_assets(reload=True, force=False, version=self.version))
 
-    #     if self._fetch_assets_on_startup:
-    #         self.loop.create_task(self._assets.fetch_assets(reload=True, force=False, version=self.version))
+        _log.debug('client is ready')
 
-    #     self._ready.set()
-
-    #     _log.debug('Client is ready')
-
-    #     # async def _auth_ready() -> None:
-    #     #     await self.wait_until_auth_ready()
-    #     #     await self.set_season()
-    #     #     print('Client is authorized')
-    #     # self.loop.create_task(_auth_ready())
-
-    # def is_ready(self) -> bool:
-    #     """:class:`bool`: Specifies if the client's internal cache is ready for use."""
-    #     return self._ready is not MISSING and self._ready.is_set()
+    def is_ready(self) -> bool:
+        """:class:`bool`: Specifies if the client's internal cache is ready for use."""
+        return self._ready is not MISSING and self._ready.is_set()
 
     # async def _set_season(self) -> None:
     #     """|coro|
@@ -247,31 +231,35 @@ class Client:
     #             elif season.type == SeasonType.act:
     #                 self.act = _season
 
-    # async def authorize(self, username: Optional[str], password: Optional[str]) -> None:
-    #     """|coro|
+    async def authorize(self, username: Optional[str], password: Optional[str]) -> None:
+        """|coro|
 
-    #     Authorize the client with the given username and password.
+        Authorize the client with the given username and password.
 
-    #     Parameters
-    #     -----------
-    #     username: Optional[:class:`str`]
-    #         The username of the account to authorize.
-    #     password: Optional[:class:`str`]
-    #         The password of the account to authorize.
-    #     """
+        Parameters
+        -----------
+        username: Optional[:class:`str`]
+           The username of the account to authorize.
+        password: Optional[:class:`str`]
+            The password of the account to authorize.
+        """
 
-    #     if username is None or password is None:
-    #         raise ValueError('Username or password cannot be None')
+        if username is None or password is None:
+            raise ValueError('Username or password cannot be None')
 
-    #     self._is_authorized = True
-    #     riot_auth = await self.http.static_login(username.strip(), password.strip())
-    #     payload = dict(
-    #         puuid=riot_auth.user_id,
-    #         username=riot_auth.name,
-    #         tagline=riot_auth.tag,
-    #         region=riot_auth.region,
-    #     )
-    #     self.user = ClientPlayer(client=self, data=payload)
+        self._ready = asyncio.Event()
+        # self._is_authorized = True
+        riot_auth = await self._http.static_login(username.strip(), password.strip())
+        payload = dict(
+            puuid=riot_auth.user_id,
+            username=riot_auth.name,
+            tagline=riot_auth.tag,
+            region=riot_auth.region,
+        )
+        #     self.user = ClientPlayer(client=self, data=payload)
+        self._is_authorized = True
+        self._ready.set()
+        # fetch price and set season
 
     #     try:
     #         self.loop.create_task(self._set_season())
