@@ -206,7 +206,7 @@ class Client:
     def clear(self) -> None:
         """Clears the internal cache."""
         self._closed = False
-        self._ready.clear()
+        self._ready = MISSING
         self._http.clear()
         self._is_authorized = False
         # self.user = MISSING
