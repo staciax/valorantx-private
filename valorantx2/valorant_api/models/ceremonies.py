@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, Optional, Union
 
-from ...enums import Locale
+from ..enums import Locale
 from ..localization import Localization
 from .abc import BaseModel
 
 if TYPE_CHECKING:
     # from typing_extensions import Self
     from ..cache import CacheState
-    from ..types.ceremonies import Caremony as CeremonyPayload
+    from ..types.ceremonies import Ceremony as CeremonyPayload
 
 # fmt: off
 __all__ = (

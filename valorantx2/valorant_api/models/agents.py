@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from valorantx2.enums import AbilityType, Locale, try_enum
-
 from ..asset import Asset
+from ..enums import AbilityType, Locale, try_enum
 from ..localization import Localization
 from .abc import BaseModel
 

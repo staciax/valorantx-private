@@ -9,6 +9,8 @@ import types
 from collections import namedtuple
 from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Mapping, Optional, Tuple, Type, TypeVar
 
+from .valorant_api.enums import Locale as ValorantAPILocale  # ItemType as ValorantAPIItemType
+
 # -- https://github.com/Rapptz/discord.py/blob/master/discord/enums.py
 
 
@@ -141,32 +143,27 @@ else:
 # --
 
 __all__: Tuple[str, ...] = (
-    'AbilityType',
-    'AgentType',
-    'ContractRewardType',
-    'CurrencyType',
-    'EMPTY_TITLE_ID',
-    'GameModeType',
+    'AgentID',
+    'CurrencyID',
+    'GameModeID',
     'GameModeURL',
-    'ItemType',
+    # 'ItemType',
     'LevelBorderID',
     'Locale',
-    'MapType',
-    'MELEE_WEAPON_ID',
-    'MissionType',
+    'MapID',
     'QueueType',
     'Region',
-    'RelationType',
     'RoundResultCode',
     'RoundResultType',
     'SeasonType',
     'Shard',
     'SpraySlotID',
-    'WeaponType',
+    'WeaponID',
     'try_enum',
-    'try_enum_key',
 )
 
+Locale = ValorantAPILocale
+# ItemType = ValorantAPIItemType
 
 # class ObjectType(Enum):
 #     agents = 'agents'
@@ -174,10 +171,6 @@ __all__: Tuple[str, ...] = (
 #     buddies_levels = 'buddies_levels'
 #     bundles = 'bundles'
 #     # TODO: add more
-
-
-EMPTY_TITLE_ID: str = 'd13e579c-435e-44d4-cec2-6eae5a3c5ed4'
-MELEE_WEAPON_ID: str = '2f59173c-4bed-b6c3-2191-dea9b58be9c7'
 
 
 class Region(Enum):
@@ -216,35 +209,7 @@ class Shard(Enum):
         return str(self.value)
 
 
-class ItemType(Enum):
-    agent = '01bb38e1-da47-4e6a-9b3d-945fe4655707'
-    buddy = 'buddy'  # unknown type
-    buddy_level = 'dd3bf334-87f3-40bd-b043-682a57a8dc3a'
-    contract = 'f85cb6f7-33e5-4dc8-b609-ec7212301948'
-    skin = 'skin'  # unknown type
-    skin_level = 'e7c63390-eda7-46e0-bb7a-a6abdacd2433'
-    skin_chroma = '3ad1b2b2-acdb-4524-852f-954a76ddae0a'
-    spray = 'd5f120f8-ff8c-4aac-92ea-f2b5acbe9475'
-    spray_level = 'spray_level'  # unknown type
-    player_card = '3f296c07-64c3-494c-923b-fe692a4fa1bd'
-    player_title = 'de7caa6b-adf7-4588-bbd1-143831e786c6'
-    weapon = 'weapon'  # unknown type
-    level_border = 'level_border'  # unknown type
-
-    def __str__(self) -> str:
-        return str(self.value)
-
-
-class RelationType(Enum):
-    agent = 'Agent'
-    event = 'Event'
-    season = 'Season'
-
-    def __str__(self) -> str:
-        return str(self.value)
-
-
-class AgentType(Enum):
+class AgentID(Enum):
     astra = '41fb69c1-4189-7b37-f117-bcaf1e96f1bf'
     breach = '5f8d3a7f-467b-97f3-062c-13acf203c006'
     brimstone = '9f0d8ba9-4140-b941-57d3-a7ad57c6b417'
@@ -291,7 +256,7 @@ class QueueType(Enum):
         return [str(x) for x in cls]
 
 
-class MapType(Enum):
+class MapID(Enum):
     ascent = '7eaecc1b-4337-bbf6-6ab9-04b8f06b3319'
     bind = '2c9d57ec-4431-9c5e-2939-8f9ef6dd5cba'
     breeze = '2fb9a4fd-47b8-4e7d-a969-74b4046ebd53'
@@ -332,7 +297,7 @@ class MapURL(Enum):
 
     @property
     def uuid(self) -> str:
-        return getattr(MapType, self.name).value
+        return getattr(MapID, self.name).value
 
     @classmethod
     def from_id(cls, map_id: str) -> str:
@@ -342,7 +307,7 @@ class MapURL(Enum):
         raise ValueError(f'No map found for uuid {map_id}')
 
 
-class WeaponType(Enum):
+class WeaponID(Enum):
     ares = '55d8a0f4-4274-ca67-fe2c-06ab45efdf58'
     bucky = '910be174-449b-c412-ab22-d0873436b21b'
     bulldog = 'ae3de142-4d85-2547-dd26-4e90bed35cf7'
@@ -382,10 +347,10 @@ class GameModeURL(Enum):
 
     @property
     def uuid(self) -> str:
-        return getattr(GameModeType, self.name).value
+        return getattr(GameModeID, self.name).value
 
 
-class GameModeType(Enum):
+class GameModeID(Enum):
     standard = '96bd3920-4f36-d026-2b28-c683eb0bcac5'
     deathmatch = 'a8790ec5-4237-f2f0-e93b-08a8e89865b2'
     escalation = 'a4ed6518-4741-6dcb-35bd-f884aecdc859'
@@ -413,7 +378,7 @@ class GameModeType(Enum):
         raise ValueError(f'No game mode found for url {game_mode_url}')
 
 
-class CurrencyType(Enum):
+class CurrencyID(Enum):
     valorant = '85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741'
     radianite = 'e59aa87c-4cbf-517a-5983-6e81511be9b7'
     free_agent = 'f08d4ae3-939c-4576-ab26-09ce1f23bb37'
@@ -447,64 +412,9 @@ class SpraySlotID(Enum):
         raise ValueError(f'Unknown slot id: {slot_id}')
 
 
-class ContractRewardType(Enum):
-    skin_level = 'EquippableSkinLevel'
-    buddy_level = 'EquippableCharmLevel'
-    currency = 'Currency'
-    player_card = 'PlayerCard'
-    player_title = 'Title'
-    spray = 'Spray'
-    agent = 'Character'
-
-    def __str__(self) -> str:
-        return str(self.value)
-
-
-class MissionType(Enum):
-    weekly = 'Weekly'
-    daily = 'Daily'
-    tutorial = 'Tutorial'
-    npe = 'NPE'
-
-    def __str__(self) -> str:
-        return str(self.value)
-
-    @property
-    def full(self) -> str:
-        return f'AresMissionType::{self.value}'
-
-
 class SeasonType(Enum):
     episode = 'episode'
     act = 'act'
-
-
-class Locale(Enum):
-    arabic = 'ar-AE'
-    german = 'de-DE'
-    american_english = 'en-US'
-    british_english = 'en-US'
-    spanish = 'es-ES'
-    spanish_mexican = 'es-MX'
-    french = 'fr-FR'
-    indonesian = 'id-ID'
-    italian = 'it-IT'
-    japanese = 'ja-JP'
-    korean = 'ko-KR'
-    polish = 'pl-PL'
-    portuguese_brazil = 'pt-BR'
-    russian = 'ru-RU'
-    thai = 'th-TH'
-    turkish = 'tr-TR'
-    vietnamese = 'vi-VN'
-    chinese_simplified = 'zh-CN'
-    chinese_traditional = 'zh-TW'
-
-    # aliases
-    english = american_english
-
-    def __str__(self) -> str:
-        return str(self.value)
 
 
 class LevelBorderID(Enum):
@@ -646,14 +556,6 @@ class RoundResultCode(Enum):
         return str(self.value)
 
 
-class AbilityType(Enum):
-    passive = 'Passive'
-    grenade = 'Grenade'
-    ability_1 = 'Ability1'
-    ability_2 = 'Ability2'
-    ultimate = 'Ultimate'
-
-
 # from discord.py
 # https://github.com/Rapptz/discord.py/blob/master/discord/enums.py
 
@@ -676,15 +578,6 @@ def try_enum(cls: Type[E], val: Any, default: Optional[Any] = None) -> E:
     except (KeyError, TypeError, AttributeError):
         if default is not None:
             return default
-        return create_unknown_value(cls, val)
-
-
-def try_enum_key(cls: Type[E], val: Any) -> E:
-    """A function that tries to turn the value into enum ``cls``."""
-
-    try:
-        return cls._enum_string_key_map_[val]  # type: ignore # All errors are caught below
-    except (KeyError, TypeError, AttributeError):
         return create_unknown_value(cls, val)
 
 

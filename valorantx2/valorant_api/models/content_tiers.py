@@ -3,8 +3,8 @@ from __future__ import annotations
 # import datetime
 from typing import TYPE_CHECKING, Dict, Optional, Union
 
-from ...enums import Locale  # SeasonType, try_enum
 from ..asset import Asset
+from ..enums import Locale  # SeasonType, try_enum
 from ..localization import Localization
 from .abc import BaseModel
 

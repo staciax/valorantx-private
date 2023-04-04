@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, Optional, Union
 
-from ...enums import ItemType, Locale
 from ..asset import Asset
+from ..enums import ItemType, Locale
 from ..localization import Localization
 from .abc import BaseModel
 

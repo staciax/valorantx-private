@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, Optional, Union
 
-from ...enums import Locale
 from ..asset import Asset
+from ..enums import Locale
 from ..localization import Localization
 from .abc import BaseModel
 
@@ -73,7 +73,7 @@ class Currency(BaseModel):
         return self._display_name_localized
 
     @property
-    def name_singular(self) -> Localization:
+    def display_name_singular(self) -> Localization:
         """:class: `str` Returns the agent's singular name."""
         return self._display_name_singular_localized
 

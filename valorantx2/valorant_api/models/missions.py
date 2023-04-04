@@ -3,8 +3,8 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
-from ...enums import Locale, MissionType, try_enum
 from .. import utils
+from ..enums import Locale, MissionType, try_enum
 from ..localization import Localization
 from .abc import BaseModel
 

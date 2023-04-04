@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ...enums import ItemType
 from ..asset import Asset
+from ..enums import ItemType
 from .abc import BaseModel
 
 if TYPE_CHECKING:

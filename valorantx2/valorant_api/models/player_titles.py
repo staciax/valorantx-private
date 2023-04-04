@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
 
-from ...enums import Locale
+from ..enums import Locale
 from ..localization import Localization
 from .abc import BaseModel
 

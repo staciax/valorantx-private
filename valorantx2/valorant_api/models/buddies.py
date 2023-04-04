@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
-from ...enums import ItemType, Locale
 from ..asset import Asset
+from ..enums import ItemType, Locale
 from ..localization import Localization
 from .abc import BaseModel
 
@@ -63,20 +63,19 @@ class Buddy(BaseModel):
         """:class: `bool` Returns whether the buddy is hidden if not owned."""
         return self._is_hidden_if_not_owned
 
-    def get_buddy_level(self, level: int) -> Optional[BuddyLevel]:
+    def get_buddy_level(self, level: int = 1) -> Optional[BuddyLevel]:
         """Returns the buddy level for the given level number."""
-        return next((b for b in self.levels if b.level_number == level), None)
+        return next((b for b in self.levels if b.charm_level == level), None)
 
 
 class BuddyLevel(BaseModel):
     def __init__(self, *, state: CacheState, data: BuddyLevelPayload) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
-        self.level: int = data['charmLevel']
+        self.charm_level: int = data['charmLevel']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
-        self.level_number: int = data.get('levelNumber', 0)
         self._buddy: Optional[Buddy] = None
         self.type: ItemType = ItemType.buddy_level
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
@@ -91,15 +90,18 @@ class BuddyLevel(BaseModel):
         return self._display_name_localized.from_locale(locale)
 
     @property
+    def level(self) -> int:
+        """:class: `int` alias for :attr: `BuddyLevel.charm_level`"""
+        return self.charm_level
+
+    @property
     def display_name(self) -> Localization:
         """:class: `str` Returns the buddy's name."""
         return self._display_name_localized
 
     @property
-    def display_icon(self) -> Optional[Asset]:
+    def display_icon(self) -> Asset:
         """:class: `str` Returns the buddy's display icon."""
-        if self._display_icon is None:
-            return None
         return Asset._from_url(state=self._state, url=self._display_icon)
 
     @property

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
-from ...enums import Locale
 from .. import utils
 from ..asset import Asset
+from ..enums import Locale
 from ..localization import Localization
 from .abc import BaseModel
 
@@ -37,10 +37,10 @@ class Tier:
         self._division_name_localized: Localization = Localization(self._division_name, locale=self._state.locale)
 
     def __str__(self) -> str:
-        return self.display_name.locale
+        return self.name.locale
 
     def __repr__(self) -> str:
-        return f'<Tier tier={self.tier!r} display_name={self.display_name!r} division={self.division!r}>'
+        return f'<Tier tier={self.tier!r} name={self.name!r} division={self.division!r}>'
 
     def __hash__(self) -> int:
         return hash(self.tier)
@@ -70,9 +70,14 @@ class Tier:
         return self._division_name_localized.from_locale(locale)
 
     @property
-    def display_name(self) -> Localization:
+    def name(self) -> Localization:
         """:class: `str` Returns the tier's name."""
         return self._name_locale
+
+    @property
+    def display_name(self) -> Localization:
+        """:class: `Localization` alias for :attr:`name`"""
+        return self.name
 
     @property
     def division(self) -> Optional[str]:
@@ -118,7 +123,7 @@ class CompetitiveTier(BaseModel):
         super().__init__(data['uuid'])
         self._state: CacheState = state
         self.asset_object_name: str = data['assetObjectName']
-        self._tiers: List[TierPayload] = data['tiers']
+        self._tiers: List[Tier] = [Tier(state=self._state, data=tier) for tier in data['tiers']]
         self.asset_path: str = data['assetPath']
 
     def __str__(self) -> str:
@@ -127,9 +132,10 @@ class CompetitiveTier(BaseModel):
     def __repr__(self) -> str:
         return f'<CompetitiveTier asset_object_name={self.asset_object_name!r}>'
 
-    def get_tiers(self) -> List[Tier]:
+    @property
+    def tiers(self) -> List[Tier]:
         """:class: `list` Returns the competitive tier's tiers."""
-        return [Tier(state=self._state, data=tier) for tier in self._tiers]
+        return self._tiers
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

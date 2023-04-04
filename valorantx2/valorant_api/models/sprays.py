@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
-from ...enums import ItemType, Locale  # , SpraySlotID
 from .. import utils
 from ..asset import Asset
+from ..enums import ItemType, Locale  # , SpraySlotID
 from ..localization import Localization
 from .abc import BaseModel
 
