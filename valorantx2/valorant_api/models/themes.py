@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Dict, Optional, Union
 
 from ..asset import Asset
 from ..enums import Locale
@@ -10,6 +10,7 @@ from .abc import BaseModel
 if TYPE_CHECKING:
     # from typing_extensions import Self
     from ..cache import CacheState
+    from ..types.themes import Theme as ThemePayload
 
 # fmt: off
 __all__ = (
@@ -19,10 +20,10 @@ __all__ = (
 
 
 class Theme(BaseModel):
-    def __init__(self, state: CacheState, data: Mapping[str, Any]) -> None:
+    def __init__(self, state: CacheState, data: ThemePayload) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
-        self._display_name: Dict[str, str] = data['displayName']
+        self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
         self._store_featured_image: Optional[str] = data['storeFeaturedImage']
         self.asset_path: str = data['assetPath']
