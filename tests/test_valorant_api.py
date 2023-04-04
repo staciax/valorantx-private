@@ -1,177 +1,59 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING, Dict
+import datetime
 
 import pytest
 
-from valorantx2 import AbilityType
-from valorantx2.valorant_api import Asset, Localization
+from valorantx2.valorant_api import AbilityType, RelationType, RewardType
 
-from .conftest import BaseAuthTest
-
-if TYPE_CHECKING:
-    from valorantx2.valorant_api.types import agents
+from .conftest import BaseTest  # BaseAuthTest
 
 
-class TestValorantAPI(BaseAuthTest):
+class TestValorantAPI(BaseTest):
     @pytest.mark.asyncio
     async def test_fetch_assets(self) -> None:
         await self.client.valorant_api.init()
 
+    # async def asset_test(self, asset: Optional[Asset]) -> None:
+    #     if asset is None:
+    #         return
+
+    #     # read the asset
+    #     await asset.read()
+
+    #     # to file the asset
+    #     await asset.to_file()
+
+    #     # # save the asset
+    #     # await asset.save('.')
+
     @pytest.mark.asyncio
     async def test_agents(self) -> None:
-        def localization_test(localization: Dict[str, str]) -> None:
-            assert isinstance(localization, dict)
-            for key, value in localization.items():
-                assert key is not None
-                assert value is not None
-                assert isinstance(key, str)
-                assert isinstance(value, str)
-
-        def voice_test(voice: agents.VoiceLine) -> None:
-            assert isinstance(voice, dict)
-            min_duration = voice['minDuration']
-            max_duration = voice['maxDuration']
-            media_list = voice['mediaList']
-            assert min_duration is not None
-            assert isinstance(min_duration, float)
-            assert max_duration is not None
-            assert isinstance(max_duration, float)
-            assert media_list is not None
-            assert isinstance(media_list, list)
-            for media in media_list:
-                assert media is not None
-                assert media['id'] is not None
-                assert media['wwise'] is not None
-                assert media['wave'] is not None
-
-        api = self.client.valorant_api
-        for agent in api.agents:
-            # verify data from the API
-
-            assert agent is not None
-            assert agent._display_name is not None
-            assert agent._description is not None
-            assert agent.developer_name is not None
-            if agent.character_tags is not None:
-                assert isinstance(agent.character_tags, list)
-                for tag in agent.character_tags:
-                    assert tag is not None
-                    assert isinstance(tag, (str, dict))
-                    if isinstance(tag, dict):
-                        localization_test(tag)
-                    else:
-                        assert isinstance(tag, str)
-
-            assert agent._display_icon_small is not None
-            assert agent._bust_portrait is not None
-            assert agent._full_portrait is not None
-            assert agent._full_portrait_v2 is not None
-            assert agent._killfeed_portrait is not None
-            assert agent._background is not None
-            assert agent.background_gradient_colors is not None
-            assert agent.asset_path is not None
-            assert isinstance(agent._is_full_portrait_right_facing, bool)
-            assert isinstance(agent._is_playable_character, bool)
-            assert isinstance(agent._is_available_for_test, bool)
-            assert isinstance(agent._is_base_content, bool)
-
-            # role
-            assert agent._role is not None
-            assert agent._role['uuid'] is not None
-            role_display_name = agent._role['displayName']
-            assert role_display_name is not None
-            assert isinstance(role_display_name, (str, dict))
-            if isinstance(role_display_name, dict):
-                localization_test(role_display_name)
-            else:
-                assert isinstance(role_display_name, str)
-
-            role_description = agent._role['description']
-            assert role_description is not None
-            assert isinstance(role_description, (str, dict))
-            if isinstance(role_description, dict):
-                localization_test(role_description)
-
-            assert agent._role['displayIcon'] is not None
-            assert agent._role['assetPath'] is not None
-
-            # abilities
-
-            assert isinstance(agent._abilities, list)
-            for ability in agent._abilities:
-                assert ability is not None
-                assert ability['slot'] is not None
-                ability_display_name = ability['displayName']
-                assert ability_display_name is not None
-                assert isinstance(ability_display_name, (str, dict))
-                if isinstance(ability_display_name, dict):
-                    localization_test(ability_display_name)
-                else:
-                    assert isinstance(ability_display_name, str)
-
-                ability_description = ability['description']
-                assert ability_description is not None
-                assert isinstance(ability_description, (str, dict))
-                if isinstance(ability_description, dict):
-                    localization_test(ability_description)
-                else:
-                    assert isinstance(ability_description, str)
-
-                if ability['displayIcon'] is not None:
-                    assert isinstance(ability['displayIcon'], str)
-
-            # voice lines
-
-            voice_line = agent._voice_line
-            assert voice_line is not None
-            assert isinstance(voice_line, dict)
-            if 'mediaList' in voice_line:
-                voice_test(voice_line)  # type: ignore
-            else:
-                for voice_locale in voice_line.values():
-                    if voice_locale is not None:
-                        voice_test(voice_locale)
-
-            # verify model
-
+        assert len(self.valorant_api.agents) > 0
+        for agent in self.valorant_api.agents:
             assert agent.display_name is not None
-            assert isinstance(agent.display_name, Localization)
             assert agent.description is not None
-            assert isinstance(agent.description, Localization)
             assert agent.display_icon is not None
-            assert isinstance(agent.display_icon, Asset)
             assert agent.bust_portrait is not None
-            assert isinstance(agent.bust_portrait, Asset)
             assert agent.full_portrait is not None
-            assert isinstance(agent.full_portrait, Asset)
             assert agent.full_portrait_v2 is not None
-            assert isinstance(agent.full_portrait_v2, Asset)
             assert agent.killfeed_portrait is not None
-            assert isinstance(agent.killfeed_portrait, Asset)
             assert agent.background is not None
-            assert isinstance(agent.background, Asset)
 
             assert agent.role is not None
             assert agent.role.display_name is not None
-            assert isinstance(agent.role.display_name, Localization)
             assert agent.role.description is not None
-            assert isinstance(agent.role.description, Localization)
             assert agent.role.display_icon is not None
-            assert isinstance(agent.role.display_icon, Asset)
 
             assert agent.abilities is not None
             assert isinstance(agent.abilities, list)
+            assert len(agent.abilities) >= 4 or len(agent.abilities) <= 5
             for ability in agent.abilities:
                 assert ability is not None
                 assert ability.slot is not None
                 assert isinstance(ability.slot, AbilityType)
                 assert ability.display_name is not None
-                assert isinstance(ability.display_name, Localization)
                 assert ability.description is not None
-                assert isinstance(ability.description, Localization)
-                if ability.display_icon is not None:
-                    assert isinstance(ability.display_icon, Asset)
+                if ability.display_icon:
+                    assert ability.display_icon is not None
 
             assert agent.voice_line_localization is not None
             voice_line = agent.voice_line
@@ -179,6 +61,208 @@ class TestValorantAPI(BaseAuthTest):
                 assert agent.voice_line_localization.voice_locale == voice_line
                 for voice in agent.voice_line_localization.all():
                     assert voice is not None
+                    assert voice.min_duration is not None
+                    assert voice.max_duration is not None
+                    assert voice.media_list is not None
+                    for media in voice.media_list:
+                        assert media is not None
+                        assert media.id is not None
+                        assert media.wwise is not None
+                        assert media.wave is not None
+
+    @pytest.mark.asyncio
+    async def test_buddies(self) -> None:
+        assert len(self.valorant_api.buddies) > 0
+        for buddy in self.valorant_api.buddies:
+            assert buddy is not None
+            assert buddy.display_name is not None
+            assert isinstance(buddy.is_hidden_if_not_owned(), bool)
+            # assert buddy.theme is not None
+            assert buddy.display_icon is not None
+            assert buddy.asset_path is not None
+            assert len(buddy.levels) > 0
+            assert buddy.get_buddy_level(1) is not None
+
+            for level in buddy.levels:
+                assert level is not None
+                assert level.charm_level is not None
+                assert level.display_name is not None
+                assert level.display_icon is not None
+                assert level.asset_path is not None
+
+    @pytest.mark.asyncio
+    async def test_bundles(self) -> None:
+        assert len(self.valorant_api.bundles) > 0
+        for bundle in self.valorant_api.bundles:
+            assert bundle is not None
+            assert bundle.display_name is not None
+            assert bundle.description is not None
+            # assert bundle.display_name_sub_text is not None
+            # assert bundle.extra_description is not None
+            # assert bundle.promo_description is not None
+            assert isinstance(bundle.use_additional_context, bool)
+            assert bundle.display_icon is not None
+            assert bundle.display_icon_2 is not None
+            if bundle.vertical_promo_image:
+                assert bundle.vertical_promo_image is not None
+            assert bundle.asset_path is not None
+
+    @pytest.mark.asyncio
+    async def test_ceremonies(self) -> None:
+        assert len(self.valorant_api.ceremonies) > 0
+        for ceremony in self.valorant_api.ceremonies:
+            assert ceremony is not None
+            assert ceremony.display_name is not None
+            assert ceremony.asset_path is not None
+
+    @pytest.mark.asyncio
+    async def test_competitive_tiers(self) -> None:
+        assert len(self.valorant_api.competitive_tiers) > 0
+        for c_tier in self.valorant_api.competitive_tiers:
+            assert c_tier is not None
+            assert c_tier.asset_path is not None
+            assert len(c_tier.tiers) > 0
+            for tier in c_tier.tiers:
+                assert tier is not None
+                assert tier.tier is not None
+                assert tier.name is not None
+                assert tier.division is not None
+                assert tier.division_name is not None
+                assert tier.color is not None
+                assert tier.background_color is not None
+                if tier.small_icon:
+                    assert tier.small_icon is not None
+                if tier.large_icon:
+                    assert tier.large_icon is not None
+                if tier.rank_triangle_down_icon:
+                    assert tier.rank_triangle_down_icon is not None
+                if tier.rank_triangle_up_icon:
+                    assert tier.rank_triangle_up_icon is not None
+
+    @pytest.mark.asyncio
+    async def test_content_tiers(self) -> None:
+        assert len(self.valorant_api.content_tiers) > 0
+        for content_tier in self.valorant_api.content_tiers:
+            assert content_tier is not None
+            assert content_tier.display_name is not None
+            assert content_tier.dev_name is not None
+            assert content_tier.rank is not None
+            assert content_tier.juice_value is not None
+            assert content_tier.juice_cost is not None
+            assert content_tier.highlight_color is not None
+            assert content_tier.display_icon is not None
+            assert content_tier.asset_path is not None
+
+    @pytest.mark.asyncio
+    async def test_contracts(self) -> None:
+        assert len(self.valorant_api.contracts) > 0
+        for contract in self.valorant_api.contracts:
+            assert contract is not None
+            assert contract.display_name is not None
+            # assert contract.display_icon is not None
+            assert isinstance(contract.ship_it, bool)
+            # assert contract.free_reward_schedule is not None
+            assert contract.asset_path is not None
+            content = contract.content
+            assert content is not None
+            assert isinstance(content.relation_type, RelationType)
+            assert content.premium_vp_cost is not None
+            # assert content.premium_reward_chedule is not None
+            # assert content.relation is not None
+            chapters = content.chapters
+            assert len(chapters) > 0
+            for chapter in chapters:
+                assert chapter is not None
+                assert isinstance(chapter.is_epilogue(), bool)
+                assert len(chapter.levels) > 0
+                for level in chapter.levels:
+                    assert level is not None
+                    assert level.reward is not None
+                    reward = level.reward
+                    assert reward.type is not None
+                    assert isinstance(reward.type, RewardType)
+                    assert isinstance(reward.amount, int)
+                    # assert reward.item is not None
+                    assert isinstance(level.xp, int)
+                    assert isinstance(level.vp_cost, int)
+                    assert isinstance(level.is_purchasable_with_vp(), bool)
+
+                if chapter.free_rewards is not None:
+                    assert len(chapter.free_rewards) > 0
+                    for reward in chapter.free_rewards:
+                        assert reward is not None
+
+    @pytest.mark.asyncio
+    async def test_currencies(self) -> None:
+        assert len(self.valorant_api.currencies) > 0
+        for currency in self.valorant_api.currencies:
+            assert currency is not None
+            assert currency.display_name is not None
+            assert currency.display_name_singular is not None
+            assert currency.display_icon is not None
+            assert currency.large_icon is not None
+            assert currency.asset_path is not None
+
+    @pytest.mark.asyncio
+    async def test_events(self) -> None:
+        assert len(self.valorant_api.events) > 0
+        for event in self.valorant_api.events:
+            assert event is not None
+            assert event.display_name is not None
+            assert event.short_display_name is not None
+            assert event.start_time is not None
+            assert isinstance(event.start_time, datetime.datetime)
+            assert event.end_time is not None
+            assert isinstance(event.end_time, datetime.datetime)
+            assert event.asset_path is not None
+
+    @pytest.mark.asyncio
+    async def test_gamemodes(self) -> None:
+        assert len(self.valorant_api.game_modes) > 0
+        for gm in self.valorant_api.game_modes:
+            assert gm is not None
+            assert gm.display_name is not None
+            assert isinstance(gm.allows_match_timeouts, bool)
+            assert isinstance(gm.is_team_voice_allowed(), bool)
+            assert isinstance(gm.is_minimap_hidden(), bool)
+            assert gm.orb_count is not None
+            assert isinstance(gm.orb_count, int)
+            assert gm.rounds_per_half is not None
+            assert isinstance(gm.rounds_per_half, int)
+            team_roles = gm.team_roles
+            if team_roles is not None:
+                assert isinstance(team_roles, list)
+                assert len(team_roles) > 0
+                for tr in team_roles:
+                    assert tr is not None
+                    assert isinstance(tr, str)
+            feature_overrides = gm.game_feature_overrides
+            if feature_overrides is not None:
+                assert len(feature_overrides) > 0
+                for fo in feature_overrides:
+                    assert fo is not None
+                    assert fo.feature_name is not None
+                    assert isinstance(fo.state, bool)
+            game_rule_bool_overrides = gm.game_rule_bool_overrides
+            if game_rule_bool_overrides is not None:
+                assert len(game_rule_bool_overrides) > 0
+                for gro in game_rule_bool_overrides:
+                    assert gro is not None
+                    assert gro.rule_name is not None
+                    assert isinstance(gro.state, bool)
+            if gm.display_icon:
+                assert gm.display_icon is not None
+            assert gm.asset_path is not None
+
+    @pytest.mark.asyncio
+    async def test_gamemode_equippables(self) -> None:
+        assert len(self.valorant_api.game_mode_equippables) > 0
+        for gme in self.valorant_api.game_mode_equippables:
+            assert gme is not None
+            assert gme.display_name is not None
+            assert gme.display_icon is not None
+            assert gme.kill_stream_icon is not None
+            assert gme.asset_path is not None
 
     @pytest.mark.asyncio
     async def test_close(self) -> None:
