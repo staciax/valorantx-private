@@ -11,15 +11,14 @@ import pytest_asyncio
 from dotenv import load_dotenv
 
 import valorantx2 as valorantx
+from valorantx2.valorant_api import Client as ValorantAPIClient
 
-# try:
-#     import uvloop
-# except ImportError:
-#     pass
-# else:
-#     uvloop.install()
-
-
+try:
+    import uvloop
+except ImportError:
+    pass
+else:
+    uvloop.install()
 
 
 load_dotenv()
@@ -43,7 +42,9 @@ async def client() -> AsyncGenerator[valorantx.Client, None]:
 
 @pytest_asyncio.fixture(scope='class')
 def client_class(request) -> None:
-    request.cls.client = valorantx.Client(locale=valorantx.Locale.thai)
+    client = valorantx.Client(locale=valorantx.Locale.thai)
+    request.cls.client = client
+    request.cls.valorant_api = client.valorant_api
 
 
 @pytest.fixture(scope='class')
@@ -69,6 +70,7 @@ class BaseTest:
         client: valorantx.Client
         riot_username: str
         riot_password: str
+        valorant_api: ValorantAPIClient
 
     def test_client(self) -> None:
         assert self.client is not None
