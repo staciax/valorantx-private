@@ -10,7 +10,7 @@ import aiohttp
 
 from . import __version__, utils
 from .auth import RiotAuth
-from .enums import ItemType, Locale, QueueType, Region, try_enum
+from .enums import Locale, QueueType, Region, try_enum
 from .errors import Forbidden, HTTPException, InternalServerError, NotFound, PhaseError, RateLimited
 
 # try:
@@ -529,7 +529,7 @@ class HTTPClient:
         return self.request(Route('GET', '/store/v1/order/{order}', EndpointType.pd, self.region, order=order_id))
 
     def store_fetch_entitlements(
-        self, item_type: Optional[Union[str, ItemType]] = None
+        self, item_type: Optional[str] = None  # TODO: Union[str, ItemType]
     ) -> Response[store.EntitlementsByTypes]:
         """
         Store_GetEntitlements

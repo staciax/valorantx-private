@@ -215,10 +215,10 @@ class HTTPClient:
     def get_currencies(self) -> Response[currencies.Currencies]:
         return self.request(Route('GET', '/currencies', EndpointType.valorant_api), params={'language': 'all'})
 
-    def get_game_modes(self) -> Response[gamemodes.Gamemodes]:
+    def get_game_modes(self) -> Response[gamemodes.GameModes]:
         return self.request(Route('GET', '/gamemodes', EndpointType.valorant_api), params={'language': 'all'})
 
-    def get_game_modes_equippables(self) -> Response[gamemodes.GamemodeEquippables]:
+    def get_game_mode_equippables(self) -> Response[gamemodes.GameModeEquippables]:
         return self.request(Route('GET', '/gamemodes/equippables', EndpointType.valorant_api), params={'language': 'all'})
 
     def get_gear(self) -> Response[gear.Gear]:  # TODO: fix this Gears -> Gear
