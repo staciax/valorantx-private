@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Dict, Optional, Union
 
 from ..enums import Locale
 from ..localization import Localization
@@ -9,6 +9,7 @@ from .abc import BaseModel
 if TYPE_CHECKING:
     # from typing_extensions import Self
     from ..cache import CacheState
+    from ..types.player_titles import PlayerTitle as PlayerTitlePayload
 
     # from ..client import Client
 
@@ -20,11 +21,11 @@ __all__ = (
 
 
 class PlayerTitle(BaseModel):
-    def __init__(self, *, state: CacheState, data: Mapping[str, Any]) -> None:
+    def __init__(self, *, state: CacheState, data: PlayerTitlePayload) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
-        self._display_name: Dict[str, str] = data['displayName']
-        self._title_text: Dict[str, str] = data['titleText']
+        self._display_name: Union[str, Dict[str, str]] = data['displayName']
+        self._title_text: Union[str, Dict[str, str]] = data['titleText']
         self._is_hidden_if_not_owned: bool = data.get('isHiddenIfNotOwned', False)
         self.asset_path: str = data['assetPath']
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
