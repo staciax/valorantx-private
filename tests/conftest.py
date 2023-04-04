@@ -12,6 +12,16 @@ from dotenv import load_dotenv
 
 import valorantx2 as valorantx
 
+# try:
+#     import uvloop
+# except ImportError:
+#     pass
+# else:
+#     uvloop.install()
+
+
+
+
 load_dotenv()
 
 username = os.getenv('VALORANT_USERNAME')

@@ -7,3 +7,4 @@ Typings for the Valorant API
 """
 
 from .agents import *
+from .buddies import *

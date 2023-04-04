@@ -254,7 +254,7 @@ class HTTPClient:
     def get_weapons(self) -> Response[weapons.Weapons]:
         return self.request(Route('GET', '/weapons', EndpointType.valorant_api), params={'language': 'all'})
 
-    def get_valorant_version(self) -> Response[version.Version]:
+    def get_version(self) -> Response[version.Version]:
         return self.request(Route('GET', '/version', EndpointType.valorant_api))
 
     # valtracker endpoint
