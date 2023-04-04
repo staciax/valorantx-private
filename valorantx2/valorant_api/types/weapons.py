@@ -44,6 +44,7 @@ class WeaponStats(TypedDict):
     altFireType: str
     adsStats: AdsStats
     altShotgunStats: AltShotgunStats
+    airBurstStats: AirBurstStats
     damageRanges: List[DamageRange]
 
 
@@ -100,7 +101,7 @@ class Weapon(Object):
     assetPath: str
     weaponStats: WeaponStats
     shopData: ShopData
-    skins: Skin
+    skins: List[Skin]
 
 
 SkinLevel = Level
