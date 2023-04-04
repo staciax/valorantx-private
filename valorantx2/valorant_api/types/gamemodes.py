@@ -1,18 +1,7 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from .object import Object
 from .response import Response
-
-
-class Gamemode(Object):
-    displayName: Union[str, Dict[str, str]]
-    category: str
-    displayIcon: str
-    killStreamIcon: str
-    assetPath: str
-
-
-Gamemodes = Response[Gamemode]
 
 
 class GameFeatureOverride(Object):
@@ -25,19 +14,30 @@ class GameRuleBoolOverride(Object):
     state: bool
 
 
-class GamemodeEquippable(Object):
+class GameMode(Object):
     displayName: Union[str, Dict[str, str]]
-    duration: Union[int, Dict[str, int]]
+    duration: Union[str, Dict[str, str]]
     allowsMatchTimeouts: bool
     isTeamVoiceAllowed: bool
     isMinimapHidden: bool
     orbCount: int
     roundsPerHalf: int
-    teamRoles: List[str]
-    gameFeatureOverrides: List[GameFeatureOverride]
-    gameRuleBoolOverrides: List[GameRuleBoolOverride]
-    displayIcon: str
+    teamRoles: Optional[List[str]]
+    gameFeatureOverrides: Optional[List[GameFeatureOverride]]
+    gameRuleBoolOverrides: Optional[List[GameRuleBoolOverride]]
+    displayIcon: Optional[str]
     assetPath: str
 
 
-GamemodeEquippables = Response[GamemodeEquippable]
+GameModes = Response[GameMode]
+
+
+class GameModeEquippable(Object):
+    displayName: Union[str, Dict[str, str]]
+    category: str
+    displayIcon: str
+    killStreamIcon: str
+    assetPath: str
+
+
+GameModeEquippables = Response[GameModeEquippable]

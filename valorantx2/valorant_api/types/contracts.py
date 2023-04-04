@@ -1,4 +1,4 @@
-from typing import Dict, List, TypedDict, Union
+from typing import Dict, List, Optional, TypedDict, Union
 
 from .object import Object
 from .response import Response
@@ -20,7 +20,7 @@ class Level(TypedDict):
 class Chapter(TypedDict):
     isEpilogue: bool
     levels: List[Level]
-    freeRewards: List[Reward]
+    freeRewards: Optional[List[Reward]]
 
 
 class Content(TypedDict):
@@ -33,7 +33,7 @@ class Content(TypedDict):
 
 class Contract(Object):
     displayName: Union[str, Dict[str, str]]
-    displayIcon: str
+    displayIcon: Optional[str]
     shipIt: bool
     freeRewardScheduleUuid: str
     content: Content

@@ -4,9 +4,9 @@ from .object import Object
 from .response import Response
 
 
-class Caremony(Object):
+class Ceremony(Object):
     displayName: Union[str, Dict[str, str]]
     assetPath: str
 
 
-Ceremonies = Response[Caremony]
+Ceremonies = Response[Ceremony]

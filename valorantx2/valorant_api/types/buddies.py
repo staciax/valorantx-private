@@ -1,5 +1,5 @@
 # from typing import TypedDict
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from .object import Object
 from .response import Response
@@ -15,7 +15,7 @@ class Level(Object):
 class Buddy(Object):
     displayName: Union[str, Dict[str, str]]
     isHiddenIfNotOwned: bool
-    themeUuid: str
+    themeUuid: Optional[str]
     displayIcon: str
     assetPath: str
     levels: List[Level]
