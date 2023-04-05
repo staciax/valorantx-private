@@ -1,17 +1,18 @@
 from __future__ import annotations
 
 import asyncio
+from typing import TYPE_CHECKING, Dict, List, Optional  # Any, Callable, Coroutine,
 
 # import json
 # import os
-from typing import TYPE_CHECKING, Dict, List, Optional  # Any, Callable, Coroutine,
-
+from ..utils import MISSING
 from .models import (
     Agent,
     Buddy,
     BuddyLevel,
     Bundle,
     Ceremony,
+    CompetitiveSeason,
     CompetitiveTier,
     ContentTier,
     Contract,
@@ -19,6 +20,21 @@ from .models import (
     Event,
     GameMode,
     GameModeEquippable,
+    Gear,
+    LevelBorder,
+    Map,
+    Mission,
+    PlayerCard,
+    PlayerTitle,
+    Season,
+    Skin,
+    SkinChroma,
+    SkinLevel,
+    Spray,
+    SprayLevel,
+    Theme,
+    Version,
+    Weapon,
 )
 
 if TYPE_CHECKING:
@@ -35,6 +51,17 @@ if TYPE_CHECKING:
         currencies,
         events,
         gamemodes,
+        gear,
+        level_borders,
+        maps,
+        missions,
+        player_cards,
+        player_titles,
+        seasons,
+        sprays,
+        themes,
+        version,
+        weapons,
     )
 
 # class BaseCache(ABC):
@@ -67,6 +94,22 @@ class CacheState:
         self._events: Dict[str, Event] = {}
         self._game_modes: Dict[str, GameMode] = {}
         self._game_mode_equippables: Dict[str, GameModeEquippable] = {}
+        self._gear: Dict[str, Gear] = {}
+        self._level_borders: Dict[str, LevelBorder] = {}
+        self._maps: Dict[str, Map] = {}
+        self._missions: Dict[str, Mission] = {}
+        self._player_cards: Dict[str, PlayerCard] = {}
+        self._player_titles: Dict[str, PlayerTitle] = {}
+        self._seasons: Dict[str, Season] = {}
+        self._competitive_seasons: Dict[str, CompetitiveSeason] = {}
+        self._sprays: Dict[str, Spray] = {}
+        self._spray_levels: Dict[str, SprayLevel] = {}
+        self._themes: Dict[str, Theme] = {}
+        self._version: Version = MISSING
+        self._weapons: Dict[str, Weapon] = {}
+        self._skins: Dict[str, Skin] = {}
+        self._skin_chromas: Dict[str, SkinChroma] = {}
+        self._skin_levels: Dict[str, SkinLevel] = {}
 
     async def init(self) -> None:
         tasks = [
@@ -81,16 +124,18 @@ class CacheState:
             self.http.get_events,
             self.http.get_game_modes,
             self.http.get_game_mode_equippables,
-            # self.http.get_gear,
-            # self.http.get_level_borders,
-            # self.http.get_maps,
-            # self.http.get_player_cards,
-            # self.http.get_player_titles,
-            # self.http.get_seasons,
-            # self.http.get_sprays,
-            # self.http.get_themes,
-            # self.http.get_weapons,
-            # self.http.get_version,
+            self.http.get_gear,
+            self.http.get_level_borders,
+            self.http.get_maps,
+            self.http.get_missions,
+            self.http.get_player_cards,
+            self.http.get_player_titles,
+            self.http.get_seasons,
+            self.http.get_competitive_seasons,
+            self.http.get_sprays,
+            self.http.get_themes,
+            self.http.get_weapons,
+            self.http.get_version,
         ]
         # if self._to_file:
 
@@ -133,18 +178,39 @@ class CacheState:
     #         json.dump(data, f, indent=4)
 
     def clear(self) -> None:
-        self._agents.clear()
-        self._buddies.clear()
-        self._buddy_levels.clear()
-        self._bundles.clear()
-        self._ceremonies.clear()
-        self._competitive_tiers.clear()
-        self._content_tiers.clear()
-        self._contracts.clear()
-        self._currencies.clear()
-        self._events.clear()
-        self._game_modes.clear()
-        self._game_mode_equippables.clear()
+        for key in self.__dict__.keys():
+            if key.startswith('_') and isinstance(self.__dict__[key], dict):
+                self.__dict__[key].clear()
+        self._version = MISSING
+
+        # self._agents.clear()
+        # self._buddies.clear()
+        # self._buddy_levels.clear()
+        # self._bundles.clear()
+        # self._ceremonies.clear()
+        # self._competitive_tiers.clear()
+        # self._content_tiers.clear()
+        # self._contracts.clear()
+        # self._currencies.clear()
+        # self._events.clear()
+        # self._game_modes.clear()
+        # self._game_mode_equippables.clear()
+        # self._gear.clear()
+        # self._level_borders.clear()
+        # self._maps.clear()
+        # self._missions.clear()
+        # self._player_cards.clear()
+        # self._player_titles.clear()
+        # self._seasons.clear()
+        # self._season_competitives.clear()
+        # self._sprays.clear()
+        # self._spray_levels.clear()
+        # self._themes.clear()
+        # self._version.clear()
+        # self._weapons.clear()
+        # self._skins.clear()
+        # self._skin_chromas.clear()
+        # self._skin_levels.clear()
 
     # agents
 
@@ -188,9 +254,12 @@ class CacheState:
         self._buddies[buddy_id] = buddy = Buddy(state=self, data=data)
         return buddy
 
-    def store_buddy_level(self, data: buddies.BuddyLevel) -> BuddyLevel:
+    def store_buddy_level(self, data: buddies.BuddyLevel, buddy: Optional[Buddy] = None) -> BuddyLevel:
         buddy_level_id = data['uuid']
-        self._buddy_levels[buddy_level_id] = buddy_level = BuddyLevel(state=self, data=data)
+        buddy_level = BuddyLevel(state=self, data=data)
+        if buddy is not None:
+            buddy_level.buddy = buddy
+        self._buddy_levels[buddy_level_id] = buddy_level
         return buddy_level
 
     def _add_buddies(self, data: buddies.Buddies) -> None:
@@ -202,8 +271,7 @@ class CacheState:
             for level in buddy['levels']:
                 level_existing = self.get_buddy_level(level['uuid'])
                 if level_existing is None:
-                    level_existing = self.store_buddy_level(level)
-                level_existing.buddy = buddy_existing
+                    self.store_buddy_level(level, buddy_existing)
 
     # bundles
 
@@ -224,7 +292,7 @@ class CacheState:
         for bundle in bundle_data:
             bundle_existing = self.get_bundle(bundle['uuid'])
             if bundle_existing is None:
-                bundle_existing = self.store_bundle(bundle)
+                self.store_bundle(bundle)
 
     # ceremonies
 
@@ -245,7 +313,7 @@ class CacheState:
         for ceremony in ceremony_data:
             ceremony_existing = self.get_ceremony(ceremony['uuid'])
             if ceremony_existing is None:
-                ceremony_existing = self.store_ceremony(ceremony)
+                self.store_ceremony(ceremony)
 
     # competitive tiers
 
@@ -266,7 +334,7 @@ class CacheState:
         for competitive_tier in competitive_tier_data:
             competitive_tier_existing = self.get_competitive_tier(competitive_tier['uuid'])
             if competitive_tier_existing is None:
-                competitive_tier_existing = self.store_competitive_tier(competitive_tier)
+                self.store_competitive_tier(competitive_tier)
 
     # content tiers
 
@@ -287,7 +355,7 @@ class CacheState:
         for content_tier in content_tier_data:
             content_tier_existing = self.get_content_tier(content_tier['uuid'])
             if content_tier_existing is None:
-                content_tier_existing = self.store_content_tier(content_tier)
+                self.store_content_tier(content_tier)
 
     # contracts
 
@@ -308,7 +376,7 @@ class CacheState:
         for contract in contract_data:
             contract_existing = self.get_contract(contract['uuid'])
             if contract_existing is None:
-                contract_existing = self.store_contract(contract)
+                self.store_contract(contract)
 
     # currencies
 
@@ -329,7 +397,7 @@ class CacheState:
         for currency in currency_data:
             currency_existing = self.get_currency(currency['uuid'])
             if currency_existing is None:
-                currency_existing = self.store_currency(currency)
+                self.store_currency(currency)
 
     # events
 
@@ -350,7 +418,7 @@ class CacheState:
         for event in event_data:
             event_existing = self.get_event(event['uuid'])
             if event_existing is None:
-                event_existing = self.store_event(event)
+                self.store_event(event)
 
     # game modes
 
@@ -385,11 +453,315 @@ class CacheState:
         for game_mode in game_mode_data:
             game_mode_existing = self.get_game_mode(game_mode['uuid'])
             if game_mode_existing is None:
-                game_mode_existing = self.store_game_mode(game_mode)
+                self.store_game_mode(game_mode)
 
     def _add_game_mode_equippables(self, data: gamemodes.GameModeEquippables) -> None:
         game_mode_equippable_data = data['data']
         for game_mode_equippable in game_mode_equippable_data:
             game_mode_equippable_existing = self.get_game_mode_equippable(game_mode_equippable['uuid'])
             if game_mode_equippable_existing is None:
-                game_mode_equippable_existing = self.store_game_mode_equippable(game_mode_equippable)
+                self.store_game_mode_equippable(game_mode_equippable)
+
+    # gear
+
+    @property
+    def gear(self) -> List[Gear]:
+        return list(self._gear.values())
+
+    def get_gear(self, uuid: Optional[str]) -> Optional[Gear]:
+        return self._gear.get(uuid)  # type: ignore
+
+    def store_gear(self, data: gear.Gear_) -> Gear:
+        gear_id = data['uuid']
+        self._gear[gear_id] = gear = Gear(state=self, data=data)
+        return gear
+
+    def _add_gear(self, data: gear.Gear) -> None:
+        gear_data = data['data']
+        for gear in gear_data:
+            gear_existing = self.get_gear(gear['uuid'])
+            if gear_existing is None:
+                self.store_gear(gear)
+
+    # level borders
+
+    @property
+    def level_borders(self) -> List[LevelBorder]:
+        return list(self._level_borders.values())
+
+    def get_level_border(self, uuid: Optional[str]) -> Optional[LevelBorder]:
+        return self._level_borders.get(uuid)  # type: ignore
+
+    def store_level_border(self, data: level_borders.LevelBorder) -> LevelBorder:
+        level_border_id = data['uuid']
+        self._level_borders[level_border_id] = level_border = LevelBorder(state=self, data=data)
+        return level_border
+
+    def _add_level_borders(self, data: level_borders.LevelBorders) -> None:
+        level_border_data = data['data']
+        for level_border in level_border_data:
+            level_border_existing = self.get_level_border(level_border['uuid'])
+            if level_border_existing is None:
+                self.store_level_border(level_border)
+
+    # maps
+
+    @property
+    def maps(self) -> List[Map]:
+        return list(self._maps.values())
+
+    def get_map(self, uuid: Optional[str]) -> Optional[Map]:
+        return self._maps.get(uuid)  # type: ignore
+
+    def store_map(self, data: maps.Map) -> Map:
+        map_id = data['uuid']
+        self._maps[map_id] = map_ = Map(state=self, data=data)
+        return map_
+
+    def _add_maps(self, data: maps.Maps) -> None:
+        map_data = data['data']
+        for map_ in map_data:
+            map_existing = self.get_map(map_['uuid'])
+            if map_existing is None:
+                self.store_map(map_)
+
+    # missions
+
+    @property
+    def missions(self) -> List[Mission]:
+        return list(self._missions.values())
+
+    def get_mission(self, uuid: Optional[str]) -> Optional[Mission]:
+        return self._missions.get(uuid)  # type: ignore
+
+    def store_mission(self, data: missions.Mission) -> Mission:
+        mission_id = data['uuid']
+        self._missions[mission_id] = mission = Mission(state=self, data=data)
+        return mission
+
+    def _add_missions(self, data: missions.Missions) -> None:
+        mission_data = data['data']
+        for mission in mission_data:
+            mission_existing = self.get_mission(mission['uuid'])
+            if mission_existing is None:
+                self.store_mission(mission)
+
+    # player_cards
+
+    @property
+    def player_cards(self) -> List[PlayerCard]:
+        return list(self._player_cards.values())
+
+    def get_player_card(self, uuid: Optional[str]) -> Optional[PlayerCard]:
+        return self._player_cards.get(uuid)  # type: ignore
+
+    def store_player_card(self, data: player_cards.PlayerCard) -> PlayerCard:
+        player_card_id = data['uuid']
+        self._player_cards[player_card_id] = player_card = PlayerCard(state=self, data=data)
+        return player_card
+
+    def _add_player_cards(self, data: player_cards.PlayerCards) -> None:
+        player_card_data = data['data']
+        for player_card in player_card_data:
+            player_card_existing = self.get_player_card(player_card['uuid'])
+            if player_card_existing is None:
+                self.store_player_card(player_card)
+
+    # player_titles
+
+    @property
+    def player_titles(self) -> List[PlayerTitle]:
+        return list(self._player_titles.values())
+
+    def get_player_title(self, uuid: Optional[str]) -> Optional[PlayerTitle]:
+        return self._player_titles.get(uuid)  # type: ignore
+
+    def store_player_title(self, data: player_titles.PlayerTitle) -> PlayerTitle:
+        player_title_id = data['uuid']
+        self._player_titles[player_title_id] = player_title = PlayerTitle(state=self, data=data)
+        return player_title
+
+    def _add_player_titles(self, data: player_titles.PlayerTitles) -> None:
+        player_title_data = data['data']
+        for player_title in player_title_data:
+            player_title_existing = self.get_player_title(player_title['uuid'])
+            if player_title_existing is None:
+                self.store_player_title(player_title)
+
+    # seasons
+
+    @property
+    def seasons(self) -> List[Season]:
+        return list(self._seasons.values())
+
+    def get_season(self, uuid: Optional[str]) -> Optional[Season]:
+        return self._seasons.get(uuid)  # type: ignore
+
+    def store_season(self, data: seasons.Season) -> Season:
+        season_id = data['uuid']
+        self._seasons[season_id] = season = Season(state=self, data=data)
+        return season
+
+    def _add_seasons(self, data: seasons.Seasons) -> None:
+        season_data = data['data']
+        for season in season_data:
+            season_existing = self.get_season(season['uuid'])
+            if season_existing is None:
+                self.store_season(season)
+
+    @property
+    def competitive_seasons(self) -> List[CompetitiveSeason]:
+        return list(self._competitive_seasons.values())
+
+    def get_competitive_season(self, uuid: Optional[str]) -> Optional[CompetitiveSeason]:
+        return self._competitive_seasons.get(uuid)  # type: ignore
+
+    def store_competitive_season(self, data: seasons.CompetitiveSeason) -> CompetitiveSeason:
+        season_id = data['uuid']
+        self._competitive_seasons[season_id] = season = CompetitiveSeason(state=self, data=data)
+        return season
+
+    def _add_competitive_seasons(self, data: seasons.CompetitiveSeasons) -> None:
+        season_data = data['data']
+        for season in season_data:
+            season_existing = self.get_competitive_season(season['uuid'])
+            if season_existing is None:
+                self.store_competitive_season(season)
+
+    # sprays
+
+    @property
+    def sprays(self) -> List[Spray]:
+        return list(self._sprays.values())
+
+    def get_spray(self, uuid: Optional[str]) -> Optional[Spray]:
+        return self._sprays.get(uuid)  # type: ignore
+
+    @property
+    def spray_levels(self) -> List[SprayLevel]:
+        return list(self._spray_levels.values())
+
+    def get_spray_level(self, uuid: Optional[str]) -> Optional[SprayLevel]:
+        return self._spray_levels.get(uuid)  # type: ignore
+
+    def store_spray(self, data: sprays.Spray) -> Spray:
+        spray_id = data['uuid']
+        self._sprays[spray_id] = spray = Spray(state=self, data=data)
+        return spray
+
+    def store_spray_level(self, data: sprays.SprayLevel, spray: Optional[Spray] = None) -> SprayLevel:
+        spray_level_id = data['uuid']
+        self._spray_levels[spray_level_id] = spray_level = SprayLevel(state=self, data=data)
+        if spray is not None:
+            spray_level.spray = spray
+        return spray_level
+
+    def _add_sprays(self, data: sprays.Sprays) -> None:
+        spray_data = data['data']
+        for spray in spray_data:
+            spray_existing = self.get_spray(spray['uuid'])
+            if spray_existing is None:
+                spray_existing = self.store_spray(spray)
+            for level in spray['levels']:
+                self.store_spray_level(level, spray_existing)
+
+    # themes
+
+    @property
+    def themes(self) -> List[Theme]:
+        return list(self._themes.values())
+
+    def get_theme(self, uuid: Optional[str]) -> Optional[Theme]:
+        return self._themes.get(uuid)  # type: ignore
+
+    def store_theme(self, data: themes.Theme) -> Theme:
+        theme_id = data['uuid']
+        self._themes[theme_id] = theme = Theme(state=self, data=data)
+        return theme
+
+    def _add_themes(self, data: themes.Themes) -> None:
+        theme_data = data['data']
+        for theme in theme_data:
+            theme_existing = self.get_theme(theme['uuid'])
+            if theme_existing is None:
+                self.store_theme(theme)
+
+    # version
+
+    @property
+    def version(self) -> Version:
+        return self._version
+
+    def _add_version(self, data: version.Version) -> None:
+        self._version = Version(state=self, data=data['data'])
+
+    # weapons
+
+    @property
+    def weapons(self) -> List[Weapon]:
+        return list(self._weapons.values())
+
+    def get_weapon(self, uuid: Optional[str]) -> Optional[Weapon]:
+        return self._weapons.get(uuid)  # type: ignore
+
+    @property
+    def skins(self) -> List[Skin]:
+        return list(self._skins.values())
+
+    def get_skin(self, uuid: Optional[str]) -> Optional[Skin]:
+        return self._skins.get(uuid)  # type: ignore
+
+    @property
+    def skin_chromas(self) -> List[SkinChroma]:
+        return list(self._skin_chromas.values())
+
+    def get_skin_chroma(self, uuid: Optional[str]) -> Optional[SkinChroma]:
+        return self._skin_chromas.get(uuid)  # type: ignore
+
+    @property
+    def skin_levels(self) -> List[SkinLevel]:
+        return list(self._skin_levels.values())
+
+    def get_skin_level(self, uuid: Optional[str]) -> Optional[SkinLevel]:
+        return self._skin_levels.get(uuid)  # type: ignore
+
+    def store_weapon(self, data: weapons.Weapon) -> Weapon:
+        weapon_id = data['uuid']
+        self._weapons[weapon_id] = weapon = Weapon(state=self, data=data)
+        return weapon
+
+    def store_weapon_skin(self, data: weapons.Skin, weapon: Optional[Weapon] = None) -> Skin:
+        skin_id = data['uuid']
+        self._skins[skin_id] = skin = Skin(state=self, data=data)
+        # if weapon is not None:
+        #     skin.weapon = weapon
+        return skin
+
+    def store_weapon_skin_chroma(self, data: weapons.SkinChroma, skin: Optional[Skin] = None) -> SkinChroma:
+        skin_chroma_id = data['uuid']
+        self._skin_chromas[skin_chroma_id] = skin_chroma = SkinChroma(state=self, data=data)
+        if skin is not None:
+            skin_chroma.skin = skin
+        return skin_chroma
+
+    def store_weapon_skin_level(self, data: weapons.SkinLevel, skin: Optional[Skin] = None) -> SkinLevel:
+        skin_level_id = data['uuid']
+        self._skin_levels[skin_level_id] = skin_level = SkinLevel(state=self, data=data)
+        if skin is not None:
+            skin_level.skin = skin
+        return skin_level
+
+    def _add_weapons(self, data: weapons.Weapons) -> None:
+        weapon_data = data['data']
+        for weapon in weapon_data:
+            weapon_existing = self.get_weapon(weapon['uuid'])
+            if weapon_existing is None:
+                weapon_existing = self.store_weapon(weapon)
+            for skin in weapon['skins']:
+                skin_existing = self.get_skin(skin['uuid'])
+                if skin_existing is None:
+                    skin_existing = self.store_weapon_skin(skin, weapon_existing)
+                for chroma in skin['chromas']:
+                    self.store_weapon_skin_chroma(chroma, skin_existing)
+                for level in skin['levels']:
+                    self.store_weapon_skin_level(level, skin_existing)
