@@ -57,6 +57,7 @@ class ShopData(TypedDict):
     cost: int
     category: str
     categoryText: Union[str, Dict[str, str]]
+    gridPosition: GridPosition
     canBeTrashed: bool
     image: str
     newImage: str

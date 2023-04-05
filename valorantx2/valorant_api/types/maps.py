@@ -1,4 +1,4 @@
-from typing import Dict, List, TypedDict, Union
+from typing import Dict, List, Optional, TypedDict, Union
 
 from .object import Object
 from .response import Response
@@ -27,7 +27,7 @@ class Map(Object):
     yMultiplier: float
     xScalarToAdd: float
     yScalarToAdd: float
-    callouts: List[Callout]
+    callouts: Optional[List[Callout]]
 
 
 Maps = Response[List[Map]]
