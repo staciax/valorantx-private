@@ -10,8 +10,6 @@ if TYPE_CHECKING:
     from ..cache import CacheState
     from ..types.level_borders import LevelBorder as LevelBorderPayload
 
-    # from typing_extensions import Self
-
 # fmt: off
 __all__ = (
     'LevelBorder',
@@ -23,12 +21,11 @@ class LevelBorder(BaseModel):
     def __init__(self, state: CacheState, data: LevelBorderPayload) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
-        self._starting_level: int = data['startingLevel']
+        self.starting_level: int = data['startingLevel']
         self._level_number_appearance: str = data['levelNumberAppearance']
         self._small_player_card_appearance: str = data['smallPlayerCardAppearance']
         self.asset_path: str = data['assetPath']
         self.type: ItemType = ItemType.level_border
-        self._is_favorite = True
 
     def __repr__(self) -> str:
         return f'<LevelBorder starting_level={self.starting_level!r}>'
@@ -44,11 +41,6 @@ class LevelBorder(BaseModel):
 
     def __ge__(self, other: object) -> bool:
         return isinstance(other, LevelBorder) and self.starting_level >= other.starting_level
-
-    @property
-    def starting_level(self) -> int:
-        """:class: `int` Returns the starting level of the level border."""
-        return self._starting_level
 
     @property
     def level_number_appearance(self) -> Asset:

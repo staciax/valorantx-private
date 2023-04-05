@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 __all__ = (
     'Border',
     'Season',
-    'SeasonCompetitive',
+    'CompetitiveSeason',
 )
 # fmt: on
 
@@ -35,7 +35,7 @@ class Season(BaseModel):
         super().__init__(data['uuid'])
         self._state: CacheState = state
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._type: Optional[str] = data.get('type')
+        self._type: str = data['type']
         self._start_time_iso: Union[str, datetime.datetime] = data['startTime']
         self._end_time_iso: Union[str, datetime.datetime] = data['endTime']
         self._parent_uuid: Optional[str] = data['parentUuid']
@@ -126,7 +126,7 @@ class Border(BaseModel):
         return Asset._from_url(self._state, url=self._small_icon)
 
 
-class SeasonCompetitive(BaseModel):
+class CompetitiveSeason(BaseModel):
     def __init__(self, state: CacheState, data: CompetitiveSeasonPayload) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
@@ -137,6 +137,7 @@ class SeasonCompetitive(BaseModel):
         self.borders: Optional[List[Border]] = None
         if data['borders'] is not None:
             self.borders = [Border(state=self._state, data=border) for border in data['borders']]
+        self.asset_path: str = data['assetPath']
         # self._season: Optional[Season] = self._client.get_season(uuid=self._season_uuid)
         # self._competitive_tiers: Optional[CompetitiveTier] = self._client.get_competitive_tier(
         # uuid=self._competitive_tiers_uuid

@@ -367,10 +367,10 @@ class HTTPClient:
             Route('GET', '/seasons/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
         )
 
-    def get_seasons_competitive(self) -> Response[seasons.CompetitiveSeasons]:
+    def get_competitive_seasons(self) -> Response[seasons.CompetitiveSeasons]:
         return self.request(Route('GET', '/seasons/competitive', EndpointType.valorant_api))
 
-    def get_season_competitive(self, uuid: str) -> Response[seasons.CompetitiveSeasonUUID]:
+    def get_competitive_season(self, uuid: str) -> Response[seasons.CompetitiveSeasonUUID]:
         return self.request(Route('GET', '/seasons/competitive/{uuid}', EndpointType.valorant_api, uuid=uuid))
 
     # -
@@ -419,7 +419,7 @@ class HTTPClient:
             Route('GET', '/weapons/skins/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
         )
 
-    def get_weapon_skin_chroms(self, *, language: Optional[str] = 'all') -> Response[weapons.SkinChromas]:
+    def get_weapon_skin_chromas(self, *, language: Optional[str] = 'all') -> Response[weapons.SkinChromas]:
         return self.request(Route('GET', '/weapons/skinchromas', EndpointType.valorant_api), params={'language': language})
 
     def get_weapon_skin_chroma(self, uuid: str, *, language: Optional[str] = 'all') -> Response[weapons.SkinChromaUUID]:

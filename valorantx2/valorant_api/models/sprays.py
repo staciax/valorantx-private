@@ -23,17 +23,15 @@ class Spray(BaseModel):
         super().__init__(data['uuid'])
         self._state: CacheState = state
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._category: Optional[str] = data['category']
-        self._theme_uuid: Optional[str] = data['themeUuid']
-        self._display_icon: Optional[str] = data['displayIcon']
+        self._category: str = data['category']
+        self._theme_uuid: str = data['themeUuid']
+        self._display_icon: str = data['displayIcon']
         self._full_icon: Optional[str] = data['fullIcon']
         self._full_transparent_icon: Optional[str] = data['fullTransparentIcon']
         self._animation_png: Optional[str] = data['animationPng']
         self._animation_gif: Optional[str] = data['animationGif']
         self.asset_path: str = data['assetPath']
-        self._levels: List[SprayLevelPayload] = data['levels']
-        # self._price: int = self._client.get_item_price(self.uuid)
-        self._is_favorite: bool = False
+        self.levels: List[SprayLevel] = [SprayLevel(state=self._state, data=level) for level in data['levels']]
         self.type: ItemType = ItemType.spray
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 
@@ -95,11 +93,6 @@ class Spray(BaseModel):
             return None
         return Asset._from_url(state=self._state, url=self._animation_gif)
 
-    @property
-    def levels(self) -> List[SprayLevel]:
-        """:class: `list` Returns the skin's levels."""
-        return [SprayLevel(state=self._state, data=level) for level in self._levels]
-
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
     #     """Returns the spray with the given uuid."""
@@ -111,14 +104,12 @@ class SprayLevel(BaseModel):
     def __init__(self, state: CacheState, data: SprayLevelPayload) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
-        # self._base_spray_uuid: str = data['SprayID']
         self._spray_level: int = data['sprayLevel']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
-        self._asset_path: str = data['assetPath']
-        self._price: int = 0
+        self.asset_path: str = data['assetPath']
         self.type: ItemType = ItemType.spray_level
-        # self._base_spray: Optional[Spray] = self._client.get_spray(uuid=self._base_spray_uuid, level=False)
+        self._spray: Optional[Spray] = None
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 
     def __str__(self) -> str:
@@ -146,26 +137,13 @@ class SprayLevel(BaseModel):
         return Asset._from_url(state=self._state, url=self._display_icon) if self._display_icon else None
 
     @property
-    def asset_path(self) -> str:
-        """:class: `str` Returns the asset path of the spray."""
-        return self._asset_path
+    def spray(self) -> Optional[Spray]:
+        """:class: `Spray` Returns the spray."""
+        return self._spray
 
-    # @property
-    # def price(self) -> int:
-    #     """:class: `int` Returns the price of the spray."""
-    #     if self._price == 0:
-    #         if self._base_spray is not None:
-    #             self._price = self._base_spray.price
-    # #     return self._price
-
-    # @price.setter
-    # def price(self, value: int) -> None:
-    #     """Sets the price of the spray."""
-    #     self._price = value
-
-    # def get_base_spray(self) -> Optional[Spray]:
-    #     """:class: `Spray` Returns the base spray."""
-    #     return self._base_spray
+    @spray.setter
+    def spray(self, value: Spray) -> None:
+        self._spray = value
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

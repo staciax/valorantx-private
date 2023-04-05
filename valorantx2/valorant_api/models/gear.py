@@ -29,7 +29,7 @@ class ShopData:
         self._image: Optional[str] = data['image']
         self._new_image: Optional[str] = data['newImage']
         self._new_image_2: Optional[str] = data['newImage2']
-        self.shop_asset_path: str = data['assetPath']
+        self.asset_path: str = data['assetPath']
 
     def __int__(self) -> int:
         return self.cost

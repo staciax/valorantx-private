@@ -86,7 +86,9 @@ class Map(BaseModel):
         self.y_multiplier: float = data['yMultiplier']
         self.x_scalar_to_add: float = data['xScalarToAdd']
         self.y_scalar_to_add: float = data['yScalarToAdd']
-        self.callouts: List[Callout] = [Callout(self._state, callout) for callout in data['callouts']]
+        self.callouts: Optional[List[Callout]] = None
+        if data['callouts'] is not None:
+            self.callouts = [Callout(self._state, callout) for callout in data['callouts']]
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
         self._coordinates_localized: Localization = Localization(self._coordinates, locale=self._state.locale)
 

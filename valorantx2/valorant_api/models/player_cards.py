@@ -27,14 +27,12 @@ class PlayerCard(BaseModel):
         self._state: CacheState = state
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._is_hidden_if_not_owned: bool = data.get('isHiddenIfNotOwned', False)
-        self._display_icon: Optional[str] = data['displayIcon']
-        self._small_icon: Optional[str] = data['smallArt']
-        self._wide_icon: Optional[str] = data['wideArt']
-        self._large_icon: Optional[str] = data['largeArt']
         self._theme_uuid: Optional[str] = data['themeUuid']
+        self._display_icon: Optional[str] = data['displayIcon']
+        self._small_art: Optional[str] = data['smallArt']
+        self._wide_art: Optional[str] = data['wideArt']
+        self._large_art: Optional[str] = data['largeArt']
         self.asset_path: str = data['assetPath']
-        # self._price = self._client.get_item_price(self.uuid)
-        self._is_favorite: bool = False
         self.type: ItemType = ItemType.player_card
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 
@@ -60,25 +58,25 @@ class PlayerCard(BaseModel):
         return Asset._from_url(state=self._state, url=self._display_icon)
 
     @property
-    def small_icon(self) -> Optional[Asset]:
+    def small_art(self) -> Optional[Asset]:
         """:class: `Asset` Returns the player card's small icon."""
-        if self._small_icon is None:
+        if self._small_art is None:
             return None
-        return Asset._from_url(state=self._state, url=self._small_icon)
+        return Asset._from_url(state=self._state, url=self._small_art)
 
     @property
-    def wide_icon(self) -> Optional[Asset]:
+    def wide_art(self) -> Optional[Asset]:
         """:class: `Asset` Returns the player card's wide icon."""
-        if self._wide_icon is None:
+        if self._wide_art is None:
             return None
-        return Asset._from_url(state=self._state, url=self._wide_icon)
+        return Asset._from_url(state=self._state, url=self._wide_art)
 
     @property
     def large_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the player card's large icon."""
-        if self._large_icon is None:
+        if self._large_art is None:
             return None
-        return Asset._from_url(state=self._state, url=self._large_icon)
+        return Asset._from_url(state=self._state, url=self._large_art)
 
     # @property
     # def theme(self) -> Optional[Theme]:

@@ -26,7 +26,7 @@ class Mission(BaseModel):
         self._state: CacheState = state
         self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
         self._title: Optional[Union[str, Dict[str, str]]] = data['title']
-        self._type: Optional[str] = data.get('type')
+        self._type: Optional[str] = data['type']
         self.xp: int = data['xpGrant']
         self.progress_to_complete: int = data['progressToComplete']
         self._activation_date_iso: str = data['activationDate']
