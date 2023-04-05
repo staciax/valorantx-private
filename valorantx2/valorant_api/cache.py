@@ -134,6 +134,17 @@ class CacheState:
 
     def clear(self) -> None:
         self._agents.clear()
+        self._buddies.clear()
+        self._buddy_levels.clear()
+        self._bundles.clear()
+        self._ceremonies.clear()
+        self._competitive_tiers.clear()
+        self._content_tiers.clear()
+        self._contracts.clear()
+        self._currencies.clear()
+        self._events.clear()
+        self._game_modes.clear()
+        self._game_mode_equippables.clear()
 
     # agents
 

@@ -104,6 +104,16 @@ class Weapon(Object):
     skins: List[Skin]
 
 
+Weapons = Response[List[Weapon]]
+WeaponUUID = Response[Weapon]
+
+Skins = Response[List[Skin]]
+SkinUUID = Response[Skin]
+
+SkinLevels = Response[List[Level]]
 SkinLevel = Level
+SkinLevelUUID = Response[Level]
+
+SkinChromas = Response[List[Chroma]]
 SkinChroma = Chroma
-Weapons = Response[Weapon]
+SkinChromaUUID = Response[Chroma]

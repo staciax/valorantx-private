@@ -22,4 +22,5 @@ class Mission(Object):
     assetPath: str
 
 
-Missions = Response[Mission]
+Missions = Response[List[Mission]]
+MissionUUID = Response[Mission]

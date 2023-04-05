@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 from .object import Object
 from .response import Response
@@ -15,4 +15,5 @@ class ContentTier(Object):
     assetPath: str
 
 
-ContentTiers = Response[ContentTier]
+ContentTiers = Response[List[ContentTier]]
+ContentTierUUID = Response[ContentTier]

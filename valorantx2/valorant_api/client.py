@@ -64,6 +64,13 @@ class Client:
     def get_agent(self, uuid: str) -> Optional[Agent]:
         return self._cache.get_agent(uuid)
 
+    async def fetch_agent(
+        self, uuid: str, *, language: Optional[Locale] = None, is_playable_character: bool = True
+    ) -> Agent:
+        language = language or self._cache.locale
+        data = await self._http.get_agent(uuid, language=language.value, is_playable_character=is_playable_character)
+        return Agent(state=self._cache, data=data['data'])
+
     # buddies
 
     @property
@@ -80,6 +87,16 @@ class Client:
     def get_buddy_level(self, uuid: str) -> Optional[BuddyLevel]:
         return self._cache.get_buddy_level(uuid)
 
+    async def fetch_buddy(self, uuid: str, *, language: Optional[Locale] = None) -> Buddy:
+        language = language or self._cache.locale
+        data = await self._http.get_buddy(uuid, language=language.value)
+        return Buddy(state=self._cache, data=data['data'])
+
+    async def fetch_buddy_level(self, uuid: str, *, language: Optional[Locale] = None) -> BuddyLevel:
+        language = language or self._cache.locale
+        data = await self._http.get_buddy_level(uuid, language=language.value)
+        return BuddyLevel(state=self._cache, data=data['data'])
+
     # bundles
 
     @property
@@ -88,6 +105,11 @@ class Client:
 
     def get_bundle(self, uuid: str) -> Optional[Bundle]:
         return self._cache.get_bundle(uuid)
+
+    async def fetch_bundle(self, uuid: str, *, language: Optional[Locale] = None) -> Bundle:
+        language = language or self._cache.locale
+        data = await self._http.get_bundle(uuid, language=language.value)
+        return Bundle(state=self._cache, data=data['data'])
 
     # ceremonies
 
@@ -98,6 +120,11 @@ class Client:
     def get_ceremony(self, uuid: str) -> Optional[Ceremony]:
         return self._cache.get_ceremony(uuid)
 
+    async def fetch_ceremony(self, uuid: str, *, language: Optional[Locale] = None) -> Ceremony:
+        language = language or self._cache.locale
+        data = await self._http.get_ceremony(uuid, language=language.value)
+        return Ceremony(state=self._cache, data=data['data'])
+
     # competitive_tiers
 
     @property
@@ -106,6 +133,11 @@ class Client:
 
     def get_competitive_tier(self, uuid: str) -> Optional[CompetitiveTier]:
         return self._cache.get_competitive_tier(uuid)
+
+    async def fetch_competitive_tier(self, uuid: str, *, language: Optional[Locale] = None) -> CompetitiveTier:
+        language = language or self._cache.locale
+        data = await self._http.get_competitive_tier(uuid, language=language.value)
+        return CompetitiveTier(state=self._cache, data=data['data'])
 
     # content_tiers
 
@@ -116,6 +148,11 @@ class Client:
     def get_content_tier(self, uuid: str) -> Optional[ContentTier]:
         return self._cache.get_content_tier(uuid)
 
+    async def fetch_content_tier(self, uuid: str, *, language: Optional[Locale] = None) -> ContentTier:
+        language = language or self._cache.locale
+        data = await self._http.get_content_tier(uuid, language=language.value)
+        return ContentTier(state=self._cache, data=data['data'])
+
     # contracts
 
     @property
@@ -124,6 +161,11 @@ class Client:
 
     def get_contract(self, uuid: str) -> Optional[Contract]:
         return self._cache.get_contract(uuid)
+
+    async def fetch_contract(self, uuid: str, *, language: Optional[Locale] = None) -> Contract:
+        language = language or self._cache.locale
+        data = await self._http.get_contract(uuid, language=language.value)
+        return Contract(state=self._cache, data=data['data'])
 
     # currencies
 
@@ -134,6 +176,11 @@ class Client:
     def get_currency(self, uuid: str) -> Optional[Currency]:
         return self._cache.get_currency(uuid)
 
+    async def fetch_currency(self, uuid: str, *, language: Optional[Locale] = None) -> Currency:
+        language = language or self._cache.locale
+        data = await self._http.get_currency(uuid, language=language.value)
+        return Currency(state=self._cache, data=data['data'])
+
     # events
 
     @property
@@ -142,6 +189,11 @@ class Client:
 
     def get_event(self, uuid: str) -> Optional[Event]:
         return self._cache.get_event(uuid)
+
+    async def fetch_event(self, uuid: str, *, language: Optional[Locale] = None) -> Event:
+        language = language or self._cache.locale
+        data = await self._http.get_event(uuid, language=language.value)
+        return Event(state=self._cache, data=data['data'])
 
     # game_modes
 
@@ -158,3 +210,13 @@ class Client:
 
     def get_game_mode_equippable(self, uuid: str) -> Optional[GameModeEquippable]:
         return self._cache.get_game_mode_equippable(uuid)
+
+    async def fetch_game_mode(self, uuid: str, *, language: Optional[Locale] = None) -> GameMode:
+        language = language or self._cache.locale
+        data = await self._http.get_game_mode(uuid, language=language.value)
+        return GameMode(state=self._cache, data=data['data'])
+
+    async def fetch_game_mode_equippable(self, uuid: str, *, language: Optional[Locale] = None) -> GameModeEquippable:
+        language = language or self._cache.locale
+        data = await self._http.get_game_mode_equippable(uuid, language=language.value)
+        return GameModeEquippable(state=self._cache, data=data['data'])

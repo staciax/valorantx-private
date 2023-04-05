@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from .object import Object
 from .response import Response
@@ -11,4 +11,5 @@ class Theme(Object):
     assetPath: str
 
 
-Themes = Response[Theme]
+Themes = Response[List[Theme]]
+ThemeUUID = Response[Theme]

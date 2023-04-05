@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 from .object import Object
 from .response import Response
@@ -17,7 +17,7 @@ class Bundle(Object):
     assetPath: str
 
 
-Bundles = Response[Bundle]
+Bundles = Response[List[Bundle]]
+BundleUUID = Response[Bundle]
 
 # TODO: BundleItem
-# TODO: Check Optional fields

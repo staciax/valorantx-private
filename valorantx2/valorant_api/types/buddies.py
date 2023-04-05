@@ -22,4 +22,7 @@ class Buddy(Object):
 
 
 BuddyLevel = Level
-Buddies = Response[Buddy]
+BuddyLevels = Response[List[Level]]
+Buddies = Response[List[Buddy]]
+BuddyUUID = Response[Buddy]
+BuddyLevelUUID = Response[Level]

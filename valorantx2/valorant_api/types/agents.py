@@ -53,4 +53,5 @@ class Agent(Object):
     voiceLine: Union[VoiceLine, Dict[str, Optional[VoiceLine]]]
 
 
-Agents = Response[Agent]
+Agents = Response[List[Agent]]
+AgentUUID = Response[Agent]

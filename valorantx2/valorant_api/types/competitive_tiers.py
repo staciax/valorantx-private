@@ -23,4 +23,5 @@ class CompetitiveTier(Object):
     assetPath: str
 
 
-CompetitiveTiers = Response[CompetitiveTier]
+CompetitiveTiers = Response[List[CompetitiveTier]]
+CompetitiveTierUUID = Response[CompetitiveTier]

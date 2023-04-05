@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 from .object import Object
 from .response import Response
@@ -12,4 +12,5 @@ class Event(Object):
     assetPath: str
 
 
-Events = Response[Event]
+Events = Response[List[Event]]
+EventUUID = Response[Event]

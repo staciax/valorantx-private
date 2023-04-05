@@ -40,4 +40,5 @@ class Contract(Object):
     assetPath: str
 
 
-Contracts = Response[Contract]
+Contracts = Response[List[Contract]]
+ContractUUID = Response[Contract]

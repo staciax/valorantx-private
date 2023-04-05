@@ -1,8 +1,8 @@
-from typing import Generic, List, TypedDict, TypeVar
+from typing import Generic, TypedDict, TypeVar
 
 T = TypeVar('T')
 
 
 class Response(TypedDict, Generic[T]):
-    data: List[T]
+    data: T
     status: int

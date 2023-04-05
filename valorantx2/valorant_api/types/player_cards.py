@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 from .object import Object
 from .response import Response
@@ -15,4 +15,5 @@ class PlayerCard(Object):
     assetPath: str
 
 
-PlayerCards = Response[PlayerCard]
+PlayerCards = Response[List[PlayerCard]]
+PlayerCardUUID = Response[PlayerCard]

@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 from .object import Object
 from .response import Response
@@ -9,4 +9,5 @@ class Ceremony(Object):
     assetPath: str
 
 
-Ceremonies = Response[Ceremony]
+Ceremonies = Response[List[Ceremony]]
+CeremonyUUID = Response[Ceremony]

@@ -1,4 +1,4 @@
-from typing import Dict, TypedDict, Union
+from typing import Dict, List, TypedDict, Union
 
 from .object import Object
 from .response import Response
@@ -29,4 +29,5 @@ class Gear_(Object):
     shopData: ShopData
 
 
-Gear = Response[Gear_]
+Gear = Response[List[Gear_]]
+GearUUID = Response[Gear_]

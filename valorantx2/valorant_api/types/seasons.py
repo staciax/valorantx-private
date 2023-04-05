@@ -13,7 +13,8 @@ class Season(Object):
     assetPath: str
 
 
-Seasons = Response[Season]
+Seasons = Response[List[Season]]
+SeasonUUID = Response[Season]
 
 
 class Border(Object):
@@ -33,4 +34,5 @@ class CompetitiveSeason(Object):
     assetPath: str
 
 
-CompetitiveSeasons = Response[CompetitiveSeason]
+CompetitiveSeasons = Response[List[CompetitiveSeason]]
+CompetitiveSeasonUUID = Response[CompetitiveSeason]

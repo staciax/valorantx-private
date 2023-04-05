@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 from .object import Object
 from .response import Response
@@ -11,4 +11,5 @@ class PlayerTitle(Object):
     assetPath: str
 
 
-PlayerTitles = Response[PlayerTitle]
+PlayerTitles = Response[List[PlayerTitle]]
+PlayerTitleUUID = Response[PlayerTitle]

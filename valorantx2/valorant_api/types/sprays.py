@@ -25,5 +25,7 @@ class Spray(Object):
 
 
 SprayLevel = Level
-SprayLevels = Response[Level]
-Sprays = Response[Spray]
+SprayLevels = Response[List[Level]]
+Sprays = Response[List[Spray]]
+SprayUUID = Response[Spray]
+SprayLevelUUID = Response[Level]

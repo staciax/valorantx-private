@@ -30,4 +30,5 @@ class Map(Object):
     callouts: List[Callout]
 
 
-Maps = Response[Map]
+Maps = Response[List[Map]]
+MapUUID = Response[Map]

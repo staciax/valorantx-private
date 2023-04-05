@@ -1,3 +1,5 @@
+from typing import List
+
 from .object import Object
 from .response import Response
 
@@ -9,4 +11,5 @@ class LevelBorder(Object):
     assetPath: str
 
 
-LevelBorders = Response[LevelBorder]
+LevelBorders = Response[List[LevelBorder]]
+LevelBorderUUID = Response[LevelBorder]

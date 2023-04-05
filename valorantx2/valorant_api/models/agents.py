@@ -364,7 +364,7 @@ class VoiceLineLocalization:
 
 
 class Agent(BaseModel):
-    def __init__(self, state: CacheState, data: AgentPayload) -> None:
+    def __init__(self, *, state: CacheState, data: AgentPayload) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
         self._display_name: Union[str, Dict[str, str]] = data['displayName']

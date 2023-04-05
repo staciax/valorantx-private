@@ -29,7 +29,8 @@ class GameMode(Object):
     assetPath: str
 
 
-GameModes = Response[GameMode]
+GameModes = Response[List[GameMode]]
+GameModeUUID = Response[GameMode]
 
 
 class GameModeEquippable(Object):
@@ -40,4 +41,5 @@ class GameModeEquippable(Object):
     assetPath: str
 
 
-GameModeEquippables = Response[GameModeEquippable]
+GameModeEquippables = Response[List[GameModeEquippable]]
+GameModeEquippableUUID = Response[GameModeEquippable]

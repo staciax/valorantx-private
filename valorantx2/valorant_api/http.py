@@ -121,15 +121,8 @@ class HTTPClient:
                         if not response.headers.get('Via') or isinstance(data, str):
                             # Banned by Cloudflare more than likely.
                             raise HTTPException(response, data)
-
                         raise RateLimited(response, data)
 
-                    if response.status in {500, 502, 504, 524}:
-                        await asyncio.sleep(1 + tries * 2)
-                        continue
-
-                    if response.status == 403:
-                        raise Forbidden(response, data)
                     elif response.status == 404:
                         raise NotFound(response, data)
                     elif response.status >= 500:
@@ -185,74 +178,264 @@ class HTTPClient:
 
     # valorant-api.com
 
-    def get_agents(self) -> Response[agents.Agents]:
+    def get_agents(self, *, language: Optional[str] = 'all', is_playable_character: bool = True) -> Response[agents.Agents]:
+        params = {'isPlayableCharacter': str(is_playable_character), 'language': language}
+        return self.request(Route('GET', '/agents', EndpointType.valorant_api), params=params)
+
+    def get_agent(
+        self, uuid: str, *, language: Optional[str] = 'all', is_playable_character: bool = True
+    ) -> Response[agents.AgentUUID]:
+        params = {'isPlayableCharacter': str(is_playable_character), 'language': language}
+        return self.request(Route('GET', '/agents/{uuid}', EndpointType.valorant_api, uuid=uuid), params=params)
+
+    # -
+
+    def get_buddies(self, *, language: Optional[str] = 'all') -> Response[buddies.Buddies]:
+        return self.request(Route('GET', '/buddies', EndpointType.valorant_api), params={'language': language})
+
+    def get_buddy(self, uuid: str, *, language: Optional[str] = 'all') -> Response[buddies.BuddyUUID]:
         return self.request(
-            Route('GET', '/agents', EndpointType.valorant_api), params={'isPlayableCharacter': 'True', 'language': 'all'}
+            Route('GET', '/buddies/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
         )
-        # TODO; params to kwargs
 
-    def get_buddies(self) -> Response[buddies.Buddies]:
-        return self.request(Route('GET', '/buddies', EndpointType.valorant_api), params={'language': 'all'})
+    def get_buddy_levels(self, *, language: Optional[str] = 'all') -> Response[buddies.BuddyLevels]:
+        return self.request(Route('GET', '/buddies/levels', EndpointType.valorant_api), params={'language': language})
 
-    def get_bundles(self) -> Response[bundles.Bundles]:
-        return self.request(Route('GET', '/bundles', EndpointType.valorant_api), params={'language': 'all'})
+    def get_buddy_level(self, uuid: str, *, language: Optional[str] = 'all') -> Response[buddies.BuddyLevelUUID]:
+        return self.request(
+            Route('GET', '/buddies/levels/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
 
-    def get_ceremonies(self) -> Response[ceremonies.Ceremonies]:
-        return self.request(Route('GET', '/ceremonies', EndpointType.valorant_api), params={'language': 'all'})
+    # -
 
-    def get_events(self) -> Response[events.Events]:
-        return self.request(Route('GET', '/events', EndpointType.valorant_api), params={'language': 'all'})
+    def get_bundles(self, *, language: Optional[str] = 'all') -> Response[bundles.Bundles]:
+        return self.request(Route('GET', '/bundles', EndpointType.valorant_api), params={'language': language})
 
-    def get_competitive_tiers(self) -> Response[competitive_tiers.CompetitiveTiers]:
-        return self.request(Route('GET', '/competitivetiers', EndpointType.valorant_api), params={'language': 'all'})
+    def get_bundle(self, uuid: str, *, language: Optional[str] = 'all') -> Response[bundles.BundleUUID]:
+        return self.request(
+            Route('GET', '/bundles/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
 
-    def get_content_tiers(self) -> Response[content_tiers.ContentTiers]:
-        return self.request(Route('GET', '/contenttiers', EndpointType.valorant_api), params={'language': 'all'})
+    # -
 
-    def get_contracts(self) -> Response[contracts.Contracts]:
-        return self.request(Route('GET', '/contracts', EndpointType.valorant_api), params={'language': 'all'})
+    def get_ceremonies(self, *, language: Optional[str] = 'all') -> Response[ceremonies.Ceremonies]:
+        return self.request(Route('GET', '/ceremonies', EndpointType.valorant_api), params={'language': language})
 
-    def get_currencies(self) -> Response[currencies.Currencies]:
-        return self.request(Route('GET', '/currencies', EndpointType.valorant_api), params={'language': 'all'})
+    def get_ceremony(self, uuid: str, *, language: Optional[str] = 'all') -> Response[ceremonies.CeremonyUUID]:
+        return self.request(
+            Route('GET', '/ceremonies/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
 
-    def get_game_modes(self) -> Response[gamemodes.GameModes]:
-        return self.request(Route('GET', '/gamemodes', EndpointType.valorant_api), params={'language': 'all'})
+    # -
 
-    def get_game_mode_equippables(self) -> Response[gamemodes.GameModeEquippables]:
-        return self.request(Route('GET', '/gamemodes/equippables', EndpointType.valorant_api), params={'language': 'all'})
+    def get_competitive_tiers(self, *, language: Optional[str] = 'all') -> Response[competitive_tiers.CompetitiveTiers]:
+        return self.request(Route('GET', '/competitivetiers', EndpointType.valorant_api), params={'language': language})
 
-    def get_gear(self) -> Response[gear.Gear]:  # TODO: fix this Gears -> Gear
-        return self.request(Route('GET', '/gear', EndpointType.valorant_api), params={'language': 'all'})
+    def get_competitive_tier(
+        self, uuid: str, *, language: Optional[str] = 'all'
+    ) -> Response[competitive_tiers.CompetitiveTierUUID]:
+        return self.request(
+            Route('GET', '/competitivetiers/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    # -
+
+    def get_content_tiers(self, *, language: Optional[str] = 'all') -> Response[content_tiers.ContentTiers]:
+        return self.request(Route('GET', '/contenttiers', EndpointType.valorant_api), params={'language': language})
+
+    def get_content_tier(self, uuid: str, *, language: Optional[str] = 'all') -> Response[content_tiers.ContentTierUUID]:
+        return self.request(
+            Route('GET', '/contenttiers/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    # -
+
+    def get_contracts(self, *, language: Optional[str] = 'all') -> Response[contracts.Contracts]:
+        return self.request(Route('GET', '/contracts', EndpointType.valorant_api), params={'language': language})
+
+    def get_contract(self, uuid: str, *, language: Optional[str] = 'all') -> Response[contracts.ContractUUID]:
+        return self.request(
+            Route('GET', '/contracts/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    # -
+
+    def get_currencies(self, *, language: Optional[str] = 'all') -> Response[currencies.Currencies]:
+        return self.request(Route('GET', '/currencies', EndpointType.valorant_api), params={'language': language})
+
+    def get_currency(self, uuid: str, *, language: Optional[str] = 'all') -> Response[currencies.CurrencyUUID]:
+        return self.request(
+            Route('GET', '/currencies/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    # -
+
+    def get_events(self, *, language: Optional[str] = 'all') -> Response[events.Events]:
+        return self.request(Route('GET', '/events', EndpointType.valorant_api), params={'language': language})
+
+    def get_event(self, uuid: str, *, language: Optional[str] = 'all') -> Response[events.EventUUID]:
+        return self.request(
+            Route('GET', '/events/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    # -
+
+    def get_game_modes(self, *, language: Optional[str] = 'all') -> Response[gamemodes.GameModes]:
+        return self.request(Route('GET', '/gamemodes', EndpointType.valorant_api), params={'language': language})
+
+    def get_game_mode(self, uuid: str, *, language: Optional[str] = 'all') -> Response[gamemodes.GameModeUUID]:
+        return self.request(
+            Route('GET', '/gamemodes/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    def get_game_mode_equippables(self, *, language: Optional[str] = 'all') -> Response[gamemodes.GameModeEquippables]:
+        return self.request(Route('GET', '/gamemodes/equippables', EndpointType.valorant_api), params={'language': language})
+
+    def get_game_mode_equippable(
+        self, uuid: str, *, language: Optional[str] = 'all'
+    ) -> Response[gamemodes.GameModeEquippableUUID]:
+        return self.request(
+            Route('GET', '/gamemodes/equippables/{uuid}', EndpointType.valorant_api, uuid=uuid),
+            params={'language': language},
+        )
+
+    # -
+
+    def get_gear(self, *, language: Optional[str] = 'all') -> Response[gear.Gear]:
+        return self.request(Route('GET', '/gear', EndpointType.valorant_api), params={'language': language})
+
+    def get_gear_(self, uuid: str, *, language: Optional[str] = 'all') -> Response[gear.GearUUID]:
+        return self.request(
+            Route('GET', '/gear/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    # -
 
     def get_level_borders(self) -> Response[level_borders.LevelBorders]:
-        return self.request(Route('GET', '/levelborders', EndpointType.valorant_api), params={'language': 'all'})
+        return self.request(Route('GET', '/levelborders', EndpointType.valorant_api))
 
-    def get_maps(self) -> Response[maps.Maps]:
-        return self.request(Route('GET', '/maps', EndpointType.valorant_api), params={'language': 'all'})
+    def get_level_border(self, uuid: str) -> Response[level_borders.LevelBorderUUID]:
+        return self.request(Route('GET', '/levelborders/{uuid}', EndpointType.valorant_api, uuid=uuid))
 
-    def get_missions(self) -> Response[missions.Missions]:
-        return self.request(Route('GET', '/missions', EndpointType.valorant_api), params={'language': 'all'})
+    # -
 
-    def get_player_cards(self) -> Response[player_cards.PlayerCards]:
-        return self.request(Route('GET', '/playercards', EndpointType.valorant_api), params={'language': 'all'})
+    def get_maps(self, *, language: Optional[str] = 'all') -> Response[maps.Maps]:
+        return self.request(Route('GET', '/maps', EndpointType.valorant_api), params={'language': language})
 
-    def get_player_titles(self) -> Response[player_titles.PlayerTitles]:
-        return self.request(Route('GET', '/playertitles', EndpointType.valorant_api), params={'language': 'all'})
+    def get_map(self, uuid: str, *, language: Optional[str] = 'all') -> Response[maps.MapUUID]:
+        return self.request(
+            Route('GET', '/maps/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
 
-    def get_seasons(self) -> Response[seasons.Seasons]:
-        return self.request(Route('GET', '/seasons', EndpointType.valorant_api), params={'language': 'all'})
+    # -
+
+    def get_missions(self, *, language: Optional[str] = 'all') -> Response[missions.Missions]:
+        return self.request(Route('GET', '/missions', EndpointType.valorant_api), params={'language': language})
+
+    def get_mission(self, uuid: str, *, language: Optional[str] = 'all') -> Response[missions.MissionUUID]:
+        return self.request(
+            Route('GET', '/missions/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    # -
+
+    def get_player_cards(self, *, language: Optional[str] = 'all') -> Response[player_cards.PlayerCards]:
+        return self.request(Route('GET', '/playercards', EndpointType.valorant_api), params={'language': language})
+
+    def get_player_card(self, uuid: str, *, language: Optional[str] = 'all') -> Response[player_cards.PlayerCardUUID]:
+        return self.request(
+            Route('GET', '/playercards/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    # -
+
+    def get_player_titles(self, *, language: Optional[str] = 'all') -> Response[player_titles.PlayerTitles]:
+        return self.request(Route('GET', '/playertitles', EndpointType.valorant_api), params={'language': language})
+
+    def get_player_title(self, uuid: str, *, language: Optional[str] = 'all') -> Response[player_titles.PlayerTitleUUID]:
+        return self.request(
+            Route('GET', '/playertitles/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    # -
+
+    def get_seasons(self, *, language: Optional[str] = 'all') -> Response[seasons.Seasons]:
+        return self.request(Route('GET', '/seasons', EndpointType.valorant_api), params={'language': language})
+
+    def get_season(self, uuid: str, *, language: Optional[str] = 'all') -> Response[seasons.SeasonUUID]:
+        return self.request(
+            Route('GET', '/seasons/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
 
     def get_seasons_competitive(self) -> Response[seasons.CompetitiveSeasons]:
-        return self.request(Route('GET', '/seasons/competitive', EndpointType.valorant_api), params={'language': 'all'})
+        return self.request(Route('GET', '/seasons/competitive', EndpointType.valorant_api))
 
-    def get_sprays(self) -> Response[sprays.Sprays]:
-        return self.request(Route('GET', '/sprays', EndpointType.valorant_api), params={'language': 'all'})
+    def get_season_competitive(self, uuid: str) -> Response[seasons.CompetitiveSeasonUUID]:
+        return self.request(Route('GET', '/seasons/competitive/{uuid}', EndpointType.valorant_api, uuid=uuid))
 
-    def get_themes(self) -> Response[themes.Themes]:
-        return self.request(Route('GET', '/themes', EndpointType.valorant_api), params={'language': 'all'})
+    # -
 
-    def get_weapons(self) -> Response[weapons.Weapons]:
-        return self.request(Route('GET', '/weapons', EndpointType.valorant_api), params={'language': 'all'})
+    def get_sprays(self, *, language: Optional[str] = 'all') -> Response[sprays.Sprays]:
+        return self.request(Route('GET', '/sprays', EndpointType.valorant_api), params={'language': language})
+
+    def get_spray(self, uuid: str, *, language: Optional[str] = 'all') -> Response[sprays.SprayUUID]:
+        return self.request(
+            Route('GET', '/sprays/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    def get_spray_levels(self, *, language: Optional[str] = 'all') -> Response[sprays.SprayLevels]:
+        return self.request(Route('GET', '/sprays/levels', EndpointType.valorant_api), params={'language': language})
+
+    def get_spray_level(self, uuid: str, *, language: Optional[str] = 'all') -> Response[sprays.SprayLevelUUID]:
+        return self.request(
+            Route('GET', '/sprays/levels/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    # -
+
+    def get_themes(self, *, language: Optional[str] = 'all') -> Response[themes.Themes]:
+        return self.request(Route('GET', '/themes', EndpointType.valorant_api), params={'language': language})
+
+    def get_theme(self, uuid: str, *, language: Optional[str] = 'all') -> Response[themes.ThemeUUID]:
+        return self.request(
+            Route('GET', '/themes/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    # -
+
+    def get_weapons(self, *, language: Optional[str] = 'all') -> Response[weapons.Weapons]:
+        return self.request(Route('GET', '/weapons', EndpointType.valorant_api), params={'language': language})
+
+    def get_weapon(self, uuid: str, *, language: Optional[str] = 'all') -> Response[weapons.WeaponUUID]:
+        return self.request(
+            Route('GET', '/weapons/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    def get_weapon_skins(self, *, language: Optional[str] = 'all') -> Response[weapons.Skins]:
+        return self.request(Route('GET', '/weapons/skins', EndpointType.valorant_api), params={'language': language})
+
+    def get_weapon_skin(self, uuid: str, *, language: Optional[str] = 'all') -> Response[weapons.SkinUUID]:
+        return self.request(
+            Route('GET', '/weapons/skins/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    def get_weapon_skin_chroms(self, *, language: Optional[str] = 'all') -> Response[weapons.SkinChromas]:
+        return self.request(Route('GET', '/weapons/skinchromas', EndpointType.valorant_api), params={'language': language})
+
+    def get_weapon_skin_chroma(self, uuid: str, *, language: Optional[str] = 'all') -> Response[weapons.SkinChromaUUID]:
+        return self.request(
+            Route('GET', '/weapons/skinchromas/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    def get_weapon_skin_levels(self, *, language: Optional[str] = 'all') -> Response[weapons.SkinLevels]:
+        return self.request(Route('GET', '/weapons/skinlevels', EndpointType.valorant_api), params={'language': language})
+
+    def get_weapon_skin_level(self, uuid: str, *, language: Optional[str] = 'all') -> Response[weapons.SkinLevelUUID]:
+        return self.request(
+            Route('GET', '/weapons/skinlevels/{uuid}', EndpointType.valorant_api, uuid=uuid), params={'language': language}
+        )
+
+    # -
 
     def get_version(self) -> Response[version.Version]:
         return self.request(Route('GET', '/version', EndpointType.valorant_api))
