@@ -20,9 +20,9 @@ from . import utils
 from .enums import Locale, try_enum  # ItemType, QueueType, SeasonType,
 from .errors import AuthRequired
 from .http import HTTPClient
+from .models import Entitlements, Offers, StoreFront, Wallet
 from .valorant_api import Client as ValorantAPIClient
 
-# from .models import (
 #     MMR,
 #     AccountXP,
 #     Agent,
@@ -267,3 +267,19 @@ class Client:
     # @property
     # def me(self) -> Optional[ClientPlayer]:
     #     return self.user
+
+    async def fetch_store_front(self) -> StoreFront:
+        data = await self._http.store_fetch_storefront()
+        return StoreFront(self, data)
+
+    async def fetch_wallet(self) -> Wallet:
+        data = await self._http.store_fetch_wallet()
+        return Wallet(self, data)
+
+    async def fetch_entitlements(self) -> Entitlements:
+        data = await self._http.store_fetch_entitlements()
+        return Entitlements(self, data)
+
+    async def fetch_offers(self) -> Offers:
+        data = await self._http.store_fetch_offers()
+        return Offers(self, data)
