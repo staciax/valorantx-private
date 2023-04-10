@@ -44,6 +44,7 @@ if TYPE_CHECKING:
         agents,
         buddies,
         bundles,
+        bundles_valtracker,
         ceremonies,
         competitive_tiers,
         content_tiers,
@@ -136,6 +137,7 @@ class CacheState:
             self.http.get_themes,
             self.http.get_weapons,
             self.http.get_version,
+            self.http.get_bundles_valtracker,
         ]
         # if self._to_file:
 
@@ -182,35 +184,6 @@ class CacheState:
             if key.startswith('_') and isinstance(self.__dict__[key], dict):
                 self.__dict__[key].clear()
         self._version = MISSING
-
-        # self._agents.clear()
-        # self._buddies.clear()
-        # self._buddy_levels.clear()
-        # self._bundles.clear()
-        # self._ceremonies.clear()
-        # self._competitive_tiers.clear()
-        # self._content_tiers.clear()
-        # self._contracts.clear()
-        # self._currencies.clear()
-        # self._events.clear()
-        # self._game_modes.clear()
-        # self._game_mode_equippables.clear()
-        # self._gear.clear()
-        # self._level_borders.clear()
-        # self._maps.clear()
-        # self._missions.clear()
-        # self._player_cards.clear()
-        # self._player_titles.clear()
-        # self._seasons.clear()
-        # self._season_competitives.clear()
-        # self._sprays.clear()
-        # self._spray_levels.clear()
-        # self._themes.clear()
-        # self._version.clear()
-        # self._weapons.clear()
-        # self._skins.clear()
-        # self._skin_chromas.clear()
-        # self._skin_levels.clear()
 
     # agents
 
@@ -765,3 +738,41 @@ class CacheState:
                     self.store_weapon_skin_chroma(chroma, skin_existing)
                 for level in skin['levels']:
                     self.store_weapon_skin_level(level, skin_existing)
+
+    # bundles 2nd
+
+    # def store_bundle(self, data: bundles.Bundle) -> Bundle:
+    #     bundle_id = data['uuid']
+    #     self._bundles[bundle_id] = bundle = Bundle(state=self, data=data)
+    #     return bundle
+
+    def _add_bundles_valtracker(self, data: bundles_valtracker.BundlesValTracker) -> None:
+        bundle_data = data['data']
+        for bundle in bundle_data:
+            bd = self.get_bundle(bundle['uuid'])
+            if bd is not None:
+                for buddy in bundle['buddies']:
+                    buddy = self.get_buddy(buddy['uuid'])
+                    if buddy is not None:
+                        bd._add_item(buddy)
+
+                for card in bundle['cards']:
+                    card = self.get_player_card(card['uuid'])
+                    if card is not None:
+                        bd._add_item(card)
+
+                for spray in bundle['sprays']:
+                    spray = self.get_spray(spray['uuid'])
+                    if spray is not None:
+                        bd._add_item(spray)
+
+                for weapon in bundle['weapons']:
+                    skin = self.get_skin(weapon['uuid'])  # or self.get_weapon(weapon['uuid'])
+                    if skin is not None:
+                        bd._add_item(skin)
+                    # else:
+                    #     print(weapon['uuid'])
+                    # if isinstance(skin, Skin):
+                    #     bd._add_item(skin)
+                    # else:
+                    #     print(skin)

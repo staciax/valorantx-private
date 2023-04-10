@@ -4,7 +4,7 @@ import asyncio
 import enum
 import logging
 import sys
-from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, Mapping, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, Optional, TypeVar, Union
 from urllib.parse import quote as _uriquote
 
 import aiohttp
@@ -19,6 +19,7 @@ if TYPE_CHECKING:
         agents,
         buddies,
         bundles,
+        bundles_valtracker,
         ceremonies,
         competitive_tiers,
         content_tiers,
@@ -57,7 +58,7 @@ class EndpointType(enum.Enum):
 
 class Route:
     BASE_VALORANT_API_URL: ClassVar[str] = 'https://valorant-api.com/v1'
-    BASE_VALTRACKER_GG_URL: ClassVar[str] = 'https://api.valtracker.gg/v0'  # add-on bundle items
+    BASE_VALTRACKER_GG_URL: ClassVar[str] = 'https://api.valtracker.gg/v1'  # add-on bundle items
 
     def __init__(
         self,
@@ -442,5 +443,5 @@ class HTTPClient:
 
     # valtracker endpoint
 
-    def get_bundles_2nd(self) -> Response[Mapping[str, Any]]:
+    def get_bundles_valtracker(self) -> Response[bundles_valtracker.BundlesValTracker]:
         return self.request(Route('GET', '/bundles', EndpointType.valtracker_gg))
