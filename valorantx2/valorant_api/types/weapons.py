@@ -39,12 +39,12 @@ class WeaponStats(TypedDict):
     firstBulletAccuracy: float
     shotgunPelletCount: int
     wallPenetration: str
-    feature: str
-    fireMode: str
-    altFireType: str
-    adsStats: AdsStats
-    altShotgunStats: AltShotgunStats
-    airBurstStats: AirBurstStats
+    feature: Optional[str]
+    fireMode: Optional[str]
+    altFireType: Optional[str]
+    adsStats: Optional[AdsStats]
+    altShotgunStats: Optional[AltShotgunStats]
+    airBurstStats: Optional[AirBurstStats]
     damageRanges: List[DamageRange]
 
 

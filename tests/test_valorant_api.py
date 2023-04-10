@@ -505,8 +505,23 @@ class TestValorantAPI(BaseTest):
             assert weapon.display_icon is not None
             assert weapon.kill_stream_icon is not None
             assert weapon.asset_path is not None
-            if weapon.stats:
-                assert weapon.weapon_stats is not None
+            stats = weapon.weapon_stats
+            if stats:
+                assert stats is not None
+                assert stats.fire_rate is not None
+                assert stats.magazine_size is not None
+                assert stats.run_speed_multiplier is not None
+                assert stats.equip_time_seconds is not None
+                assert stats.reload_time_seconds is not None
+                assert stats.first_bullet_accuracy is not None
+                assert stats.wall_penetration is not None
+                if stats.feature is not None:
+                    assert stats.feature is not None
+                if stats.fire_mode is not None:
+                    assert stats.fire_mode is not None
+                if stats.alt_fire_type is not None:
+                    assert stats.alt_fire_type is not None
+                
                 # TODO: test all attributes of weapon stats
             if weapon.shop_data:
                 assert weapon.shop_data is not None

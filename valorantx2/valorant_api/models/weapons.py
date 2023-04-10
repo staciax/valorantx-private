@@ -111,18 +111,20 @@ class DamageRange:
 
 class WeaponStats:
     def __init__(self, data: WeaponStatsPayload) -> None:
-        self.fire_rate: float = data.get('fireRate', 0)
-        self.magazine_size: int = data.get('magazineSize', 0)
-        self.run_speed_multiplier: float = data.get('runSpeedMultiplier', 0)
-        self.equip_time_seconds: float = data.get('equipTimeSeconds', 0)
-        self.reload_time_seconds: float = data.get('reloadTimeSeconds', 0)
-        self.first_bullet_accuracy: float = data.get('firstBulletAccuracy', 0)
-        self.shotgun_pellet_count: int = data.get('shotgunPelletCount', 0)
-        self._wall_penetration: Optional[str] = data.get('wallPenetration')
-        self._feature: Optional[str] = data.get('feature')
-        self._fire_mode: Optional[str] = data.get('fireMode')
-        self._alt_fire_type: Optional[str] = data.get('altFireType')
-        self.ads_stats: Optional[AdsStats] = AdsStats(data['adsStats']) if data.get('adsStats') else None
+        self.fire_rate: float = data['fireRate']
+        self.magazine_size: int = data['magazineSize']
+        self.run_speed_multiplier: float = data['runSpeedMultiplier']
+        self.equip_time_seconds: float = data['equipTimeSeconds']
+        self.reload_time_seconds: float = data['reloadTimeSeconds']
+        self.first_bullet_accuracy: float = data['firstBulletAccuracy']
+        self.shotgun_pellet_count: int = data['shotgunPelletCount']
+        self._wall_penetration: Optional[str] = data['wallPenetration']
+        self._feature: Optional[str] = data['feature']
+        self._fire_mode: Optional[str] = data['fireMode']
+        self._alt_fire_type: Optional[str] = data['altFireType']
+        self.ads_stats: Optional[AdsStats] = None
+        if data['adsStats'] is not None:
+            self.ads_stats = AdsStats(data['adsStats'])
         self.alt_shotgun_stats: Optional[AltShotgunStats] = None
         if data['altShotgunStats'] is not None:
             self.alt_shotgun_stats = AltShotgunStats(data['altShotgunStats'])
