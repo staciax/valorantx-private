@@ -178,7 +178,7 @@ class Client:
         # valorant-api
         self.loop.create_task(self.valorant_api.init())
         try:
-            await asyncio.wait_for(self.valorant_api.wait_until_ready(), timeout=15)
+            await asyncio.wait_for(self.valorant_api.wait_until_ready(), timeout=30)
         except asyncio.TimeoutError:
             raise RuntimeError('Valorant API did not become ready in time')
 
