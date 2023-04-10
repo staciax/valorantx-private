@@ -1,4 +1,4 @@
-from typing import Dict, List, TypedDict, Union
+from typing import Dict, List, Optional, TypedDict, Union
 
 from .object import Object
 from .response import Response
@@ -67,18 +67,18 @@ class ShopData(TypedDict):
 
 class Chroma(Object):
     displayName: Union[str, Dict[str, str]]
-    displayIcon: str
+    displayIcon: Optional[str]
     fullRender: str
-    swatch: str
-    streamedVideo: str
+    swatch: Optional[str]
+    streamedVideo: Optional[str]
     assetPath: str
 
 
 class Level(Object):
     displayName: Union[str, Dict[str, str]]
     levelItem: str
-    displayIcon: str
-    streamedVideo: str
+    displayIcon: Optional[str]
+    streamedVideo: Optional[str]
     assetPath: str
 
 
@@ -100,8 +100,8 @@ class Weapon(Object):
     displayIcon: str
     killStreamIcon: str
     assetPath: str
-    weaponStats: WeaponStats
-    shopData: ShopData
+    weaponStats: Optional[WeaponStats]
+    shopData: Optional[ShopData]
     skins: List[Skin]
 
 

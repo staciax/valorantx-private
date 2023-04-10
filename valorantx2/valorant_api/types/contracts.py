@@ -24,10 +24,10 @@ class Chapter(TypedDict):
 
 
 class Content(TypedDict):
-    relationType: str
-    relationUuid: str
+    relationType: Optional[str]
+    relationUuid: Optional[str]
     chapters: List[Chapter]
-    premiumRewardScheduleUuid: str
+    premiumRewardScheduleUuid: Optional[str]
     premiumVPCost: int
 
 
