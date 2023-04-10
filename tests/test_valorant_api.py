@@ -284,66 +284,186 @@ class TestValorantAPI(BaseTest):
         assert len(self.valorant_api.gear) > 0
         for gear in self.valorant_api.gear:
             assert gear is not None
+            assert gear.display_name is not None
+            assert gear.display_icon is not None
+            shop_data = gear.shop_data
+            assert shop_data is not None
+            assert shop_data.cost is not None
+            assert shop_data.category is not None
+            assert shop_data.category_text is not None
+            grid_position = shop_data.grid_position
+            if grid_position is not None:
+                assert grid_position.row is not None
+                assert grid_position.column is not None
+            assert shop_data.can_be_trashed is not None
+            assert isinstance(shop_data.can_be_trashed, bool)
+            # assert shop_data.image is not None
+            assert shop_data.new_image is not None
+            # assert shop_data.new_image_2 is not None
+            assert shop_data.asset_path is not None
+            assert gear.asset_path is not None
 
     @pytest.mark.asyncio
     async def test_level_borders(self) -> None:
         assert len(self.valorant_api.level_borders) > 0
         for border in self.valorant_api.level_borders:
             assert border is not None
+            assert border.starting_level is not None
+            assert border.level_number_appearance is not None
+            assert border.small_player_card_appearance is not None
+            assert border.asset_path is not None
 
     @pytest.mark.asyncio
     async def test_maps(self) -> None:
         assert len(self.valorant_api.maps) > 0
         for mp in self.valorant_api.maps:
             assert mp is not None
+            assert mp.display_name is not None
+            assert mp.coordinates is not None
+            assert mp.display_name is not None
+            assert mp.list_view_icon is not None
+            assert mp.asset_path is not None
+            assert mp.url is not None
+            assert mp.x_multiplier is not None
+            assert mp.y_multiplier is not None
+            assert mp.x_scalar_to_add is not None
+            assert mp.y_scalar_to_add is not None
+            callouts = mp.callouts
+            if callouts is not None:
+                for callout in callouts:
+                    assert callout.region_name is not None
+                    assert callout.super_region_name is not None
+                    assert callout.location is not None
+                    assert callout.location.x is not None
+                    assert callout.location.y is not None
 
     @pytest.mark.asyncio
     async def test_missions(self) -> None:
         assert len(self.valorant_api.missions) > 0
         for mission in self.valorant_api.missions:
             assert mission is not None
+            if mission.display_name:
+                assert mission.display_name is not None
+            if mission.title:
+                assert mission.title is not None
+            if mission.type:
+                assert mission.type is not None
+            assert mission.xp_grant is not None
+            assert mission.progress_to_complete is not None
+            assert mission.activation_date is not None
+            assert mission.expiration_date is not None
+            if mission.tags is not None:
+                assert len(mission.tags) > 0
+            if mission.objectives:
+                assert len(mission.objectives) > 0
+                for objective in mission.objectives:
+                    assert objective is not None
+                    assert objective.value is not None
+                    assert isinstance(objective.value, int)
+            assert mission.asset_path is not None
 
     @pytest.mark.asyncio
     async def test_player_cards(self) -> None:
         assert len(self.valorant_api.player_cards) > 0
         for card in self.valorant_api.player_cards:
             assert card is not None
+            assert card.display_name is not None
+            assert card.display_icon is not None
+            assert card.asset_path is not None
+            assert isinstance(card.is_hidden_if_not_owned(), bool)
+            assert card.small_art is not None
+            assert card.wide_art is not None
+            assert card.large_art is not None
+            # assert card._theme_uuid is not None # optional
 
     @pytest.mark.asyncio
     async def test_player_titles(self) -> None:
         assert len(self.valorant_api.player_titles) > 0
         for title in self.valorant_api.player_titles:
             assert title is not None
+            assert title.display_name is not None
+            assert title.text is not None
+            assert isinstance(title.is_hidden_if_not_owned(), bool)
+            assert title.asset_path is not None
 
     @pytest.mark.asyncio
     async def test_seasons(self) -> None:
         assert len(self.valorant_api.seasons) > 0
         for season in self.valorant_api.seasons:
             assert season is not None
+            assert season.display_name is not None
+            # assert season.type is not None
+            assert season.start_time is not None
+            assert season.end_time is not None
+            # assert season._parent_uuid is not None
+            assert season.asset_path is not None
 
     @pytest.mark.asyncio
     async def test_competitive_seasons(self) -> None:
         assert len(self.valorant_api.competitive_seasons) > 0
         for cs in self.valorant_api.competitive_seasons:
             assert cs is not None
+            assert cs.start_time is not None
+            assert cs.end_time is not None
+            assert cs._season_uuid is not None
+            assert cs._competitive_tiers_uuid is not None
+            if cs.borders is not None:
+                for border in cs.borders:
+                    assert border is not None
+                    assert border.level is not None
+                    assert isinstance(border.level, int)
+                    assert border.wins_required is not None
+                    assert isinstance(border.wins_required, int)
+                    assert border.display_icon is not None
+                    if border.small_icon:
+                        assert border.small_icon is not None
+                    assert border.asset_path is not None
+            assert cs.asset_path is not None
 
     @pytest.mark.asyncio
     async def test_sprays(self) -> None:
         assert len(self.valorant_api.sprays) > 0
         for spray in self.valorant_api.sprays:
             assert spray is not None
+            assert spray.display_name is not None
+            # if spray.category is not None:  # optional
+            #     print(spray.category)
+            # if spray._theme_uuid is not None:  # optional
+            #     print(spray._theme_uuid)
+            assert spray.display_icon is not None
+            # assert spray.full_icon is not None  # optional
+            # assert spray.full_transparent_icon is not None # optional
+            # assert spray.animation_png is not None # optional
+            # assert spray.animation_gif is not None # optional
+            assert spray.asset_path is not None
             for level in spray.levels:
                 assert level is not None
+                assert level.spray_level is not None
+                assert level.display_name is not None
+                assert level.display_icon is not None
+                assert level.asset_path is not None
 
     @pytest.mark.asyncio
     async def test_themes(self) -> None:
         assert len(self.valorant_api.themes) > 0
         for theme in self.valorant_api.themes:
             assert theme is not None
+            assert theme.display_name is not None
+            # assert theme.display_icon is not None  # optional
+            # assert theme.store_featured_image is not None # optional
+            assert theme.asset_path is not None
 
     @pytest.mark.asyncio
     async def test_version(self) -> None:
-        assert self.valorant_api.version is not MISSING
+        version = self.valorant_api.version
+        assert version.manifest_id is not None
+        assert version.branch is not None
+        assert version.version is not None
+        assert version.build_version is not None
+        assert version.engine_version is not None
+        assert version.riot_client_version is not None
+        assert version.riot_client_build is not None
+        assert version.build_date is not None
 
     @pytest.mark.asyncio
     async def test_weapons(self) -> None:
@@ -360,30 +480,9 @@ class TestValorantAPI(BaseTest):
     def test_clear(self) -> None:
         self.valorant_api.clear()
         assert self.valorant_api.version is MISSING
-        assert len(self.valorant_api.agents) == 0
-        assert len(self.valorant_api.buddies) == 0
-        assert len(self.valorant_api.bundles) == 0
-        assert len(self.valorant_api.ceremonies) == 0
-        assert len(self.valorant_api.competitive_tiers) == 0
-        assert len(self.valorant_api.content_tiers) == 0
-        assert len(self.valorant_api.contracts) == 0
-        assert len(self.valorant_api.currencies) == 0
-        assert len(self.valorant_api.game_modes) == 0
-        assert len(self.valorant_api.game_mode_equippables) == 0
-        assert len(self.valorant_api.gear) == 0
-        assert len(self.valorant_api.level_borders) == 0
-        assert len(self.valorant_api.maps) == 0
-        assert len(self.valorant_api.missions) == 0
-        assert len(self.valorant_api.player_cards) == 0
-        assert len(self.valorant_api.player_titles) == 0
-        assert len(self.valorant_api.seasons) == 0
-        assert len(self.valorant_api.competitive_seasons) == 0
-        assert len(self.valorant_api.sprays) == 0
-        assert len(self.valorant_api.themes) == 0
-        assert len(self.valorant_api.weapons) == 0
-        assert len(self.valorant_api.skins) == 0
-        assert len(self.valorant_api.skin_chromas) == 0
-        assert len(self.valorant_api.skin_levels) == 0
+        for key in self.valorant_api._cache.__dict__.keys():
+            if key.startswith('_') and isinstance(self.valorant_api._cache.__dict__[key], dict):
+                assert len(self.valorant_api._cache.__dict__[key]) == 0
 
     @pytest.mark.asyncio
     async def test_close(self) -> None:
