@@ -23,8 +23,8 @@ class Spray(BaseModel):
         super().__init__(data['uuid'])
         self._state: CacheState = state
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._category: str = data['category']
-        self._theme_uuid: str = data['themeUuid']
+        self._category: Optional[str] = data['category']
+        self._theme_uuid: Optional[str] = data['themeUuid']
         self._display_icon: str = data['displayIcon']
         self._full_icon: Optional[str] = data['fullIcon']
         self._full_transparent_icon: Optional[str] = data['fullTransparentIcon']
@@ -104,7 +104,7 @@ class SprayLevel(BaseModel):
     def __init__(self, state: CacheState, data: SprayLevelPayload) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
-        self._spray_level: int = data['sprayLevel']
+        self.spray_level: int = data['sprayLevel']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
@@ -128,8 +128,8 @@ class SprayLevel(BaseModel):
 
     @property
     def level(self) -> int:
-        """:class: `int` Returns the spray level."""
-        return self._spray_level
+        """:class: `int` alias for :attr: `SprayLevel.spray_level`"""
+        return self.spray_level
 
     @property
     def display_icon(self) -> Optional[Asset]:

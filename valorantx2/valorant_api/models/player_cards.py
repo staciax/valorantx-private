@@ -59,21 +59,21 @@ class PlayerCard(BaseModel):
 
     @property
     def small_art(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the player card's small icon."""
+        """:class: `Asset` Returns the player card's small art."""
         if self._small_art is None:
             return None
         return Asset._from_url(state=self._state, url=self._small_art)
 
     @property
     def wide_art(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the player card's wide icon."""
+        """:class: `Asset` Returns the player card's wide art."""
         if self._wide_art is None:
             return None
         return Asset._from_url(state=self._state, url=self._wide_art)
 
     @property
-    def large_icon(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the player card's large icon."""
+    def large_art(self) -> Optional[Asset]:
+        """:class: `Asset` Returns the player card's large art."""
         if self._large_art is None:
             return None
         return Asset._from_url(state=self._state, url=self._large_art)

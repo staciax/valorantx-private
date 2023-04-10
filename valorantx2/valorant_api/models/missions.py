@@ -20,6 +20,14 @@ __all__ = (
 # fmt: on
 
 
+class Objective(BaseModel):
+    def __init__(self, data: ObjectivePayload) -> None:
+        super().__init__(data['objectiveUuid'])
+        self.value: int = data['value']
+
+    # TODO: add magic methods
+
+
 class Mission(BaseModel):
     def __init__(self, state: CacheState, data: MissionPayload) -> None:
         super().__init__(data['uuid'])
@@ -27,12 +35,14 @@ class Mission(BaseModel):
         self._display_name: Optional[Union[str, Dict[str, str]]] = data['displayName']
         self._title: Optional[Union[str, Dict[str, str]]] = data['title']
         self._type: Optional[str] = data['type']
-        self.xp: int = data['xpGrant']
+        self.xp_grant: int = data['xpGrant']
         self.progress_to_complete: int = data['progressToComplete']
         self._activation_date_iso: str = data['activationDate']
         self._expiration_date_iso: str = data['expirationDate']
         self.tags: Optional[List[str]] = data['tags']
-        self._objectives: List[ObjectivePayload] = data['objectives']
+        self.objectives: Optional[List[Objective]] = None
+        if data['objectives'] is not None:
+            self.objectives = [Objective(obj) for obj in data['objectives']]
         self.asset_path: str = data['assetPath']
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
         self._title_localized: Localization = Localization(self._title, locale=self._state.locale)
@@ -44,7 +54,12 @@ class Mission(BaseModel):
         return f'<Mission title={self.title!r}>'
 
     def __int__(self) -> int:
-        return self.xp
+        return self.xp_grant
+
+    @property
+    def xp(self) -> int:
+        """:class: `int` alias for :attr: `Mission.xp_grant`"""
+        return self.xp_grant
 
     def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
         return self._display_name_localized.from_locale(locale)

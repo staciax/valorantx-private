@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 from ..asset import Asset
 from ..enums import Locale
@@ -10,11 +10,10 @@ from .abc import BaseModel
 if TYPE_CHECKING:
     from ..cache import CacheState
     from ..types.bundles import Bundle as BundlePayload
-
-    # from .buddy import Buddy
-    # from .player_card import PlayerCard
-    # from .spray import Spray
-    # from .weapons import Skin
+    from .buddies import Buddy
+    from .player_cards import PlayerCard
+    from .sprays import Spray
+    from .weapons import Skin
 
 # fmt: off
 __all__ = (
@@ -44,7 +43,7 @@ class Bundle(BaseModel):
         self._description_localized: Localization = Localization(self._description, locale=self._state.locale)
         self._extra_description_localized: Localization = Localization(self._extra_description, locale=self._state.locale)
         self._promo_description_localized: Localization = Localization(self._promo_description, locale=self._state.locale)
-        # self._items: List[Union[Skin, Buddy, Spray, PlayerCard]] = []
+        self._items: List[Union[Skin, Buddy, Spray, PlayerCard]] = []
 
     def __str__(self) -> str:
         return self.display_name.locale
@@ -114,16 +113,42 @@ class Bundle(BaseModel):
             return None
         return Asset._from_url(state=self._state, url=self._vertical_promo_image)
 
-    # def add_item(self, item: Union[Skin, Buddy, Spray, PlayerCard]) -> None:
-    #     # avoid circular imports
-    #     from .buddy import Buddy
-    #     from .player_card import PlayerCard
-    #     from .spray import Spray
-    #     from .weapons import Skin
+    def _add_item(self, item: Union[Skin, Buddy, Spray, PlayerCard]) -> None:
+        self._items.append(item)
 
-    # self._items.append(item)
+    @property
+    def items(self) -> List[Union[Skin, Buddy, Spray, PlayerCard]]:
+        """:class: `List[Union[Buddy, Spray, PlayerCard]]` Returns the bundle's items."""
+        return self._items
 
-    # @property
-    # def items(self) -> List[Union[Skin, Buddy, Spray, PlayerCard]]:
-    #     """:class: `List[Union[Buddy, Spray, PlayerCard]]` Returns the bundle's items."""
-    #     return self._items
+    @property
+    def buddies(self) -> List[Buddy]:
+        """:class: `List[Buddy]` Returns the bundle's buddies."""
+        # avoid circular imports
+        from .buddies import Buddy
+
+        return [item for item in self._items if isinstance(item, Buddy)]
+
+    @property
+    def sprays(self) -> List[Spray]:
+        """:class: `List[Spray]` Returns the bundle's sprays."""
+        # avoid circular imports
+        from .sprays import Spray
+
+        return [item for item in self._items if isinstance(item, Spray)]
+
+    @property
+    def player_cards(self) -> List[PlayerCard]:
+        """:class: `List[PlayerCard]` Returns the bundle's player cards."""
+        # avoid circular imports
+        from .player_cards import PlayerCard
+
+        return [item for item in self._items if isinstance(item, PlayerCard)]
+
+    @property
+    def skins(self) -> List[Skin]:
+        """:class: `List[Skin]` Returns the bundle's skins."""
+        # avoid circular imports
+        from .weapons import Skin
+
+        return [item for item in self._items if isinstance(item, Skin)]

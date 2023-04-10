@@ -100,7 +100,7 @@ class BonusStore(TypedDict):
     BonusStoreRemainingDurationInSeconds: int
 
 
-class StoreFront(TypedDict):
+class StoreFront(TypedDict, total=False):
     FeaturedBundle: FeaturedBundle
     SkinsPanelLayout: SkinsPanelLayout
     UpgradeCurrencyStore: UpgradeCurrencyStore

@@ -18,16 +18,33 @@ __all__ = (
 # fmt: on
 
 
+class GridPosition:
+    def __init__(self, data: GridPositionPayload) -> None:
+        self.row: int = data['row']
+        self.column: int = data['column']
+
+    def __repr__(self) -> str:
+        return f'<GridPosition row={self.row!r} column={self.column!r}>'
+
+    def __eq__(self, other: GridPosition) -> bool:
+        return isinstance(other, GridPosition) and self.row == other.row and self.column == other.column
+
+    def __ne__(self, other: GridPosition) -> bool:
+        return not self.__eq__(other)
+
+
 class ShopData:
     def __init__(self, *, state: CacheState, data: ShopDataPayload) -> None:
         self._state: CacheState = state
         self.cost: int = data['cost']
         self.category: str = data['category']
         self._category_text: Union[str, Dict[str, str]] = data['categoryText']
-        self._grid_position: GridPositionPayload = data['gridPosition']
-        self._can_be_trashed: bool = data.get('canBeTrashed', False)
+        self.grid_position: Optional[GridPosition] = None
+        if data['gridPosition'] is not None:
+            self.grid_position = GridPosition(data['gridPosition'])
+        self.can_be_trashed: bool = data.get('canBeTrashed', False)
         self._image: Optional[str] = data['image']
-        self._new_image: Optional[str] = data['newImage']
+        self._new_image: str = data['newImage']
         self._new_image_2: Optional[str] = data['newImage2']
         self.asset_path: str = data['assetPath']
 
@@ -65,9 +82,9 @@ class ShopData:
             return None
         return Asset._from_url(state=self._state, url=self._new_image_2)
 
-    def can_be_trashed(self) -> bool:
-        """:class: `bool` Returns whether the gear can be trashed."""
-        return self._can_be_trashed
+    # def can_be_trashed(self) -> bool:
+    #     """:class: `bool` Returns whether the gear can be trashed."""
+    #     return self._can_be_trashed
 
 
 class Gear(BaseModel):
@@ -78,7 +95,7 @@ class Gear(BaseModel):
         self._description: Union[str, Dict[str, str]] = data['description']
         self._display_icon: str = data['displayIcon']
         self.asset_path: str = data['assetPath']
-        self._shop_data: ShopData = ShopData(state=self._state, data=data['shopData'])
+        self.shop_data: ShopData = ShopData(state=self._state, data=data['shopData'])
         self._display_name_localized = Localization(self._display_name, locale=self._state.locale)
         self._description_localized = Localization(self._description, locale=self._state.locale)
 
@@ -109,10 +126,10 @@ class Gear(BaseModel):
         """:class: `Asset` Returns the gear's display icon."""
         return Asset._from_url(state=self._state, url=self._display_icon)
 
-    @property
-    def shop_data(self) -> ShopData:
-        """:class: `ShopData` Returns the gear's shop data."""
-        return self._shop_data
+    # @property
+    # def shop_data(self) -> ShopData:
+    #     """:class: `ShopData` Returns the gear's shop data."""
+    #     return self._shop_data
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
