@@ -79,11 +79,11 @@ class TestValorantAPI(BaseTest):
     async def test_buddies(self) -> None:
         assert len(self.valorant_api.buddies) > 0
         for buddy in self.valorant_api.buddies:
+            assert buddy is not None
             # fbuddy = await self.valorant_api.fetch_buddy(buddy.uuid)
             fbuddy = self.valorant_api.get_buddy(buddy.uuid)
             assert fbuddy is not None
             assert fbuddy == buddy
-
             assert buddy is not None
             assert buddy.display_name is not None
             assert isinstance(buddy.is_hidden_if_not_owned(), bool)
@@ -96,6 +96,7 @@ class TestValorantAPI(BaseTest):
 
             for level in buddy.levels:
                 assert level is not None
+                assert level.parent is not None
                 assert level.charm_level is not None
                 assert level.display_name is not None
                 assert level.display_icon is not None
@@ -464,6 +465,7 @@ class TestValorantAPI(BaseTest):
             assert spray.asset_path is not None
             for level in spray.levels:
                 assert level is not None
+                assert level.parent is not None
                 assert level.spray_level is not None
                 assert level.display_name is not None
                 assert level.display_icon is not None

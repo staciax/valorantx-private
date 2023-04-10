@@ -225,26 +225,16 @@ class CacheState:
     def store_buddy(self, data: buddies.Buddy) -> Buddy:
         buddy_id = data['uuid']
         self._buddies[buddy_id] = buddy = Buddy(state=self, data=data)
+        for level in buddy.levels:
+            self._buddy_levels[level.uuid] = level
         return buddy
-
-    def store_buddy_level(self, data: buddies.BuddyLevel, buddy: Optional[Buddy] = None) -> BuddyLevel:
-        buddy_level_id = data['uuid']
-        buddy_level = BuddyLevel(state=self, data=data)
-        if buddy is not None:
-            buddy_level.buddy = buddy
-        self._buddy_levels[buddy_level_id] = buddy_level
-        return buddy_level
 
     def _add_buddies(self, data: buddies.Buddies) -> None:
         buddy_data = data['data']
         for buddy in buddy_data:
             buddy_existing = self.get_buddy(buddy['uuid'])
             if buddy_existing is None:
-                buddy_existing = self.store_buddy(buddy)
-            for level in buddy['levels']:
-                level_existing = self.get_buddy_level(level['uuid'])
-                if level_existing is None:
-                    self.store_buddy_level(level, buddy_existing)
+                self.store_buddy(buddy)
 
     # bundles
 
@@ -620,23 +610,16 @@ class CacheState:
     def store_spray(self, data: sprays.Spray) -> Spray:
         spray_id = data['uuid']
         self._sprays[spray_id] = spray = Spray(state=self, data=data)
+        for level in spray.levels:
+            self._spray_levels[level.uuid] = level
         return spray
-
-    def store_spray_level(self, data: sprays.SprayLevel, spray: Optional[Spray] = None) -> SprayLevel:
-        spray_level_id = data['uuid']
-        self._spray_levels[spray_level_id] = spray_level = SprayLevel(state=self, data=data)
-        if spray is not None:
-            spray_level.spray = spray
-        return spray_level
 
     def _add_sprays(self, data: sprays.Sprays) -> None:
         spray_data = data['data']
         for spray in spray_data:
             spray_existing = self.get_spray(spray['uuid'])
             if spray_existing is None:
-                spray_existing = self.store_spray(spray)
-            for level in spray['levels']:
-                self.store_spray_level(level, spray_existing)
+                self.store_spray(spray)
 
     # themes
 
@@ -743,6 +726,7 @@ class CacheState:
                     skin = self.get_skin(weapon['uuid'])  # or self.get_weapon(weapon['uuid'])
                     if skin is not None:
                         bd._add_item(skin)
+                    # TODO: fix this
                     # if isinstance(skin, Skin):
                     #     bd._add_item(skin)
                     # else:
