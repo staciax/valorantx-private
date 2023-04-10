@@ -2,7 +2,7 @@ import datetime
 
 import pytest
 
-from valorantx2.valorant_api import MISSING, AbilityType, RelationType, RewardType
+from valorantx2.valorant_api import MISSING, AbilityType, Agent, Event, RelationType, RewardType, Season
 
 from .conftest import BaseTest  # BaseAuthTest
 
@@ -87,7 +87,8 @@ class TestValorantAPI(BaseTest):
             assert buddy is not None
             assert buddy.display_name is not None
             assert isinstance(buddy.is_hidden_if_not_owned(), bool)
-            # assert buddy.theme is not None
+            if buddy._theme_uuid is not None:
+                assert buddy.theme is not None
             assert buddy.display_icon is not None
             assert buddy.asset_path is not None
             assert len(buddy.levels) > 0
@@ -112,9 +113,12 @@ class TestValorantAPI(BaseTest):
             assert bundle is not None
             assert bundle.display_name is not None
             assert bundle.description is not None
-            # assert bundle.display_name_sub_text is not None
-            # assert bundle.extra_description is not None
-            # assert bundle.promo_description is not None
+            if bundle.display_name_sub_text:
+                assert bundle.display_name_sub_text is not None
+            if bundle.extra_description:
+                assert bundle.extra_description is not None
+            if bundle.promo_description:
+                assert bundle.promo_description is not None
             assert isinstance(bundle.use_additional_context, bool)
             assert bundle.display_icon is not None
             assert bundle.display_icon_2 is not None
@@ -174,19 +178,22 @@ class TestValorantAPI(BaseTest):
         for contract in self.valorant_api.contracts:
             assert contract is not None
             assert contract.display_name is not None
-            # assert contract.display_icon is not None
+            if contract.display_icon:
+                assert contract.display_icon is not None
             assert isinstance(contract.ship_it, bool)
-            # assert contract.free_reward_schedule is not None
+            assert contract.free_reward_schedule_uuid is not None
             assert contract.asset_path is not None
             content = contract.content
             assert content is not None
             assert isinstance(content.relation_type, RelationType)
             assert content.premium_vp_cost is not None
-            # assert content.premium_reward_chedule is not None
-            # assert content.relation is not None
-            chapters = content.chapters
-            assert len(chapters) > 0
-            for chapter in chapters:
+            # assert content.premium_reward_schedule_uuid is not None
+            if content._relation_uuid is None:
+                assert content.relationship is None
+            if content.relationship is not None:
+                assert isinstance(content.relationship, (Agent, Event, Season))
+            assert len(content.chapters) > 0
+            for chapter in content.chapters:
                 assert chapter is not None
                 assert isinstance(chapter.is_epilogue(), bool)
                 assert len(chapter.levels) > 0
@@ -196,8 +203,10 @@ class TestValorantAPI(BaseTest):
                     reward = level.reward
                     assert reward.type is not None
                     assert isinstance(reward.type, RewardType)
+                    assert reward.amount is not None
                     assert isinstance(reward.amount, int)
-                    # assert reward.item is not None
+                    item = reward.get_item()
+                    assert item is not None  # if item is None, maybe game is updated new reward type
                     assert isinstance(level.xp, int)
                     assert isinstance(level.vp_cost, int)
                     assert isinstance(level.is_purchasable_with_vp(), bool)
@@ -206,6 +215,12 @@ class TestValorantAPI(BaseTest):
                     assert len(chapter.free_rewards) > 0
                     for reward in chapter.free_rewards:
                         assert reward is not None
+                        assert reward.type is not None
+                        assert isinstance(reward.type, RewardType)
+                        assert reward.amount is not None
+                        assert isinstance(reward.amount, int)
+                        item_free = reward.get_item()
+                        assert item_free is not None  # if item is None, maybe game is updated new reward type
 
     @pytest.mark.asyncio
     async def test_currencies(self) -> None:
@@ -278,6 +293,7 @@ class TestValorantAPI(BaseTest):
             assert gme.display_icon is not None
             assert gme.kill_stream_icon is not None
             assert gme.asset_path is not None
+            # weapon = gme.get_weapon()
 
     @pytest.mark.asyncio
     async def test_gear(self) -> None:
@@ -297,9 +313,11 @@ class TestValorantAPI(BaseTest):
                 assert grid_position.column is not None
             assert shop_data.can_be_trashed is not None
             assert isinstance(shop_data.can_be_trashed, bool)
-            # assert shop_data.image is not None
+            if shop_data.new_image:
+                assert shop_data.new_image is not None
             assert shop_data.new_image is not None
-            # assert shop_data.new_image_2 is not None
+            if shop_data.new_image_2:
+                assert shop_data.new_image_2 is not None
             assert shop_data.asset_path is not None
             assert gear.asset_path is not None
 
@@ -374,7 +392,8 @@ class TestValorantAPI(BaseTest):
             assert card.small_art is not None
             assert card.wide_art is not None
             assert card.large_art is not None
-            # assert card._theme_uuid is not None # optional
+            if card._theme_uuid is not None:
+                assert card.theme is not None
 
     @pytest.mark.asyncio
     async def test_player_titles(self) -> None:
@@ -392,10 +411,12 @@ class TestValorantAPI(BaseTest):
         for season in self.valorant_api.seasons:
             assert season is not None
             assert season.display_name is not None
-            # assert season.type is not None
+            if season.type is not None:
+                assert season.type.lower() == 'act'
             assert season.start_time is not None
             assert season.end_time is not None
-            # assert season._parent_uuid is not None
+            if season._parent_uuid is not None:
+                assert season.parent is not None
             assert season.asset_path is not None
 
     @pytest.mark.asyncio
@@ -426,15 +447,20 @@ class TestValorantAPI(BaseTest):
         for spray in self.valorant_api.sprays:
             assert spray is not None
             assert spray.display_name is not None
-            # if spray.category is not None:  # optional
-            #     print(spray.category)
-            # if spray._theme_uuid is not None:  # optional
-            #     print(spray._theme_uuid)
+            if spray.category:
+                assert spray.category is not None
+            if spray._theme_uuid is not None:
+                assert spray.theme is not None
             assert spray.display_icon is not None
-            # assert spray.full_icon is not None  # optional
-            # assert spray.full_transparent_icon is not None # optional
-            # assert spray.animation_png is not None # optional
-            # assert spray.animation_gif is not None # optional
+            if spray.full_icon:
+                assert spray.full_icon is not None
+            if spray.full_transparent_icon:
+                assert spray.full_transparent_icon is not None
+            if spray.animation_png:
+                assert spray.animation_png is not None
+            if spray.animation_gif:
+                # TODO: Asset support gif
+                assert spray.animation_gif is not None
             assert spray.asset_path is not None
             for level in spray.levels:
                 assert level is not None
@@ -449,8 +475,10 @@ class TestValorantAPI(BaseTest):
         for theme in self.valorant_api.themes:
             assert theme is not None
             assert theme.display_name is not None
-            # assert theme.display_icon is not None  # optional
-            # assert theme.store_featured_image is not None # optional
+            if theme.display_icon:
+                assert theme.display_icon is not None
+            if theme.store_featured_image:
+                assert theme.store_featured_image is not None
             assert theme.asset_path is not None
 
     @pytest.mark.asyncio
@@ -470,12 +498,59 @@ class TestValorantAPI(BaseTest):
         assert len(self.valorant_api.weapons) > 0
         for weapon in self.valorant_api.weapons:
             assert weapon is not None
+            assert weapon.display_name is not None
+            assert weapon._default_skin_uuid is not None
+            assert weapon.display_icon is not None
+            assert weapon.kill_stream_icon is not None
+            assert weapon.asset_path is not None
+            if weapon.stats:
+                assert weapon.weapon_stats is not None
+                # TODO: test all attributes of weapon stats
+            if weapon.shop_data:
+                assert weapon.shop_data is not None
+                # TODO: test all attributes of shop data
             for skin in weapon.skins:
                 assert skin is not None
+                if skin._theme_uuid is not None:
+                    assert skin.theme is not None
                 for chroma in skin.chromas:
                     assert chroma is not None
-                for level in skin.levels:
+                    assert chroma.parent is not None
+                    assert chroma.display_name is not None
+                    if chroma.display_icon:
+                        assert chroma.display_icon is not None
+                    assert chroma.full_render is not None
+                    if chroma.swatch:
+                        assert chroma.swatch is not None
+                    if chroma.streamed_video:
+                        assert chroma.streamed_video is not None
+                    assert chroma.asset_path is not None
+
+                    # helper method
+                    if chroma.display_icon_fix:
+                        if skin.theme is not None:
+                            assert chroma.theme is not None
+                        assert chroma.display_icon_fix is not None
+
+                for index, level in enumerate(skin.levels):
                     assert level is not None
+                    assert level.parent is not None
+                    assert level.display_name is not None
+                    assert level.level_item is not None
+                    if level.display_icon:
+                        assert level.display_icon is not None
+                    if level.streamed_video:
+                        assert level.streamed_video is not None
+                    assert level.asset_path is not None
+
+                    # helper method
+                    assert level.display_icon_fix is not None
+                    if skin.theme is not None:
+                        assert level.theme is not None
+                    assert level.level_number is not None
+                    assert isinstance(level.is_level_one(), bool)
+                    if index == 0:
+                        assert level.is_level_one() is True
 
     def test_clear(self) -> None:
         self.valorant_api.clear()
