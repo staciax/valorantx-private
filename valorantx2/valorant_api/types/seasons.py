@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from .object import Object
 from .response import Response
@@ -6,10 +6,10 @@ from .response import Response
 
 class Season(Object):
     displayName: Union[str, Dict[str, str]]
-    type: str
+    type: Optional[str]
     startTime: str
     endTime: str
-    parentUuid: str
+    parentUuid: Optional[str]
     assetPath: str
 
 
@@ -21,7 +21,7 @@ class Border(Object):
     level: int
     winsRequired: int
     displayIcon: str
-    smallIcon: str
+    smallIcon: Optional[str]
     assetPath: str
 
 

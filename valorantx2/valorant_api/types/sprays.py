@@ -13,8 +13,8 @@ class Level(Object):
 
 class Spray(Object):
     displayName: Union[str, Dict[str, str]]
-    category: str
-    themeUuid: str
+    category: Optional[str]
+    themeUuid: Optional[str]
     displayIcon: str
     fullIcon: Optional[str]
     fullTransparentIcon: Optional[str]

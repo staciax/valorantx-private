@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from .object import Object
 from .response import Response
@@ -7,7 +7,7 @@ from .response import Response
 class PlayerCard(Object):
     displayName: Union[str, Dict[str, str]]
     isHiddenIfNotOwned: bool
-    themeUuid: str
+    themeUuid: Optional[str]
     displayIcon: str
     smallArt: str
     wideArt: str

@@ -17,8 +17,8 @@ class Mission(Object):
     progressToComplete: int
     activationDate: str
     expirationDate: str
-    tags: List[str]
-    objectives: List[Objective]
+    tags: Optional[List[str]]
+    objectives: Optional[List[Objective]]
     assetPath: str
 
 

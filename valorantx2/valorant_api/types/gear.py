@@ -1,4 +1,4 @@
-from typing import Dict, List, TypedDict, Union
+from typing import Dict, List, Optional, TypedDict, Union
 
 from .object import Object
 from .response import Response
@@ -15,9 +15,9 @@ class ShopData(TypedDict):
     categoryText: Union[str, Dict[str, str]]
     gridPosition: GridPosition
     canBeTrashed: bool
-    image: str
+    image: Optional[str]
     newImage: str
-    newImage2: str
+    newImage2: Optional[str]
     assetPath: str
 
 
