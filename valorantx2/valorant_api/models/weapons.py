@@ -23,9 +23,8 @@ if TYPE_CHECKING:
         Weapon as WeaponPayload,
         WeaponStats as WeaponStatsPayload,
     )
-
-    # from .themes import Theme
-    # from .content_tiers import ContentTier
+    from .content_tiers import ContentTier
+    from .themes import Theme
 
 __all__ = (
     'Skin',
@@ -235,9 +234,6 @@ class ShopData:
         return Asset._from_url(self._state, url=self._new_image_2) if self._new_image_2 else None
 
 
-# --- end sub modules ---
-
-
 class Weapon(BaseModel):
     def __init__(self, *, state: CacheState, data: WeaponPayload) -> None:
         super().__init__(data['uuid'])
@@ -248,13 +244,13 @@ class Weapon(BaseModel):
         self._display_icon: str = data['displayIcon']
         self._kill_stream_icon: str = data['killStreamIcon']
         self.asset_path: str = data['assetPath']
-        self.stats: Optional[WeaponStats] = None
+        self.weapon_stats: Optional[WeaponStats] = None
         if data['weaponStats'] is not None:
-            self.stats = WeaponStats(data['weaponStats'])
+            self.weapon_stats = WeaponStats(data['weaponStats'])
         self.shop_data: Optional[ShopData] = None
         if data['shopData'] is not None:
             self.shop_data = ShopData(state=self._state, weapon=self, data=data['shopData'])
-        self.skins: List[Skin] = [Skin(state=self._state, data=skin) for skin in data['skins']]
+        self.skins: List[Skin] = [Skin(state=self._state, data=skin, parent=self) for skin in data['skins']]
         self.type: ItemType = ItemType.weapon
         self._is_melee: bool = True if self.uuid == MELEE_WEAPON_ID else False
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
@@ -289,37 +285,14 @@ class Weapon(BaseModel):
         """:class: `Asset` Returns the weapon's kill stream icon."""
         return Asset._from_url(self._state, self._kill_stream_icon)
 
-    @property
-    def cost(self) -> int:
-        """:class: `int` Returns the weapon's cost."""
-        return self._cost
-
-    @cost.setter
-    def cost(self, value: int) -> None:
-        self._cost = value
-
-    @property
-    def price(self) -> int:
-        """:class: `int` Returns the weapon's price."""
-        return self.cost
-
-    # @property
-    # def shop_data(self) -> Optional[ShopData]:
-    #     """:class: `ShopData` Returns the weapon's shop data."""
-    #     return ShopData(state=self._state, weapon=self, data=self._shop_data) if self._shop_data else None
-
-    # @property
-    # def skins(self) -> List[Skin]:
-    #     """:class: `list` Returns the weapon's skins."""
-    #     return [Skin(client=self._state, data=skin) for skin in self._skins]
-
     def is_melee(self) -> bool:
         """:class: `bool` Returns whether the weapon is a melee weapon."""
         return self._is_melee
 
-    # def get_skins(self) -> List[Skin]:
-    #     """:class: `list` Returns the weapon's skins."""
-    #     return self.skins
+    @property
+    def stats(self) -> Optional[WeaponStats]:
+        """:class: `Optional[WeaponStats]` alias for :attr: `weapon_stats`"""
+        return self.weapon_stats
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -329,7 +302,7 @@ class Weapon(BaseModel):
 
 
 class Skin(BaseModel):
-    def __init__(self, *, state: CacheState, data: SkinPayload) -> None:
+    def __init__(self, *, state: CacheState, data: SkinPayload, parent: Weapon) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
@@ -338,10 +311,15 @@ class Skin(BaseModel):
         self._display_icon: str = data['displayIcon']
         self._wallpaper: Optional[str] = data['wallpaper']
         self.asset_path: str = data['assetPath']
-        self._chromas: List[SkinChroma] = [SkinChroma(state=self._state, data=chroma) for chroma in data['chromas']]
-        self._levels: List[SkinLevel] = [SkinLevel(state=self._state, data=level) for level in data['levels']]
-        # self._price: int = 0
+        self._chromas: List[SkinChroma] = [
+            SkinChroma(state=self._state, data=chroma, parent=self) for chroma in data['chromas']
+        ]
+        self._levels: List[SkinLevel] = [
+            SkinLevel(state=self._state, data=level, parent=self, level_number=index)
+            for index, level in enumerate(data['levels'])
+        ]
         self.type: ItemType = ItemType.skin
+        self.parent: Weapon = parent
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 
     def __str__(self) -> str:
@@ -358,18 +336,32 @@ class Skin(BaseModel):
         """:class: `str` Returns the skin's name."""
         return self._display_name_localized
 
-    # @property
-    # def theme(self) -> Optional[Theme]:
-    #     """:class: `Theme` Returns the skin's theme uuid."""
-    #     return self._client.get_theme(uuid=self._theme_uuid)
+    @property
+    def theme(self) -> Optional[Theme]:
+        """:class: `Theme` Returns the skin's theme uuid."""
+        return self._state.get_theme(uuid=self._theme_uuid)
 
-    # @property
-    # def rarity(self) -> Optional[ContentTier]:
-    #     """:class: `ContentTier` Returns the skin's rarity."""
-    #     return self._client.get_content_tier(uuid=self._content_tier_uuid) if self._content_tier_uuid else None
+    @property
+    def content_tier(self) -> Optional[ContentTier]:
+        """:class: `ContentTier` Returns the skin's rarity."""
+        if self._content_tier_uuid is None:
+            return None
+        return self._state.get_content_tier(uuid=self._content_tier_uuid)
+
+    @property
+    def rarity(self) -> Optional[ContentTier]:
+        """:class: `ContentTier` alias for :attr: `content_tier`"""
+        return self.content_tier
 
     @property
     def display_icon(self) -> Optional[Asset]:
+        """:class: `Asset` Returns the skin's icon."""
+        if self._display_icon is None:
+            return None
+        return Asset._from_url(self._state, self._display_icon)
+
+    @property
+    def display_icon_fix(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon."""
         display_icon = self._display_icon or (self.levels[0].display_icon if len(self.levels) > 0 else None)
         if display_icon is None:
@@ -393,26 +385,9 @@ class Skin(BaseModel):
         """:class: `list` Returns the skin's levels."""
         return self._levels
 
-    # def get_weapon(self) -> Optional[Weapon]:
-    #     """:class: `Weapon` Returns the skin's base weapon."""
-    #     return self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
-
-    # @property
-    # def price(self) -> int:
-    #     """:class: `int` Returns the skin's price."""
-    #     if self._price == 0:
-    #         if len(self.levels) > 0:
-    #             self.price = self.levels[0]._price
-    #     return self.price
-
-    # @price.setter
-    # def price(self, value: int) -> None:
-    #     self._price = value
-
-    # def is_melee(self) -> bool:
-    #     """:class: `bool` Returns whether the bundle is a melee."""
-    #     weapon = self.get_weapon()
-    #     return weapon.is_melee() if weapon else False
+    def is_melee(self) -> bool:
+        """:class: `bool` Returns whether the bundle is a melee."""
+        return self.parent.is_melee()
 
     # def get_skin_level(self, level: int) -> Optional[SkinLevel]:
     #     """get the skin's level with the given level.
@@ -450,17 +425,17 @@ class Skin(BaseModel):
 
 
 class SkinChroma(BaseModel):
-    def __init__(self, *, state: CacheState, data: SkinChromaPayload) -> None:
+    def __init__(self, *, state: CacheState, data: SkinChromaPayload, parent: Skin) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._display_icon: str = data['displayIcon']
+        self._display_icon: Optional[str] = data['displayIcon']
         self._full_render: str = data['fullRender']
         self._swatch: Optional[str] = data['swatch']
         self._streamed_video: Optional[str] = data['streamedVideo']
         self.asset_path: str = data['assetPath']
         self.type: ItemType = ItemType.skin_chroma
-        self._skin: Optional[Skin] = None
+        self.parent: Skin = parent
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 
     def __str__(self) -> str:
@@ -481,16 +456,31 @@ class SkinChroma(BaseModel):
     @property
     def display_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon."""
-        # base_skin = self.get_skin()
-        # display_icon = self._display_icon or (base_skin.display_icon if base_skin else None)
-        # weapon = self.get_weapon()
-        # if weapon is not None:
-        #     if utils.removeprefix(self.display_name.locale, 'Standard ') == weapon.display_name:
-        #         display_icon = weapon.display_icon or display_icon
-        # return Asset._from_url(self._state, url=str(display_icon)) if display_icon else None
+        if self._display_icon is None:
+            return None
+        return Asset._from_url(self._state, url=self._display_icon)
 
     @property
-    def display_icon_full_render(self) -> Optional[Asset]:
+    def display_icon_fix(self) -> Optional[Asset]:
+        """:class: `Asset` Returns the skin's icon with fixed white background."""
+
+        display_icon = (
+            self._display_icon
+            or self.parent._display_icon
+            or (self.parent.levels[0]._display_icon if len(self.parent.levels) > 0 else None)
+        )
+        name = utils.removeprefix(self.display_name.american_english, 'Standard ')
+        if name.lower() == self.parent.parent.display_name.default.lower():
+            display_icon = self.parent.display_icon or display_icon
+
+        if display_icon is None:
+            return None
+
+        return None
+        # return Asset._from_url(self._state, url=str(display_icon))
+
+    @property
+    def full_render(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon full render."""
         if self._full_render is None:
             return None
@@ -504,54 +494,37 @@ class SkinChroma(BaseModel):
         return Asset._from_url(self._state, url=self._swatch)
 
     @property
-    def video(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the skin's video."""
+    def streamed_video(self) -> Optional[Asset]:
+        """:class: `Optional[Asset]` Returns the skin's video."""
         if self._streamed_video is None:
             return None
         return Asset._from_url(self._state, url=self._streamed_video)
 
     @property
-    def skin(self) -> Optional[Skin]:
-        """:class: `Skin` Returns the skin's base skin."""
-        return self._skin
+    def video(self) -> Optional[Asset]:
+        """:class: `Asset` alias for streamed_video."""
+        return self.streamed_video
 
-    @skin.setter
-    def skin(self, skin: Skin) -> None:
-        self._skin = skin
+    # helper properties
 
-    # def get_weapon(self) -> Optional[Weapon]:
-    #     """:class: `Weapon` Returns the skin's base weapon."""
-    #     return self._base_weapon
+    @property
+    def theme(self) -> Optional[Theme]:
+        """:class: `Theme` Returns the skin's theme uuid."""
+        return self.parent.theme
 
-    # def get_skin(self) -> Optional[Skin]:
-    #     """:class: `Skin` Returns the skin's base skin."""
-    #     return self._base_skin
+    @property
+    def content_tier(self) -> Optional[ContentTier]:
+        """:class: `ContentTier` Returns the skin's rarity."""
+        return self.parent.content_tier
 
-    # @property
-    # def theme(self) -> Optional[Theme]:
-    #     """:class: `Theme` Returns the skin's theme uuid."""
-    #     return self._base_skin.theme if self._base_skin else None
+    @property
+    def rarity(self) -> Optional[ContentTier]:
+        """:class: `ContentTier` alias for content_tier."""
+        return self.content_tier
 
-    # @property
-    # def rarity(self) -> Optional[ContentTier]:
-    #     """:class: `ContentTier` Returns the skin's rarity."""
-    #     return self._base_skin.rarity if self._base_skin else None
-
-    # @property
-    # def price(self) -> Optional[int]:
-    #     """:class: `int` Returns the skin's price."""
-    #     if self._price == 0:
-    #         if self._base_skin is not None:
-    #             self._price = self._base_skin.price
-    #     return self._price
-
-    # @price.setter
-    # def price(self, value: int) -> None:
-    #     self._price = value
-
-    # def is_melee(self) -> bool:
-    #     """:class: `bool` Returns whether the bundle is a melee."""
-    #     return self._base_weapon.is_melee() if self._base_weapon else False
+    def is_melee(self) -> bool:
+        """:class: `bool` Returns whether the bundle is a melee."""
+        return self.parent.is_melee()
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -561,27 +534,18 @@ class SkinChroma(BaseModel):
 
 
 class SkinLevel(BaseModel):
-    def __init__(self, *, state: CacheState, data: SkinLevelPayload) -> None:
+    def __init__(self, *, state: CacheState, data: SkinLevelPayload, parent: Skin, level_number: int) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
-        # self._base_weapon_uuid: Optional[str] = data.get('WeaponID')
-        # self._base_skin_uuid: Optional[str] = data.get('SkinID')
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._level: Optional[str] = data['levelItem']
-        self._display_icon: str = data['displayIcon']
+        self._display_icon: Optional[str] = data['displayIcon']
         self._streamed_video: Optional[str] = data['streamedVideo']
         self.asset_path: str = data['assetPath']
-        # self._price: int = self._client.get_item_price(self.uuid)
-        # self.level_number: int = data.get('levelNumber', 0)  # TODO: level_number
-        # self._is_level_one: bool = self.level_number == 1
+        self._level_number: int = level_number
+        self._is_level_one: bool = level_number == 0
         self.type: ItemType = ItemType.skin_level
-        self._skin: Optional[Skin] = None
-        # self._base_weapon: Optional[Weapon] = (
-        #     self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
-        # )
-        # self._base_skin: Optional[Skin] = (
-        #     self._client.get_skin(uuid=self._base_skin_uuid, level=False, chroma=False) if self._base_skin_uuid else None
-        # )
+        self.parent: Skin = parent
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 
     def __str__(self) -> str:
@@ -599,63 +563,75 @@ class SkinLevel(BaseModel):
         return self._display_name_localized
 
     @property
-    def level(self) -> str:
+    def level_item(self) -> str:
         """:class: `str` Returns the skin's level."""
         if self._level is None:
             return 'Normal'
         return utils.removeprefix(self._level, 'EEquippableSkinLevelItem::')
 
     @property
-    def display_icon(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the skin's icon."""
-        # display_icon = (
-        #     self._display_icon
-        #     or (self._base_skin.display_icon if self._base_skin else None)
-        #     or (self._base_weapon.display_icon if self._base_weapon else None)
-        # )
-        # return Asset._from_url(client=self._client, url=str(display_icon)) if display_icon else None
+    def level(self) -> str:
+        """:class: `str` alias for level_item."""
+        return self.level_item
 
     @property
-    def video(self) -> Optional[Asset]:
+    def display_icon(self) -> Optional[Asset]:
+        """:class: `Asset` Returns the skin's icon."""
+        if self._display_icon is None:
+            return None
+        return Asset._from_url(self._state, url=self._display_icon)
+
+    @property
+    def display_icon_fix(self) -> Optional[Asset]:
+        """:class: `Asset` Returns the skin's icon with fixed white background."""
+        display_icon = self._display_icon or self.parent.display_icon or self.parent.parent.display_icon
+        if display_icon is None:
+            return None
+        if isinstance(display_icon, Asset):
+            return display_icon
+        return Asset._from_url(self._state, url=display_icon)
+
+    @property
+    def streamed_video(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's video."""
         if self._streamed_video is None:
             return None
         return Asset._from_url(self._state, url=self._streamed_video)
 
     @property
-    def skin(self) -> Optional[Skin]:
-        """:class: `Skin` Returns the skin's base skin."""
-        return self._skin
+    def video(self) -> Optional[Asset]:
+        """:class: `Asset` alias for streamed_video."""
+        return self.streamed_video
 
-    @skin.setter
-    def skin(self, skin: Skin) -> None:
-        self._skin = skin
+    def is_level_one(self) -> bool:
+        """:class: `bool` Returns whether the skin is level one."""
+        return self._is_level_one
 
-    # def get_weapon(self) -> Optional[Weapon]:
-    #     """:class: `Weapon` Returns the skin's base weapon."""
-    #     return self._base_weapon
+    # helper properties
 
-    # def get_skin(self) -> Optional[Skin]:
-    #     """:class: `Skin` Returns the skin's base skin."""
-    #     return self._base_skin
+    @property
+    def level_number(self) -> int:
+        """:class: `int` Returns the skin's level number."""
+        return self._level_number
 
-    # @property
-    # def theme(self) -> Optional[Theme]:
-    #     """:class: `Theme` Returns the skin's theme uuid."""
-    #     return self._base_skin.theme if self._base_skin else None
+    @property
+    def theme(self) -> Optional[Theme]:
+        """:class: `Theme` Returns the skin's theme uuid."""
+        return self.parent.theme
 
-    # @property
-    # def rarity(self) -> Optional[ContentTier]:
-    #     """:class: `ContentTier` Returns the skin's rarity."""
-    #     return self._base_skin.rarity if self._base_skin else None
+    @property
+    def content_tier(self) -> Optional[ContentTier]:
+        """:class: `ContentTier` Returns the skin's rarity."""
+        return self.parent.content_tier
 
-    # def is_level_one(self) -> bool:
-    #     """:class: `bool` Returns whether the skin is level one."""
-    #     return self._is_level_one
+    @property
+    def rarity(self) -> Optional[ContentTier]:
+        """:class: `ContentTier` alias for content_tier."""
+        return self.content_tier
 
-    # def is_melee(self) -> bool:
-    #     """:class: `bool` Returns whether the bundle is a melee."""
-    #     return self._base_weapon.is_melee() if self._base_weapon is not None else False
+    def is_melee(self) -> bool:
+        """:class: `bool` Returns whether the bundle is a melee."""
+        return self.parent.is_melee()
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
