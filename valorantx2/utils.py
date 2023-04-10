@@ -5,6 +5,13 @@ import json
 import uuid
 from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Union
 
+try:
+    import orjson  # type: ignore
+except ImportError:
+    HAS_ORJSON = False
+else:
+    HAS_ORJSON = True
+
 if TYPE_CHECKING:
     from aiohttp import ClientResponse
 
@@ -47,9 +54,10 @@ def string_escape(string: str) -> str:
     return string
 
 
-def _to_dict(text: str) -> Dict[Any, Any]:
-    """Convert text to dict"""
-    return json.loads(text)
+if HAS_ORJSON:
+    _from_json = orjson.loads  # type: ignore
+else:
+    _from_json = json.loads
 
 
 # source: https://github.com/Rapptz/discord.py/blob/master/discord/http.py
@@ -57,13 +65,13 @@ async def json_or_text(response: ClientResponse) -> Union[Dict[str, Any], str]:
     text = await response.text(encoding="utf-8")
     try:
         if response.headers['content-type'] == 'application/json':
-            return _to_dict(text)
+            return _from_json(text)
     except KeyError:
         pass
 
     # try to parse it as json anyway
     try:
-        return _to_dict(text)
+        return _from_json(text)
     except json.JSONDecodeError:
         pass
 

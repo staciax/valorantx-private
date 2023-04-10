@@ -18,6 +18,7 @@ with open('README.md') as f:
 
 extras_require = {
     'local': ['urllib3>=1.26.12,<1.27'],
+    'speed': ['orjson>=3.8.10,<4.0'],
 }
 
 packages = ['valorantx', 'valorantx.models', 'valorantx.types', 'valorantx.ext.scrapers']
