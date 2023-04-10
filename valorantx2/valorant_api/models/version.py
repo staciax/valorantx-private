@@ -7,7 +7,6 @@ from .. import utils
 if TYPE_CHECKING:
     import datetime
 
-    # from ..client import Client
     from ..cache import CacheState
     from ..types.version import Version_ as VersionPayload
 

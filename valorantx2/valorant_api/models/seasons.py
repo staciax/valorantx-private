@@ -86,10 +86,10 @@ class Season(BaseModel):
         """:class: `datetime.datetime` Returns the season's end time."""
         return utils.parse_iso_datetime(str(self._end_time_iso))
 
-    # @property
-    # def parent(self) -> Optional[Season]:
-    #     """:class: `Season` Returns the season's parent."""
-    #     return self._parent
+    @property
+    def parent(self) -> Optional[Season]:
+        """:class: `Season` Returns the season's parent."""
+        return self._state.get_season(uuid=self._parent_uuid)
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

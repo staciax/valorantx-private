@@ -17,9 +17,7 @@ if TYPE_CHECKING:
         GameModeEquippable as GameModeEquippablePayload,
         GameRuleBoolOverride as GameRuleBoolOverridePayload,
     )
-
-    # from ..client import Client
-    # from .weapons import Weapon
+    from .weapons import Weapon
 
 # fmt: off
 __all__ = (
@@ -171,13 +169,10 @@ class GameModeEquippable(BaseModel):
         """:class: `Asset` Returns the game mode's kill stream icon."""
         return Asset._from_url(self._state, url=self._kill_stream_icon)
 
-    @property
-    def get_weapon(self) -> ...:
-        ...
-
-    #     """:class: `Weapon` Returns the game mode's weapon."""
-    #     data = self._client._assets.get_weapon(uuid=self._uuid)
-    #     return Weapon(self._state, data=data) if data else None
+    def weapon(self) -> Optional[Weapon]:
+        """:class: `Weapon` Returns the game mode's weapon."""
+        # special weapon for game mode
+        return self._state.get_weapon(uuid=self._uuid)
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

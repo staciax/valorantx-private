@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 from ..asset import Asset
@@ -16,12 +17,23 @@ if TYPE_CHECKING:
         Level as LevelPayload,
         Reward as RewardPayload,
     )
+    from .agents import Agent
+    from .buddies import BuddyLevel
+    from .currencies import Currency
+    from .events import Event
+    from .player_cards import PlayerCard
+    from .player_titles import PlayerTitle
+    from .seasons import Season
+    from .sprays import Spray
+    from .weapons import SkinLevel
 
 # fmt: off
 __all__ = (
     'Contract',
 )
 # fmt: on
+
+_log = logging.getLogger(__name__)
 
 
 class Reward(BaseModel):
@@ -32,9 +44,23 @@ class Reward(BaseModel):
         self.amount: int = data['amount']
         self._is_highlighted: bool = data['isHighlighted']
 
-    @property
-    def item(self) -> ...:
-        return ...
+    def get_item(self) -> Optional[Union[Agent, SkinLevel, BuddyLevel, Currency, PlayerCard, PlayerTitle, Spray]]:
+        if self.type is RewardType.skin_level:
+            return self._state.get_skin_level(self.uuid)
+        elif self.type is RewardType.buddy_level:
+            return self._state.get_buddy_level(self.uuid)
+        elif self.type is RewardType.currency:
+            return self._state.get_currency(self.uuid)
+        elif self.type is RewardType.player_card:
+            return self._state.get_player_card(self.uuid)
+        elif self.type is RewardType.player_title:
+            return self._state.get_player_title(self.uuid)
+        elif self.type is RewardType.spray:
+            return self._state.get_spray(self.uuid)
+        elif self.type is RewardType.agent:
+            return self._state.get_agent(self.uuid)
+        _log.warning(f'Unknown reward type: {self.type}')
+        return None
 
     def is_highlighted(self) -> bool:
         return self._is_highlighted
@@ -69,9 +95,9 @@ class Content:
     def __init__(self, state: CacheState, data: ContentPayload) -> None:
         self._state: CacheState = state
         self.relation_type: RelationType = try_enum(RelationType, data['relationType'])
-        self._relation_uuid: str = data['relationUuid']
+        self._relation_uuid: Optional[str] = data['relationUuid']
         self._chapters: List[Chapter] = [Chapter(self._state, chapter) for chapter in data['chapters']]
-        self._premium_reward_schedule_uuid: str = data['premiumRewardScheduleUuid']
+        self.premium_reward_schedule_uuid: Optional[str] = data['premiumRewardScheduleUuid']
         self.premium_vp_cost: int = data['premiumVPCost']
 
     @property
@@ -79,12 +105,16 @@ class Content:
         return self._chapters
 
     @property
-    def relation(self) -> ...:
-        ...
-
-    @property
-    def premium_reward_chedule(self) -> ...:
-        ...
+    def relationship(self) -> Optional[Union[Agent, Event, Season]]:
+        if self.relation_type is RelationType.agent:
+            return self._state.get_agent(self._relation_uuid)
+        elif self.relation_type is RelationType.event:
+            return self._state.get_event(self._relation_uuid)
+        elif self.relation_type is RelationType.season:
+            return self._state.get_season(self._relation_uuid)
+        if self.relation_type and self._relation_uuid:
+            _log.warning(f'Unknown relationship type={self.relation_type!r} uuid={self._relation_uuid!r}')
+        return None
 
 
 class Contract(BaseModel):
@@ -94,7 +124,7 @@ class Contract(BaseModel):
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
         self.ship_it: bool = data['shipIt']
-        self._free_reward_schedule_uuid: str = data['freeRewardScheduleUuid']
+        self.free_reward_schedule_uuid: str = data['freeRewardScheduleUuid']
         self._content: Content = Content(self._state, data['content'])
         self.asset_path: str = data['assetPath']
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
@@ -135,10 +165,6 @@ class Contract(BaseModel):
     def content(self) -> Content:
         """:class: `Content` Returns the contract's content."""
         return self._content
-
-    @property
-    def free_reward_schedule(self) -> ...:
-        return ...
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

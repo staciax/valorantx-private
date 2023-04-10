@@ -11,8 +11,7 @@ if TYPE_CHECKING:
     # from typing_extensions import Self
     from ..cache import CacheState
     from ..types.player_cards import PlayerCard as PlayerCardPayload
-
-    # from .theme import Theme
+    from .themes import Theme
 
 # fmt: off
 __all__ = (
@@ -78,10 +77,10 @@ class PlayerCard(BaseModel):
             return None
         return Asset._from_url(state=self._state, url=self._large_art)
 
-    # @property
-    # def theme(self) -> Optional[Theme]:
-    #     """:class: `Theme` Returns the player card's theme."""
-    #     return self._client.get_theme(uuid=self._theme_uuid)
+    @property
+    def theme(self) -> Optional[Theme]:
+        """:class: `Theme` Returns the player card's theme."""
+        return self._state.get_theme(uuid=self._theme_uuid)
 
     # @property
     # def price(self) -> int:

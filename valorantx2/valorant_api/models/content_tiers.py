@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, Optional, Union
 
 from ..asset import Asset
-from ..enums import Locale  # SeasonType, try_enum
+from ..enums import Locale
 from ..localization import Localization
 from .abc import BaseModel
 

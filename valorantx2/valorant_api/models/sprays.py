@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 from .. import utils
 from ..asset import Asset
-from ..enums import ItemType, Locale  # , SpraySlotID
+from ..enums import ItemType, Locale
 from ..localization import Localization
 from .abc import BaseModel
 
@@ -12,8 +12,7 @@ if TYPE_CHECKING:
     # from typing_extensions import Self
     from ..cache import CacheState
     from ..types.sprays import Spray as SprayPayload, SprayLevel as SprayLevelPayload
-
-    # from .theme import Theme
+    from .themes import Theme
 
 __all__ = ('Spray', 'SprayLevel')
 
@@ -52,13 +51,15 @@ class Spray(BaseModel):
     @property
     def category(self) -> Optional[str]:
         """:class: `str` Returns the skin's category."""
-        return utils.removeprefix(self._category, 'EAresSprayCategory::') if self._category is not None else None
+        if self._category is None:
+            return None
+        return utils.removeprefix(self._category, 'EAresSprayCategory::')
 
-    # @property
-    # def theme(self) -> Optional[Theme]:
-    #     if self._theme_uuid is None:
-    #         return None
-    #     return self._client.get_theme(self._theme_uuid)
+    @property
+    def theme(self) -> Optional[Theme]:
+        if self._theme_uuid is None:
+            return None
+        return self._state.get_theme(self._theme_uuid)
 
     @property
     def display_icon(self) -> Optional[Asset]:
@@ -68,7 +69,7 @@ class Spray(BaseModel):
     @property
     def full_icon(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's full icon."""
-        if self._full_icon is not None:
+        if self._full_icon is None:
             return None
         return Asset._from_url(state=self._state, url=self._full_icon)
 

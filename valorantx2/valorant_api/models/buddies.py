@@ -10,8 +10,7 @@ from .abc import BaseModel
 if TYPE_CHECKING:
     from ..cache import CacheState
     from ..types.buddies import Buddy as BuddyPayload, BuddyLevel as BuddyLevelPayload
-
-    # from .theme import Theme
+    from .themes import Theme
 
 __all__ = ('Buddy', 'BuddyLevel')
 
@@ -43,11 +42,11 @@ class Buddy(BaseModel):
         """:class: `str` Returns the buddy's name."""
         return self._name_localized
 
-    # @property
-    # def theme(self) -> Optional[Theme]:
-    #     """:class: `Theme` Returns the buddy's theme."""
-    #     # Avoid circular import
-    #     return self._state.get_theme(uuid=self._theme_uuid)
+    @property
+    def theme(self) -> Optional[Theme]:
+        """:class: `Theme` Returns the buddy's theme."""
+        # Avoid circular import
+        return self._state.get_theme(uuid=self._theme_uuid)
 
     @property
     def display_icon(self) -> Asset:

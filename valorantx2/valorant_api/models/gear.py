@@ -82,10 +82,6 @@ class ShopData:
             return None
         return Asset._from_url(state=self._state, url=self._new_image_2)
 
-    # def can_be_trashed(self) -> bool:
-    #     """:class: `bool` Returns whether the gear can be trashed."""
-    #     return self._can_be_trashed
-
 
 class Gear(BaseModel):
     def __init__(self, state: CacheState, data: GearPayload) -> None:
@@ -125,11 +121,6 @@ class Gear(BaseModel):
     def display_icon(self) -> Asset:
         """:class: `Asset` Returns the gear's display icon."""
         return Asset._from_url(state=self._state, url=self._display_icon)
-
-    # @property
-    # def shop_data(self) -> ShopData:
-    #     """:class: `ShopData` Returns the gear's shop data."""
-    #     return self._shop_data
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

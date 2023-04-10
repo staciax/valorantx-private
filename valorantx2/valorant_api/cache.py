@@ -701,50 +701,23 @@ class CacheState:
     def store_weapon(self, data: weapons.Weapon) -> Weapon:
         weapon_id = data['uuid']
         self._weapons[weapon_id] = weapon = Weapon(state=self, data=data)
+        for skin in weapon.skins:
+            self._skins[skin.uuid] = skin
+            for chroma in skin.chromas:
+                self._skin_chromas[chroma.uuid] = chroma
+            for level in skin.levels:
+                self._skin_levels[level.uuid] = level
+        # TODO: rework spray level and buddy level
         return weapon
-
-    def store_weapon_skin(self, data: weapons.Skin, weapon: Optional[Weapon] = None) -> Skin:
-        skin_id = data['uuid']
-        self._skins[skin_id] = skin = Skin(state=self, data=data)
-        # if weapon is not None:
-        #     skin.weapon = weapon
-        return skin
-
-    def store_weapon_skin_chroma(self, data: weapons.SkinChroma, skin: Optional[Skin] = None) -> SkinChroma:
-        skin_chroma_id = data['uuid']
-        self._skin_chromas[skin_chroma_id] = skin_chroma = SkinChroma(state=self, data=data)
-        if skin is not None:
-            skin_chroma.skin = skin
-        return skin_chroma
-
-    def store_weapon_skin_level(self, data: weapons.SkinLevel, skin: Optional[Skin] = None) -> SkinLevel:
-        skin_level_id = data['uuid']
-        self._skin_levels[skin_level_id] = skin_level = SkinLevel(state=self, data=data)
-        if skin is not None:
-            skin_level.skin = skin
-        return skin_level
 
     def _add_weapons(self, data: weapons.Weapons) -> None:
         weapon_data = data['data']
         for weapon in weapon_data:
             weapon_existing = self.get_weapon(weapon['uuid'])
             if weapon_existing is None:
-                weapon_existing = self.store_weapon(weapon)
-            for skin in weapon['skins']:
-                skin_existing = self.get_skin(skin['uuid'])
-                if skin_existing is None:
-                    skin_existing = self.store_weapon_skin(skin, weapon_existing)
-                for chroma in skin['chromas']:
-                    self.store_weapon_skin_chroma(chroma, skin_existing)
-                for level in skin['levels']:
-                    self.store_weapon_skin_level(level, skin_existing)
+                self.store_weapon(weapon)
 
     # bundles 2nd
-
-    # def store_bundle(self, data: bundles.Bundle) -> Bundle:
-    #     bundle_id = data['uuid']
-    #     self._bundles[bundle_id] = bundle = Bundle(state=self, data=data)
-    #     return bundle
 
     def _add_bundles_valtracker(self, data: bundles_valtracker.BundlesValTracker) -> None:
         bundle_data = data['data']
@@ -770,8 +743,6 @@ class CacheState:
                     skin = self.get_skin(weapon['uuid'])  # or self.get_weapon(weapon['uuid'])
                     if skin is not None:
                         bd._add_item(skin)
-                    # else:
-                    #     print(weapon['uuid'])
                     # if isinstance(skin, Skin):
                     #     bd._add_item(skin)
                     # else:
