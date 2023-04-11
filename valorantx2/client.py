@@ -20,7 +20,7 @@ from . import utils
 from .enums import Locale, try_enum  # ItemType, QueueType, SeasonType,
 from .errors import AuthRequired
 from .http import HTTPClient
-from .models import Entitlements, Offers, StoreFront, Wallet
+from .models import ClientUser, Entitlements, Offers, StoreFront, Wallet
 from .valorant_api import Client as ValorantAPIClient
 
 #     MMR,
@@ -75,6 +75,8 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     from typing_extensions import ParamSpec, Self
+
+    from .valorant_api.models.version import Version as ValorantAPIVersion
 
     P = ParamSpec('P')
 
@@ -135,11 +137,11 @@ class Client:
         self._fetch_assets_on_startup: bool = assets_on_startup
         self._closed: bool = False
         self._is_authorized: bool = False
-        self._http: HTTPClient = HTTPClient(self.loop)
+        self.http: HTTPClient = HTTPClient(self.loop)
         self._ready: asyncio.Event = MISSING
-        self.valorant_api: ValorantAPIClient = ValorantAPIClient(self._http._session, self._locale)
-        # self.user: ClientPlayer = MISSING
-        # self._version: Version = MISSING
+        self.valorant_api: ValorantAPIClient = ValorantAPIClient(self.http._session, self._locale)
+        self.me: ClientUser = MISSING
+        self._version: ValorantAPIVersion = MISSING
         # self._season: Season = MISSING
         # self._act: Season = MISSING
 
@@ -155,6 +157,10 @@ class Client:
     ) -> None:
         if not self.is_closed():
             await self.close()
+
+    @property
+    def version(self) -> ValorantAPIVersion:
+        return self._version
 
     async def wait_until_ready(self) -> None:
         """|coro|
@@ -173,7 +179,7 @@ class Client:
 
         loop = asyncio.get_running_loop()
         self.loop = loop
-        self._http.loop = loop
+        self.http.loop = loop
 
         # valorant-api
         self.loop.create_task(self.valorant_api.init())
@@ -181,14 +187,9 @@ class Client:
             await asyncio.wait_for(self.valorant_api.wait_until_ready(), timeout=30)
         except asyncio.TimeoutError:
             raise RuntimeError('Valorant API did not become ready in time')
-
-        # if self.version is MISSING:
-        #         self.version = await self.fetch_version()
-
-        #     self.http._riot_client_version = self.version.riot_client_version
-
-        #     if self._fetch_assets_on_startup:
-        #         self.loop.create_task(self._assets.fetch_assets(reload=True, force=False, version=self.version))
+        else:
+            self._version = self.valorant_api.version
+            self.http.riot_client_version = self._version.riot_client_version
 
         _log.debug('client is ready')
 
@@ -200,14 +201,14 @@ class Client:
         if self._closed:
             return
         self._closed = True
-        await self._http.close()
+        await self.http.close()
         await self.valorant_api.close()
 
     def clear(self) -> None:
         """Clears the internal cache."""
         self._closed = False
         self._ready = MISSING
-        self._http.clear()
+        self.http.clear()
         self._is_authorized = False
         # self.user = MISSING
         # self.season = MISSING
@@ -226,18 +227,13 @@ class Client:
         return self._is_authorized
 
     async def _login(self, username: str, password: str) -> None:
+        _log.info('logging using username and password')
         self._ready = asyncio.Event()
-        # self._is_authorized = True
-        riot_auth = await self._http.static_login(username.strip(), password.strip())
-        # payload = dict(
-        #     puuid=riot_auth.user_id,
-        #     username=riot_auth.name,
-        #     tagline=riot_auth.tag,
-        #     region=riot_auth.region, # type: ignore
-        # )
-        #     self.user = ClientPlayer(client=self, data=payload)
+        data = await self.http.static_login(username, password)
+        self.me = me = ClientUser(data=data)
         self._is_authorized = True
         self._ready.set()
+        _log.info('Logged as %s', me.display_name)
 
     async def authorize(self, username: str, password: str) -> None:
         """|coro|
@@ -257,29 +253,24 @@ class Client:
 
         await self._login(username, password)
 
-        # fetch price and set season
-
+    # fetch price and set season
     #     try:
     #         self.loop.create_task(self._set_season())
     #     except Exception as e:
     #         _log.exception('Failed to set season', exc_info=e)
 
-    # @property
-    # def me(self) -> Optional[ClientPlayer]:
-    #     return self.user
-
     async def fetch_store_front(self) -> StoreFront:
-        data = await self._http.store_fetch_storefront()
+        data = await self.http.store_fetch_storefront()
         return StoreFront(self, data)
 
     async def fetch_wallet(self) -> Wallet:
-        data = await self._http.store_fetch_wallet()
+        data = await self.http.store_fetch_wallet()
         return Wallet(self, data)
 
     async def fetch_entitlements(self) -> Entitlements:
-        data = await self._http.store_fetch_entitlements()
+        data = await self.http.store_fetch_entitlements()
         return Entitlements(self, data)
 
     async def fetch_offers(self) -> Offers:
-        data = await self._http.store_fetch_offers()
+        data = await self.http.store_fetch_offers()
         return Offers(self, data)

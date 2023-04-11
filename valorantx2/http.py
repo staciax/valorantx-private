@@ -25,6 +25,8 @@ from .errors import Forbidden, HTTPException, InternalServerError, NotFound, Pha
 MISSING = utils.MISSING
 
 if TYPE_CHECKING:
+    from .types import store, user
+
     # from .types import collection, competitive, contract, match, party, player, store, version, weapons, xp
 
     T = TypeVar('T')
@@ -88,25 +90,17 @@ class HTTPClient:
         self._headers: Dict[str, Any] = {}
         self._client_platform = 'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9'  # noqa: E501
         self._riot_auth: RiotAuth = RiotAuth()
-        self._puuid: str = self._riot_auth.puuid
-        self._region: Region = try_enum(Region, self._riot_auth.region, Region.AP)
-        self._riot_client_version: str = ''
+        self._puuid: Optional[str] = None
+        self._region: Optional[Region] = None
+        self.riot_client_version: Optional[str] = None
 
     @property
-    def region(self) -> Region:
-        return self._region
-
-    @region.setter
-    def region(self, region: Region) -> None:
-        self._region = region
-
-    @property
-    def puuid(self) -> str:
+    def puuid(self) -> Optional[str]:
         return self._puuid
 
-    @puuid.setter
-    def puuid(self, puuid: str) -> None:
-        self._puuid = puuid
+    @property
+    def region(self) -> Optional[Region]:
+        return self._region
 
     def clear(self) -> None:
         if self._session and self._session.closed:
@@ -188,14 +182,22 @@ class HTTPClient:
         if self._session:
             await self._session.close()
 
-    async def static_login(self, username: str, password: str) -> RiotAuth:
+    async def static_login(self, username: str, password: str) -> user.PartialUser:
         """Riot Auth login."""
-        await self._riot_auth.authorize(username, password)
+        await self._riot_auth.authorize(username.strip(), password.strip())
         self._puuid = self._riot_auth.puuid
+        self._region = try_enum(Region, self._riot_auth.region, Region.AP)
         await self.__build_headers()
         if self._session is MISSING:
             self._session = aiohttp.ClientSession()
-        return self._riot_auth
+
+        data = dict(
+            puuid=self._riot_auth.puuid,
+            name=self._riot_auth.name,
+            tag=self._riot_auth.tag,
+            region=self._riot_auth.region,
+        )
+        return data  # type: ignore
 
     async def token_login(self, data: Dict[str, Any]) -> RiotAuth:
         """Riot Auth login."""
@@ -521,16 +523,16 @@ class HTTPClient:
         """
         return self.request(Route('GET', '/store/v1/wallet/{puuid}', EndpointType.pd, self.region, puuid=self.puuid))
 
-    def store_fetch_order(self, order_id: str) -> Response[Mapping[str, Any]]:
-        """
-        Store_GetOrder
-        {order id}: The ID of the order. Can be obtained when creating an order.
-        """
-        return self.request(Route('GET', '/store/v1/order/{order}', EndpointType.pd, self.region, order=order_id))
+    # def store_fetch_order(self, order_id: str) -> Response[Mapping[str, Any]]:
+    #     """
+    #     Store_GetOrder
+    #     {order id}: The ID of the order. Can be obtained when creating an order.
+    #     """
+    #     return self.request(Route('GET', '/store/v1/order/{order}', EndpointType.pd, self.region, order=order_id))
 
     def store_fetch_entitlements(
         self, item_type: Optional[str] = None  # TODO: Union[str, ItemType]
-    ) -> Response[store.EntitlementsByTypes]:
+    ) -> Response[store.Entitlements]:
         """
         Store_GetEntitlements
         List what the player owns (agents, skins, buddies, ect.)
@@ -554,8 +556,6 @@ class HTTPClient:
             puuid=self.puuid,
         )
         return self.request(r)
-
-    # party endpoints
 
     # party endpoints
 
@@ -797,7 +797,7 @@ class HTTPClient:
         Party_FetchCustomGameConfigs
         Get information about the available game modes
         """
-        r = Route('GET', f'/parties/v1/parties/customgameconfigs', EndpointType.glz, self.region)
+        r = Route('GET', '/parties/v1/parties/customgameconfigs', EndpointType.glz, self.region)
         return self.request(r)
 
     def party_fetch_muc_token(self, party_id: str) -> Response[Mapping[str, Any]]:
@@ -853,7 +853,7 @@ class HTTPClient:
         QueueMatchmaking_FetchQueue
         Get information about the current queue
         """
-        r = Route('GET', f'/matchmaking/v1/queues/configs ', EndpointType.glz, self.region)
+        r = Route('GET', '/matchmaking/v1/queues/configs ', EndpointType.glz, self.region)
         return self.request(r)
 
     # favorite endpoints
@@ -1045,13 +1045,13 @@ class HTTPClient:
         return self._puuid if puuid is None else puuid
 
     async def __build_headers(self) -> None:
-        if self._riot_client_version == '':
-            self._riot_client_version = await self._get_current_version()
+        # if self.riot_client_version is None:
+        # self.riot_client_version = await self._get_current_version()
 
-        self._headers['Authorization'] = f'Bearer %s' % self._riot_auth.access_token
+        self._headers['Authorization'] = 'Bearer %s' % self._riot_auth.access_token
         self._headers['X-Riot-Entitlements-JWT'] = self._riot_auth.entitlements_token
         self._headers['X-Riot-ClientPlatform'] = self._client_platform
-        self._headers['X-Riot-ClientVersion'] = self._riot_client_version
+        self._headers['X-Riot-ClientVersion'] = self.riot_client_version
 
     async def _get_current_version(self) -> str:
         ...
