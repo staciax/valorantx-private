@@ -521,7 +521,7 @@ class TestValorantAPI(BaseTest):
                     assert stats.fire_mode is not None
                 if stats.alt_fire_type is not None:
                     assert stats.alt_fire_type is not None
-                
+
                 # TODO: test all attributes of weapon stats
             if weapon.shop_data:
                 assert weapon.shop_data is not None

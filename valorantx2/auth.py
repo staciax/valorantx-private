@@ -1,7 +1,6 @@
 """
 Links to the original source code: https://github.com/floxay/python-riot-auth
 """
-
 from secrets import token_urlsafe
 from typing import Any, Dict, Optional, Tuple
 
