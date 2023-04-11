@@ -19,10 +19,25 @@ __all__ = (
 )
 
 
+class DailyStore:
+    def __init__(self, client: Client, data: StoreFrontPayload):
+        self.client = client
+        self.data = data
+        self._skins = None
+
+
+class BonusStore:
+    ...
+
+
 class StoreFront:
     def __init__(self, client: Client, data: StoreFrontPayload):
         self.client = client
         self.data = data
+        self._skins = None
+        self._bundle = None
+        self._bundles = None
+        self._bonus_store = None
 
 
 class Wallet:
