@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List
 
 from ..enums import RADIANITE_POINT_UUID, VALORANT_POINT_UUID
+from ..valorant_api_cache import CacheState
 
 if TYPE_CHECKING:
-    from ..client import Client
     from ..types.store import (
         Entitlements as EntitlementsPayload,
         Offer as OfferPayload,
@@ -26,8 +26,8 @@ __all__ = (
 
 
 class DailyStore:
-    def __init__(self, client: Client, data: StoreFrontPayload):
-        self.client = client
+    def __init__(self, state: CacheState, data: StoreFrontPayload):
+        self._state = state
         self.data = data
         self._skins = None
 
@@ -37,8 +37,8 @@ class BonusStore:
 
 
 class StoreFront:
-    def __init__(self, client: Client, data: StoreFrontPayload):
-        self.client = client
+    def __init__(self, state: CacheState, data: StoreFrontPayload):
+        self._state = state
         self.data = data
         self._skins = None
         self._bundle = None
@@ -47,8 +47,8 @@ class StoreFront:
 
 
 class Wallet:
-    def __init__(self, client: Client, data: WalletPayload) -> None:
-        self._client = client
+    def __init__(self, state: CacheState, data: WalletPayload) -> None:
+        self._state = state
         self._balances = data['Balances']
         self._valorant_value: int = self._balances.get(VALORANT_POINT_UUID, 0)
         self._radiant_value: int = self._balances.get(RADIANITE_POINT_UUID, 0)
@@ -110,7 +110,7 @@ class Offer:
     def __init__(self, data: OfferPayload) -> None:
         self.id: str = data['OfferID']
         self._is_direct_purchase: bool = data['IsDirectPurchase']
-        self.cost: int = data['Cost'][str(CurrencyType.valorant)]  # type: ignore
+        self.cost: int = data['Cost'][VALORANT_POINT_UUID]
         self.rewards: List[Reward] = [Reward(reward) for reward in data['Rewards']]
 
     def __repr__(self) -> str:
@@ -128,7 +128,7 @@ class Offer:
 
     # def item(self) -> Any:
     #     return self._client.get_
-    # TODO: somethings here
+    # # TODO: somethings here
 
 
 class Offers:
@@ -140,8 +140,8 @@ class Offers:
 
 
 class Entitlements:
-    def __init__(self, client: Client, data: EntitlementsPayload) -> None:
-        self._client = client
+    def __init__(self, state: CacheState, data: EntitlementsPayload) -> None:
+        self._state = state
         # self._data = data.get('EntitlementsByTypes', [])
         # self._agents: List[Agent] = []
         # self._skin_levels: List[Skin] = []
