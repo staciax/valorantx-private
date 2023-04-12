@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Dict, List, Optional  # Any, Callable, Coroutine,
 
 # import json
 # import os
+import logging
+from typing import TYPE_CHECKING, Dict, List, Optional  # Any, Callable, Coroutine,
+
 from ..utils import MISSING
 from .models import (
     Agent,
@@ -74,6 +76,8 @@ if TYPE_CHECKING:
 #     @abstractmethod
 #     def find(self):
 #         raise NotImplementedError
+
+_log = logging.getLogger(__name__)
 
 
 class CacheState:
@@ -441,10 +445,10 @@ class CacheState:
 
     def _add_gear(self, data: gear.Gear) -> None:
         gear_data = data['data']
-        for gear in gear_data:
-            gear_existing = self.get_gear(gear['uuid'])
+        for gear_ in gear_data:
+            gear_existing = self.get_gear(gear_['uuid'])
             if gear_existing is None:
-                self.store_gear(gear)
+                self.store_gear(gear_)
 
     # level borders
 
@@ -690,7 +694,6 @@ class CacheState:
                 self._skin_chromas[chroma.uuid] = chroma
             for level in skin.levels:
                 self._skin_levels[level.uuid] = level
-        # TODO: rework spray level and buddy level
         return weapon
 
     def _add_weapons(self, data: weapons.Weapons) -> None:
@@ -708,26 +711,31 @@ class CacheState:
             bd = self.get_bundle(bundle['uuid'])
             if bd is not None:
                 for buddy in bundle['buddies']:
-                    buddy = self.get_buddy(buddy['uuid'])
-                    if buddy is not None:
-                        bd._add_item(buddy)
+                    b = self.get_buddy(buddy['uuid'])
+                    if b is not None:
+                        bd._add_item(b)
+                    else:
+                        _log.warning('bundles valtracker missing buddy %s', buddy['uuid'])
 
                 for card in bundle['cards']:
-                    card = self.get_player_card(card['uuid'])
-                    if card is not None:
-                        bd._add_item(card)
+                    c = self.get_player_card(card['uuid'])
+                    if c is not None:
+                        bd._add_item(c)
+                    else:
+                        _log.warning('bundles valtracker missing card %s', card['uuid'])
 
                 for spray in bundle['sprays']:
-                    spray = self.get_spray(spray['uuid'])
-                    if spray is not None:
-                        bd._add_item(spray)
+                    sp = self.get_spray(spray['uuid'])
+                    if sp is not None:
+                        bd._add_item(sp)
+                    else:
+                        _log.warning('bundles valtracker missing spray %s', spray['uuid'])
 
                 for weapon in bundle['weapons']:
-                    skin = self.get_skin(weapon['uuid'])  # or self.get_weapon(weapon['uuid'])
-                    if skin is not None:
-                        bd._add_item(skin)
-                    # TODO: fix this
-                    # if isinstance(skin, Skin):
-                    #     bd._add_item(skin)
-                    # else:
-                    #     print(skin)
+                    sk = self.get_skin(weapon['uuid'])
+                    if sk is not None:
+                        bd._add_item(sk)
+                        # if sk.display_name.default.lower() != weapon['name'].lower():
+                        #     _log.warning(f"{sk.display_name.default!r} ({sk.uuid}) != {weapon['name']!r} ({weapon['uuid']}) in bundle {bd.uuid!r}\n")
+                    else:
+                        _log.warning('bundles valtracker missing skin %s', weapon['uuid'])
