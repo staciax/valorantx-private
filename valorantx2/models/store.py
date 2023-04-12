@@ -1,19 +1,23 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
 from ..enums import RADIANITE_POINT_UUID, VALORANT_POINT_UUID
 from ..valorant_api_cache import CacheState
 
 if TYPE_CHECKING:
     from ..types.store import (
+        BonusStore as BonusStorePayload,
         Entitlements as EntitlementsPayload,
         Offer as OfferPayload,
         Offers as OffersPayload,
         Reward as RewardPayload,
+        SkinsPanelLayout as SkinsPanelLayoutPayload,
         StoreFront as StoreFrontPayload,
         Wallet as WalletPayload,
     )
+    from .bundles import Bundle
+    from .weapons import SkinLevel
 
     # from ..valorant_api.models.currencies import Currency as ValorantAPICurrency
 
@@ -25,25 +29,35 @@ __all__ = (
 )
 
 
-class DailyStore:
-    def __init__(self, state: CacheState, data: StoreFrontPayload):
+class SkinsPanelLayout:
+    def __init__(self, state: CacheState, data: SkinsPanelLayoutPayload):
         self._state = state
-        self.data = data
-        self._skins = None
+        self.skins: List[SkinLevel] = [self._state.get_skin_level(uuid) for uuid in data['SingleItemOffers']]  # type: ignore
 
 
 class BonusStore:
-    ...
+    def __init__(self, state: CacheState, data: BonusStorePayload):
+        self._state = state
 
 
 class StoreFront:
+    bundle: Bundle
+    bundles: List[Bundle]
+
     def __init__(self, state: CacheState, data: StoreFrontPayload):
         self._state = state
-        self.data = data
-        self._skins = None
-        self._bundle = None
-        self._bundles = None
-        self._bonus_store = None
+        self.skins_panel_layout: SkinsPanelLayout = SkinsPanelLayout(state, data['SkinsPanelLayout'])  # type: ignore
+        self.bonus_store: Optional[BonusStore] = BonusStore(state, data['BonusStore'])  # type: ignore
+        # self.bundle = self._state.get_bundle(data['FeaturedBundle']['Bundle']['ID']) # type: ignore
+        # self.bundles = [self._state.get_bundle(bundle['ID']) for bundle in data['FeaturedBundle']['Bundles']] # type: ignore
+
+    @property
+    def daily_store(self) -> SkinsPanelLayout:
+        return self.skins_panel_layout
+
+    @property
+    def nightmarket(self) -> Optional[BonusStore]:
+        return self.bonus_store
 
 
 class Wallet:
