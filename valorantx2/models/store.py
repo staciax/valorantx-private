@@ -41,23 +41,23 @@ class BonusStore:
 
 
 class StoreFront:
-    bundle: Bundle
-    bundles: List[Bundle]
+    # bundle: Bundle
+    # bundles: List[Bundle]
 
     def __init__(self, state: CacheState, data: StoreFrontPayload):
         self._state = state
-        self.skins_panel_layout: SkinsPanelLayout = SkinsPanelLayout(state, data['SkinsPanelLayout'])  # type: ignore
-        self.bonus_store: Optional[BonusStore] = BonusStore(state, data['BonusStore'])  # type: ignore
-        # self.bundle = self._state.get_bundle(data['FeaturedBundle']['Bundle']['ID']) # type: ignore
-        # self.bundles = [self._state.get_bundle(bundle['ID']) for bundle in data['FeaturedBundle']['Bundles']] # type: ignore
+        self.skins_panel_layout: SkinsPanelLayout = SkinsPanelLayout(state, data['SkinsPanelLayout'])
+        # self.bonus_store: Optional[BonusStore] = BonusStore(state, data['BonusStore'])
+        self.bundle: Optional[Bundle] = self._state.get_bundle(data['FeaturedBundle']['Bundle']['ID']) 
+        self.bundles: List[Optional[Bundle]] = [self._state.get_bundle(bundle['ID']) for bundle in data['FeaturedBundle']['Bundles']]
 
     @property
     def daily_store(self) -> SkinsPanelLayout:
         return self.skins_panel_layout
 
-    @property
-    def nightmarket(self) -> Optional[BonusStore]:
-        return self.bonus_store
+    # @property
+    # def nightmarket(self) -> Optional[BonusStore]:
+    #     return self.bonus_store
 
 
 class Wallet:
