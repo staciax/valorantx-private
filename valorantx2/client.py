@@ -188,6 +188,7 @@ class Client:
         else:
             self._version = self.valorant_api.version
             self.http.riot_client_version = self._version.riot_client_version
+            _log.debug('assets valorant version: %s', self._version.version)
 
         _log.debug('client initialized')
 
@@ -229,9 +230,14 @@ class Client:
         self._ready = asyncio.Event()
         data = await self.http.static_login(username, password)
         self.me = me = ClientUser(data=data)
+
         self._is_authorized = True
         self._ready.set()
         _log.info('Logged as %s', me.display_name)
+
+        # insert items cost
+        offers = await self.fetch_offers()
+        self.valorant_api.insert_cost(offers)
 
     async def authorize(self, username: str, password: str) -> None:
         """|coro|
@@ -246,8 +252,8 @@ class Client:
             The password of the account to authorize.
         """
 
-        if username is None or password is None:
-            raise ValueError('Username or password cannot be None')
+        if not username or not password:
+            raise ValueError('username and password must be provided')
 
         await self._login(username, password)
 
@@ -260,19 +266,19 @@ class Client:
     @_authorize_required
     async def fetch_store_front(self) -> StoreFront:
         data = await self.http.store_fetch_storefront()
-        return StoreFront(self, data)
+        return StoreFront(self.valorant_api._cache, data)
 
     @_authorize_required
     async def fetch_wallet(self) -> Wallet:
         data = await self.http.store_fetch_wallet()
-        return Wallet(self, data)
+        return Wallet(self.valorant_api._cache, data)
 
     @_authorize_required
     async def fetch_entitlements(self) -> Entitlements:
         data = await self.http.store_fetch_entitlements()
-        return Entitlements(self, data)
+        return Entitlements(self.valorant_api._cache, data)
 
     @_authorize_required
     async def fetch_offers(self) -> Offers:
         data = await self.http.store_fetch_offers()
-        return Offers(self, data)
+        return Offers(data)

@@ -11,7 +11,7 @@ import aiohttp
 from . import __version__, utils
 from .auth import RiotAuth
 from .enums import Locale, QueueType, Region, try_enum
-from .errors import Forbidden, HTTPException, InternalServerError, NotFound, PhaseError, RateLimited
+from .errors import Forbidden, HTTPException, InternalServerError, NotFound, PhaseError, RateLimited, RiotAuthenticationError
 
 # try:
 #     import urllib3
@@ -85,7 +85,6 @@ class Route:
 class HTTPClient:
     def __init__(self, loop: asyncio.AbstractEventLoop = MISSING) -> None:
         self.loop: asyncio.AbstractEventLoop = loop
-        # self.user: Optional[ClientPlayer] = None
         self._session: aiohttp.ClientSession = MISSING
         self._headers: Dict[str, Any] = {}
         self._client_platform = 'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9'  # noqa: E501
@@ -111,7 +110,7 @@ class HTTPClient:
         url = route.url
         re_authorize = kwargs.pop('re_authorize', True)
         extra_exceptions = kwargs.pop('exceptions', None)
-        kwargs['headers'] = self._headers
+        kwargs['headers'] = kwargs.get('headers', self._headers)
 
         response: Optional[aiohttp.ClientResponse] = None
         data: Optional[Union[Dict[str, Any], str]] = None
@@ -132,11 +131,14 @@ class HTTPClient:
                         return data
 
                     if response.status == 400:
-                        if re_authorize:
-                            await self._riot_auth.reauthorize()
-                            await self.__build_headers()
-                            re_authorize = False
-                            continue
+                        if tries < 4:
+                            try:
+                                await self._riot_auth.reauthorize()
+                            except RiotAuthenticationError:
+                                ...
+                            else:
+                                await self.__build_headers()
+                                continue
                         raise PhaseError(response, data)
 
                     # we are being rate limited
@@ -1042,7 +1044,7 @@ class HTTPClient:
 
     def __check_puuid(self, puuid: Optional[str]) -> str:
         """if puuid passed into method is None make it current user's puuid"""
-        return self._puuid if puuid is None else puuid
+        return self._puuid if puuid is None else puuid  # type: ignore
 
     async def __build_headers(self) -> None:
         # if self.riot_client_version is None:

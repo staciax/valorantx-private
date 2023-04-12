@@ -32,11 +32,6 @@ assert password is not None
 @pytest_asyncio.fixture
 async def client() -> AsyncGenerator[valorantx.Client, None]:
     async with valorantx.Client(locale=valorantx.Locale.thai) as v_client:
-        # await v_client.fetch_assets(reload=True, force=True)  # 'with_price=True' is requires authorization
-        # after `client.fetch_assets`, you can comment above line and use below line
-        # `client.reload_assets(with_price=True)` # will reload assets without authorization
-        # if new version available, please use `await client.fetch_assets(with_price=True)` again
-
         yield v_client
 
 
@@ -83,6 +78,7 @@ class BaseAuthTest(BaseTest):
     async def test_authorize(self) -> None:
         assert self.client is not None
         assert self.client.is_ready() is False
+        await self.client.init()
         await self.client.authorize(self.riot_username, self.riot_password)
         await self.client.wait_until_ready()
         assert self.client.is_authorized() is True
