@@ -19,13 +19,13 @@ class TestInGameAPI(BaseTest):
         assert self.client.is_closed() is False
 
         if self.client.is_authorized():
-            assert self.client._http._session is not MISSING
+            assert self.client.http._session is not MISSING
         else:
-            assert self.client._http._session is MISSING
+            assert self.client.http._session is MISSING
 
         await self.client.close()
         assert self.client.is_closed() is True
-        assert self.client._http._session is MISSING
+        assert self.client.http._session is MISSING
 
         self.client.clear()
         assert self.client.is_ready() is False
