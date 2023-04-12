@@ -210,6 +210,11 @@ class CacheState:
             if existing is None:
                 self.store_agent(agent)
 
+    async def fetch_agents(self) -> List[Agent]:
+        data = await self.http.get_agents()
+        self._add_agents(data)
+        return self.agents
+
     # buddies
 
     @property
@@ -240,6 +245,11 @@ class CacheState:
             if buddy_existing is None:
                 self.store_buddy(buddy)
 
+    async def fetch_buddies(self) -> List[Buddy]:
+        data = await self.http.get_buddies()
+        self._add_buddies(data)
+        return self.buddies
+
     # bundles
 
     @property
@@ -260,6 +270,11 @@ class CacheState:
             bundle_existing = self.get_bundle(bundle['uuid'])
             if bundle_existing is None:
                 self.store_bundle(bundle)
+
+    async def fetch_bundles(self) -> List[Bundle]:
+        data = await self.http.get_bundles()
+        self._add_bundles(data)
+        return self.bundles
 
     # ceremonies
 
@@ -282,6 +297,11 @@ class CacheState:
             if ceremony_existing is None:
                 self.store_ceremony(ceremony)
 
+    async def fetch_ceremonies(self) -> List[Ceremony]:
+        data = await self.http.get_ceremonies()
+        self._add_ceremonies(data)
+        return self.ceremonies
+
     # competitive tiers
 
     @property
@@ -302,6 +322,11 @@ class CacheState:
             competitive_tier_existing = self.get_competitive_tier(competitive_tier['uuid'])
             if competitive_tier_existing is None:
                 self.store_competitive_tier(competitive_tier)
+
+    async def fetch_competitive_tiers(self) -> List[CompetitiveTier]:
+        data = await self.http.get_competitive_tiers()
+        self._add_competitive_tiers(data)
+        return self.competitive_tiers
 
     # content tiers
 
@@ -324,6 +349,11 @@ class CacheState:
             if content_tier_existing is None:
                 self.store_content_tier(content_tier)
 
+    async def fetch_content_tiers(self) -> List[ContentTier]:
+        data = await self.http.get_content_tiers()
+        self._add_content_tiers(data)
+        return self.content_tiers
+
     # contracts
 
     @property
@@ -344,6 +374,11 @@ class CacheState:
             contract_existing = self.get_contract(contract['uuid'])
             if contract_existing is None:
                 self.store_contract(contract)
+
+    async def fetch_contracts(self) -> List[Contract]:
+        data = await self.http.get_contracts()
+        self._add_contracts(data)
+        return self.contracts
 
     # currencies
 
@@ -366,6 +401,11 @@ class CacheState:
             if currency_existing is None:
                 self.store_currency(currency)
 
+    async def fetch_currencies(self) -> List[Currency]:
+        data = await self.http.get_currencies()
+        self._add_currencies(data)
+        return self.currencies
+
     # events
 
     @property
@@ -386,6 +426,11 @@ class CacheState:
             event_existing = self.get_event(event['uuid'])
             if event_existing is None:
                 self.store_event(event)
+
+    async def fetch_events(self) -> List[Event]:
+        data = await self.http.get_events()
+        self._add_events(data)
+        return self.events
 
     # game modes
 
@@ -422,12 +467,22 @@ class CacheState:
             if game_mode_existing is None:
                 self.store_game_mode(game_mode)
 
+    async def fetch_game_modes(self) -> List[GameMode]:
+        data = await self.http.get_game_modes()
+        self._add_game_modes(data)
+        return self.game_modes
+
     def _add_game_mode_equippables(self, data: gamemodes.GameModeEquippables) -> None:
         game_mode_equippable_data = data['data']
         for game_mode_equippable in game_mode_equippable_data:
             game_mode_equippable_existing = self.get_game_mode_equippable(game_mode_equippable['uuid'])
             if game_mode_equippable_existing is None:
                 self.store_game_mode_equippable(game_mode_equippable)
+
+    async def fetch_game_mode_equippables(self) -> List[GameModeEquippable]:
+        data = await self.http.get_game_mode_equippables()
+        self._add_game_mode_equippables(data)
+        return self.game_mode_equippables
 
     # gear
 
@@ -450,6 +505,11 @@ class CacheState:
             if gear_existing is None:
                 self.store_gear(gear_)
 
+    async def fetch_gear(self) -> List[Gear]:
+        data = await self.http.get_gear()
+        self._add_gear(data)
+        return self.gear
+
     # level borders
 
     @property
@@ -470,6 +530,11 @@ class CacheState:
             level_border_existing = self.get_level_border(level_border['uuid'])
             if level_border_existing is None:
                 self.store_level_border(level_border)
+
+    async def fetch_level_borders(self) -> List[LevelBorder]:
+        data = await self.http.get_level_borders()
+        self._add_level_borders(data)
+        return self.level_borders
 
     # maps
 
@@ -492,6 +557,11 @@ class CacheState:
             if map_existing is None:
                 self.store_map(map_)
 
+    async def fetch_maps(self) -> List[Map]:
+        data = await self.http.get_maps()
+        self._add_maps(data)
+        return self.maps
+
     # missions
 
     @property
@@ -512,6 +582,11 @@ class CacheState:
             mission_existing = self.get_mission(mission['uuid'])
             if mission_existing is None:
                 self.store_mission(mission)
+
+    async def fetch_missions(self) -> List[Mission]:
+        data = await self.http.get_missions()
+        self._add_missions(data)
+        return self.missions
 
     # player_cards
 
@@ -534,6 +609,11 @@ class CacheState:
             if player_card_existing is None:
                 self.store_player_card(player_card)
 
+    async def fetch_player_cards(self) -> List[PlayerCard]:
+        data = await self.http.get_player_cards()
+        self._add_player_cards(data)
+        return self.player_cards
+
     # player_titles
 
     @property
@@ -554,6 +634,11 @@ class CacheState:
             player_title_existing = self.get_player_title(player_title['uuid'])
             if player_title_existing is None:
                 self.store_player_title(player_title)
+
+    async def fetch_player_titles(self) -> List[PlayerTitle]:
+        data = await self.http.get_player_titles()
+        self._add_player_titles(data)
+        return self.player_titles
 
     # seasons
 
@@ -576,6 +661,11 @@ class CacheState:
             if season_existing is None:
                 self.store_season(season)
 
+    async def fetch_seasons(self) -> List[Season]:
+        data = await self.http.get_seasons()
+        self._add_seasons(data)
+        return self.seasons
+
     @property
     def competitive_seasons(self) -> List[CompetitiveSeason]:
         return list(self._competitive_seasons.values())
@@ -594,6 +684,11 @@ class CacheState:
             season_existing = self.get_competitive_season(season['uuid'])
             if season_existing is None:
                 self.store_competitive_season(season)
+
+    async def fetch_competitive_seasons(self) -> List[CompetitiveSeason]:
+        data = await self.http.get_competitive_seasons()
+        self._add_competitive_seasons(data)
+        return self.competitive_seasons
 
     # sprays
 
@@ -625,6 +720,11 @@ class CacheState:
             if spray_existing is None:
                 self.store_spray(spray)
 
+    async def fetch_sprays(self) -> List[Spray]:
+        data = await self.http.get_sprays()
+        self._add_sprays(data)
+        return self.sprays
+
     # themes
 
     @property
@@ -646,6 +746,11 @@ class CacheState:
             if theme_existing is None:
                 self.store_theme(theme)
 
+    async def fetch_themes(self) -> List[Theme]:
+        data = await self.http.get_themes()
+        self._add_themes(data)
+        return self.themes
+
     # version
 
     @property
@@ -654,6 +759,11 @@ class CacheState:
 
     def _add_version(self, data: version.Version) -> None:
         self._version = Version(state=self, data=data['data'])
+
+    async def fetch_version(self) -> Version:
+        data = await self.http.get_version()
+        self._add_version(data)
+        return self.version
 
     # weapons
 
@@ -703,6 +813,11 @@ class CacheState:
             if weapon_existing is None:
                 self.store_weapon(weapon)
 
+    async def fetch_weapons(self) -> List[Weapon]:
+        data = await self.http.get_weapons()
+        self._add_weapons(data)
+        return self.weapons
+
     # bundles 2nd
 
     def _add_bundles_valtracker(self, data: bundles_valtracker.BundlesValTracker) -> None:
@@ -739,3 +854,7 @@ class CacheState:
                         #     _log.warning(f"{sk.display_name.default!r} ({sk.uuid}) != {weapon['name']!r} ({weapon['uuid']}) in bundle {bd.uuid!r}\n")
                     else:
                         _log.warning('bundles valtracker missing skin %s', weapon['uuid'])
+
+    async def fetch_bundles_valtracker(self) -> None:
+        data = await self.http.get_bundles_valtracker()
+        self._add_bundles_valtracker(data)

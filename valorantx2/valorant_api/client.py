@@ -48,9 +48,7 @@ class Client:
 
     async def init(self) -> None:
         self._ready = asyncio.Event()
-
         await self._cache.init()
-
         self._ready.set()
 
     async def close(self) -> None:
@@ -80,12 +78,9 @@ class Client:
     def get_agent(self, uuid: str) -> Optional[Agent]:
         return self._cache.get_agent(uuid)
 
-    async def fetch_agent(
-        self, uuid: str, *, language: Optional[Locale] = None, is_playable_character: bool = True
-    ) -> Agent:
-        language = language or self._cache.locale
-        data = await self._http.get_agent(uuid, language=language.value, is_playable_character=is_playable_character)
-        return Agent(state=self._cache, data=data['data'])
+    async def fetch_agent(self, uuid: str) -> Optional[Agent]:
+        await self._cache.fetch_agents()
+        return self.get_agent(uuid)
 
     # buddies
 
@@ -103,13 +98,13 @@ class Client:
     def get_buddy_level(self, uuid: str) -> Optional[BuddyLevel]:
         return self._cache.get_buddy_level(uuid)
 
-    async def fetch_buddy(self, uuid: str, *, language: Optional[Locale] = None) -> Buddy:
-        data = await self._http.get_buddy(uuid, language=self._language(language))
-        return Buddy(state=self._cache, data=data['data'])
+    async def fetch_buddy(self, uuid: str) -> Optional[Buddy]:
+        await self._cache.fetch_buddies()
+        return self.get_buddy(uuid)
 
-    async def fetch_buddy_level(self, uuid: str, *, language: Optional[Locale] = None) -> BuddyLevel:
-        data = await self._http.get_buddy_level(uuid, language=self._language(language))
-        return BuddyLevel(state=self._cache, data=data['data'])
+    async def fetch_buddy_level(self, uuid: str) -> Optional[BuddyLevel]:
+        await self._cache.fetch_buddies()
+        return self.get_buddy_level(uuid)
 
     # bundles
 
@@ -120,9 +115,9 @@ class Client:
     def get_bundle(self, uuid: str) -> Optional[Bundle]:
         return self._cache.get_bundle(uuid)
 
-    async def fetch_bundle(self, uuid: str, *, language: Optional[Locale] = None) -> Bundle:
-        data = await self._http.get_bundle(uuid, language=self._language(language))
-        return Bundle(state=self._cache, data=data['data'])
+    async def fetch_bundle(self, uuid: str) -> Optional[Bundle]:
+        await self._cache.fetch_bundles()
+        return self.get_bundle(uuid)
 
     # ceremonies
 
@@ -133,9 +128,9 @@ class Client:
     def get_ceremony(self, uuid: str) -> Optional[Ceremony]:
         return self._cache.get_ceremony(uuid)
 
-    async def fetch_ceremony(self, uuid: str, *, language: Optional[Locale] = None) -> Ceremony:
-        data = await self._http.get_ceremony(uuid, language=self._language(language))
-        return Ceremony(state=self._cache, data=data['data'])
+    async def fetch_ceremony(self, uuid: str) -> Optional[Ceremony]:
+        await self._cache.fetch_ceremonies()
+        return self.get_ceremony(uuid)
 
     # competitive_tiers
 
@@ -146,9 +141,9 @@ class Client:
     def get_competitive_tier(self, uuid: str) -> Optional[CompetitiveTier]:
         return self._cache.get_competitive_tier(uuid)
 
-    async def fetch_competitive_tier(self, uuid: str, *, language: Optional[Locale] = None) -> CompetitiveTier:
-        data = await self._http.get_competitive_tier(uuid, language=self._language(language))
-        return CompetitiveTier(state=self._cache, data=data['data'])
+    async def fetch_competitive_tier(self, uuid: str) -> Optional[CompetitiveTier]:
+        await self._cache.fetch_competitive_tiers()
+        return self.get_competitive_tier(uuid)
 
     # content_tiers
 
@@ -159,9 +154,9 @@ class Client:
     def get_content_tier(self, uuid: str) -> Optional[ContentTier]:
         return self._cache.get_content_tier(uuid)
 
-    async def fetch_content_tier(self, uuid: str, *, language: Optional[Locale] = None) -> ContentTier:
-        data = await self._http.get_content_tier(uuid, language=self._language(language))
-        return ContentTier(state=self._cache, data=data['data'])
+    async def fetch_content_tier(self, uuid: str) -> Optional[ContentTier]:
+        await self._cache.fetch_content_tiers()
+        return self.get_content_tier(uuid)
 
     # contracts
 
@@ -172,9 +167,9 @@ class Client:
     def get_contract(self, uuid: str) -> Optional[Contract]:
         return self._cache.get_contract(uuid)
 
-    async def fetch_contract(self, uuid: str, *, language: Optional[Locale] = None) -> Contract:
-        data = await self._http.get_contract(uuid, language=self._language(language))
-        return Contract(state=self._cache, data=data['data'])
+    async def fetch_contract(self, uuid: str) -> Optional[Contract]:
+        await self._cache.fetch_contracts()
+        return self.get_contract(uuid)
 
     # currencies
 
@@ -185,9 +180,9 @@ class Client:
     def get_currency(self, uuid: str) -> Optional[Currency]:
         return self._cache.get_currency(uuid)
 
-    async def fetch_currency(self, uuid: str, *, language: Optional[Locale] = None) -> Currency:
-        data = await self._http.get_currency(uuid, language=self._language(language))
-        return Currency(state=self._cache, data=data['data'])
+    async def fetch_currency(self, uuid: str) -> Optional[Currency]:
+        await self._cache.fetch_currencies()
+        return self.get_currency(uuid)
 
     # events
 
@@ -198,9 +193,9 @@ class Client:
     def get_event(self, uuid: str) -> Optional[Event]:
         return self._cache.get_event(uuid)
 
-    async def fetch_event(self, uuid: str, *, language: Optional[Locale] = None) -> Event:
-        data = await self._http.get_event(uuid, language=self._language(language))
-        return Event(state=self._cache, data=data['data'])
+    async def fetch_event(self, uuid: str) -> Optional[Event]:
+        await self._cache.fetch_events()
+        return self.get_event(uuid)
 
     # game_modes
 
@@ -218,13 +213,13 @@ class Client:
     def get_game_mode_equippable(self, uuid: str) -> Optional[GameModeEquippable]:
         return self._cache.get_game_mode_equippable(uuid)
 
-    async def fetch_game_mode(self, uuid: str, *, language: Optional[Locale] = None) -> GameMode:
-        data = await self._http.get_game_mode(uuid, language=self._language(language))
-        return GameMode(state=self._cache, data=data['data'])
+    async def fetch_game_mode(self, uuid: str) -> Optional[GameMode]:
+        await self._cache.fetch_game_modes()
+        return self.get_game_mode(uuid)
 
-    async def fetch_game_mode_equippable(self, uuid: str, *, language: Optional[Locale] = None) -> GameModeEquippable:
-        data = await self._http.get_game_mode_equippable(uuid, language=self._language(language))
-        return GameModeEquippable(state=self._cache, data=data['data'])
+    async def fetch_game_mode_equippable(self, uuid: str) -> Optional[GameModeEquippable]:
+        await self._cache.fetch_game_modes()
+        return self.get_game_mode_equippable(uuid)
 
     # gear
 
@@ -235,9 +230,9 @@ class Client:
     def get_gear(self, uuid: str) -> Optional[Gear]:
         return self._cache.get_gear(uuid)
 
-    async def fetch_gear(self, uuid: str, *, language: Optional[Locale] = None) -> Gear:
-        data = await self._http.get_gear_(uuid, language=self._language(language))
-        return Gear(state=self._cache, data=data['data'])
+    async def fetch_gear(self, uuid: str) -> Optional[Gear]:
+        await self._cache.fetch_gear()
+        return self.get_gear(uuid)
 
     # level_borders
 
@@ -248,9 +243,9 @@ class Client:
     def get_level_border(self, uuid: str) -> Optional[LevelBorder]:
         return self._cache.get_level_border(uuid)
 
-    async def fetch_level_border(self, uuid: str) -> LevelBorder:
-        data = await self._http.get_level_border(uuid)
-        return LevelBorder(state=self._cache, data=data['data'])
+    async def fetch_level_border(self, uuid: str) -> Optional[LevelBorder]:
+        await self._cache.fetch_level_borders()
+        return self.get_level_border(uuid)
 
     # maps
 
@@ -261,9 +256,9 @@ class Client:
     def get_map(self, uuid: str) -> Optional[Map]:
         return self._cache.get_map(uuid)
 
-    async def fetch_map(self, uuid: str, *, language: Optional[Locale] = None) -> Map:
-        data = await self._http.get_map(uuid, language=self._language(language))
-        return Map(state=self._cache, data=data['data'])
+    async def fetch_map(self, uuid: str) -> Optional[Map]:
+        await self._cache.fetch_maps()
+        return self.get_map(uuid)
 
     # missions
 
@@ -274,9 +269,9 @@ class Client:
     def get_mission(self, uuid: str) -> Optional[Mission]:
         return self._cache.get_mission(uuid)
 
-    async def fetch_mission(self, uuid: str, *, language: Optional[Locale] = None) -> Mission:
-        data = await self._http.get_mission(uuid, language=self._language(language))
-        return Mission(state=self._cache, data=data['data'])
+    async def fetch_mission(self, uuid: str) -> Optional[Mission]:
+        await self._cache.fetch_missions()
+        return self.get_mission(uuid)
 
     # player_cards
 
@@ -287,9 +282,9 @@ class Client:
     def get_player_card(self, uuid: str) -> Optional[PlayerCard]:
         return self._cache.get_player_card(uuid)
 
-    async def fetch_player_card(self, uuid: str, *, language: Optional[Locale] = None) -> PlayerCard:
-        data = await self._http.get_player_card(uuid, language=self._language(language))
-        return PlayerCard(state=self._cache, data=data['data'])
+    async def fetch_player_card(self, uuid: str) -> Optional[PlayerCard]:
+        await self._cache.fetch_player_cards()
+        return self.get_player_card(uuid)
 
     # player_titles
 
@@ -300,9 +295,9 @@ class Client:
     def get_player_title(self, uuid: str) -> Optional[PlayerTitle]:
         return self._cache.get_player_title(uuid)
 
-    async def fetch_player_title(self, uuid: str, *, language: Optional[Locale] = None) -> PlayerTitle:
-        data = await self._http.get_player_title(uuid, language=self._language(language))
-        return PlayerTitle(state=self._cache, data=data['data'])
+    async def fetch_player_title(self, uuid: str) -> Optional[PlayerTitle]:
+        await self._cache.fetch_player_titles()
+        return self.get_player_title(uuid)
 
     # seasons
 
@@ -313,9 +308,9 @@ class Client:
     def get_season(self, uuid: str) -> Optional[Season]:
         return self._cache.get_season(uuid)
 
-    async def fetch_season(self, uuid: str, *, language: Optional[Locale] = None) -> Season:
-        data = await self._http.get_season(uuid, language=self._language(language))
-        return Season(state=self._cache, data=data['data'])
+    async def fetch_season(self, uuid: str) -> Optional[Season]:
+        await self._cache.fetch_seasons()
+        return self.get_season(uuid)
 
     @property
     def competitive_seasons(self) -> List[CompetitiveSeason]:
@@ -324,9 +319,9 @@ class Client:
     def get_competitive_season(self, uuid: str) -> Optional[CompetitiveSeason]:
         return self._cache.get_competitive_season(uuid)
 
-    async def fetch_competitive_season(self, uuid: str) -> CompetitiveSeason:
-        data = await self._http.get_competitive_season(uuid)
-        return CompetitiveSeason(state=self._cache, data=data['data'])
+    async def fetch_competitive_season(self, uuid: str) -> Optional[CompetitiveSeason]:
+        await self._cache.fetch_competitive_seasons()
+        return self.get_competitive_season(uuid)
 
     # sprays
 
@@ -337,9 +332,9 @@ class Client:
     def get_spray(self, uuid: str) -> Optional[Spray]:
         return self._cache.get_spray(uuid)
 
-    async def fetch_spray(self, uuid: str, *, language: Optional[Locale] = None) -> Spray:
-        data = await self._http.get_spray(uuid, language=self._language(language))
-        return Spray(state=self._cache, data=data['data'])
+    async def fetch_spray(self, uuid: str) -> Optional[Spray]:
+        await self._cache.fetch_sprays()
+        return self.get_spray(uuid)
 
     @property
     def spray_levels(self) -> List[SprayLevel]:
@@ -348,9 +343,9 @@ class Client:
     def get_spray_level(self, uuid: str) -> Optional[SprayLevel]:
         return self._cache.get_spray_level(uuid)
 
-    async def fetch_spray_level(self, uuid: str) -> SprayLevel:
-        data = await self._http.get_spray_level(uuid)
-        return SprayLevel(state=self._cache, data=data['data'])
+    async def fetch_spray_level(self, uuid: str) -> Optional[SprayLevel]:
+        await self._cache.fetch_sprays()
+        return self.get_spray_level(uuid)
 
     # themes
 
@@ -361,9 +356,9 @@ class Client:
     def get_theme(self, uuid: str) -> Optional[Theme]:
         return self._cache.get_theme(uuid)
 
-    async def fetch_theme(self, uuid: str, *, language: Optional[Locale] = None) -> Theme:
-        data = await self._http.get_theme(uuid, language=self._language(language))
-        return Theme(state=self._cache, data=data['data'])
+    async def fetch_theme(self, uuid: str) -> Optional[Theme]:
+        await self._cache.fetch_themes()
+        return self.get_theme(uuid)
 
     # version
 
@@ -372,8 +367,8 @@ class Client:
         return self._cache.version
 
     async def fetch_version(self) -> Version:
-        data = await self._http.get_version()
-        return Version(state=self._cache, data=data['data'])
+        await self._cache.fetch_version()
+        return self.version
 
     # weapons
 
@@ -384,9 +379,9 @@ class Client:
     def get_weapon(self, uuid: str) -> Optional[Weapon]:
         return self._cache.get_weapon(uuid)
 
-    async def fetch_weapon(self, uuid: str, *, language: Optional[Locale] = None) -> Weapon:
-        data = await self._http.get_weapon(uuid, language=self._language(language))
-        return Weapon(state=self._cache, data=data['data'])
+    async def fetch_weapon(self, uuid: str) -> Optional[Weapon]:
+        await self._cache.fetch_weapons()
+        return self.get_weapon(uuid)
 
     async def _fetch_weapon(self) -> None:
         data = await self._http.get_weapons()
@@ -399,9 +394,9 @@ class Client:
     def get_skin(self, uuid: str) -> Optional[Skin]:
         return self._cache.get_skin(uuid)
 
-    async def fetch_skin(self, uuid: str, *, language: Optional[Locale] = None) -> Skin:
-        data = await self._http.get_weapon_skin(uuid, language=self._language(language))
-        return Skin(state=self._cache, data=data['data'])
+    async def fetch_skin(self, uuid: str) -> Optional[Skin]:
+        await self._cache.fetch_weapons()
+        return self.get_skin(uuid)
 
     @property
     def skin_chromas(self) -> List[SkinChroma]:
@@ -410,9 +405,9 @@ class Client:
     def get_skin_chroma(self, uuid: str) -> Optional[SkinChroma]:
         return self._cache.get_skin_chroma(uuid)
 
-    async def fetch_skin_chroma(self, uuid: str, *, language: Optional[Locale] = None) -> SkinChroma:
-        data = await self._http.get_weapon_skin_chroma(uuid, language=self._language(language))
-        return SkinChroma(state=self._cache, data=data['data'])
+    async def fetch_skin_chroma(self, uuid: str) -> Optional[SkinChroma]:
+        await self._cache.fetch_weapons()
+        return self.get_skin_chroma(uuid)
 
     @property
     def skin_levels(self) -> List[SkinLevel]:
@@ -421,14 +416,6 @@ class Client:
     def get_skin_level(self, uuid: str) -> Optional[SkinLevel]:
         return self._cache.get_skin_level(uuid)
 
-    async def fetch_skin_level(self, uuid: str, *, language: Optional[Locale] = None) -> SkinLevel:
-        data = await self._http.get_weapon_skin_level(uuid, language=self._language(language))
-        return SkinLevel(state=self._cache, data=data['data'])
-
-    # helpers
-
-    def _language(self, language: Optional[Locale]) -> Optional[str]:
-        if language is None:
-            # return self._cache.locale.value
-            return None
-        return language.value
+    async def fetch_skin_level(self, uuid: str) -> Optional[SkinLevel]:
+        await self._cache.fetch_weapons()
+        return self.get_skin_level(uuid)
