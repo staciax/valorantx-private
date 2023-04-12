@@ -38,26 +38,32 @@ class SkinsPanelLayout:
 class BonusStore:
     def __init__(self, state: CacheState, data: BonusStorePayload):
         self._state = state
+        self.skins: List[SkinLevel] = [self._state.get_skin_level(offer['Offer']['OfferID']) for offer in data['BonusStoreOffers']]  # type: ignore
 
 
 class StoreFront:
-    # bundle: Bundle
-    # bundles: List[Bundle]
-
     def __init__(self, state: CacheState, data: StoreFrontPayload):
+        import json
+
+        with open('storefront.json', 'w') as f:
+            json.dump(data, f, indent=4)
         self._state = state
         self.skins_panel_layout: SkinsPanelLayout = SkinsPanelLayout(state, data['SkinsPanelLayout'])
-        # self.bonus_store: Optional[BonusStore] = BonusStore(state, data['BonusStore'])
-        self.bundle: Optional[Bundle] = self._state.get_bundle(data['FeaturedBundle']['Bundle']['ID']) 
-        self.bundles: List[Optional[Bundle]] = [self._state.get_bundle(bundle['ID']) for bundle in data['FeaturedBundle']['Bundles']]
+        self.bundle: Optional[Bundle] = self._state.get_bundle(data['FeaturedBundle']['Bundle']['DataAssetID'])
+        self.bundles: List[Optional[Bundle]] = [
+            self._state.get_bundle(bundle['DataAssetID']) for bundle in data['FeaturedBundle']['Bundles']
+        ]
+        self.bonus_store: Optional[BonusStore] = None
+        if 'BonusStore' in data:
+            self.bonus_store = BonusStore(state, data['BonusStore'])
 
     @property
     def daily_store(self) -> SkinsPanelLayout:
         return self.skins_panel_layout
 
-    # @property
-    # def nightmarket(self) -> Optional[BonusStore]:
-    #     return self.bonus_store
+    @property
+    def nightmarket(self) -> Optional[BonusStore]:
+        return self.bonus_store
 
 
 class Wallet:

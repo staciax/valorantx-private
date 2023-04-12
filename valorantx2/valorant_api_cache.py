@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, List, Optional, Dict
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 from .enums import Locale  # CURRENCY_UUIDS
-from .valorant_api.cache import CacheState as CacheStateValorantAPI
 
 # from .models.weapons import Weapon, Skin, SkinChroma, SkinLevel
 # from .models.player_cards import PlayerCard
 from .models.bundles import Bundle
+from .valorant_api.cache import CacheState as CacheStateValorantAPI
 
 if TYPE_CHECKING:
     # from .valorant_api.types import weapons
@@ -25,8 +25,9 @@ class CacheState(CacheStateValorantAPI):
         # self._skin_chromas: Dict[str, SkinChroma] = {}
         # self._skin_levels: Dict[str, SkinLevel] = {}
 
-    def get_bundle(self, uuid: Optional[str]) -> Optional[Bundle]:
-        return self._bundles.get(uuid)  # type: ignore
+    # def get_bundle(self, uuid: Optional[str]) -> Optional[Bundle]:
+    #     print('get_bundle', uuid)
+    #     return super().get_bundle(uuid)
 
     def insert_cost(self, uuid: str, cost: int) -> None:
         ...
