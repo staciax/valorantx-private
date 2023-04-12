@@ -3,7 +3,6 @@ from typing import List, Optional
 
 import aiohttp
 
-from ..utils import MISSING
 from .cache import CacheState
 from .enums import Locale
 from .http import HTTPClient
@@ -37,6 +36,7 @@ from .models import (
     Version,
     Weapon,
 )
+from .utils import MISSING
 
 
 class Client:
@@ -387,6 +387,10 @@ class Client:
     async def fetch_weapon(self, uuid: str, *, language: Optional[Locale] = None) -> Weapon:
         data = await self._http.get_weapon(uuid, language=self._language(language))
         return Weapon(state=self._cache, data=data['data'])
+
+    async def _fetch_weapon(self) -> None:
+        data = await self._http.get_weapons()
+        self._cache._add_weapons(data)
 
     @property
     def skins(self) -> List[Skin]:

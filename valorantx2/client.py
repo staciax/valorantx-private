@@ -21,7 +21,7 @@ from .enums import Locale, try_enum  # ItemType, QueueType, SeasonType,
 from .errors import AuthRequired
 from .http import HTTPClient
 from .models import ClientUser, Entitlements, Offers, StoreFront, Wallet
-from .valorant_api import Client as ValorantAPIClient
+from .valorant_api_client import Client as ValorantAPIClient
 
 #     MMR,
 #     AccountXP,
@@ -130,17 +130,15 @@ class Client:
         self,
         *,
         locale: Union[Locale, str] = Locale.american_english,
-        assets_on_startup: bool = False,
     ) -> None:
-        self._locale: Locale = try_enum(Locale, locale) if isinstance(locale, str) else locale
+        self.locale: Locale = try_enum(Locale, locale) if isinstance(locale, str) else locale
         self.loop: asyncio.AbstractEventLoop = _loop
-        self._fetch_assets_on_startup: bool = assets_on_startup
+        self.http: HTTPClient = HTTPClient(self.loop)
+        self.valorant_api: ValorantAPIClient = ValorantAPIClient(self.http._session, self.locale)
+        self.me: ClientUser = MISSING
         self._closed: bool = False
         self._is_authorized: bool = False
-        self.http: HTTPClient = HTTPClient(self.loop)
         self._ready: asyncio.Event = MISSING
-        self.valorant_api: ValorantAPIClient = ValorantAPIClient(self.http._session, self._locale)
-        self.me: ClientUser = MISSING
         self._version: ValorantAPIVersion = MISSING
         # self._season: Season = MISSING
         # self._act: Season = MISSING
@@ -175,7 +173,7 @@ class Client:
             )
 
     async def init(self) -> None:
-        _log.debug('Setting up client')
+        _log.debug('initializing client')
 
         loop = asyncio.get_running_loop()
         self.loop = loop
@@ -191,7 +189,7 @@ class Client:
             self._version = self.valorant_api.version
             self.http.riot_client_version = self._version.riot_client_version
 
-        _log.debug('client is ready')
+        _log.debug('client initialized')
 
     async def close(self) -> None:
         """|coro|
@@ -259,18 +257,22 @@ class Client:
     #     except Exception as e:
     #         _log.exception('Failed to set season', exc_info=e)
 
+    @_authorize_required
     async def fetch_store_front(self) -> StoreFront:
         data = await self.http.store_fetch_storefront()
         return StoreFront(self, data)
 
+    @_authorize_required
     async def fetch_wallet(self) -> Wallet:
         data = await self.http.store_fetch_wallet()
         return Wallet(self, data)
 
+    @_authorize_required
     async def fetch_entitlements(self) -> Entitlements:
         data = await self.http.store_fetch_entitlements()
         return Entitlements(self, data)
 
+    @_authorize_required
     async def fetch_offers(self) -> Offers:
         data = await self.http.store_fetch_offers()
         return Offers(self, data)

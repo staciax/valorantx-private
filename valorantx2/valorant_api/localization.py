@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Dict, Optional, Tuple, Union
 
-from .. import utils
+from . import utils
 from .enums import Locale
 
 # fmt: off

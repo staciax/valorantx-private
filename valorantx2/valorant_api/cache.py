@@ -7,7 +7,6 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING, Dict, List, Optional  # Any, Callable, Coroutine,
 
-from ..utils import MISSING
 from .models import (
     Agent,
     Buddy,
@@ -38,6 +37,7 @@ from .models import (
     Version,
     Weapon,
 )
+from .utils import MISSING
 
 if TYPE_CHECKING:
     from ..enums import Locale

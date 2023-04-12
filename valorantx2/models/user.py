@@ -5,7 +5,11 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ..types.user import PartialUser as PartialUserPayload
 
-__all__ = ('ClientUser',)
+# fmt: off
+__all__ = (
+    'ClientUser',
+)
+# fmt: on
 
 
 class _BaseUser:
