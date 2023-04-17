@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import datetime
 from typing import TYPE_CHECKING, List, Optional
 
 from ..enums import RADIANITE_POINT_UUID, VALORANT_POINT_UUID
+from ..models.bundles import FeaturedBundle
 from ..valorant_api_cache import CacheState
 
 if TYPE_CHECKING:
@@ -16,10 +18,7 @@ if TYPE_CHECKING:
         StoreFront as StoreFrontPayload,
         Wallet as WalletPayload,
     )
-    from .bundles import Bundle
     from .weapons import SkinLevel
-
-    # from ..valorant_api.models.currencies import Currency as ValorantAPICurrency
 
 __all__ = (
     'StoreFront',
@@ -33,25 +32,37 @@ class SkinsPanelLayout:
     def __init__(self, state: CacheState, data: SkinsPanelLayoutPayload):
         self._state = state
         self.skins: List[SkinLevel] = [self._state.get_skin_level(uuid) for uuid in data['SingleItemOffers']]  # type: ignore
+        for skin_uuid in data['SingleItemOffers']:
+            skin = self._state.get_skin_level(skin_uuid)
+            if skin is not None:
+                self.skins.append(skin)
+        self._remaining_duration_in_seconds: int = data['SingleItemOffersRemainingDurationInSeconds']
+
+    @property
+    def remaining_duration(self) -> datetime.datetime:
+        dt = datetime.datetime.now() + datetime.timedelta(seconds=self._remaining_duration_in_seconds)
+        return dt
 
 
 class BonusStore:
     def __init__(self, state: CacheState, data: BonusStorePayload):
         self._state = state
         self.skins: List[SkinLevel] = [self._state.get_skin_level(offer['Offer']['OfferID']) for offer in data['BonusStoreOffers']]  # type: ignore
+        self._bonus_store_remaining_duration_in_seconds: int = data['BonusStoreRemainingDurationInSeconds']
+
+    @property
+    def remaining_duration(self) -> datetime.datetime:
+        dt = datetime.datetime.now() + datetime.timedelta(seconds=self._bonus_store_remaining_duration_in_seconds)
+        return dt
 
 
 class StoreFront:
     def __init__(self, state: CacheState, data: StoreFrontPayload):
-        import json
-
-        with open('storefront.json', 'w') as f:
-            json.dump(data, f, indent=4)
         self._state = state
         self.skins_panel_layout: SkinsPanelLayout = SkinsPanelLayout(state, data['SkinsPanelLayout'])
-        self.bundle: Optional[Bundle] = self._state.get_bundle(data['FeaturedBundle']['Bundle']['DataAssetID'])
-        self.bundles: List[Optional[Bundle]] = [
-            self._state.get_bundle(bundle['DataAssetID']) for bundle in data['FeaturedBundle']['Bundles']
+        self.bundle: Optional[FeaturedBundle] = FeaturedBundle.from_data(state, data['FeaturedBundle']['Bundle'])
+        self.bundles: List[Optional[FeaturedBundle]] = [
+            FeaturedBundle.from_data(state, bundle) for bundle in data['FeaturedBundle']['Bundles']
         ]
         self.bonus_store: Optional[BonusStore] = None
         if 'BonusStore' in data:

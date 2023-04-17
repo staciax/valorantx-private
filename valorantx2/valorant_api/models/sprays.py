@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Dict, Generic, List, Optional, TypeVar, Union
 
 from .. import utils
 from ..asset import Asset
@@ -16,11 +16,14 @@ if TYPE_CHECKING:
 
 __all__ = ('Spray', 'SprayLevel')
 
+SprayT = TypeVar('SprayT', bound='Spray')
+
 
 class Spray(BaseModel):
     def __init__(self, *, state: CacheState, data: SprayPayload) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
+        self._data: SprayPayload = data
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._category: Optional[str] = data['category']
         self._theme_uuid: Optional[str] = data['themeUuid']
@@ -101,8 +104,8 @@ class Spray(BaseModel):
     #     return cls(client=client, data=data) if data else None
 
 
-class SprayLevel(BaseModel):
-    def __init__(self, state: CacheState, data: SprayLevelPayload, parent: Spray) -> None:
+class SprayLevel(BaseModel, Generic[SprayT]):
+    def __init__(self, state: CacheState, data: SprayLevelPayload, parent: SprayT) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
         self.spray_level: int = data['sprayLevel']
@@ -110,7 +113,7 @@ class SprayLevel(BaseModel):
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
         self.type: ItemType = ItemType.spray_level
-        self.parent: Spray = parent
+        self.parent: SprayT = parent
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 
     def __str__(self) -> str:

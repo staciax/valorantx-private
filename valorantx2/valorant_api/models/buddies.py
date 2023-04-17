@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Dict, Generic, List, Optional, TypeVar, Union
 
 from ..asset import Asset
 from ..enums import ItemType, Locale
@@ -13,6 +13,8 @@ if TYPE_CHECKING:
     from .themes import Theme
 
 __all__ = ('Buddy', 'BuddyLevel')
+
+BuddyT = TypeVar('BuddyT', bound='Buddy')
 
 
 class Buddy(BaseModel):
@@ -64,15 +66,16 @@ class Buddy(BaseModel):
         return next((b for b in self.levels if b.charm_level == level), None)
 
 
-class BuddyLevel(BaseModel):
-    def __init__(self, *, state: CacheState, data: BuddyLevelPayload, parent: Buddy) -> None:
+class BuddyLevel(BaseModel, Generic[BuddyT]):
+    def __init__(self, *, state: CacheState, data: BuddyLevelPayload, parent: BuddyT) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
+        self._data: BuddyLevelPayload = data
         self.charm_level: int = data['charmLevel']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
-        self.parent: Buddy = parent
+        self.parent: BuddyT = parent
         self.type: ItemType = ItemType.buddy_level
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 

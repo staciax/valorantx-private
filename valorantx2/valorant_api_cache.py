@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, Optional
 
-from .enums import Locale  # CURRENCY_UUIDS
+from .enums import Locale
+from .models.weapons import Skin, SkinChroma, SkinLevel, Weapon
 
-# from .models.weapons import Weapon, Skin, SkinChroma, SkinLevel
 # from .models.player_cards import PlayerCard
-from .models.bundles import Bundle
 from .valorant_api.cache import CacheState as CacheStateValorantAPI
 
 if TYPE_CHECKING:
@@ -20,14 +19,17 @@ _log = logging.getLogger(__name__)
 class CacheState(CacheStateValorantAPI):
     def __init__(self, *, locale: Locale, http: HTTPClientValorantAPI, to_file: bool = False) -> None:
         super().__init__(locale=locale, http=http, to_file=to_file)
-        # self._weapons: Dict[str, Weapon] = {}
-        # self._skins: Dict[str, Skin] = {}
-        # self._skin_chromas: Dict[str, SkinChroma] = {}
-        # self._skin_levels: Dict[str, SkinLevel] = {}
+        self._weapons: Dict[str, Weapon] = {}
+        self._skins: Dict[str, Skin] = {}
+        self._skin_chromas: Dict[str, SkinChroma] = {}
+        self._skin_levels: Dict[str, SkinLevel] = {}
 
     # def get_bundle(self, uuid: Optional[str]) -> Optional[Bundle]:
     #     print('get_bundle', uuid)
     #     return super().get_bundle(uuid)
+
+    def get_skin_level(self, uuid: Optional[str]) -> Optional[SkinLevel]:
+        return self._skin_levels.get(uuid)  # type: ignore
 
     def insert_cost(self, uuid: str, cost: int) -> None:
         ...

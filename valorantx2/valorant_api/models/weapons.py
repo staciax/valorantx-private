@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Optional, Union  # overload
+from typing import TYPE_CHECKING, Dict, Generic, List, Optional, TypeVar, Union  # overload
 
 from .. import utils
 from ..asset import Asset
@@ -34,6 +34,9 @@ __all__ = (
 )
 
 # TODO: patch 6.x support variants favorites colors of skins
+
+WeaponT = TypeVar('WeaponT', bound='Weapon')
+SkinT = TypeVar('SkinT', bound='Skin')
 
 
 class GridPosition:
@@ -303,10 +306,11 @@ class Weapon(BaseModel):
     #     return cls(client=client, data=data) if data else None
 
 
-class Skin(BaseModel):
-    def __init__(self, *, state: CacheState, data: SkinPayload, parent: Weapon) -> None:
+class Skin(BaseModel, Generic[WeaponT]):
+    def __init__(self, *, state: CacheState, data: SkinPayload, parent: WeaponT) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
+        self._data: SkinPayload = data
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._theme_uuid: str = data['themeUuid']
         self._content_tier_uuid: Optional[str] = data['contentTierUuid']
@@ -321,7 +325,7 @@ class Skin(BaseModel):
             for index, level in enumerate(data['levels'])
         ]
         self.type: ItemType = ItemType.skin
-        self.parent: Weapon = parent
+        self.parent: WeaponT = parent
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 
     def __str__(self) -> str:
@@ -426,8 +430,8 @@ class Skin(BaseModel):
     #         return client.get_skin_level(uuid) or client.get_skin_chroma(uuid)
 
 
-class SkinChroma(BaseModel):
-    def __init__(self, *, state: CacheState, data: SkinChromaPayload, parent: Skin) -> None:
+class SkinChroma(BaseModel, Generic[SkinT]):
+    def __init__(self, *, state: CacheState, data: SkinChromaPayload, parent: SkinT) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
@@ -437,7 +441,7 @@ class SkinChroma(BaseModel):
         self._streamed_video: Optional[str] = data['streamedVideo']
         self.asset_path: str = data['assetPath']
         self.type: ItemType = ItemType.skin_chroma
-        self.parent: Skin = parent
+        self.parent: SkinT = parent
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 
     def __str__(self) -> str:
@@ -535,10 +539,11 @@ class SkinChroma(BaseModel):
     #     return cls(client=client, data=data) if data else None
 
 
-class SkinLevel(BaseModel):
-    def __init__(self, *, state: CacheState, data: SkinLevelPayload, parent: Skin, level_number: int) -> None:
+class SkinLevel(BaseModel, Generic[SkinT]):
+    def __init__(self, *, state: CacheState, data: SkinLevelPayload, parent: SkinT, level_number: int) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
+        self._data: SkinLevelPayload = data
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._level: Optional[str] = data['levelItem']
         self._display_icon: Optional[str] = data['displayIcon']
@@ -547,7 +552,7 @@ class SkinLevel(BaseModel):
         self._level_number: int = level_number
         self._is_level_one: bool = level_number == 0
         self.type: ItemType = ItemType.skin_level
-        self.parent: Skin = parent
+        self.parent: SkinT = parent
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 
     def __str__(self) -> str:

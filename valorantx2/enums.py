@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any, Final, List, Optional, Tuple, Type, TypeVar
 
-from .valorant_api.enums import Enum as Enum, Locale as Locale, try_enum as try_enum
+from .valorant_api.enums import Enum as Enum, ItemType as ItemType, Locale as Locale, try_enum as try_enum
 
 # --
 
