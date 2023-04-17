@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 
 from ..enums import RADIANITE_POINT_UUID, VALORANT_POINT_UUID
-from ..models.bundles import FeaturedBundle
 from ..valorant_api_cache import CacheState
+from .bundles import FeaturedBundle
+from .weapons import SkinLevelOffer
 
 if TYPE_CHECKING:
     from ..types.store import (
@@ -31,9 +32,9 @@ __all__ = (
 class SkinsPanelLayout:
     def __init__(self, state: CacheState, data: SkinsPanelLayoutPayload):
         self._state = state
-        self.skins: List[SkinLevel] = [self._state.get_skin_level(uuid) for uuid in data['SingleItemOffers']]  # type: ignore
-        for skin_uuid in data['SingleItemOffers']:
-            skin = self._state.get_skin_level(skin_uuid)
+        self.skins: List[SkinLevelOffer] = []
+        for skin_offer in data['SingleItemStoreOffers']:
+            skin = SkinLevelOffer.from_data(state=state, data_offer=skin_offer)
             if skin is not None:
                 self.skins.append(skin)
         self._remaining_duration_in_seconds: int = data['SingleItemOffersRemainingDurationInSeconds']
@@ -138,11 +139,12 @@ class Reward:
 
 
 class Offer:
-    def __init__(self, data: OfferPayload) -> None:
+    def __init__(self, data: OfferPayload, item: Optional[Any] = None) -> None:
         self.id: str = data['OfferID']
         self._is_direct_purchase: bool = data['IsDirectPurchase']
         self.cost: int = data['Cost'][VALORANT_POINT_UUID]
         self.rewards: List[Reward] = [Reward(reward) for reward in data['Rewards']]
+        self.item: Optional[Any] = item
 
     def __repr__(self) -> str:
         return f'<Offer offer_id={self.id!r}>'
@@ -156,10 +158,6 @@ class Offer:
     def is_direct_purchase(self) -> bool:
         """Returns if the offer is a direct purchase"""
         return self._is_direct_purchase
-
-    # def item(self) -> Any:
-    #     return self._client.get_
-    # # TODO: somethings here
 
 
 class Offers:

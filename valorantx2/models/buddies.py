@@ -3,22 +3,22 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
 from ..valorant_api.models.buddies import Buddy as BuddyValorantAPI, BuddyLevel as BuddyLevelValorantAPI
-from .abc import BundleItemOffer, _Cost
+from .abc import BundleItemOffer, Item
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from ..types.store import ItemOffer as ItemOfferPayload
+    from ..types.store import BundleItemOffer as BundleItemOfferPayload
     from ..valorant_api.types.buddies import Buddy as BuddyPayload, BuddyLevel as BuddyLevelPayloadValorantAPI
     from ..valorant_api_cache import CacheState
 
 
-class Buddy(BuddyValorantAPI, _Cost):
+class Buddy(BuddyValorantAPI, Item):
     def __init__(self, *, state: CacheState, data: BuddyPayload) -> None:
         super().__init__(state=state, data=data)
 
 
-class BuddyLevel(BuddyLevelValorantAPI['Buddy'], _Cost):
+class BuddyLevel(BuddyLevelValorantAPI['Buddy'], Item):
     def __init__(self, *, state: CacheState, data: BuddyLevelPayloadValorantAPI, parent: Buddy) -> None:
         super().__init__(state=state, data=data, parent=parent)
 
@@ -30,7 +30,7 @@ class BuddyLevelBundle(BuddyLevel, BundleItemOffer):
         state: CacheState,
         data: BuddyLevelPayloadValorantAPI,
         parent: Buddy,
-        data_bundle: ItemOfferPayload,
+        data_bundle: BundleItemOfferPayload,
     ) -> None:
         BuddyLevel.__init__(self, state=state, data=data, parent=parent)
         BundleItemOffer.__init__(self, data=data_bundle)
@@ -39,7 +39,7 @@ class BuddyLevelBundle(BuddyLevel, BundleItemOffer):
         return f'<BuddyLevelBundle display_name={self.display_name!r}>'
 
     @classmethod
-    def from_data(cls, *, state: CacheState, data_bundle: ItemOfferPayload) -> Optional[Self]:
+    def from_data(cls, *, state: CacheState, data_bundle: BundleItemOfferPayload) -> Optional[Self]:
         buddy = state.get_buddy_level(data_bundle['BundleItemOfferID'])
         if buddy is None:
             return None

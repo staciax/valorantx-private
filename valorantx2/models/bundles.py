@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, List, Optional, Union
 
 from ..enums import VALORANT_POINT_UUID, ItemType
 from ..valorant_api.models.bundles import Bundle as BundleValorantAPI
-from .abc import _Cost
+from .abc import Item
 from .buddies import BuddyLevelBundle
 from .player_cards import PlayerCardBundle
 from .sprays import SprayBundle
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 _log = logging.getLogger(__name__)
 
 
-class Bundle(BundleValorantAPI, _Cost):
+class Bundle(BundleValorantAPI, Item):
     def __init__(self, state: CacheState, data: BundleValorantAPIPayload) -> None:
         super().__init__(state=state, data=data)
 
@@ -55,23 +55,28 @@ class FeaturedBundle(Bundle):
                     else:
                         _log.warning('Unknown item type: %s uuid: %s', item_type, reward['ItemID'])
 
-        self.total_base_cost: int = 0
+        self.total_baseItem: int = 0
         if data_bundle['TotalBaseCost'] is not None:
-            self.total_base_cost = self._cost = data_bundle['TotalBaseCost'][VALORANT_POINT_UUID]
-        self.total_discounted_cost: int = 0
+            self.total_baseItem = self.Item = data_bundle['TotalBaseCost'][VALORANT_POINT_UUID]
+        self.total_discountedItem: int = 0
         if data_bundle['TotalDiscountedCost'] is not None:
-            self.total_discounted_cost = data_bundle['TotalDiscountedCost'][VALORANT_POINT_UUID]
+            self.total_discountedItem = data_bundle['TotalDiscountedCost'][VALORANT_POINT_UUID]
         self.total_discount_percent: float = data_bundle['TotalDiscountPercent']
         self.duration_remaining_in_seconds: int = data_bundle['DurationRemainingInSeconds']
         self.wholesale_only: bool = data_bundle['WholesaleOnly']
 
     @property
-    def discounted_cost(self) -> int:
-        return self.total_discounted_cost
+    def discountedItem(self) -> int:
+        return self.total_discountedItem
 
     @property
     def cost(self) -> int:
-        return self.total_base_cost
+        return self.total_baseItem
+
+    @property
+    def items(self) -> List[Union[BuddyLevelBundle, PlayerCardBundle, SkinLevelBundle, SprayBundle]]:
+        """:class:`List[Union[BuddyLevelBundle, PlayerCardBundle, SkinLevelBundle, SprayBundle]]`: List of items in the bundle."""
+        return self._items
 
     @classmethod
     def from_data(cls, state: CacheState, data: BundlePayload) -> Optional[Self]:
