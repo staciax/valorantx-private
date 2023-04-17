@@ -36,7 +36,7 @@ class Offer(TypedDict):
     Rewards: List[Reward]
 
 
-class ItemOffer(TypedDict):
+class BundleItemOffer(TypedDict):
     BundleItemOfferID: str
     Offer: Offer
     DiscountPercent: int
@@ -57,7 +57,7 @@ class Bundle_(TypedDict):
     DataAssetID: str
     CurrencyID: str
     Items: List[Items]
-    ItemOffers: Optional[List[ItemOffer]]
+    ItemOffers: Optional[List[BundleItemOffer]]
     TotalBaseCost: Optional[Cost]
     TotalDiscountedCost: Optional[Cost]
     TotalDiscountPercent: float
@@ -73,7 +73,7 @@ class FeaturedBundle(TypedDict):
 
 class SkinsPanelLayout(TypedDict):
     SingleItemOffers: List[str]
-    SingleItemStoreOffers: List[ItemOffer]
+    SingleItemStoreOffers: List[Offer]
     SingleItemOffersRemainingDurationInSeconds: int
 
 
