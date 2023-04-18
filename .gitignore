@@ -159,3 +159,6 @@ test.py
 valorantx/assets/0*
 /raw_data/
 /.valorantx_cache
+
+# MacOS
+.DS_Store
