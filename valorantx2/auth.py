@@ -22,34 +22,12 @@ __all__: Tuple[str, ...] = (
 # fmt: on
 
 
-class _CookieSentinel:
-    __slots__ = ()
-
-    def __getattr__(self, attr: str) -> None:
-        msg = 'loop attribute cannot be accessed in non-async contexts. '
-        raise AttributeError(msg)
-
-
-_cookie_jar: Any = _CookieSentinel()
-
-
 class RiotAuth(_RiotAuth):
     def __init__(self) -> None:
-        self._auth_ssl_ctx = RiotAuth.create_riot_auth_ssl_ctx()
-        self._cookie_jar: aiohttp.CookieJar = _cookie_jar
-        self.access_token: Optional[str] = None
-        self.scope: Optional[str] = None
-        self.id_token: Optional[str] = None
-        self.token_type: Optional[str] = None
-        self.expires_at: int = 0
-        self.user_id: Optional[str] = None
-        self.entitlements_token: Optional[str] = None
+        super().__init__()
         self.name: Optional[str] = None
         self.tag: Optional[str] = None
         self.region: Optional[str] = None
-        # multi-factor
-        self.__waif_for_2fa: bool = False
-        self.multi_factor_email: Optional[str] = None
 
     @property
     def puuid(self) -> str:
@@ -71,9 +49,6 @@ class RiotAuth(_RiotAuth):
         """
         Authenticate using username and password.
         """
-        if self._cookie_jar is _cookie_jar:
-            self._cookie_jar = aiohttp.CookieJar()
-
         if username and password:
             self._cookie_jar.clear()
 
@@ -139,16 +114,12 @@ class RiotAuth(_RiotAuth):
                         else:
                             raise RiotUnknownErrorTypeError(f'Got unknown error `{err}` during authentication.')
                     elif resp_type == 'multifactor':
-                        if self.__waif_for_2fa:
-                            if 'method' in data['multifactor']:
-                                if data['multifactor']['method'] == 'email':
-                                    self.multi_factor_email = data['multifactor']['email']
                         raise RiotMultifactorError('Multi-factor authentication is not currently supported.')
                     else:
                         raise RiotUnknownResponseTypeError(f'Got unknown response type `{resp_type}` during authentication.')
                 # endregion
 
-            self._cookie_jar = session.cookie_jar  # type: ignore
+            self._cookie_jar = session.cookie_jar
             self.__set_tokens_from_uri(data)
 
             # region Get new entitlements token
