@@ -40,8 +40,10 @@ class SkinsPanelLayout:
         self._remaining_duration_in_seconds: int = data['SingleItemOffersRemainingDurationInSeconds']
 
     @property
-    def remaining_duration(self) -> datetime.datetime:
-        dt = datetime.datetime.now() + datetime.timedelta(seconds=self._remaining_duration_in_seconds)
+    def remaining_time(self) -> datetime.datetime:
+        dt = datetime.datetime.utcnow() + datetime.timedelta(seconds=self._remaining_duration_in_seconds)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=datetime.timezone.utc)
         return dt
 
 

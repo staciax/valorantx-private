@@ -10,7 +10,7 @@ __title__ = 'valorantx'
 __author__ = 'xStacia'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2022-present xStacia'
-__version__ = '1.0.0'
+__version__ = '1.0.2'
 
 from . import utils as utils, valorant_api as valorant_api
 from .auth import *
