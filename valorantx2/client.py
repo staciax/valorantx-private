@@ -20,7 +20,7 @@ from . import utils
 from .enums import Locale, try_enum  # ItemType, QueueType, SeasonType,
 from .errors import AuthRequired
 from .http import HTTPClient
-from .models import ClientUser, Entitlements, Offers, StoreFront, Wallet
+from .models import ClientUser, Entitlements, Offers, PatchNotes, StoreFront, Wallet
 from .valorant_api_client import Client as ValorantAPIClient
 
 #     MMR,
@@ -282,3 +282,29 @@ class Client:
     async def fetch_offers(self) -> Offers:
         data = await self.http.store_fetch_offers()
         return Offers(data)
+
+    async def fetch_patch_notes(self, locale: Union[str, Locale] = Locale.american_english) -> PatchNotes:
+        """|coro|
+
+        Fetches the patch notes for the current version of Valorant.
+
+        Parameters
+        ----------
+        locale: Union[:class:`str`, :class:`Locale`]
+            The locale to fetch the patch notes in.
+
+        Returns
+        -------
+        :class:`PatchNotes`
+            The patch notes for the current version of Valorant.
+        """
+
+        if isinstance(locale, str):
+            locale = try_enum(Locale, str(locale))
+
+        # endpoint is not available for simplified chinese
+        if locale is Locale.chinese_simplified:
+            locale = Locale.chinese_traditional
+        data = await self.http.fetch_patch_notes(locale)
+
+        return PatchNotes(state=self.valorant_api._cache, data=data, locale=locale)

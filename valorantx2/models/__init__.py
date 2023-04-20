@@ -2,6 +2,7 @@ from .abc import *
 from .agents import *
 from .buddies import *
 from .bundles import *
+from .patchnotes import *
 from .player_cards import *
 from .player_titles import *
 from .sprays import *

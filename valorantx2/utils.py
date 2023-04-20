@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import List, Tuple, Union
 
-from .valorant_api.utils import MISSING as MISSING, json_or_text as json_or_text
+from .valorant_api.utils import MISSING as MISSING, json_or_text as json_or_text, parse_iso_datetime as parse_iso_datetime
 
 # fmt: off
 __all__: Tuple[str, ...] = (
@@ -12,6 +12,7 @@ __all__: Tuple[str, ...] = (
     'percent',
     'json_or_text',
     'MISSING',
+    'parse_iso_datetime',
 )
 # fmt: on
 
