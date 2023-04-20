@@ -3,6 +3,7 @@ from .agents import *
 from .buddies import *
 from .bundles import *
 from .player_cards import *
+from .player_titles import *
 from .sprays import *
 from .store import *
 from .user import *

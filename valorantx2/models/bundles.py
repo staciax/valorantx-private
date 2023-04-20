@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import datetime
 import logging
 from typing import TYPE_CHECKING, List, Optional, Union
 
-import datetime
 from ..enums import VALORANT_POINT_UUID, ItemType
 from ..valorant_api.models.bundles import Bundle as BundleValorantAPI
 from .abc import Item
@@ -18,6 +18,10 @@ if TYPE_CHECKING:
     from ..types.store import Bundle_ as BundlePayload
     from ..valorant_api.types.bundles import Bundle as BundleValorantAPIPayload
     from ..valorant_api_cache import CacheState
+    from .buddies import Buddy
+    from .player_cards import PlayerCard
+    from .sprays import Spray
+    from .weapons import Skin
 
 _log = logging.getLogger(__name__)
 
@@ -25,6 +29,13 @@ _log = logging.getLogger(__name__)
 class Bundle(BundleValorantAPI, Item):
     def __init__(self, state: CacheState, data: BundleValorantAPIPayload) -> None:
         super().__init__(state=state, data=data)
+
+    if TYPE_CHECKING:
+        _items: List[Union[Skin, Buddy, Spray, PlayerCard]] = []
+
+        @property
+        def items(self) -> List[Union[Skin, Buddy, Spray, PlayerCard]]:
+            return super().items  # type: ignore
 
 
 class FeaturedBundle(Bundle):
