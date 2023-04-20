@@ -78,8 +78,9 @@ class Role(BaseModel):
 
 
 class Ability:
-    def __init__(self, state: CacheState, data: AbilityPayload) -> None:
+    def __init__(self, state: CacheState, data: AbilityPayload, agent: Agent) -> None:
         self._state = state
+        self.agent: Agent = agent
         self.slot: AbilityType = try_enum(AbilityType, data['slot'])
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._description: Union[str, Dict[str, str]] = data['description']
@@ -384,8 +385,10 @@ class Agent(BaseModel):
         self._is_playable_character: bool = data['isPlayableCharacter']
         self._is_available_for_test: bool = data['isAvailableForTest']
         self._is_base_content: bool = data['isBaseContent']
-        self._role: RolePayload = data['role']
-        self._abilities: List[AbilityPayload] = data['abilities']
+        self._roles: Role = Role(state=self._state, data=data['role'])
+        self._abilities: List[Ability] = [
+            Ability(state=self._state, data=ability, agent=self) for ability in data['abilities']
+        ]
         self._voice_line: Union[VoiceLinePayload, Dict[str, Optional[VoiceLinePayload]]] = data['voiceLine']
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
         self._description_localized: Localization = Localization(self._description, locale=self._state.locale)
@@ -450,12 +453,12 @@ class Agent(BaseModel):
     @property
     def role(self) -> Role:
         """:class: `AgentRole` Returns the agent's role."""
-        return Role(state=self._state, data=self._role)
+        return self._roles
 
     @property
     def abilities(self) -> List[Ability]:
         """:class: `List[AgentAbility]` Returns the agent's abilities."""
-        return [Ability(state=self._state, data=ability) for ability in self._abilities]
+        return self._abilities
 
     @property
     def voice_line(self) -> Optional[VoiceLine]:
