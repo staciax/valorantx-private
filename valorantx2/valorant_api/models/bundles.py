@@ -28,10 +28,10 @@ class Bundle(BaseModel):
         self._state: CacheState = state
         self._data: BundlePayload = data
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
-        self._display_name_sub_text: Union[str, Dict[str, str]] = data['displayNameSubText']
+        self._display_name_sub_text: Optional[Union[str, Dict[str, str]]] = data['displayNameSubText']
         self._description: Union[str, Dict[str, str]] = data['description']
-        self._extra_description: Union[str, Dict[str, str]] = data['extraDescription']
-        self._promo_description: Union[str, Dict[str, str]] = data['extraDescription']
+        self._extra_description: Optional[Union[str, Dict[str, str]]] = data['extraDescription']
+        self._promo_description: Optional[Union[str, Dict[str, str]]] = data['promoDescription']
         self.use_additional_context: bool = data['useAdditionalContext']
         self._display_icon: str = data['displayIcon']
         self._display_icon_2: str = data['displayIcon2']

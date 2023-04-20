@@ -55,23 +55,23 @@ class FeaturedBundle(Bundle):
                     else:
                         _log.warning('Unknown item type: %s uuid: %s', item_type, reward['ItemID'])
 
-        self.total_baseItem: int = 0
+        self.total_base_item: int = 0
         if data_bundle['TotalBaseCost'] is not None:
-            self.total_baseItem = self.Item = data_bundle['TotalBaseCost'][VALORANT_POINT_UUID]
-        self.total_discountedItem: int = 0
+            self.total_base_item = self.Item = data_bundle['TotalBaseCost'][VALORANT_POINT_UUID]
+        self._total_discounted_cost: int = 0
         if data_bundle['TotalDiscountedCost'] is not None:
-            self.total_discountedItem = data_bundle['TotalDiscountedCost'][VALORANT_POINT_UUID]
+            self._total_discounted_cost = data_bundle['TotalDiscountedCost'][VALORANT_POINT_UUID]
         self.total_discount_percent: float = data_bundle['TotalDiscountPercent']
         self.duration_remaining_in_seconds: int = data_bundle['DurationRemainingInSeconds']
         self.wholesale_only: bool = data_bundle['WholesaleOnly']
 
     @property
-    def discountedItem(self) -> int:
-        return self.total_discountedItem
+    def discounted_cost(self) -> int:
+        return self._total_discounted_cost
 
     @property
     def cost(self) -> int:
-        return self.total_baseItem
+        return self.total_base_item
 
     @property
     def items(self) -> List[Union[BuddyLevelBundle, PlayerCardBundle, SkinLevelBundle, SprayBundle]]:
