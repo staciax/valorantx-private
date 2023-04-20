@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, List, Optional, Union
 
+import datetime
 from ..enums import VALORANT_POINT_UUID, ItemType
 from ..valorant_api.models.bundles import Bundle as BundleValorantAPI
 from .abc import Item
@@ -72,6 +73,11 @@ class FeaturedBundle(Bundle):
     @property
     def cost(self) -> int:
         return self.total_base_item
+
+    @property
+    def remaining_time_utc(self) -> datetime.datetime:
+        dt = datetime.datetime.utcnow() + datetime.timedelta(seconds=self.duration_remaining_in_seconds)
+        return dt
 
     @property
     def items(self) -> List[Union[BuddyLevelBundle, PlayerCardBundle, SkinLevelBundle, SprayBundle]]:
