@@ -56,13 +56,24 @@ class Bundle(BaseModel):
         return self._display_name_localized.from_locale(locale)
 
     def display_name_sub_text_localized(self, locale: Optional[Union[Locale, str]] = None) -> Optional[str]:
-        return self._display_name_sub_text_localized.from_locale(locale) if self._description is not None else None
+        if self._description is None:
+            return None
+        return self._display_name_sub_text_localized.from_locale(locale)
 
     def description_localized(self, locale: Optional[Union[Locale, str]] = None) -> Optional[str]:
-        return self._description_localized.from_locale(locale) if self._description is not None else None
+        if self._description is None:
+            return None
+        return self._description_localized.from_locale(locale)
 
-    def description_extra_localized(self, locale: Optional[Union[Locale, str]] = None) -> Optional[str]:
-        return self._extra_description_localized.from_locale(locale) if self._extra_description is not None else None
+    def extra_description_localized(self, locale: Optional[Union[Locale, str]] = None) -> Optional[str]:
+        if self._extra_description is None:
+            return None
+        return self._extra_description_localized.from_locale(locale)
+
+    def promo_description_localized(self, locale: Optional[Union[Locale, str]] = None) -> Optional[str]:
+        if self._promo_description is None:
+            return None
+        return self._promo_description_localized.from_locale(locale)
 
     @property
     def display_name(self) -> Localization:
