@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, List, Optional
 from ..enums import RADIANITE_POINT_UUID, VALORANT_POINT_UUID
 from ..valorant_api_cache import CacheState
 from .bundles import FeaturedBundle
-from .weapons import SkinLevelOffer
+from .weapons import SkinLevelBonus, SkinLevelOffer
 
 if TYPE_CHECKING:
     from ..types.store import (
@@ -19,9 +19,10 @@ if TYPE_CHECKING:
         StoreFront as StoreFrontPayload,
         Wallet as WalletPayload,
     )
-    from .weapons import SkinLevel
 
 __all__ = (
+    'SkinsPanelLayout',
+    'BonusStore',
     'StoreFront',
     'Wallet',
     'Entitlements',
@@ -40,22 +41,28 @@ class SkinsPanelLayout:
         self._remaining_duration_in_seconds: int = data['SingleItemOffersRemainingDurationInSeconds']
 
     @property
-    def remaining_time(self) -> datetime.datetime:
+    def remaining_time_utc(self) -> datetime.datetime:
         dt = datetime.datetime.utcnow() + datetime.timedelta(seconds=self._remaining_duration_in_seconds)
-        if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=datetime.timezone.utc)
+        # if dt.tzinfo is None:
+        #     dt = dt.replace(tzinfo=datetime.timezone.utc)
         return dt
 
 
 class BonusStore:
     def __init__(self, state: CacheState, data: BonusStorePayload):
         self._state = state
-        self.skins: List[SkinLevel] = [self._state.get_skin_level(offer['Offer']['OfferID']) for offer in data['BonusStoreOffers']]  # type: ignore
+        self.skins: List[SkinLevelBonus] = []
+        for skin_offer in data['BonusStoreOffers']:
+            skin = SkinLevelBonus.from_data(state=state, data_bonus=skin_offer)
+            if skin is not None:
+                self.skins.append(skin)
         self._bonus_store_remaining_duration_in_seconds: int = data['BonusStoreRemainingDurationInSeconds']
 
     @property
-    def remaining_duration(self) -> datetime.datetime:
-        dt = datetime.datetime.now() + datetime.timedelta(seconds=self._bonus_store_remaining_duration_in_seconds)
+    def remaining_time_utc(self) -> datetime.datetime:
+        dt = datetime.datetime.utcnow() + datetime.timedelta(seconds=self._bonus_store_remaining_duration_in_seconds)
+        # if dt.tzinfo is None:
+        #     dt = dt.replace(tzinfo=datetime.timezone.utc)
         return dt
 
 

@@ -6,7 +6,12 @@ from typing import TYPE_CHECKING, List
 from ..enums import VALORANT_POINT_UUID
 
 if TYPE_CHECKING:
-    from ..types.store import BundleItemOffer as BundleItemOfferPayload, Offer as ItemOfferPayload, Reward as RewardPayload
+    from ..types.store import (
+        BonusStoreOffer as BonusStoreOfferPayload,
+        BundleItemOffer as BundleItemOfferPayload,
+        Offer as ItemOfferPayload,
+        Reward as RewardPayload,
+    )
 
 # fmt: off
 __all__ = (
@@ -65,6 +70,27 @@ class BundleItemOffer:
     @property
     def discounted_cost(self) -> int:
         return self._discounted_cost
+
+    @property
+    def discount_percent(self) -> float:
+        return self._discount_percent
+
+
+class BonusItemOffer:
+    def __init__(self, data: BonusStoreOfferPayload) -> None:
+        self._bonus_offer_id: str = data['BonusOfferID']
+        # avoid circular import
+        from .store import Offer
+
+        self.offer: Offer = Offer(data['Offer'], self)
+        if hasattr(self.offer, 'cost'):
+            self.cost = self.offer.cost
+        self._discount_percent: float = data['DiscountPercent']
+        self._discount_costs: int = data['DiscountCosts'][VALORANT_POINT_UUID]
+
+    @property
+    def discount_costs(self) -> int:
+        return self._discount_costs
 
     @property
     def discount_percent(self) -> float:

@@ -8,12 +8,16 @@ from ..valorant_api.models.weapons import (
     SkinLevel as SkinLevelValorantAPI,
     Weapon as WeaponValorantAPI,
 )
-from .abc import BundleItemOffer, Item, ItemOffer
+from .abc import BonusItemOffer, BundleItemOffer, Item, ItemOffer
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from ..types.store import BundleItemOffer as BundleItemOfferPayload, Offer as OfferPayload
+    from ..types.store import (
+        BonusStoreOffer as BonusStoreOfferPayload,
+        BundleItemOffer as BundleItemOfferPayload,
+        Offer as OfferPayload,
+    )
     from ..valorant_api.types.weapons import (
         Skin as ValorantAPISkinPayload,
         SkinChroma as ValorantAPISkinChromaPayload,
@@ -29,6 +33,8 @@ __all__ = (
     'SkinChroma',
     'SkinLevelOffer',
     'SkinLevelBundle',
+    'SkinLevelBonus',
+    'SkinLevelNightmarket',
 )
 
 
@@ -101,6 +107,36 @@ class SkinLevelOffer(SkinLevel, ItemOffer):
         )
 
 
+class SkinLevelBonus(SkinLevel, BonusItemOffer):
+    def __init__(
+        self,
+        *,
+        state: CacheState,
+        data: ValorantAPISkinLevelPayload,
+        parent: Skin,
+        level_number: int,
+        data_bonus: BonusStoreOfferPayload,
+    ) -> None:
+        SkinLevel.__init__(self, state=state, data=data, parent=parent, level_number=level_number)
+        BonusItemOffer.__init__(self, data=data_bonus)
+
+    def __repr__(self) -> str:
+        return f'<SkinLevelNightmarket display_name={self.display_name!r}>'
+
+    @classmethod
+    def from_data(cls, *, state: CacheState, data_bonus: BonusStoreOfferPayload) -> Optional[Self]:
+        skin_level = state.get_skin_level(data_bonus['Offer']['OfferID'])
+        if skin_level is None:
+            return None
+        return cls(
+            state=state,
+            data=skin_level._data,
+            parent=skin_level.parent,
+            level_number=skin_level.level_number,
+            data_bonus=data_bonus,
+        )
+
+
 class SkinLevelBundle(SkinLevel, BundleItemOffer):
     def __init__(
         self,
@@ -129,3 +165,6 @@ class SkinLevelBundle(SkinLevel, BundleItemOffer):
             level_number=skin_level.level_number,
             data_bundle=data_bundle,
         )
+
+
+SkinLevelNightmarket = SkinLevelBonus
