@@ -3,7 +3,7 @@ from __future__ import annotations
 # import datetime
 # import logging
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Optional
 
 from .. import utils
 from ..valorant_api.models.contracts import Contract as ContractValorantAPI
@@ -18,6 +18,8 @@ from .missions import Mission, MissionMetadata
 # from .abc import Item
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from ..types.contracts import (
         Contract as ContractPayload,
         ContractProgression as ContractProgressionPayload,
@@ -93,86 +95,85 @@ class Contract(ContractValorantAPI):
     def __repr__(self) -> str:
         return f'<Contract display_name={self.display_name!r}>'
 
+    #     @property
+    #     def xp(self) -> int:
+    #         """:class: `int` Returns the contract's xp."""
+    #         return self.progression_towards_next_level
 
-#     @property
-#     def xp(self) -> int:
-#         """:class: `int` Returns the contract's xp."""
-#         return self.progression_towards_next_level
+    #     @property
+    #     def current_tier(self) -> int:
+    #         """:class: `int` Returns the contract's current tier."""
+    #         return self.progression_level_reached
 
-#     @property
-#     def current_tier(self) -> int:
-#         """:class: `int` Returns the contract's current tier."""
-#         return self.progression_level_reached
+    #     @current_tier.setter
+    #     def current_tier(self, value: int) -> None:
+    #         self.progression_level_reached = value
 
-#     @current_tier.setter
-#     def current_tier(self, value: int) -> None:
-#         self.progression_level_reached = value
+    #     @property
+    #     def current_tier_needed_xp(self) -> int:
+    #         """:class: `int` Returns the contract's current tier needed xp."""
+    #         return utils.calculate_level_xp(self.current_tier + 1)
 
-#     @property
-#     def current_tier_needed_xp(self) -> int:
-#         """:class: `int` Returns the contract's current tier needed xp."""
-#         return utils.calculate_level_xp(self.current_tier + 1)
+    #     @property
+    #     def next_tier_remaining_xp(self) -> int:
+    #         """:class: `int` Returns the contract's next tier remaining xp."""
+    #         return self.current_tier_needed_xp - self.xp
 
-#     @property
-#     def next_tier_remaining_xp(self) -> int:
-#         """:class: `int` Returns the contract's next tier remaining xp."""
-#         return self.current_tier_needed_xp - self.xp
+    #     @property
+    #     def next_tier_reward(self) -> Optional[Reward]:
+    #         """:class: `Optional[Reward]` Returns the contract's next tier reward."""
 
-#     @property
-#     def next_tier_reward(self) -> Optional[Reward]:
-#         """:class: `Optional[Reward]` Returns the contract's next tier reward."""
+    #         if self.current_tier >= self.maximum_tier:
+    #             return None
 
-#         if self.current_tier >= self.maximum_tier:
-#             return None
+    #         try:
+    #             chapter = self.content._chapters[self.chapter]
+    #             return chapter._rewards[self.chapter_reward_index]
+    #         except IndexError:
+    #             return None
 
-#         try:
-#             chapter = self.content._chapters[self.chapter]
-#             return chapter._rewards[self.chapter_reward_index]
-#         except IndexError:
-#             return None
+    #     @property
+    #     def latest_tier_reward(self) -> Optional[Reward]:
+    #         """:class: `Optional[Reward]` Returns the contract's latest tier reward."""
 
-#     @property
-#     def latest_tier_reward(self) -> Optional[Reward]:
-#         """:class: `Optional[Reward]` Returns the contract's latest tier reward."""
+    #         try:
+    #             chapter = self.content._chapters[self.chapter - (1 if self.chapter_reward_index == 0 else 0)]
+    #             return chapter._rewards[self.chapter_reward_index - 1]
+    #         except IndexError:
+    #             return None
 
-#         try:
-#             chapter = self.content._chapters[self.chapter - (1 if self.chapter_reward_index == 0 else 0)]
-#             return chapter._rewards[self.chapter_reward_index - 1]
-#         except IndexError:
-#             return None
+    #     @property
+    #     def my_rewards(self) -> Iterator[Reward]:
+    #         """:class: `Iterator[Reward]` Returns the contract's rewards."""
 
-#     @property
-#     def my_rewards(self) -> Iterator[Reward]:
-#         """:class: `Iterator[Reward]` Returns the contract's rewards."""
+    #         if self.maximum_tier <= self.current_tier == self.highest_rewarded_level:
+    #             for chapter in self.content._chapters:
+    #                 yield from chapter._rewards
+    #         else:
+    #             for i in range(0, len(self.content._chapters)):
+    #                 chapter = self.content._chapters[i]
+    #                 if i <= self.chapter:
+    #                     if i == self.chapter:
+    #                         yield from chapter._rewards[: self.chapter_reward_index]
+    #                     else:
+    #                         yield from chapter._rewards
 
-#         if self.maximum_tier <= self.current_tier == self.highest_rewarded_level:
-#             for chapter in self.content._chapters:
-#                 yield from chapter._rewards
-#         else:
-#             for i in range(0, len(self.content._chapters)):
-#                 chapter = self.content._chapters[i]
-#                 if i <= self.chapter:
-#                     if i == self.chapter:
-#                         yield from chapter._rewards[: self.chapter_reward_index]
-#                     else:
-#                         yield from chapter._rewards
+    #     def get_next_reward(self) -> Optional[Union[Agent, SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
+    #         """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the next reward."""
+    #         reward = self.next_tier_reward
+    #         return reward.get_item() if reward is not None else None
 
-#     def get_next_reward(self) -> Optional[Union[Agent, SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
-#         """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the next reward."""
-#         reward = self.next_tier_reward
-#         return reward.get_item() if reward is not None else None
+    #     def get_latest_reward(self) -> Optional[Union[Agent, SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
+    #         """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the latest reward."""
+    #         reward = self.latest_tier_reward
+    #         return reward.get_item() if reward is not None else None
 
-#     def get_latest_reward(self) -> Optional[Union[Agent, SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]:
-#         """:class: `Optional[Union[SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]]` Returns the latest reward."""
-#         reward = self.latest_tier_reward
-#         return reward.get_item() if reward is not None else None
-
-#     @classmethod
-#     def _from_contract(cls, client: Client, contract: ContractUPayload) -> Self:
-#         data = client._assets.get_contract(contract['ContractDefinitionID'])
-#         if data is None:
-#             raise ValueError(f'Contract with uuid {contract["ContractDefinitionID"]!r} not found.')
-#         return cls(client=client, data=data, contract=contract)
+    @classmethod
+    def from_contract(cls, state: CacheState, data: ContractPayload) -> Self:
+        contract = state.get_contract(data['ContractDefinitionID'])
+        if contract is None:
+            raise ValueError(f'Contract with uuid {data["ContractDefinitionID"]!r} not found.')
+        return cls(state=state, data=contract._data, data_contract=data)
 
 
 class ProcessedMatch:
@@ -209,6 +210,10 @@ class ProcessedMatch:
 class Contracts:
     subject: str
     version: int
+    contracts: List[Contract]
+    processed_matches: List[ProcessedMatch]
+    missions: List[Mission]
+    mission_metadata: Optional[MissionMetadata]
 
     def __init__(self, state: CacheState, data: ContractsPayload) -> None:
         self._state: CacheState = state
@@ -220,9 +225,7 @@ class Contracts:
     def _update(self, data: ContractsPayload) -> None:
         self.version: int = data['Version']
         self.subject: str = data['Subject']
-        # self.contracts: List[Contract] = [
-        #     ContractU._from_contract(self._client, contract) for contract in data['Contracts']
-        # ]
+        self.contracts: List[Contract] = [Contract.from_contract(self._state, contract) for contract in data['Contracts']]
         self.processed_matches: List[ProcessedMatch] = [ProcessedMatch(match) for match in data['ProcessedMatches']]
         self.active_special_contract_id: Optional[str] = data['ActiveSpecialContract']  # data.get('ActiveSpecialContract')
         self.missions: List[Mission] = []
