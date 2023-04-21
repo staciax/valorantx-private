@@ -230,7 +230,7 @@ class Locale(Enum):
     german = 'de-DE'
     american_english = 'en-US'
     british_english = 'en-US'
-    spanish = 'es-ES'
+    spain_spanish = 'es-ES'
     spanish_mexican = 'es-MX'
     french = 'fr-FR'
     indonesian = 'id-ID'
@@ -238,13 +238,13 @@ class Locale(Enum):
     japanese = 'ja-JP'
     korean = 'ko-KR'
     polish = 'pl-PL'
-    portuguese_brazil = 'pt-BR'
+    brazil_portuguese = 'pt-BR'
     russian = 'ru-RU'
     thai = 'th-TH'
     turkish = 'tr-TR'
     vietnamese = 'vi-VN'
-    chinese_simplified = 'zh-CN'
-    chinese_traditional = 'zh-TW'
+    chinese = 'zh-CN'
+    taiwan_chinese = 'zh-TW'
 
     # aliases
     english = american_english

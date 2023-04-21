@@ -236,7 +236,7 @@ class VoiceLineLocalization:
             Locale.american_english: self.en_US,
             Locale.british_english: self.en_US,
             Locale.english: self.en_US,
-            Locale.spanish: self.es_ES,
+            Locale.spain_spanish: self.es_ES,
             Locale.spanish_mexican: self.es_MX,
             Locale.french: self.fr_FR,
             Locale.indonesian: self.id_ID,
@@ -244,13 +244,13 @@ class VoiceLineLocalization:
             Locale.japanese: self.ja_JP,
             Locale.korean: self.ko_KR,
             Locale.polish: self.pl_PL,
-            Locale.portuguese_brazil: self.pt_BR,
+            Locale.brazil_portuguese: self.pt_BR,
             Locale.russian: self.ru_RU,
             Locale.thai: self.th_TH,
             Locale.turkish: self.tr_TR,
             Locale.vietnamese: self.vi_VN,
-            Locale.chinese_simplified: self.zh_CN,
-            Locale.chinese_traditional: self.zh_TW,
+            Locale.chinese: self.zh_CN,
+            Locale.taiwan_chinese: self.zh_TW,
         }
         return voices
 
