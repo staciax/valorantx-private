@@ -20,7 +20,10 @@ from . import utils
 from .enums import Locale, try_enum  # ItemType, QueueType, SeasonType,
 from .errors import AuthRequired
 from .http import HTTPClient
-from .models import ClientUser, Entitlements, Offers, PatchNotes, StoreFront, Wallet
+from .models.contracts import Contracts
+from .models.patchnotes import PatchNotes
+from .models.store import Entitlements, Offers, StoreFront, Wallet
+from .models.user import ClientUser
 from .valorant_api_client import Client as ValorantAPIClient
 
 #     MMR,
@@ -36,9 +39,7 @@ from .valorant_api_client import Client as ValorantAPIClient
 #     Content,
 #     ContentTier,
 #     Contract,
-#     Contracts,
 #     Currency,
-#     Entitlements,
 #     Event,
 #     Favorites,
 #     GameMode,
@@ -50,10 +51,8 @@ from .valorant_api_client import Client as ValorantAPIClient
 #     MatchHistory,
 #     Mission,
 #     NameService,
-#     Offers,
 #     Party,
 #     PartyPlayer,
-#     PatchNotes,
 #     PlayerCard,
 #     PlayerTitle,
 #     Season,
@@ -67,7 +66,6 @@ from .valorant_api_client import Client as ValorantAPIClient
 #     Theme,
 #     Tier,
 #     Version,
-#     Wallet,
 #     Weapon,
 # )
 
@@ -283,6 +281,22 @@ class Client:
         data = await self.http.store_fetch_offers()
         return Offers(data)
 
+    # contract endpoints
+
+    @_authorize_required
+    async def fetch_contracts(self) -> Contracts:
+        """|coro|
+
+        Fetches the contracts for the current user.
+
+        Returns
+        -------
+        :class:`Contracts`
+            The contracts for the current user.
+        """
+        data = await self.http.contracts_fetch()
+        return Contracts(state=self.valorant_api._cache, data=data)
+
     async def fetch_patch_notes(self, locale: Union[str, Locale] = Locale.american_english) -> PatchNotes:
         """|coro|
 
@@ -302,9 +316,9 @@ class Client:
         if isinstance(locale, str):
             locale = try_enum(Locale, str(locale))
 
-        # endpoint is not available for simplified chinese
-        if locale is Locale.chinese_simplified:
-            locale = Locale.chinese_traditional
+        # endpoint is not available for chinese
+        locale = Locale.taiwan_chinese if locale is Locale.chinese else locale
+
         data = await self.http.fetch_patch_notes(locale)
 
         return PatchNotes(state=self.valorant_api._cache, data=data, locale=locale)
