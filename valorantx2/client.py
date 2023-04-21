@@ -261,6 +261,36 @@ class Client:
     #     except Exception as e:
     #         _log.exception('Failed to set season', exc_info=e)
 
+    # patch notes endpoint
+
+    async def fetch_patch_notes(self, locale: Union[str, Locale] = Locale.american_english) -> PatchNotes:
+        """|coro|
+
+        Fetches the patch notes for the current version of Valorant.
+
+        Parameters
+        ----------
+        locale: Union[:class:`str`, :class:`Locale`]
+            The locale to fetch the patch notes in.
+
+        Returns
+        -------
+        :class:`PatchNotes`
+            The patch notes for the current version of Valorant.
+        """
+
+        if isinstance(locale, str):
+            locale = try_enum(Locale, str(locale))
+
+        # endpoint is not available for chinese
+        locale = Locale.taiwan_chinese if locale is Locale.chinese else locale
+
+        data = await self.http.fetch_patch_notes(locale)
+
+        return PatchNotes(state=self.valorant_api._cache, data=data, locale=locale)
+
+    # store endpoints
+
     @_authorize_required
     async def fetch_store_front(self) -> StoreFront:
         data = await self.http.store_fetch_storefront()
@@ -297,28 +327,264 @@ class Client:
         data = await self.http.contracts_fetch()
         return Contracts(state=self.valorant_api._cache, data=data)
 
-    async def fetch_patch_notes(self, locale: Union[str, Locale] = Locale.american_english) -> PatchNotes:
+    # favorite endpoints
+
+    @_authorize_required
+    async def fetch_favorites(self) -> ...:
         """|coro|
 
-        Fetches the patch notes for the current version of Valorant.
-
-        Parameters
-        ----------
-        locale: Union[:class:`str`, :class:`Locale`]
-            The locale to fetch the patch notes in.
+        Fetches the favorites items for the current user.
 
         Returns
         -------
-        :class:`PatchNotes`
-            The patch notes for the current version of Valorant.
+        :class:`Favorites`
+            The favorites items for the current user.
+        """
+        data = await self.http.favorites_fetch()
+        import json
+
+        with open('favorites.json', 'w') as f:
+            json.dump(data, f, indent=4)
+
+    # @_authorize_required
+    # async def add_favorite(self, item: Union[str, Buddy, PlayerCard, Skin, Spray, LevelBorder]) -> Favorites:
+    #     """|coro|
+
+    #     Adds a favorite item for the current user.
+
+    #     Parameters
+    #     ----------
+    #     item: Union[:class:`str`, :class:`Buddy`, :class:`PlayerCard`, :class:`Skin`, :class:`Spray`]
+    #         The item to add as a favorite.
+
+    #     Returns
+    #     -------
+    #     :class:`Favorites`
+    #         The favorites items for the current user.
+    #     """
+    #     if isinstance(item, (Buddy, PlayerCard, Skin, Spray, LevelBorder)):
+    #         uuid = item.uuid
+    #     else:
+    #         uuid = item if utils.is_uuid(item) else ''
+    #     data = await self._http.favorite_post(uuid)
+    #     return Favorites(client=self, data=data)
+
+    # @_authorize_required
+    # async def remove_favorite(self, item: Union[str, Buddy, PlayerCard, Skin, Spray, LevelBorder]) -> Favorites:
+    #     """|coro|
+
+    #     Removes a favorite item for the current user.
+
+    #     Parameters
+    #     ----------
+    #     item: Union[:class:`str`, :class:`Buddy`, :class:`PlayerCard`, :class:`Skin`, :class:`Spray`, :class:`LevelBorder`]
+    #         The item to remove as a favorite.
+
+    #     Returns
+    #     -------
+    #     :class:`Favorites`
+    #         The favorites items for the current user.
+    #     """
+    #     if isinstance(item, (Buddy, PlayerCard, Skin, Spray, LevelBorder)):
+    #         uuid = item.uuid
+    #     else:
+    #         uuid = item if utils.is_uuid(item) else ''
+    #     data = await self.http.favorite_delete(uuid)
+    #     return Favorites(client=self, data=data)
+
+    # PVP endpoints
+
+    @_authorize_required
+    async def fetch_content(self) -> ...:  # Content
+        """|coro|
+
+        Fetches the content for the current version of Valorant.
+
+        Returns
+        -------
+        :class:`Content`
+            The content for the current version of Valorant.
+        """
+        data = await self.http.fetch_content()
+        import json
+
+        with open('content.json', 'w') as f:
+            json.dump(data, f, indent=4)
+        # return Content(client=self, data=data)
+
+    @_authorize_required
+    async def fetch_account_xp(self) -> ...:  # AccountXP
+        """|coro|
+
+        Fetches the account XP for the current user.
+
+        Returns
+        -------
+        :class:`AccountXP`
+            The account XP for the current user.
+        """
+        data = await self.http.fetch_account_xp()
+        import json
+
+        with open('account_xp.json', 'w') as f:
+            json.dump(data, f, indent=4)
+        # return AccountXP(client=self, data=data)
+
+    @_authorize_required
+    async def fetch_collection(self, *, with_xp: bool = True, with_favorite: bool = True) -> ...:  # Collection
+        """|coro|
+
+        Fetches the collection for the current user.
+
+        Parameters
+        ----------
+        with_xp: :class:`bool`
+            Whether to include the XP for each item in the loadout.
+        with_favorite: :class:`bool`
+            Whether to include the favorite status for each item in the loadout.
+
+        Returns
+        -------
+        :class:`Collection`
+            The collection for the current user.
         """
 
-        if isinstance(locale, str):
-            locale = try_enum(Locale, str(locale))
+        data = await self.http.fetch_player_loadout()
+        import json
 
-        # endpoint is not available for chinese
-        locale = Locale.taiwan_chinese if locale is Locale.chinese else locale
+        with open('player_loadout.json', 'w') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+        # collection = Collection(client=self, data=data)
 
-        data = await self.http.fetch_patch_notes(locale)
+        # if with_xp:
+        #     await collection.fetch_account_xp()
 
-        return PatchNotes(state=self.valorant_api._cache, data=data, locale=locale)
+        # if with_favorite:
+        #     await collection.fetch_favorites()
+
+        # return collection
+
+    # @_authorize_required
+    # async def put_loadout(self, loadout: Mapping[str, Any]) -> None:  # TODO: loadout object
+    #     """|coro|
+
+    #     Puts the loadout for the current user.
+
+    #     Parameters
+    #     ----------
+    #     loadout: :class:`Mapping`
+    #         The loadout to put.
+
+    #     Returns
+    #     -------
+    #     :class:`Any`
+    #         The response from the API.
+    #     """
+    #     # await self.http.put_player_loadout(loadout)
+    #     pass
+
+    @_authorize_required
+    async def fetch_mmr(self, puuid: Optional[str] = None) -> ...:  # MMR
+        """|coro|
+
+        Fetches the MMR for the current user or a given user.
+
+        Parameters
+        ----------
+        puuid: Optional[:class:`str`]
+            The puuid of the user to fetch the MMR for.
+
+        Returns
+        -------
+        :class:`MMR`
+            The MMR for the current user or a given user.
+        """
+        data = await self.http.fetch_mmr(puuid)
+        import json
+
+        with open('mmr.json', 'w') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+        # return MMR(client=self, data=data)
+
+    @_authorize_required
+    async def fetch_match_history(
+        self,
+        # puuid: Optional[str] = None,
+        # queue: Optional[Union[str, QueueType]] = None,
+        # *,
+        # start: int = 0,
+        # end: int = 15,
+        # with_details: bool = True,
+    ) -> ...:  # Optional[MatchHistory]
+        data = await self.http.fetch_match_history(self.me.puuid, 0, 15, 'competitive')
+        import json
+
+        with open('match_history.json', 'w') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+        # history = MatchHistory(client=self, data=data) if data else None
+        # if with_details and history is not None:
+        #     await history.fetch_details()
+        # return history
+
+    @_authorize_required
+    async def fetch_match_details(self, match_id: str) -> ...:  # Optional[MatchDetails]
+        """|coro|
+
+        Fetches the match details for a given match.
+
+        Parameters
+        ----------
+        match_id: :class:`str`
+            The match ID to fetch the match details for.
+
+        Returns
+        -------
+        Optional[:class:`MatchDetails`]
+            The match details for a given match.
+        """
+        match_details = await self.http.fetch_match_details(match_id)
+        import json
+
+        with open('match_details.json', 'w') as f:
+            json.dump(match_details, f, indent=4, ensure_ascii=False)
+        # return MatchDetails(client=self, data=match_details)
+
+    # # party endpoint
+
+    # @_authorize_required
+    # async def fetch_party(self, party_id: Optional[Union[Party, PartyPlayer, str]] = None) -> Party:
+    #     if party_id is None:
+    #         party_id = await self.fetch_party_player()
+
+    #     if isinstance(party_id, PartyPlayer):
+    #         party_id = party_id.id
+
+    #     data = await self.http.fetch_party(party_id=str(party_id))
+    #     party = Party(client=self, data=data)
+    #     await party.update_member_display_name()
+    #     return party
+
+    # @_authorize_required
+    # async def fetch_party_player(self) -> PartyPlayer:
+    #     data = await self.http.party_fetch_player()
+    #     return PartyPlayer(client=self, data=data)
+
+    # @_authorize_required
+    # async def party_request_to_join(self, party_id: str) -> Any:
+    #     return ...
+
+    # @_authorize_required
+    # async def party_leave_from_party(self, party_id: str) -> Any:
+    #     return ...
+
+    # # pre game lobby endpoints
+
+    # @_authorize_required
+    # async def fetch_pregame_match(self, match: Optional[str] = None) -> Any:
+    #     if match is None:
+    #         match = await self.fetch_pregame_player()
+    #     data = await self.http.pregame_fetch_match(match_id=match)
+
+    # @_authorize_required
+    # async def fetch_pregame_player(self) -> Any:
+    #     data = await self.http.pregame_fetch_player()
