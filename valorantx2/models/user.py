@@ -65,5 +65,5 @@ class ClientUser(_BaseUser):
         return self._region or ''
 
     @property
-    def display_name(self) -> str:
-        return f"{self.username}#{self.tagline}"
+    def riot_id(self) -> str:
+        return f'{self.username}#{self.tagline}'

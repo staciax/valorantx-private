@@ -17,7 +17,7 @@ from typing import (  # Dict,; Iterator,; List,; Mapping,; overload,
 from . import utils
 
 # from .assets import Assets
-from .enums import Locale, try_enum  # ItemType, QueueType, SeasonType,
+from .enums import Locale, Region, try_enum  # ItemType, QueueType, SeasonType,
 from .errors import AuthRequired
 from .http import HTTPClient
 from .models.contracts import Contracts
@@ -231,13 +231,13 @@ class Client:
 
         self._is_authorized = True
         self._ready.set()
-        _log.info('Logged as %s', me.display_name)
+        _log.info('Logged as %s', me.riot_id)
 
         # insert items cost
         offers = await self.fetch_offers()
         self.valorant_api.insert_cost(offers)
 
-    async def authorize(self, username: str, password: str) -> None:
+    async def authorize(self, username: str, password: str, region: Optional[Region] = None) -> None:
         """|coro|
 
         Authorize the client with the given username and password.
