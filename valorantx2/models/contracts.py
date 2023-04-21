@@ -48,9 +48,17 @@ if TYPE_CHECKING:
     # from .weapons import SkinLevel
     # Item = Union[Agent, SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]
 
-# __all__ = ('Contract', 'ContractU', 'Contracts')
 
 # _log = logging.getLogger(__name__)
+# fmt: off
+__all__ = (
+    'ContractReward',
+    'ContractProgression',
+    'ProcessedMatch',
+    'Contract',
+    'Contracts'
+)
+# fmt: on
 
 
 class ContractReward:
@@ -171,6 +179,7 @@ class Contract(ContractValorantAPI):
     @classmethod
     def from_contract(cls, state: CacheState, data: ContractPayload) -> Self:
         contract = state.get_contract(data['ContractDefinitionID'])
+        # TODO: fix this
         if contract is None:
             raise ValueError(f'Contract with uuid {data["ContractDefinitionID"]!r} not found.')
         return cls(state=state, data=contract._data, data_contract=data)
@@ -236,6 +245,9 @@ class Contracts:
             mission = Mission.from_contract(self._state, m)
             if mission is not None:
                 self.missions.append(mission)
+
+    # helper methods
+    # TODO: add helper methods
 
 
 #     def special_contract(self) -> Optional[ContractU]:
