@@ -15,8 +15,6 @@ from typing import (  # Dict,; Iterator,; List,; Mapping,; overload,
 )
 
 from . import utils
-
-# from .assets import Assets
 from .enums import Locale, Region, try_enum  # ItemType, QueueType, SeasonType,
 from .errors import AuthRequired
 from .http import HTTPClient
@@ -77,6 +75,8 @@ if TYPE_CHECKING:
     from .models.version import Version
 
     P = ParamSpec('P')
+else:
+    P = TypeVar('P')
 
 # fmt: off
 __all__ = (
@@ -101,6 +101,7 @@ class _LoopSentinel:
         msg = (
             'loop attribute cannot be accessed in non-async contexts. '
             'Consider using either an asynchronous main function and passing it to asyncio.run or '
+            'using asynchronous initialisation with the async with context manager or the init method.'
         )
         raise AttributeError(msg)
 
@@ -124,16 +125,11 @@ def _authorize_required(fn: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[
 
 
 class Client:
-    def __init__(
-        self,
-        *,
-        locale: Union[Locale, str] = Locale.american_english,
-        region: Union[Region, str] = Region.AP,
-    ) -> None:
-        self.locale: Locale = try_enum(Locale, locale) if isinstance(locale, str) else locale
-        self.region: Region = try_enum(Region, region) if isinstance(region, str) else region
+    def __init__(self, *, region: Region = Region.AP, locale: Locale = Locale.american_english) -> None:
+        self.region: Region = region
+        self.locale: Locale = locale
         self.loop: asyncio.AbstractEventLoop = _loop
-        self.http: HTTPClient = HTTPClient(self.loop) # TODO: add region param
+        self.http: HTTPClient = HTTPClient(self.loop, region=region)
         self.valorant_api: ValorantAPIClient = ValorantAPIClient(self.http._session, self.locale)
         self.me: ClientUser = MISSING
         self._closed: bool = False
@@ -225,21 +221,18 @@ class Client:
         """:class:`bool`: Whether the client is authorized."""
         return self._is_authorized
 
-    async def _login(self, username: str, password: str) -> None:
+    async def _login(self, username: str, password: str, *, remember: bool) -> None:
         _log.info('logging using username and password')
         self._ready = asyncio.Event()
-        data = await self.http.static_login(username, password)
+        data = await self.http.static_login(username, password, remember=remember)
         self.me = me = ClientUser(data=data)
-
         self._is_authorized = True
         self._ready.set()
         _log.info('Logged as %s', me.riot_id)
 
-        # insert items cost
-        offers = await self.fetch_offers()
-        self.valorant_api.insert_cost(offers)
-
-    async def authorize(self, username: str, password: str, region: Optional[Region] = None) -> None:
+    async def authorize(
+        self, username: str, password: str, region: Optional[Region] = None, *, remember: bool = False
+    ) -> None:
         """|coro|
 
         Authorize the client with the given username and password.
@@ -255,13 +248,18 @@ class Client:
         if not username or not password:
             raise ValueError('username and password must be provided')
 
-        await self._login(username, password)
+        await self._login(username, password, remember=remember)
 
-    # fetch price and set season
-    #     try:
-    #         self.loop.create_task(self._set_season())
-    #     except Exception as e:
-    #         _log.exception('Failed to set season', exc_info=e)
+        # TODO: below to asyncio.create_task
+        # insert items cost
+        offers = await self.fetch_offers()
+        self.valorant_api.insert_cost(offers)
+        # TODO: set season and act
+        # fetch price and set season
+        #     try:
+        #         self.loop.create_task(self._set_season())
+        #     except Exception as e:
+        #         _log.exception('Failed to set season', exc_info=e)
 
     # patch notes endpoint
 
