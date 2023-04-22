@@ -1,5 +1,5 @@
 # valorantx
-An Asynchronous Unofficial Valorant API Wrapper with valorant-api.com API Wrapper for Python
+An Asynchronous Unofficial Valorant API Wrapper with [valorant-api.com](https://valorant-api.com) API Wrapper for Python
 
 ## Installation
 <!-- # $ pip install valorantx # not yet -->
