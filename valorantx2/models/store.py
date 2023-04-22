@@ -4,7 +4,7 @@ import datetime
 import logging
 from typing import TYPE_CHECKING, Any, List, Optional
 
-from ..enums import RADIANITE_POINT_UUID, VALORANT_POINT_UUID
+from ..enums import RADIANITE_POINT_UUID, VALORANT_POINT_UUID, ItemType, try_enum
 from ..valorant_api_cache import CacheState
 from .bundles import FeaturedBundle
 from .weapons import SkinLevelBonus, SkinLevelOffer
@@ -142,15 +142,15 @@ class Wallet:
 
 class Reward:
     def __init__(self, data: RewardPayload) -> None:
-        self.item_type_id: str = data['ItemTypeID']
-        self.item_id: str = data['ItemID']
+        self.type: ItemType = try_enum(ItemType, data['ItemTypeID'])
+        self.id: str = data['ItemID']
         self.quantity: int = data['Quantity']
 
     def __repr__(self) -> str:
-        return f'<Reward item_type_id={self.item_type_id!r} item_id={self.item_id!r} quantity={self.quantity!r}>'
+        return f'<Reward type={self.type!r} id={self.id!r} quantity={self.quantity!r}>'
 
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, Reward) and self.item_id == other.item_id
+        return isinstance(other, Reward) and self.id == other.id
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)

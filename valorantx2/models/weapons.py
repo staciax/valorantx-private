@@ -59,21 +59,11 @@ class Weapon(WeaponValorantAPI, Item):
 class Skin(SkinValorantAPI['Weapon'], Item):
     def __init__(self, *, state: CacheState, data: ValorantAPISkinPayload, parent: Weapon) -> None:
         super().__init__(state=state, data=data, parent=parent)
-        self._chromas: List[SkinChroma] = [SkinChroma(state=state, data=chroma, parent=self) for chroma in data['chromas']]
-        self._levels: List[SkinLevel] = [
+        self.chromas: List[SkinChroma] = [SkinChroma(state=state, data=chroma, parent=self) for chroma in data['chromas']]
+        self.levels: List[SkinLevel] = [
             SkinLevel(state=state, data=level, parent=self, level_number=index) for index, level in enumerate(data['levels'])
         ]
         Item.__init__(self)
-
-    @property
-    def chromas(self) -> List[SkinChroma]:
-        """:class: `list` Returns the skin's chromas."""
-        return self._chromas
-
-    @property
-    def levels(self) -> List[SkinLevel]:
-        """:class: `list` Returns the skin's levels."""
-        return self._levels
 
 
 class SkinLevel(SkinLevelValorantAPI['Skin'], Item):

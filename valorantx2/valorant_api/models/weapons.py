@@ -248,10 +248,10 @@ class Skin(BaseModel, Generic[WeaponT]):
         self._display_icon: str = data['displayIcon']
         self._wallpaper: Optional[str] = data['wallpaper']
         self.asset_path: str = data['assetPath']
-        self._chromas: List[SkinChroma] = [
+        self.chromas: List[SkinChroma] = [
             SkinChroma(state=self._state, data=chroma, parent=self) for chroma in data['chromas']
         ]
-        self._levels: List[SkinLevel] = [
+        self.levels: List[SkinLevel] = [
             SkinLevel(state=self._state, data=level, parent=self, level_number=index)
             for index, level in enumerate(data['levels'])
         ]
@@ -311,16 +311,6 @@ class Skin(BaseModel, Generic[WeaponT]):
         if self._wallpaper is None:
             return None
         return Asset._from_url(self._state, url=self._wallpaper)
-
-    @property
-    def chromas(self) -> List[SkinChroma]:
-        """:class: `list` Returns the skin's chromas."""
-        return self._chromas
-
-    @property
-    def levels(self) -> List[SkinLevel]:
-        """:class: `list` Returns the skin's levels."""
-        return self._levels
 
     def is_melee(self) -> bool:
         """:class: `bool` Returns whether the bundle is a melee."""

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from valorantx2.valorant_api.models.buddies import Buddy as BuddyValorantAPI, BuddyLevel as BuddyLevelValorantAPI
 
@@ -17,11 +17,14 @@ if TYPE_CHECKING:
 class Buddy(BuddyValorantAPI, Item):
     def __init__(self, *, state: CacheState, data: BuddyPayload) -> None:
         super().__init__(state=state, data=data)
+        Item.__init__(self)
+        self.levels: List[BuddyLevel] = [BuddyLevel(state=state, data=level, parent=self) for level in data['levels']]
 
 
 class BuddyLevel(BuddyLevelValorantAPI['Buddy'], Item):
     def __init__(self, *, state: CacheState, data: BuddyLevelPayloadValorantAPI, parent: Buddy) -> None:
         super().__init__(state=state, data=data, parent=parent)
+        Item.__init__(self)
 
 
 class BuddyLevelBundle(BuddyLevel, BundleItemOffer):

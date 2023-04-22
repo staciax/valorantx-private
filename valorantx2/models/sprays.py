@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from valorantx2.valorant_api.models.sprays import Spray as SprayValorantAPI, SprayLevel as SprayLevelValorantAPI
 
@@ -22,12 +22,22 @@ class Spray(SprayValorantAPI, Item):
     def __init__(self, *, state: CacheState, data: SprayPayloadValorantAPI) -> None:
         super().__init__(state=state, data=data)
         Item.__init__(self)
+        self.levels: List[SprayLevel] = [SprayLevel(state=state, data=level, parent=self) for level in data['levels']]
 
 
-class SprayLevel(SprayLevelValorantAPI['Spray'], Item):
+class SprayLevel(SprayLevelValorantAPI['Spray']):
     def __init__(self, *, state: CacheState, data: SprayLevelPayloadValorantAPI, parent: Spray) -> None:
         super().__init__(state=state, data=data, parent=parent)
-        Item.__init__(self)
+
+    # helpers
+
+    @property
+    def cost(self) -> int:
+        return self.parent.cost
+
+    @property
+    def price(self) -> int:
+        return self.cost
 
 
 class SprayBundle(Spray, BundleItemOffer):

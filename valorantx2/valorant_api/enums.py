@@ -179,6 +179,7 @@ class ItemType(Enum):
     player_title = 'de7caa6b-adf7-4588-bbd1-143831e786c6'
     weapon = 'weapon'  # unknown type
     level_border = 'level_border'  # unknown type
+    currency = 'ea6fcd2e-8373-4137-b1c0-b458947aa86d'
 
     def __str__(self) -> str:
         return str(self.value)
