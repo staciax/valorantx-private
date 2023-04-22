@@ -33,10 +33,6 @@ class RiotAuth(_RiotAuth):
     def puuid(self) -> str:
         return self.user_id or ''
 
-    @puuid.setter
-    def puuid(self, value: str) -> None:
-        self.user_id = value
-
     @property
     def display_name(self) -> str:
         if self.name is None or self.tag is None:
@@ -122,7 +118,7 @@ class RiotAuth(_RiotAuth):
             self._cookie_jar = session.cookie_jar
             self.__set_tokens_from_uri(data)
 
-            # region Get new entitlements token
+            # Get new entitlements token
             headers['Authorization'] = f'{self.token_type} {self.access_token}'
             async with session.post(
                 'https://entitlements.auth.riotgames.com/api/token/v1',
@@ -132,23 +128,27 @@ class RiotAuth(_RiotAuth):
             ) as r:
                 self.entitlements_token = (await r.json())['entitlements_token']
 
-            # Get user info
-
-            async with session.post('https://auth.riotgames.com/userinfo', headers=headers) as r:
-                data = await r.json()
-                self.puuid = data['sub']
-                self.name = data['acct']['game_name']
-                self.tag = data['acct']['tag_line']
-
-            # Get regions
-
-            body = {'id_token': self.id_token}
+    async def fetch_region(self) -> Optional[str]:
+        # Get regions
+        body = {'id_token': self.id_token}
+        headers = {'Authorization': f'{self.token_type} {self.access_token}'}
+        async with aiohttp.ClientSession(cookie_jar=self._cookie_jar) as session:
             async with session.put(
                 'https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant', headers=headers, json=body
             ) as r:
                 data = await r.json()
                 self.region = data['affinities']['live']
-            # endregion
+        return self.region
+
+    async def fetch_userinfo(self) -> None:
+        # Get user info
+        headers = {'Authorization': f'{self.token_type} {self.access_token}'}
+        async with aiohttp.ClientSession(cookie_jar=self._cookie_jar) as session:
+            async with session.post('https://auth.riotgames.com/userinfo', headers=headers) as r:
+                data = await r.json()
+                # self.user_id = data['sub'] # puuid
+                self.name = data['acct']['game_name']
+                self.tag = data['acct']['tag_line']
 
     async def reauthorize(self) -> bool:
         """
@@ -172,7 +172,6 @@ class RiotAuth(_RiotAuth):
         self.token_type = data['token_type']
         self.expires_at = int(data['expires_at'])
         self.user_id = data['user_id']
-        self.puuid = data['puuid']
         self.name = data['name']
         self.tag = data['tag']
         self.region = data['region']
@@ -188,7 +187,6 @@ class RiotAuth(_RiotAuth):
             'token_type': self.token_type,
             'expires_at': self.expires_at,
             'user_id': self.user_id,
-            'puuid': self.puuid,
             'name': self.name,
             'tag': self.tag,
             'region': self.region,

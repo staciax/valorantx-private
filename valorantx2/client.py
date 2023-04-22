@@ -125,7 +125,7 @@ def _authorize_required(fn: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[
 
 
 class Client:
-    def __init__(self, *, region: Region = Region.AP, locale: Locale = Locale.american_english) -> None:
+    def __init__(self, *, region: Region = MISSING, locale: Locale = Locale.american_english) -> None:
         if region is Region.PBE:
             _log.info('You are using the Public Beta Environment (PBE) server. Are you sure?')
         self.region: Region = region

@@ -183,8 +183,21 @@ class HTTPClient:
     async def static_login(self, username: str, password: str, *, remember: bool) -> user.PartialUser:
         """Riot Auth login."""
         await self._riot_auth.authorize(username.strip(), password.strip(), remember=remember)
+        try:
+            await self._riot_auth.fetch_userinfo()  # fetch user info
+        except TypeError:
+            _log.warning('Could not find user info for Riot Auth')
+
+        if self.region is MISSING:
+            try:
+                region = await self._riot_auth.fetch_region()  # fetch region
+            except KeyError:
+                self.region = Region.AP  # default to AP
+                _log.warning('Could not find region for Riot Auth, defaulting to AP')
+            else:
+                self.region = try_enum(Region, region)
+
         self._puuid = self._riot_auth.puuid
-        self.region = try_enum(Region, self._riot_auth.region, Region.AP)
         await self.__build_headers()
         if self._session is MISSING:
             self._session = aiohttp.ClientSession()
