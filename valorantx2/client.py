@@ -1,4 +1,4 @@
-# Copyright (c) 2023-present STACiA
+# Copyright (c) 2023-present STACiA,  2021-present Rapptz
 # Licensed under the MIT
 
 from __future__ import annotations
