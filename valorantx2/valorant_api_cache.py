@@ -1,3 +1,6 @@
+# Copyright (c) 2023-present STACiA
+# Licensed under the MIT
+
 from __future__ import annotations
 
 import logging

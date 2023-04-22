@@ -1,3 +1,6 @@
+# Copyright (c) 2023-present STACiA
+# Licensed under the MIT license. Refer to the LICENSE file in the project root for more information.
+
 from aiohttp import ClientSession
 
 from valorantx2.valorant_api.client import Client as ClientValorantAPI

@@ -1,7 +1,6 @@
-"""
-Enums functions: https://github.com/Rapptz/discord.py/blob/master/discord/enums.py
-
-"""
+# Copyright (c) 2023-present STACiA, 2021-present Rapptz
+# Licensed under the MIT
+# inspired by https://github.com/Rapptz/discord.py/blob/master/discord/enums.py
 
 from __future__ import annotations
 

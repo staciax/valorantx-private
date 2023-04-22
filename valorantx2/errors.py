@@ -1,6 +1,6 @@
-"""
-Exception handler functions: https://github.com/Rapptz/discord.py/blob/master/discord/errors.py
-"""
+# Copyright (c) 2023-present STACiA, 2021-present Rapptz
+# Licensed under the MIT
+# inspired by https://github.com/Rapptz/discord.py/blob/master/discord/errors.py
 
 from __future__ import annotations
 
