@@ -126,6 +126,8 @@ def _authorize_required(fn: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[
 
 class Client:
     def __init__(self, *, region: Region = Region.AP, locale: Locale = Locale.american_english) -> None:
+        if region is Region.PBE:
+            _log.info('You are using the Public Beta Environment (PBE) server. Are you sure?')
         self.region: Region = region
         self.locale: Locale = locale
         self.loop: asyncio.AbstractEventLoop = _loop
@@ -230,9 +232,7 @@ class Client:
         self._ready.set()
         _log.info('Logged as %s', me.riot_id)
 
-    async def authorize(
-        self, username: str, password: str, region: Optional[Region] = None, *, remember: bool = False
-    ) -> None:
+    async def authorize(self, username: str, password: str, *, remember: bool = False) -> None:
         """|coro|
 
         Authorize the client with the given username and password.

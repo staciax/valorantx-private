@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import logging
 from typing import TYPE_CHECKING, Any, List, Optional
 
 from ..enums import RADIANITE_POINT_UUID, VALORANT_POINT_UUID
@@ -28,6 +29,8 @@ __all__ = (
     'Entitlements',
     'Offers',
 )
+
+_log = logging.getLogger(__name__)
 
 
 class SkinsPanelLayout:
@@ -71,9 +74,19 @@ class StoreFront:
         self._state = state
         self.skins_panel_layout: SkinsPanelLayout = SkinsPanelLayout(state, data['SkinsPanelLayout'])
         self.bundle: Optional[FeaturedBundle] = FeaturedBundle.from_data(state, data['FeaturedBundle']['Bundle'])
-        self.bundles: List[Optional[FeaturedBundle]] = [
-            FeaturedBundle.from_data(state, bundle) for bundle in data['FeaturedBundle']['Bundles']
-        ]
+        self.bundles: List[FeaturedBundle] = []
+
+        for bundle in data['FeaturedBundle']['Bundles']:
+            bd = FeaturedBundle.from_data(state, bundle)
+            if bd is not None:
+                self.bundles.append(bd)
+
+        if len(self.bundles) == 0 and self.bundle is not None:
+            _log.warning(
+                "No bundles found, but bundle is not None. Maybe the game is updating?. trying update client use 'client.??"
+            )
+            # TODO:: method to update client
+
         self.bonus_store: Optional[BonusStore] = None
         if 'BonusStore' in data:
             self.bonus_store = BonusStore(state, data['BonusStore'])

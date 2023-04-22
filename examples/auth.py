@@ -8,7 +8,8 @@ client = valorantx2.Client(region=Region.AP, locale=Locale.thai)
 
 async def main() -> None:
     async with client:  # use async context manager to automatically close the client or await client.init() and await client.close()
-        await client.authorize("username", "password", remember=False)
+        await client.authorize("username", "password")
+        # TODO: cookie auth and access token auth
 
         await client.wait_until_ready()
         print('RIOT ID:', client.me.riot_id)

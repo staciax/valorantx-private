@@ -60,7 +60,17 @@ class Region(Enum):
     AP = 'ap'
     KR = 'kr'
     PBE = 'pbe'
-    CN = '...'  # TODO: add chinese region
+    # CN = '...'  # TODO: Add chinese region?
+
+    # aliases
+    AsiaPacific = AP
+    NorthAmerica = NA
+    Europe = EU
+    LatinAmerica = LATAM
+    Brazil = BR
+    Korea = KR
+    PublicBetaEnvironment = PBE
+    # China = CN
 
     def __str__(self) -> str:
         if self.shard == 'pbe':

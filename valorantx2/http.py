@@ -11,7 +11,7 @@ import aiohttp
 from . import __version__, utils
 from .auth import RiotAuth
 from .enums import Locale, QueueType, Region, try_enum
-from .errors import Forbidden, HTTPException, InternalServerError, NotFound, PhaseError, RateLimited, RiotAuthenticationError
+from .errors import BadRequest, Forbidden, HTTPException, InternalServerError, NotFound, RateLimited, RiotAuthenticationError
 
 # try:
 #     import urllib3
@@ -135,7 +135,7 @@ class HTTPClient:
                             else:
                                 await self.__build_headers()
                                 continue
-                        raise PhaseError(response, data)
+                        raise BadRequest(response, data)
 
                     # we are being rate limited
                     if response.status == 429:

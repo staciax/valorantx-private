@@ -9,8 +9,8 @@ from urllib.parse import quote as _uriquote
 
 import aiohttp
 
-from ..errors import Forbidden, HTTPException, InternalServerError, NotFound, PhaseError, RateLimited
 from . import __version__, utils
+from .errors import BadRequest, Forbidden, HTTPException, InternalServerError, NotFound, RateLimited
 
 MISSING = utils.MISSING
 
@@ -46,6 +46,10 @@ if TYPE_CHECKING:
     Response = Coroutine[Any, Any, T]
 
 _log = logging.getLogger(__name__)
+
+
+# TODO: Global rate limit handling
+# TODO: Global lock handling
 
 
 class EndpointType(enum.Enum):
@@ -115,7 +119,7 @@ class HTTPClient:
                         return data
 
                     if response.status == 400:
-                        raise PhaseError(response, data)
+                        raise BadRequest(response, data)
 
                     # we are being rate limited
                     if response.status == 429:
