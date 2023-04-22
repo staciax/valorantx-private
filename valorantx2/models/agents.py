@@ -1,12 +1,25 @@
-from __future__ import annotations
+# from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from ..valorant_api.models.agents import (
+    Ability as Ability,
+    Agent as Agent,
+    Media as Media,
+    Role as Role,
+    VoiceLine as VoiceLine,
+    VoiceLineLocalization as VoiceLineLocalization,
+)
 
-from ..valorant_api.models.agents import Agent as AgentValorantAPI
-
-if TYPE_CHECKING:
-    from ..valorant_api.types.agents import Agent as AgentValorantAPIPayload
+__all__ = ('Ability', 'Agent', 'Media', 'Role', 'VoiceLine', 'VoiceLineLocalization')
 
 
-class Agent(AgentValorantAPI):
-    pass
+# from typing import TYPE_CHECKING
+
+
+# AgentValorantAPI
+
+# if TYPE_CHECKING:
+#     from ..valorant_api.types.agents import Agent as AgentValorantAPIPayload
+
+
+# class Agent(AgentValorantAPI):
+#     pass

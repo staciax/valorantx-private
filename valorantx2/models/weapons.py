@@ -3,10 +3,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional
 
 from ..valorant_api.models.weapons import (
+    AdsStats as AdsStats,
+    AirBurstStats as AirBurstStats,
+    AltShotgunStats as AltShotgunStats,
+    DamageRange as DamageRange,
     Skin as SkinValorantAPI,
     SkinChroma as SkinChromaValorantAPI,
     SkinLevel as SkinLevelValorantAPI,
     Weapon as WeaponValorantAPI,
+    WeaponStats as WeaponStats,
 )
 from .abc import BonusItemOffer, BundleItemOffer, Item, ItemOffer
 
@@ -27,14 +32,18 @@ if TYPE_CHECKING:
     from ..valorant_api_cache import CacheState
 
 __all__ = (
-    'Weapon',
+    'AdsStats',
+    'AirBurstStats',
+    'AltShotgunStats',
+    'DamageRange',
     'Skin',
-    'SkinLevel',
     'SkinChroma',
-    'SkinLevelOffer',
-    'SkinLevelBundle',
+    'SkinLevel',
     'SkinLevelBonus',
+    'SkinLevelBundle',
     'SkinLevelNightmarket',
+    'SkinLevelOffer',
+    'Weapon',
 )
 
 

@@ -4,6 +4,7 @@ import datetime
 from typing import TYPE_CHECKING, List
 
 from ..enums import VALORANT_POINT_UUID
+from ..valorant_api.models.abc import GridPosition as GridPosition, ShopData as ShopData
 
 if TYPE_CHECKING:
     from ..types.store import (
@@ -15,8 +16,8 @@ if TYPE_CHECKING:
 
 # fmt: off
 __all__ = (
-    'Item',
-    'BundleItemOffer',
+    'GridPosition',
+    'ShopData',
 )
 # fmt: on
 

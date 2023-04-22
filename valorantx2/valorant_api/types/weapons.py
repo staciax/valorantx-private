@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, TypedDict, Union
 
-from .object import Object
+from .object import Object, ShopData
 from .response import Response
 
 
@@ -46,23 +46,6 @@ class WeaponStats(TypedDict):
     altShotgunStats: Optional[AltShotgunStats]
     airBurstStats: Optional[AirBurstStats]
     damageRanges: List[DamageRange]
-
-
-class GridPosition(TypedDict):
-    row: int
-    column: int
-
-
-class ShopData(TypedDict):
-    cost: int
-    category: str
-    categoryText: Union[str, Dict[str, str]]
-    gridPosition: GridPosition
-    canBeTrashed: bool
-    image: str
-    newImage: str
-    newImage2: str
-    assetPath: str
 
 
 class Chroma(Object):

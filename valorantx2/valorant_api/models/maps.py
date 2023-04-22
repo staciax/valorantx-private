@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 # fmt: off
 __all__ = (
     'Map',
+    'MapLocation',
+    'MapCallout',
 )
 # fmt: on
 
@@ -133,3 +135,7 @@ class Map(BaseModel):
     #     """Returns the mission with the given UUID."""
     #     data = client._assets.get_map(uuid=uuid)
     #     return cls(client=client, data=data) if data else None
+
+
+MapLocation = Location
+MapCallout = Callout

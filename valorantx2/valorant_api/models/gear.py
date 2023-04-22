@@ -5,82 +5,17 @@ from typing import TYPE_CHECKING, Dict, Optional, Union
 from ..asset import Asset
 from ..enums import Locale
 from ..localization import Localization
-from .abc import BaseModel
+from .abc import BaseModel, ShopData
 
 if TYPE_CHECKING:
     from ..cache import CacheState
-    from ..types.gear import Gear_ as GearPayload, GridPosition as GridPositionPayload, ShopData as ShopDataPayload
+    from ..types.gear import Gear_ as GearPayload
 
 # fmt: off
 __all__ = (
     'Gear',
 )
 # fmt: on
-
-
-class GridPosition:
-    def __init__(self, data: GridPositionPayload) -> None:
-        self.row: int = data['row']
-        self.column: int = data['column']
-
-    def __repr__(self) -> str:
-        return f'<GridPosition row={self.row!r} column={self.column!r}>'
-
-    def __eq__(self, other: GridPosition) -> bool:
-        return isinstance(other, GridPosition) and self.row == other.row and self.column == other.column
-
-    def __ne__(self, other: GridPosition) -> bool:
-        return not self.__eq__(other)
-
-
-class ShopData:
-    def __init__(self, *, state: CacheState, data: ShopDataPayload) -> None:
-        self._state: CacheState = state
-        self.cost: int = data['cost']
-        self.category: str = data['category']
-        self._category_text: Union[str, Dict[str, str]] = data['categoryText']
-        self.grid_position: Optional[GridPosition] = None
-        if data['gridPosition'] is not None:
-            self.grid_position = GridPosition(data['gridPosition'])
-        self.can_be_trashed: bool = data.get('canBeTrashed', False)
-        self._image: Optional[str] = data['image']
-        self._new_image: str = data['newImage']
-        self._new_image_2: Optional[str] = data['newImage2']
-        self.asset_path: str = data['assetPath']
-
-    def __int__(self) -> int:
-        return self.cost
-
-    @property
-    def category_text_localizations(self) -> Localization:
-        """:class: `Localization` Returns the gear's shop category text."""
-        return Localization(self._category_text, locale=self._state.locale)
-
-    @property
-    def category_text(self) -> str:
-        """:class: `str` Returns the gear's shop category text."""
-        return self.category_text_localizations.american_english
-
-    @property
-    def image(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the gear's image."""
-        if self._image is None:
-            return None
-        return Asset._from_url(state=self._state, url=self._image)
-
-    @property
-    def new_image(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the gear's new image."""
-        if self._new_image is None:
-            return None
-        return Asset._from_url(state=self._state, url=self._new_image)
-
-    @property
-    def new_image_2(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the gear's new image."""
-        if self._new_image_2 is None:
-            return None
-        return Asset._from_url(state=self._state, url=self._new_image_2)
 
 
 class Gear(BaseModel):
@@ -91,7 +26,7 @@ class Gear(BaseModel):
         self._description: Union[str, Dict[str, str]] = data['description']
         self._display_icon: str = data['displayIcon']
         self.asset_path: str = data['assetPath']
-        self.shop_data: ShopData = ShopData(state=self._state, data=data['shopData'])
+        self.shop_data: ShopData = ShopData(state=self._state, item=self, data=data['shopData'])
         self._display_name_localized = Localization(self._display_name, locale=self._state.locale)
         self._description_localized = Localization(self._description, locale=self._state.locale)
 

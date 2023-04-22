@@ -6,7 +6,7 @@ from .. import utils
 from ..asset import Asset
 from ..enums import MELEE_WEAPON_ID, ItemType, Locale
 from ..localization import Localization
-from .abc import BaseModel
+from .abc import BaseModel, ShopData
 
 if TYPE_CHECKING:
     from ..cache import CacheState
@@ -15,8 +15,6 @@ if TYPE_CHECKING:
         AirBurstStats as AirBurstStatsPayload,
         AltShotgunStats as AltShotgunStatsPayload,
         DamageRange as DamageRangePayload,
-        GridPosition as GridPositionPayload,
-        ShopData as ShopDataPayload,
         Skin as SkinPayload,
         SkinChroma as SkinChromaPayload,
         SkinLevel as SkinLevelPayload,
@@ -27,31 +25,21 @@ if TYPE_CHECKING:
     from .themes import Theme
 
 __all__ = (
+    'AdsStats',
+    'AirBurstStats',
+    'AltShotgunStats',
+    'DamageRange',
+    'WeaponStats',
+    'Weapon',
     'Skin',
     'SkinChroma',
     'SkinLevel',
-    'Weapon',
 )
 
 # TODO: patch 6.x support variants favorites colors of skins
 
 WeaponT = TypeVar('WeaponT', bound='Weapon')
 SkinT = TypeVar('SkinT', bound='Skin')
-
-
-class GridPosition:
-    def __init__(self, data: GridPositionPayload) -> None:
-        self.row: float = data['row']
-        self.column: float = data['column']
-
-    def __repr__(self) -> str:
-        return f"<GridPosition row={self.row} column={self.column}>"
-
-    def __eq__(self, other: object) -> bool:
-        return isinstance(other, GridPosition) and self.row == other.row and self.column == other.column
-
-    def __ne__(self, other: object) -> bool:
-        return not self.__eq__(other)
 
 
 class AdsStats:
@@ -182,63 +170,6 @@ class WeaponStats:
         return None
 
 
-class ShopData:
-    def __init__(self, *, state: CacheState, weapon: Weapon, data: ShopDataPayload) -> None:
-        self._weapon: Weapon = weapon
-        self._state: CacheState = state
-        self.cost: int = data['cost']
-        self.category: Optional[str] = data['category']
-        self._category_text: Union[str, Dict[str, str]] = data['categoryText']
-        self.grid_position: Optional[GridPosition] = None
-        if data['gridPosition'] is not None:
-            self.grid_position = GridPosition(data['gridPosition'])
-        self._can_be_trashed: bool = data['canBeTrashed']
-        self._image: Optional[str] = data['image']
-        self._new_image: Optional[str] = data['newImage']
-        self._new_image_2: Optional[str] = data['newImage2']
-        self.asset_path: str = data['assetPath']
-        self._category_text_localized: Localization = Localization(self._category_text, locale=self._state.locale)
-
-    def __repr__(self) -> str:
-        return f"<ShopData category_text={self.category_text} cost={self.cost}>"
-
-    def __int__(self) -> int:
-        return self.cost
-
-    def __eq__(self, other: object) -> bool:
-        return isinstance(other, ShopData) and self._weapon == other._weapon and self.cost == other.cost
-
-    def __ne__(self, other: object) -> bool:
-        return not self.__eq__(other)
-
-    def category_text_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
-        return self._category_text_localized.from_locale(locale)
-
-    @property
-    def category_text(self) -> Localization:
-        """:class: `str` Returns the weapon's shop category text."""
-        return self._category_text_localized
-
-    def can_be_trashed(self) -> bool:
-        """:class: `bool` Returns whether the weapon can be trashed."""
-        return self._can_be_trashed
-
-    @property
-    def image(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the weapon's image."""
-        return Asset._from_url(self._state, url=self._image) if self._image else None
-
-    @property
-    def new_image(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the weapon's new image."""
-        return Asset._from_url(self._state, url=self._new_image) if self._new_image else None
-
-    @property
-    def new_image_2(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the weapon's new image 2."""
-        return Asset._from_url(self._state, url=self._new_image_2) if self._new_image_2 else None
-
-
 class Weapon(BaseModel):
     def __init__(self, *, state: CacheState, data: WeaponPayload) -> None:
         super().__init__(data['uuid'])
@@ -254,7 +185,7 @@ class Weapon(BaseModel):
             self.weapon_stats = WeaponStats(data['weaponStats'])
         self.shop_data: Optional[ShopData] = None
         if data['shopData'] is not None:
-            self.shop_data = ShopData(state=self._state, weapon=self, data=data['shopData'])
+            self.shop_data = ShopData(state=self._state, item=self, data=data['shopData'])
         self.skins: List[Skin] = [Skin(state=self._state, data=skin, parent=self) for skin in data['skins']]
         self.type: ItemType = ItemType.weapon
         self._is_melee: bool = True if self.uuid == MELEE_WEAPON_ID else False

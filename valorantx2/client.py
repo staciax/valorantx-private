@@ -74,7 +74,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import ParamSpec, Self
 
-    from .valorant_api.models.version import Version as ValorantAPIVersion
+    from .models.version import Version
 
     P = ParamSpec('P')
 
@@ -128,16 +128,18 @@ class Client:
         self,
         *,
         locale: Union[Locale, str] = Locale.american_english,
+        region: Union[Region, str] = Region.AP,
     ) -> None:
         self.locale: Locale = try_enum(Locale, locale) if isinstance(locale, str) else locale
+        self.region: Region = try_enum(Region, region) if isinstance(region, str) else region
         self.loop: asyncio.AbstractEventLoop = _loop
-        self.http: HTTPClient = HTTPClient(self.loop)
+        self.http: HTTPClient = HTTPClient(self.loop) # TODO: add region param
         self.valorant_api: ValorantAPIClient = ValorantAPIClient(self.http._session, self.locale)
         self.me: ClientUser = MISSING
         self._closed: bool = False
         self._is_authorized: bool = False
         self._ready: asyncio.Event = MISSING
-        self._version: ValorantAPIVersion = MISSING
+        self._version: Version = MISSING
         # self._season: Season = MISSING
         # self._act: Season = MISSING
 
@@ -155,7 +157,7 @@ class Client:
             await self.close()
 
     @property
-    def version(self) -> ValorantAPIVersion:
+    def version(self) -> Version:
         return self._version
 
     async def wait_until_ready(self) -> None:
