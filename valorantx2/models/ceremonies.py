@@ -1,4 +1,4 @@
-from ..valorant_api.models.ceremonies import Ceremony as Ceremony
+from valorantx2.valorant_api.models.ceremonies import Ceremony as Ceremony
 
 # fmt: off
 __all__ = (

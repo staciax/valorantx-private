@@ -2,14 +2,19 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from ..valorant_api.models.sprays import Spray as SprayValorantAPI, SprayLevel as SprayLevelValorantAPI
+from valorantx2.valorant_api.models.sprays import Spray as SprayValorantAPI, SprayLevel as SprayLevelValorantAPI
+
 from .abc import BundleItemOffer, Item
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from valorantx2.valorant_api.types.sprays import (
+        Spray as SprayPayloadValorantAPI,
+        SprayLevel as SprayLevelPayloadValorantAPI,
+    )
+
     from ..types.store import BundleItemOffer as BundleItemOfferPayload
-    from ..valorant_api.types.sprays import Spray as SprayPayloadValorantAPI, SprayLevel as SprayLevelPayloadValorantAPI
     from ..valorant_api_cache import CacheState
 
 

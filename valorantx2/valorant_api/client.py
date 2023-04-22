@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import asyncio
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional, Type
 
 import aiohttp
 
@@ -29,30 +31,53 @@ from .models.version import Version
 from .models.weapons import Skin, SkinChroma, SkinLevel, Weapon
 from .utils import MISSING
 
+if TYPE_CHECKING:
+    from types import TracebackType
+
+    from typing_extensions import Self
+
 
 class Client:
-    def __init__(self, session: aiohttp.ClientSession, locale: Locale = Locale.english) -> None:
-        self._http: HTTPClient = HTTPClient(session)
-        self._cache: CacheState = CacheState(locale=locale, http=self._http)
+    def __init__(self, session: aiohttp.ClientSession = MISSING, locale: Locale = Locale.english) -> None:
+        self.http: HTTPClient = HTTPClient(session)
+        self._cache: CacheState = CacheState(locale=locale, http=self.http)
         self._ready: asyncio.Event = MISSING
         self._closed: bool = False
 
+    async def __aenter__(self) -> Self:
+        await self.init()
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        if not self.is_closed():
+            await self.close()
+
     async def init(self) -> None:
         self._ready = asyncio.Event()
+        await self.http.init()
         await self._cache.init()
         self._ready.set()
+
+    def is_closed(self) -> bool:
+        return self._closed
 
     async def close(self) -> None:
         if self._closed:
             return
         self._closed = True
-        await self._http.close()
+        await self.http.close()
 
     def clear(self) -> None:
         self._closed = False
         self._ready.clear()
         self._ready = MISSING
         self._cache.clear()
+        self.http.clear()
 
     async def wait_until_ready(self) -> None:
         if self._ready is not MISSING:
@@ -375,7 +400,7 @@ class Client:
         return self.get_weapon(uuid)
 
     async def _fetch_weapon(self) -> None:
-        data = await self._http.get_weapons()
+        data = await self.http.get_weapons()
         self._cache._add_weapons(data)
 
     @property

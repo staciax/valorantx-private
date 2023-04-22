@@ -4,9 +4,10 @@ import datetime
 import json
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
+from valorantx2.valorant_api.asset import Asset
+
 from .. import utils
 from ..enums import Locale
-from ..valorant_api.asset import Asset
 
 if TYPE_CHECKING:
     from ..valorant_api_cache import CacheState
@@ -64,9 +65,9 @@ class PageContext:
 
 
 class PatchNotes:
-    def __init__(self, *, state: CacheState, data: Any, locale: Union[str, Locale]) -> None:
+    def __init__(self, *, state: CacheState, data: Any, locale: Locale) -> None:
         self._state: CacheState = state
-        self.locale: Union[str, Locale] = locale
+        self.locale: Locale = locale
         self.component_chunk_name: str = data['componentChunkName']
         self.path: str = data['path']
         self.result: Result = Result(data=data['result'])
@@ -99,8 +100,9 @@ class PatchNotes:
             for edge in self.result.page_data.locale_edges:
                 if edge['node']['ns'] == 'home':
                     data = edge['node']['data']
-                    to_dict = json.loads(data)
-                    return to_dict.get('news.seeArticle', 'See Article')
+                    if isinstance(data, str):
+                        to_dict = json.loads(data)
+                        return to_dict.get('news.seeArticle', 'See Article')
         except (KeyError, TypeError):
             pass
         return 'See Article'

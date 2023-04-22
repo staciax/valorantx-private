@@ -1,4 +1,4 @@
-from ..valorant_api.models.gear import Gear as Gear
+from valorantx2.valorant_api.models.gear import Gear as Gear
 
 # fmt: off
 __all__ = (

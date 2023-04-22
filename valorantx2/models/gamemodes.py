@@ -1,4 +1,4 @@
-from ..valorant_api.models.gamemodes import (
+from valorantx2.valorant_api.models.gamemodes import (
     GameFeatureOverride as GameFeatureOverride,
     GameMode as GameMode,
     GameModeEquippable as GameModeEquippable,

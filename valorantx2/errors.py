@@ -4,7 +4,7 @@ Exception handler functions: https://github.com/Rapptz/discord.py/blob/master/di
 
 from __future__ import annotations
 
-from .valorant_api.errors import (
+from valorantx2.valorant_api.errors import (
     BadRequest as BadRequest,
     Forbidden as Forbidden,
     HTTPException as HTTPException,

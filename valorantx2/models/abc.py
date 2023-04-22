@@ -3,8 +3,9 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, List
 
+from valorantx2.valorant_api.models.abc import GridPosition as GridPosition, ShopData as ShopData
+
 from ..enums import VALORANT_POINT_UUID
-from ..valorant_api.models.abc import GridPosition as GridPosition, ShopData as ShopData
 
 if TYPE_CHECKING:
     from ..types.store import (

@@ -3,15 +3,14 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Dict, Optional
 
+from valorantx2.valorant_api.cache import CacheState as CacheStateValorantAPI
+
 from .enums import CURRENCY_UUIDS, Locale
 from .models.weapons import Skin, SkinChroma, SkinLevel, Weapon
 
-# from .models.player_cards import PlayerCard
-from .valorant_api.cache import CacheState as CacheStateValorantAPI
-
 if TYPE_CHECKING:
-    from .valorant_api.http import HTTPClient as HTTPClientValorantAPI
-    from .valorant_api.types import weapons
+    from valorantx2.valorant_api.http import HTTPClient as HTTPClientValorantAPI
+    from valorantx2.valorant_api.types import weapons
 
 _log = logging.getLogger(__name__)
 

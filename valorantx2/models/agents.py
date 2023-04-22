@@ -1,6 +1,6 @@
 # from __future__ import annotations
 
-from ..valorant_api.models.agents import (
+from valorantx2.valorant_api.models.agents import (
     Ability as Ability,
     Agent as Agent,
     Media as Media,

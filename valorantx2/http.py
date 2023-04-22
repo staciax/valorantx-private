@@ -182,6 +182,9 @@ class HTTPClient:
 
     async def static_login(self, username: str, password: str, *, remember: bool) -> user.PartialUser:
         """Riot Auth login."""
+        if self._session is MISSING:
+            self._session = aiohttp.ClientSession()
+
         await self._riot_auth.authorize(username.strip(), password.strip(), remember=remember)
         try:
             await self._riot_auth.fetch_userinfo()  # fetch user info
@@ -199,8 +202,6 @@ class HTTPClient:
 
         self._puuid = self._riot_auth.puuid
         await self.__build_headers()
-        if self._session is MISSING:
-            self._session = aiohttp.ClientSession()
 
         data = dict(
             puuid=self._riot_auth.puuid,

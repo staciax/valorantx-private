@@ -91,9 +91,13 @@ class Route:
 
 class HTTPClient:
     def __init__(self, session: aiohttp.ClientSession = MISSING) -> None:
-        self._session: aiohttp.ClientSession = session
+        self.__session: aiohttp.ClientSession = session
         user_agent = 'valorantx (https://github.com/staciax/valorantx {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
+
+    async def init(self) -> None:
+        if self.__session is MISSING:
+            self.__session = aiohttp.ClientSession()  # connector=aiohttp.TCPConnector(limit=0),
 
     async def request(self, route: Route, **kwargs: Any) -> Any:
         method = route.method
@@ -103,15 +107,9 @@ class HTTPClient:
         response: Optional[aiohttp.ClientResponse] = None
         data: Optional[Union[Dict[str, Any], str]] = None
 
-        if self._session is MISSING:
-            self._session = aiohttp.ClientSession(
-                connector=aiohttp.TCPConnector(limit=0),
-                # raise_for_status=True
-            )
-
         for tries in range(5):
             try:
-                async with self._session.request(method, url, **kwargs) as response:
+                async with self.__session.request(method, url, **kwargs) as response:
                     _log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), response.status)
                     data = await utils.json_or_text(response)
                     if 300 > response.status >= 200:
@@ -152,15 +150,15 @@ class HTTPClient:
         raise RuntimeError('Unreachable code in HTTP handling')
 
     async def close(self) -> None:
-        if self._session is not MISSING:
-            await self._session.close()
+        if self.__session is not MISSING:
+            await self.__session.close()
 
     def clear(self) -> None:
-        if self._session and self._session.closed:
-            self._session = MISSING
+        if self.__session and self.__session.closed:
+            self.__session = MISSING
 
     async def read_from_url(self, url: str) -> bytes:
-        async with self._session.get(url) as resp:
+        async with self.__session.get(url) as resp:
             if resp.status == 200:
                 return await resp.read()
             elif resp.status == 404:
@@ -171,7 +169,7 @@ class HTTPClient:
                 raise HTTPException(resp, 'failed to get asset')
 
     async def text_from_url(self, url: str) -> str:
-        async with self._session.get(url) as resp:
+        async with self.__session.get(url) as resp:
             if resp.status == 200:
                 return await resp.text()
             elif resp.status == 404:

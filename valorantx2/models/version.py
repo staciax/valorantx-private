@@ -1,4 +1,4 @@
-from ..valorant_api.models.version import Version as Version
+from valorantx2.valorant_api.models.version import Version as Version
 
 # fmt: off
 __all__ = (

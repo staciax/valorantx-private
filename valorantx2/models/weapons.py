@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Optional
 
-from ..valorant_api.models.weapons import (
+from valorantx2.valorant_api.models.weapons import (
     AdsStats as AdsStats,
     AirBurstStats as AirBurstStats,
     AltShotgunStats as AltShotgunStats,
@@ -13,21 +13,23 @@ from ..valorant_api.models.weapons import (
     Weapon as WeaponValorantAPI,
     WeaponStats as WeaponStats,
 )
+
 from .abc import BonusItemOffer, BundleItemOffer, Item, ItemOffer
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from ..types.store import (
-        BonusStoreOffer as BonusStoreOfferPayload,
-        BundleItemOffer as BundleItemOfferPayload,
-        Offer as OfferPayload,
-    )
-    from ..valorant_api.types.weapons import (
+    from valorantx2.valorant_api.types.weapons import (
         Skin as ValorantAPISkinPayload,
         SkinChroma as ValorantAPISkinChromaPayload,
         SkinLevel as ValorantAPISkinLevelPayload,
         Weapon as ValorantAPIWeaponPayload,
+    )
+
+    from ..types.store import (
+        BonusStoreOffer as BonusStoreOfferPayload,
+        BundleItemOffer as BundleItemOfferPayload,
+        Offer as OfferPayload,
     )
     from ..valorant_api_cache import CacheState
 

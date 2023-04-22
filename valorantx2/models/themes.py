@@ -1,4 +1,4 @@
-from ..valorant_api.models.themes import Theme as Theme
+from valorantx2.valorant_api.models.themes import Theme as Theme
 
 # fmt: off
 __all__ = (

@@ -5,8 +5,9 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, Any, List, Optional
 
+from valorantx2.valorant_api.models.contracts import Contract as ContractValorantAPI
+
 from .. import utils
-from ..valorant_api.models.contracts import Contract as ContractValorantAPI
 from .missions import Mission, MissionMetadata
 
 # from ..asset import Asset
@@ -20,6 +21,9 @@ from .missions import Mission, MissionMetadata
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from valorantx2.valorant_api.types.contracts import Contract as ContractValorantAPIPayload
+    from valorantx2.valorant_api_cache import CacheState
+
     from ..types.contracts import (
         Contract as ContractPayload,
         ContractProgression as ContractProgressionPayload,
@@ -27,8 +31,6 @@ if TYPE_CHECKING:
         ProcessedMatch as ProcessedMatchPayload,
         Reward as RewardPayload,
     )
-    from ..valorant_api.types.contracts import Contract as ContractValorantAPIPayload
-    from ..valorant_api_cache import CacheState
 
     # from typing_extensions import Self
     # from ..client import Client

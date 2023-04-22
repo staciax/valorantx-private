@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from ..valorant_api.models.buddies import Buddy as BuddyValorantAPI, BuddyLevel as BuddyLevelValorantAPI
+from valorantx2.valorant_api.models.buddies import Buddy as BuddyValorantAPI, BuddyLevel as BuddyLevelValorantAPI
+
 from .abc import BundleItemOffer, Item
 
 if TYPE_CHECKING:

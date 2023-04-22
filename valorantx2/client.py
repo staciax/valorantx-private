@@ -126,6 +126,12 @@ def _authorize_required(fn: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[
 
 class Client:
     def __init__(self, *, region: Region = MISSING, locale: Locale = Locale.american_english) -> None:
+        if region is MISSING:
+            _log.warning(
+                'You did not specify a region. The region will be checked automatically.'
+                'This may cause some functions to not work as you intended.'
+                'For example, client.fetch_store_front()'
+            )
         if region is Region.PBE:
             _log.info('You are using the Public Beta Environment (PBE) server. Are you sure?')
         self.region: Region = region

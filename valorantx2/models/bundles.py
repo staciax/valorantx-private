@@ -4,8 +4,9 @@ import datetime
 import logging
 from typing import TYPE_CHECKING, List, Optional, Union
 
+from valorantx2.valorant_api.models.bundles import Bundle as BundleValorantAPI
+
 from ..enums import VALORANT_POINT_UUID, ItemType
-from ..valorant_api.models.bundles import Bundle as BundleValorantAPI
 from .abc import Item
 from .buddies import BuddyLevelBundle
 from .player_cards import PlayerCardBundle
@@ -15,8 +16,9 @@ from .weapons import SkinLevelBundle
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from valorantx2.valorant_api.types.bundles import Bundle as BundleValorantAPIPayload
+
     from ..types.store import Bundle_ as BundlePayload
-    from ..valorant_api.types.bundles import Bundle as BundleValorantAPIPayload
     from ..valorant_api_cache import CacheState
     from .buddies import Buddy
     from .player_cards import PlayerCard

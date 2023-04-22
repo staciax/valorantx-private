@@ -1,4 +1,4 @@
-from ..valorant_api.models.currencies import Currency as Currency
+from valorantx2.valorant_api.models.currencies import Currency as Currency
 
 # fmt: off
 __all__ = (
