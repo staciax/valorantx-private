@@ -65,8 +65,8 @@ class Route:
     ) -> None:
         self.method = method
         self.path = path
-        self.endpoint = endpoint
         self.region = region
+        self.endpoint = endpoint
         self.parameters = parameters
 
         url = ''
