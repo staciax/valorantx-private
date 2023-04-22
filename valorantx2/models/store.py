@@ -20,6 +20,7 @@ if TYPE_CHECKING:
         StoreFront as StoreFrontPayload,
         Wallet as WalletPayload,
     )
+    from .currencies import Currency
 
 __all__ = (
     'SkinsPanelLayout',
@@ -46,8 +47,6 @@ class SkinsPanelLayout:
     @property
     def remaining_time_utc(self) -> datetime.datetime:
         dt = datetime.datetime.utcnow() + datetime.timedelta(seconds=self._remaining_duration_in_seconds)
-        # if dt.tzinfo is None:
-        #     dt = dt.replace(tzinfo=datetime.timezone.utc)
         return dt
 
 
@@ -64,8 +63,6 @@ class BonusStore:
     @property
     def remaining_time_utc(self) -> datetime.datetime:
         dt = datetime.datetime.utcnow() + datetime.timedelta(seconds=self._bonus_store_remaining_duration_in_seconds)
-        # if dt.tzinfo is None:
-        #     dt = dt.replace(tzinfo=datetime.timezone.utc)
         return dt
 
 
@@ -106,12 +103,6 @@ class Wallet:
         self._balances = data['Balances']
         self._valorant_value: int = self._balances.get(VALORANT_POINT_UUID, 0)
         self._radiant_value: int = self._balances.get(RADIANITE_POINT_UUID, 0)
-        # self._valorant_points: Optional[ValorantAPICurrency] = self._client.valorant_api.get_currency(uuid='85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741')
-        # self._radiant_points: Optional[ValorantAPICurrency] = self._client.valorant_api.get_currency(uuid='e59aa87c-4cbf-517a-5983-6e81511be9b7')
-        # if self._valorant_points is not None:
-        #     self._valorant_points.value = self._valorant_value
-        # if self._radiant_points is not None:
-        #     self._radiant_points.value = self._radiant_value
 
     def __repr__(self) -> str:
         return f'<Wallet valorant_points={self.valorant_points!r} radiant_points={self.radiant_points!r}>'
@@ -133,11 +124,13 @@ class Wallet:
         """Returns the radiant points for the wallet"""
         return self._radiant_value
 
-    # def get_valorant(self) -> Optional[Currency]:
-    #     return self._valorant_points
+    # helper methods
 
-    # def get_radiant(self) -> Optional[Currency]:
-    #     return self._radiant_points
+    def get_valorant_currency(self) -> Optional[Currency]:
+        return self._state.get_currency(VALORANT_POINT_UUID)
+
+    def get_radiant_currency(self) -> Optional[Currency]:
+        return self._state.get_currency(RADIANITE_POINT_UUID)
 
 
 class Reward:
