@@ -1,10 +1,10 @@
-# Copyright (c) 2023-present STACiA
+# Copyright (c) 2023-present STACiA, 2022-present Giorgio(giorgi-o)
 # Licensed under the MIT
 
 from __future__ import annotations
 
 import uuid
-from typing import List, Tuple, Union
+from typing import List, Union
 
 from valorantx2.valorant_api.utils import (
     MISSING as MISSING,
@@ -12,8 +12,7 @@ from valorantx2.valorant_api.utils import (
     parse_iso_datetime as parse_iso_datetime,
 )
 
-# fmt: off
-__all__: Tuple[str, ...] = (
+__all__ = (
     'calculate_level_xp',
     'is_uuid',
     'percent',
@@ -21,7 +20,6 @@ __all__: Tuple[str, ...] = (
     'MISSING',
     'parse_iso_datetime',
 )
-# fmt: on
 
 
 def is_uuid(value: str) -> bool:

@@ -10,7 +10,7 @@ from valorantx2.valorant_api.enums import Enum as Enum, ItemType as ItemType, Lo
 
 # --
 
-__all__: Tuple[str, ...] = (
+__all__ = (
     'AgentID',
     'CurrencyID',
     'GameModeID',

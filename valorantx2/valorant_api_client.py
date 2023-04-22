@@ -10,6 +10,12 @@ from .enums import Locale
 from .models.store import Offers
 from .valorant_api_cache import CacheState
 
+# fmt: off
+__all__ = (
+    'Client',
+)
+# fmt: on
+
 
 class Client(ClientValorantAPI):
     def __init__(self, session: ClientSession, locale: Locale) -> None:

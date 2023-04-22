@@ -3,7 +3,7 @@
 # riot-auth library: https://github.com/floxay/python-riot-auth
 
 from secrets import token_urlsafe
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import aiohttp
 from riot_auth import RiotAuth as _RiotAuth
@@ -17,7 +17,7 @@ from .errors import (
 )
 
 # fmt: off
-__all__: Tuple[str, ...] = (
+__all__ = (
     'RiotAuth',
 )
 # fmt: on

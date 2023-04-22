@@ -17,6 +17,12 @@ if TYPE_CHECKING:
 
 _log = logging.getLogger(__name__)
 
+# fmt: off
+__all__ = (
+    'CacheState',
+)
+# fmt: on
+
 
 class CacheState(CacheStateValorantAPI):
     def __init__(self, *, locale: Locale, http: HTTPClientValorantAPI, to_file: bool = False) -> None:
