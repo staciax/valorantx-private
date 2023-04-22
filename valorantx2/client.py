@@ -11,6 +11,7 @@ from typing import (  # Dict,; Iterator,; List,; Mapping,; overload,
     Awaitable,
     Callable,
     Coroutine,
+    Dict,
     Optional,
     Type,
     TypeVar,
@@ -232,15 +233,6 @@ class Client:
         """:class:`bool`: Whether the client is authorized."""
         return self._is_authorized
 
-    async def _login(self, username: str, password: str, *, remember: bool) -> None:
-        _log.info('logging using username and password')
-        self._ready = asyncio.Event()
-        data = await self.http.static_login(username, password, remember=remember)
-        self.me = me = ClientUser(data=data)
-        self._is_authorized = True
-        self._ready.set()
-        _log.info('Logged as %s', me.riot_id)
-
     async def authorize(self, username: str, password: str, *, remember: bool = False) -> None:
         """|coro|
 
@@ -257,7 +249,13 @@ class Client:
         if not username or not password:
             raise ValueError('username and password must be provided')
 
-        await self._login(username, password, remember=remember)
+        _log.info('logging using username and password')
+        self._ready = asyncio.Event()
+        data = await self.http.static_login(username, password, remember=remember)
+        self.me = me = ClientUser(data=data)
+        self._is_authorized = True
+        self._ready.set()
+        _log.info('Logged as %s', me.riot_id)
 
         # TODO: below to asyncio.create_task
         # insert items cost
@@ -269,6 +267,29 @@ class Client:
         #         self.loop.create_task(self._set_season())
         #     except Exception as e:
         #         _log.exception('Failed to set season', exc_info=e)
+
+    async def authorize_from_data(self, auth_data: Dict[str, Any]) -> None:
+        """|coro|
+
+        Authorize the client with the given data.
+
+        Parameters
+        -----------
+        data: :class:`Dict[str, Any]`
+           The data of the account to authorize.
+        """
+
+        _log.info('logging using auth data')
+        self._ready = asyncio.Event()
+        data = await self.http.cookie_login(auth_data)
+        self.me = me = ClientUser(data=data)
+        self._is_authorized = True
+        self._ready.set()
+        _log.info('Logged as %s', me.riot_id)
+
+        # insert items cost
+        offers = await self.fetch_offers()
+        self.valorant_api.insert_cost(offers)
 
     # patch notes endpoint
 

@@ -215,6 +215,22 @@ class HTTPClient:
         )
         return data  # type: ignore
 
+    async def cookie_login(self, data: Dict[str, Any]) -> user.PartialUser:
+        if self._session is MISSING:
+            self._session = aiohttp.ClientSession()
+
+        self._riot_auth.from_data(data)
+        self._puuid = self._riot_auth.puuid
+        self.region = try_enum(Region, self._riot_auth.region)
+        await self.__build_headers()
+        data = dict(
+            puuid=self._riot_auth.puuid,
+            name=self._riot_auth.name,
+            tag=self._riot_auth.tag,
+            region=self._riot_auth.region,
+        )
+        return data  # type: ignore
+
     async def token_login(self, data: Dict[str, Any]) -> RiotAuth:
         """Riot Auth login."""
 
