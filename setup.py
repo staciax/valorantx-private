@@ -40,7 +40,7 @@ setup(
     version=version,
     packages=packages,
     license='MIT',
-    description='An Asynchronous Unofficial Valorant API Wrapper for Python',
+    description='An Asynchronous Unofficial Valorant API Wrapper with valorant-api.com API Wrapper for Python',
     long_description=readme,
     include_package_data=True,
     install_requires=requirements,
