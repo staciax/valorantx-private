@@ -37,12 +37,14 @@ _log = logging.getLogger(__name__)
 
 
 class Reward(BaseModel):
-    def __init__(self, state: CacheState, data: RewardPayload) -> None:
+    def __init__(self, state: CacheState, data: RewardPayload, free_reward: bool = False, chapter_index: int = 0) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
         self.type: RewardType = try_enum(RewardType, data['type'])
         self.amount: int = data['amount']
         self._is_highlighted: bool = data['isHighlighted']
+        self._is_free_reward: bool = free_reward
+        self.chapter_index: int = chapter_index
 
     def get_item(self) -> Optional[Union[Agent, SkinLevel, BuddyLevel, Currency, PlayerCard, PlayerTitle, Spray]]:
         if self.type is RewardType.skin_level:
@@ -65,6 +67,9 @@ class Reward(BaseModel):
     def is_highlighted(self) -> bool:
         return self._is_highlighted
 
+    def is_free_reward(self) -> bool:
+        return self._is_free_reward
+
 
 class Level:
     def __init__(self, state: CacheState, data: LevelPayload) -> None:
@@ -85,7 +90,7 @@ class Chapter:
         self.levels: List[Level] = [Level(self._state, level) for level in data['levels']]
         self.free_rewards: Optional[List[Reward]] = None
         if data['freeRewards'] is not None:
-            self.free_rewards = [Reward(self._state, reward) for reward in data['freeRewards']]
+            self.free_rewards = [Reward(self._state, reward, free_reward=True) for reward in data['freeRewards']]
 
     def is_epilogue(self) -> bool:
         return self._is_epilogue
