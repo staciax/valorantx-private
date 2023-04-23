@@ -3,11 +3,12 @@ from __future__ import annotations
 # import datetime
 # import logging
 import datetime
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from valorantx2.valorant_api.models.contracts import Contract as ContractValorantAPI
 
 from .. import utils
+from ..enums import RelationType
 from .missions import Mission, MissionMetadata
 
 # from ..asset import Asset
@@ -54,8 +55,8 @@ if TYPE_CHECKING:
 # _log = logging.getLogger(__name__)
 # fmt: off
 __all__ = (
-    'ContractReward',
-    'ContractProgression',
+    'Reward',
+    'Progression',
     'ProcessedMatch',
     'Contract',
     'Contracts'
@@ -63,13 +64,13 @@ __all__ = (
 # fmt: on
 
 
-class ContractReward:
+class Reward:
     def __init__(self, data: RewardPayload) -> None:
         self.amount: int = data['Amount']
         self.version: int = data['Version']
 
 
-class ContractProgression:
+class Progression:
     def __init__(
         self,
         contract: Contract,
@@ -77,7 +78,7 @@ class ContractProgression:
     ) -> None:
         self.earned: int = data['TotalProgressionEarned']
         self.earned_version: int = data['TotalProgressionEarnedVersion']
-        self.reward: ContractReward = ContractReward(data['HighestRewardedLevel'][contract.free_reward_schedule_uuid])
+        self.reward: Reward = Reward(data['HighestRewardedLevel'][contract.free_reward_schedule_uuid])
 
 
 class Contract(ContractValorantAPI):
@@ -86,7 +87,8 @@ class Contract(ContractValorantAPI):
         self.definition_id: str = data_contract['ContractDefinitionID']
         self.progression_level_reached: int = data_contract['ProgressionLevelReached']
         self.progression_towards_next_level: int = data_contract['ProgressionTowardsNextLevel']
-        self.progression: ContractProgression = ContractProgression(contract=self, data=data_contract['ContractProgression'])
+        self.progression: Progression = Progression(contract=self, data=data_contract['ContractProgression'])
+        # self.maximum_levels: int = sum(len([level.reward for level in chapter.levels]) for chapter in self.content.chapters)
 
     #         self.total_progression_earned: int = contract['ContractProgression']['TotalProgressionEarned']
     #         self.highest_rewarded_level: int = contract['ContractProgression']['HighestRewardedLevel'][
@@ -105,15 +107,33 @@ class Contract(ContractValorantAPI):
     def __repr__(self) -> str:
         return f'<Contract display_name={self.display_name!r}>'
 
+    @property
+    def current_level(self) -> int:
+        """:class: `int` alias for :attr:`progression_level_reached`."""
+        return self.progression_level_reached
+
+    @property
+    def current_tier_needed_xp(self) -> int:
+        """:class: `int` Returns the contract's current tier needed xp."""
+        return utils.calculate_level_xp(self.progression_level_reached + 1)
+
+    # @property
+    # def next_level_reward(self) -> Optional[ContractReward]:
+    #     """:class: `Optional[Reward]` Returns the contract's next tier reward."""
+
+    #     if self.progression_level_reached >= self.maximum_tier:
+    #         return None
+
+    #     try:
+    #         chapter = self.content._chapters[self.chapter]
+    #         return chapter._rewards[self.chapter_reward_index]
+    #     except IndexError:
+    #         return None
+
     #     @property
     #     def xp(self) -> int:
     #         """:class: `int` Returns the contract's xp."""
     #         return self.progression_towards_next_level
-
-    #     @property
-    #     def current_tier(self) -> int:
-    #         """:class: `int` Returns the contract's current tier."""
-    #         return self.progression_level_reached
 
     #     @current_tier.setter
     #     def current_tier(self, value: int) -> None:
@@ -128,19 +148,6 @@ class Contract(ContractValorantAPI):
     #     def next_tier_remaining_xp(self) -> int:
     #         """:class: `int` Returns the contract's next tier remaining xp."""
     #         return self.current_tier_needed_xp - self.xp
-
-    #     @property
-    #     def next_tier_reward(self) -> Optional[Reward]:
-    #         """:class: `Optional[Reward]` Returns the contract's next tier reward."""
-
-    #         if self.current_tier >= self.maximum_tier:
-    #             return None
-
-    #         try:
-    #             chapter = self.content._chapters[self.chapter]
-    #             return chapter._rewards[self.chapter_reward_index]
-    #         except IndexError:
-    #             return None
 
     #     @property
     #     def latest_tier_reward(self) -> Optional[Reward]:
@@ -221,7 +228,6 @@ class ProcessedMatch:
 class Contracts:
     subject: str
     version: int
-    contracts: List[Contract]
     processed_matches: List[ProcessedMatch]
     missions: List[Mission]
     mission_metadata: Optional[MissionMetadata]
@@ -236,7 +242,9 @@ class Contracts:
     def _update(self, data: ContractsPayload) -> None:
         self.version: int = data['Version']
         self.subject: str = data['Subject']
-        self.contracts: List[Contract] = [Contract.from_contract(self._state, contract) for contract in data['Contracts']]
+        self._contracts: Dict[str, Contract] = {
+            contract['ContractDefinitionID']: Contract.from_contract(self._state, contract) for contract in data['Contracts']
+        }
         self.processed_matches: List[ProcessedMatch] = [ProcessedMatch(match) for match in data['ProcessedMatches']]
         self.active_special_contract_id: Optional[str] = data['ActiveSpecialContract']  # data.get('ActiveSpecialContract')
         self.missions: List[Mission] = []
@@ -251,13 +259,62 @@ class Contracts:
     # helper methods
     # TODO: add helper methods
 
+    @property
+    def contracts(self) -> List[Contract]:
+        """:class: `List[Contract]` Returns all contracts."""
+        return list(self._contracts.values())
 
-#     def special_contract(self) -> Optional[ContractU]:
-#         """:class: `ContractA` Returns the active special contract."""
-#         for contract in self.contracts:
-#             if contract.uuid == self.active_special_contract_id:
-#                 return contract
-#         return None
+    def get_contract(self, uuid: str) -> Optional[Contract]:
+        """:class: `Optional[Contract]` Returns a contract by uuid."""
+        return self._contracts.get(uuid)
+
+    @property
+    def special_contract(self) -> Optional[Contract]:
+        """:class: `ContractA` Returns the active special contract."""
+        for contract in self.contracts:
+            if contract.uuid == self.active_special_contract_id:
+                return contract
+        return None
+
+    def get_all_seasonal_contracts(self) -> List[Contract]:
+        """:class: `List[ContractU]` Returns all seasonal contracts."""
+        return [contract for contract in self.contracts if contract.content.relation_type is RelationType.season]
+
+    def get_all_agent_contracts(self) -> List[Contract]:
+        """:class: `List[ContractU]` Returns all agent contracts."""
+        return [contract for contract in self.contracts if contract.content.relation_type is RelationType.agent]
+
+    def get_all_event_contracts(self) -> List[Contract]:
+        """:class: `List[ContractU]` Returns all event contracts."""
+        return [contract for contract in self.contracts if contract.content.relation_type is RelationType.event]
+
+    # def get_contract_by_type(self, relation_type: Union[RelationType, str]) -> List[Contract]:
+    #     """:class: `List[ContractU]` Returns all seasonal contracts."""
+    # TODO: in latte bot
+    #     ...
+
+    # @property
+    # def daily_mission(self) -> List[Mission]:
+    #     """:class: `MissionU` Returns the daily mission."""
+    #     return [mission for mission in self.missions if mission.type == MissionType.daily]
+    #     # for mission in self.missions:
+    #     #     if mission.type == MissionType.daily:
+    #     #         yield mission
+
+    # @property
+    # def weekly_mission(self) -> List[Mission]:
+    #     """:class: `MissionU` Returns the weekly mission."""
+    #     return [mission for mission in self.missions if mission.type == MissionType.weekly]
+
+    # @property
+    # def tutorial_mission(self) -> List[Mission]:
+    #     """:class: `MissionU` Returns the tutorial mission."""
+
+    # @property
+    # def npe_mission(self) -> List[Mission]:
+    #     """:class: `MissionU` Returns the npe mission."""
+    #     return [mission for mission in self.missions if mission.type == MissionType.npe]
+
 
 #     def get_latest_contract(self, relation_type: Optional[Union[RelationType, str]] = None) -> Optional[ContractU]:
 #         """:class: `ContractA` Returns the latest contract."""
@@ -299,25 +356,6 @@ class Contracts:
 #         data = await self._client.http.contracts_activate(contract.uuid)
 #         self._update(data)
 #         return self.special_contract()
-
-#     def get_all_seasonal_contracts(self) -> List[ContractU]:
-#         """:class: `List[ContractU]` Returns all seasonal contracts."""
-#         return [contract for contract in self.contracts if contract.content.relation_type == RelationType.season]
-
-#     def get_all_agent_contracts(self) -> List[ContractU]:
-#         """:class: `List[ContractU]` Returns all agent contracts."""
-#         return [contract for contract in self.contracts if contract.content.relation_type == RelationType.agent]
-
-#     def get_all_event_contracts(self) -> List[ContractU]:
-#         """:class: `List[ContractU]` Returns all event contracts."""
-#         return [contract for contract in self.contracts if contract.content.relation_type == RelationType.event]
-
-#     def get_contracts(self, relation_type: Optional[Union[RelationType, str]] = None) -> List[ContractU]:
-#         """:class: `List[ContractU]` Returns all contracts of the given relation type."""
-#         if relation_type is None:
-#             return self.contracts
-#         relation_type = RelationType(relation_type) if isinstance(relation_type, str) else relation_type
-#         return [contract for contract in self.contracts if contract.content.relation_type == relation_type]
 
 #     @property
 #     def daily_mission(self) -> Iterator[MissionU]:
