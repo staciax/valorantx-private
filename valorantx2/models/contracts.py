@@ -3,9 +3,15 @@ from __future__ import annotations
 # import datetime
 # import logging
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from valorantx2.valorant_api.models.contracts import Contract as ContractValorantAPI
+from valorantx2.valorant_api.models.contracts import (
+    Chapter as Chapter,
+    Content as ContentValorantAPI,
+    Contract as ContractValorantAPI,
+    Level as Level,
+    Reward as RewardValorantAPI_,
+)
 
 from .. import utils
 from ..enums import RelationType
@@ -15,7 +21,6 @@ from .missions import Mission, MissionMetadata
 # from ..enums import ContractRewardType as RewardType, Locale, MissionType, RelationType, try_enum
 # from ..errors import InvalidContractType, InvalidRelationType
 # from ..localization import Localization
-# from .base import BaseModel
 # from .mission import MissionMeta, MissionU
 # from .abc import Item
 
@@ -40,15 +45,18 @@ if TYPE_CHECKING:
     #     Contracts as ContractsPayload,
     #     ProcessedMatch as ProcessedMatchPayload,
     # )
-    # from .agent import Agent
-    # from .buddy import BuddyLevel
-    # from .currency import Currency
+    from .agents import Agent
+    from .buddies import BuddyLevel
+    from .currencies import Currency
+
     # from .event import Event
-    # from .player_card import PlayerCard
-    # from .player_title import PlayerTitle
+    from .player_cards import PlayerCard
+    from .player_titles import PlayerTitle
+
     # from .season import Season
-    # from .spray import Spray
-    # from .weapons import SkinLevel
+    from .sprays import Spray
+    from .weapons import SkinLevel
+
     # Item = Union[Agent, SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]
 
 
@@ -59,13 +67,32 @@ __all__ = (
     'Progression',
     'ProcessedMatch',
     'Contract',
-    'Contracts'
+    'Contracts',
+    'Content',
+    'Chapter',
+    'Level',
+    'RewardValorantAPI'
 )
 # fmt: on
 
 
+class RewardValorantAPI(RewardValorantAPI_):
+    if TYPE_CHECKING:
+
+        def get_item(self) -> Optional[Union[Agent, SkinLevel, BuddyLevel, Currency, PlayerCard, PlayerTitle, Spray]]:
+            ...
+
+
+class Content(ContentValorantAPI):
+    if TYPE_CHECKING:
+
+        def get_all_rewards(self) -> List[RewardValorantAPI]:
+            ...
+
+
 class Reward:
-    def __init__(self, data: RewardPayload) -> None:
+    def __init__(self, uuid: str, data: RewardPayload) -> None:
+        self.uuid: str = uuid
         self.amount: int = data['Amount']
         self.version: int = data['Version']
 
@@ -78,7 +105,9 @@ class Progression:
     ) -> None:
         self.earned: int = data['TotalProgressionEarned']
         self.earned_version: int = data['TotalProgressionEarnedVersion']
-        self.reward: Reward = Reward(data['HighestRewardedLevel'][contract.free_reward_schedule_uuid])
+        self.reward: Reward = Reward(
+            contract.free_reward_schedule_uuid, data['HighestRewardedLevel'][contract.free_reward_schedule_uuid]
+        )
 
 
 class Contract(ContractValorantAPI):
@@ -88,6 +117,7 @@ class Contract(ContractValorantAPI):
         self.progression_level_reached: int = data_contract['ProgressionLevelReached']
         self.progression_towards_next_level: int = data_contract['ProgressionTowardsNextLevel']
         self.progression: Progression = Progression(contract=self, data=data_contract['ContractProgression'])
+        self._content: Content = Content(self._state, data['content'])
         # self.maximum_levels: int = sum(len([level.reward for level in chapter.levels]) for chapter in self.content.chapters)
 
     #         self.total_progression_earned: int = contract['ContractProgression']['TotalProgressionEarned']
@@ -116,6 +146,11 @@ class Contract(ContractValorantAPI):
     def current_tier_needed_xp(self) -> int:
         """:class: `int` Returns the contract's current tier needed xp."""
         return utils.calculate_level_xp(self.progression_level_reached + 1)
+
+    @property
+    def content(self) -> Content:
+        """:class: `Content` Returns the contract's content."""
+        return self._content
 
     # @property
     # def next_level_reward(self) -> Optional[ContractReward]:
@@ -287,6 +322,15 @@ class Contracts:
     def get_all_event_contracts(self) -> List[Contract]:
         """:class: `List[ContractU]` Returns all event contracts."""
         return [contract for contract in self.contracts if contract.content.relation_type is RelationType.event]
+
+    # helpers
+
+    def get_latest_contract(self, relation_type: Optional[RelationType] = None) -> Contract:
+        """:class: `ContractA` Returns the latest contract."""
+        if relation_type is not None:
+            contract_list = [contract for contract in self.contracts if contract.content.relation_type is relation_type]
+            return contract_list[len(contract_list) - 1]
+        return self.contracts[len(self.contracts) - 1]
 
     # def get_contract_by_type(self, relation_type: Union[RelationType, str]) -> List[Contract]:
     #     """:class: `List[ContractU]` Returns all seasonal contracts."""

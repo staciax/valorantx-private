@@ -11,15 +11,15 @@ from valorantx2.valorant_api.cache import CacheState as CacheStateValorantAPI
 from .enums import ItemType, Locale
 from .models.buddies import Buddy
 from .models.player_cards import PlayerCard
+from .models.player_titles import PlayerTitle
 from .models.sprays import Spray
 from .models.weapons import Weapon
 
 if TYPE_CHECKING:
     from valorantx2.valorant_api.http import HTTPClient as HTTPClientValorantAPI
-    from valorantx2.valorant_api.types import buddies, player_cards, sprays, weapons
+    from valorantx2.valorant_api.types import buddies, player_cards, player_titles, sprays, weapons
 
     from .models.buddies import BuddyLevel
-    from .models.player_cards import PlayerCard
     from .models.sprays import SprayLevel
     from .models.weapons import Skin, SkinChroma, SkinLevel
 
@@ -43,6 +43,7 @@ class CacheState(CacheStateValorantAPI):
         _spray_levels: Dict[str, SprayLevel]
         _player_cards: Dict[str, PlayerCard]
         _weapons: Dict[str, Weapon]
+        _player_titles: Dict[str, PlayerTitle]
 
     def __init__(self, *, locale: Locale, http: HTTPClientValorantAPI, to_file: bool = False) -> None:
         super().__init__(locale=locale, http=http, to_file=to_file)
@@ -62,6 +63,13 @@ class CacheState(CacheStateValorantAPI):
         player_card_id = data['uuid']
         self._player_cards[player_card_id] = player_card = PlayerCard(state=self, data=data)
         return player_card
+
+    # player titles
+
+    def store_player_title(self, data: player_titles.PlayerTitle) -> PlayerTitle:
+        player_title_id = data['uuid']
+        self._player_titles[player_title_id] = player_title = PlayerTitle(state=self, data=data)
+        return player_title
 
     # sprays
 

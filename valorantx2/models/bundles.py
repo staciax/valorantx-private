@@ -27,6 +27,13 @@ if TYPE_CHECKING:
 
 _log = logging.getLogger(__name__)
 
+# fmt: off
+__all__ = (
+    'Bundle',
+    'FeaturedBundle',
+)
+# fmt: on
+
 
 class Bundle(BundleValorantAPI, Item):
     def __init__(self, state: CacheState, data: BundleValorantAPIPayload) -> None:

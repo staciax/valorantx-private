@@ -97,6 +97,12 @@ class Chapter:
     def is_epilogue(self) -> bool:
         return self._is_epilogue
 
+    # helper methods
+
+    def get_all_rewards(self) -> List[Reward]:
+        """:class: `List[Reward]` Returns all rewards."""
+        return [level.reward for level in self.levels]
+
 
 class Content:
     def __init__(self, state: CacheState, data: ContentPayload) -> None:
@@ -124,6 +130,12 @@ class Content:
         if self.relation_type and self._relation_uuid:
             _log.warning(f'Unknown relationship type={self.relation_type!r} uuid={self._relation_uuid!r}')
         return None
+
+    # helper methods
+
+    def get_all_rewards(self) -> List[Reward]:
+        """:class: `List[Reward]` Returns all rewards."""
+        return [level.reward for chapter in self.chapters for level in chapter.levels]
 
 
 class Contract(BaseModel):

@@ -16,6 +16,7 @@ from .valorant_api_cache import CacheState
 if TYPE_CHECKING:
     from .models.buddies import Buddy, BuddyLevel
     from .models.player_cards import PlayerCard
+    from .models.player_titles import PlayerTitle
     from .models.sprays import Spray, SprayLevel
     from .models.weapons import Skin, SkinChroma, SkinLevel, Weapon
 
@@ -35,6 +36,7 @@ class Client(ClientValorantAPI):
         skin_levels: List[SkinLevel]
         sprays: List[Spray]
         spray_levels: List[SprayLevel]
+        player_titles: List[PlayerTitle]
         player_cards: List[PlayerCard]
         weapons: List[Weapon]
 
