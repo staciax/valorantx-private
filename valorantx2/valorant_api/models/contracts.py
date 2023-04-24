@@ -37,22 +37,20 @@ _log = logging.getLogger(__name__)
 
 
 class Reward(BaseModel):
-    def __init__(self, state: CacheState, data: RewardPayload, free_reward: bool = False, chapter_index: int = 0) -> None:
+    def __init__(self, state: CacheState, data: RewardPayload, chapter: Chapter, free_reward: bool = False) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
         self.type: RewardType = try_enum(RewardType, data['type'])
         self.amount: int = data['amount']
         self._is_highlighted: bool = data['isHighlighted']
-        self._is_free_reward: bool = free_reward
-        self.chapter_index: int = chapter_index
+        self._is_free: bool = free_reward
+        self.chapter: Chapter = chapter
 
     def get_item(self) -> Optional[Union[Agent, SkinLevel, BuddyLevel, Currency, PlayerCard, PlayerTitle, Spray]]:
         if self.type is RewardType.skin_level:
             return self._state.get_skin_level(self.uuid)
         elif self.type is RewardType.buddy_level:
             return self._state.get_buddy_level(self.uuid)
-        elif self.type is RewardType.currency:
-            return self._state.get_currency(self.uuid)
         elif self.type is RewardType.player_card:
             return self._state.get_player_card(self.uuid)
         elif self.type is RewardType.player_title:
@@ -61,36 +59,40 @@ class Reward(BaseModel):
             return self._state.get_spray(self.uuid)
         elif self.type is RewardType.agent:
             return self._state.get_agent(self.uuid)
+        elif self.type is RewardType.currency:
+            return self._state.get_currency(self.uuid)
         _log.warning(f'Unknown reward type: {self.type}')
         return None
 
     def is_highlighted(self) -> bool:
         return self._is_highlighted
 
-    def is_free_reward(self) -> bool:
-        return self._is_free_reward
+    def is_free(self) -> bool:
+        return self._is_free
 
 
 class Level:
-    def __init__(self, state: CacheState, data: LevelPayload) -> None:
+    def __init__(self, state: CacheState, data: LevelPayload, chapter: Chapter) -> None:
         self._state: CacheState = state
-        self.reward: Reward = Reward(self._state, data['reward'])
+        self.reward: Reward = Reward(self._state, data['reward'], chapter)
         self.xp: int = data['xp']
         self.vp_cost: int = data['vpCost']
         self._is_purchasable_with_vp: bool = data['isPurchasableWithVP']
+        self.chapter: Chapter = chapter
 
     def is_purchasable_with_vp(self) -> bool:
         return self._is_purchasable_with_vp
 
 
 class Chapter:
-    def __init__(self, state: CacheState, data: ChapterPayload) -> None:
+    def __init__(self, state: CacheState, data: ChapterPayload, index: int) -> None:
         self._state: CacheState = state
         self._is_epilogue: bool = data['isEpilogue']
-        self.levels: List[Level] = [Level(self._state, level) for level in data['levels']]
+        self.levels: List[Level] = [Level(self._state, level, self) for level in data['levels']]
         self.free_rewards: Optional[List[Reward]] = None
         if data['freeRewards'] is not None:
-            self.free_rewards = [Reward(self._state, reward, free_reward=True) for reward in data['freeRewards']]
+            self.free_rewards = [Reward(self._state, reward, self, free_reward=True) for reward in data['freeRewards']]
+        self.index: int = index
 
     def is_epilogue(self) -> bool:
         return self._is_epilogue
@@ -101,7 +103,9 @@ class Content:
         self._state: CacheState = state
         self.relation_type: RelationType = try_enum(RelationType, data['relationType'])
         self._relation_uuid: Optional[str] = data['relationUuid']
-        self._chapters: List[Chapter] = [Chapter(self._state, chapter) for chapter in data['chapters']]
+        self._chapters: List[Chapter] = [
+            Chapter(self._state, chapter, index) for index, chapter in enumerate(data['chapters'])
+        ]
         self.premium_reward_schedule_uuid: Optional[str] = data['premiumRewardScheduleUuid']
         self.premium_vp_cost: int = data['premiumVPCost']
 
