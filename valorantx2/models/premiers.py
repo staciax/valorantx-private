@@ -22,6 +22,9 @@ __all__ = (
 )
 # fmt: on
 
+# class Roster:
+#     ...
+
 
 class ScheduleDivision:
     def __init__(self, data: ScheduleDivisionPayload) -> None:
@@ -89,20 +92,24 @@ class Event:
         self.map_selection_strategy: PremierMapSelectionStrategy = try_enum(
             PremierMapSelectionStrategy, data['MapSelectionStrategy']
         )
-        self.map_pool_map_ids: list[str] = data['MapPoolMapIDs']
+        self.map_pool_map_ids: List[str] = data['MapPoolMapIDs']
         self.points_required_to_participate: int = data['PointsRequiredToParticipate']
 
     def __repr__(self) -> str:
         return f'<Event id={self.id!r} type={self.type!r}>'
 
-    def __eq__(self, object: object) -> bool:
-        return isinstance(object, Event) and object.id == self.id
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Event) and other.id == self.id
 
-    def __ne__(self, object: object) -> bool:
-        return not self.__eq__(object)
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
     def __hash__(self) -> int:
         return hash(self.id)
+
+    @property
+    def schedule_per_conferences(self) -> List[ScheduleConference]:
+        return list(self.schedule_per_conference.values())
 
     @property
     def start_date_time(self) -> datetime.datetime:
@@ -119,20 +126,20 @@ class PremierSeason:
         self.competitive_season_id: str = data['CompetitiveSeasonID']
         self._start_time: str = data['StartTime']
         self._end_time: str = data['EndTime']
-        self.events: list[Event] = [Event(event) for event in data['Events']]
+        self.events: List[Event] = [Event(event) for event in data['Events']]
         self.championship_point_requirement: int = data['ChampionshipPointRequirement']
         self.championship_event_id: str = data['ChampionshipEventID']
-        self.enrollment_phase_start_date_time: str = data['EnrollmentPhaseStartDateTime']
-        self.enrollment_phase_end_date_time: str = data['EnrollmentPhaseEndDateTime']
+        self._enrollment_phase_start_date_time: str = data['EnrollmentPhaseStartDateTime']
+        self._enrollment_phase_end_date_time: str = data['EnrollmentPhaseEndDateTime']
 
     def __repr__(self) -> str:
         return f'<PremierSeason id={self.id!r}>'
 
-    def __eq__(self, object: object) -> bool:
-        return isinstance(object, PremierSeason) and object.id == self.id
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, PremierSeason) and other.id == self.id
 
-    def __ne__(self, object: object) -> bool:
-        return not self.__eq__(object)
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
     def __hash__(self) -> int:
         return hash(self.id)
@@ -144,3 +151,11 @@ class PremierSeason:
     @property
     def end_time(self) -> datetime.datetime:
         return datetime.datetime.fromisoformat(self._end_time)
+
+    @property
+    def enrollment_phase_start_date_time(self) -> datetime.datetime:
+        return datetime.datetime.fromisoformat(self._enrollment_phase_start_date_time)
+
+    @property
+    def enrollment_phase_end_date_time(self) -> datetime.datetime:
+        return datetime.datetime.fromisoformat(self._enrollment_phase_end_date_time)
