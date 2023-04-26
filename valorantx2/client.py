@@ -12,6 +12,7 @@ from typing import (  # Dict,; Iterator,; List,; Mapping,; overload,
     Callable,
     Coroutine,
     Dict,
+    List,
     Optional,
     Type,
     TypeVar,
@@ -24,6 +25,7 @@ from .errors import AuthRequired
 from .http import HTTPClient
 from .models.contracts import Contracts
 from .models.patchnotes import PatchNotes
+from .models.premiers import PremierSeason
 from .models.store import Entitlements, Offers, StoreFront, Wallet
 from .models.user import ClientUser
 from .valorant_api_client import Client as ValorantAPIClient
@@ -618,3 +620,13 @@ class Client:
     # @_authorize_required
     # async def fetch_pregame_player(self) -> Any:
     #     data = await self.http.pregame_fetch_player()
+
+    @_authorize_required
+    async def fetch_premier_season(self) -> PremierSeason:
+        data = await self.http.get_premier_seasons(active_season=True)
+        return PremierSeason(data=data)
+
+    @_authorize_required
+    async def fetch_premier_seasons(self) -> List[PremierSeason]:
+        data = await self.http.get_premier_seasons(active_season=False)
+        return [PremierSeason(data=season) for season in data['PremierSeasons']]
