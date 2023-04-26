@@ -317,30 +317,30 @@ class Client:
         # endpoint is not available for chinese
         locale = Locale.taiwan_chinese if locale is Locale.chinese else locale
 
-        data = await self.http.fetch_patch_notes(locale)
+        data = await self.http.get_patch_notes(locale)
 
-        return PatchNotes(state=self.valorant_api._cache, data=data, locale=locale)
+        return PatchNotes(state=self.valorant_api.cache, data=data, locale=locale)
 
     # store endpoints
 
     @_authorize_required
-    async def fetch_store_front(self) -> StoreFront:
-        data = await self.http.store_fetch_storefront()
-        return StoreFront(self.valorant_api._cache, data)
+    async def fetch_storefront(self) -> StoreFront:
+        data = await self.http.get_store_storefront()
+        return StoreFront(self.valorant_api.cache, data)
 
     @_authorize_required
     async def fetch_wallet(self) -> Wallet:
-        data = await self.http.store_fetch_wallet()
-        return Wallet(self.valorant_api._cache, data)
+        data = await self.http.get_store_wallet()
+        return Wallet(self.valorant_api.cache, data)
 
     @_authorize_required
     async def fetch_entitlements(self) -> Entitlements:
-        data = await self.http.store_fetch_entitlements()
-        return Entitlements(self.valorant_api._cache, data)
+        data = await self.http.get_store_entitlements()
+        return Entitlements(self.valorant_api.cache, data)
 
     @_authorize_required
     async def fetch_offers(self) -> Offers:
-        data = await self.http.store_fetch_offers()
+        data = await self.http.get_store_offers()
         return Offers(data)
 
     # contract endpoints
@@ -356,8 +356,8 @@ class Client:
         :class:`Contracts`
             The contracts for the current user.
         """
-        data = await self.http.contracts_fetch()
-        return Contracts(state=self.valorant_api._cache, data=data)
+        data = await self.http.get_contracts()
+        return Contracts(state=self.valorant_api.cache, data=data)
 
     # favorite endpoints
 
@@ -437,7 +437,7 @@ class Client:
         :class:`Content`
             The content for the current version of Valorant.
         """
-        data = await self.http.fetch_content()
+        data = await self.http.get_content()
         import json
 
         with open('content.json', 'w') as f:
@@ -481,7 +481,7 @@ class Client:
             The collection for the current user.
         """
 
-        data = await self.http.fetch_player_loadout()
+        data = await self.http.get_personal_player_loadout()
         import json
 
         with open('player_loadout.json', 'w') as f:
@@ -531,7 +531,7 @@ class Client:
         :class:`MMR`
             The MMR for the current user or a given user.
         """
-        data = await self.http.fetch_mmr(puuid)
+        data = await self.http.get_mmr_player(puuid)
         import json
 
         with open('mmr.json', 'w') as f:
@@ -548,7 +548,7 @@ class Client:
         # end: int = 15,
         # with_details: bool = True,
     ) -> ...:  # Optional[MatchHistory]
-        data = await self.http.fetch_match_history(self.me.puuid, 0, 15, 'competitive')
+        data = await self.http.get_match_history(self.me.puuid, 0, 15, 'competitive')
         import json
 
         with open('match_history.json', 'w') as f:
@@ -574,7 +574,7 @@ class Client:
         Optional[:class:`MatchDetails`]
             The match details for a given match.
         """
-        match_details = await self.http.fetch_match_details(match_id)
+        match_details = await self.http.get_match_details(match_id)
         import json
 
         with open('match_details.json', 'w') as f:
