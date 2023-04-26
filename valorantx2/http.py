@@ -7,7 +7,21 @@ from __future__ import annotations
 import asyncio
 import enum
 import logging
-from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, List, Mapping, NoReturn, Optional, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Coroutine,
+    Dict,
+    List,
+    Literal,
+    Mapping,
+    NoReturn,
+    Optional,
+    TypeVar,
+    Union,
+    overload,
+)
 from urllib.parse import quote as _uriquote
 
 import aiohttp
@@ -16,6 +30,7 @@ from . import __version__, utils
 from .auth import RiotAuth
 from .enums import Locale, QueueType, Region, try_enum
 from .errors import BadRequest, Forbidden, HTTPException, InternalServerError, NotFound, RateLimited, RiotAuthenticationError
+from .types import premiers
 
 # try:
 #     import urllib3
@@ -1067,6 +1082,43 @@ class HTTPClient:
             match_id=match_id,
         )
         return self.request(r)
+
+    # premier endpoints
+
+    @overload
+    def get_premier_seasons(self, active_season: Literal[True]) -> Response[premiers.PremierSeason]:
+        ...
+
+    @overload
+    def get_premier_seasons(self, active_season: Literal[False]) -> Response[premiers.PremierSeasons]:
+        ...
+
+    @overload
+    def get_premier_seasons(self, active_season: bool) -> Response[premiers.PremierSeason]:
+        ...
+
+    def get_premier_seasons(self, active_season: bool) -> Response[Any]:
+        r = Route(
+            'GET',
+            '/premier/v1/affinities/{shard}/premier-seasons' + ('/active' if active_season else ''),
+            self.region,
+            EndpointType.pd,
+            shard=self.region,
+        )
+        return self.request(r)
+
+    def get_premier_roster(self, roster_id: str) -> Response[Mapping[str, Any]]:
+        r = Route(
+            'GET',
+            '/premier/v1/rsp/rosters/v1/val-premier-{shard}/roster/{roster_id}',
+            self.region,
+            EndpointType.pd,
+            shard=self.region,
+            roster_id=roster_id,
+        )
+        return self.request(r)
+
+    # https://pd.{shard}.a.pvp.net/premier/v2/rosters/{rosterId}
 
     # local endpoints
 
