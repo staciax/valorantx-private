@@ -16,6 +16,7 @@ from .missions import *
 from .patchnotes import *
 from .player_cards import *
 from .player_titles import *
+from .premiers import *
 from .seasons import *
 from .sprays import *
 from .store import *
