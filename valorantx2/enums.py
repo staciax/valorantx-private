@@ -150,6 +150,16 @@ class QueueType(Enum):
         return [str(x) for x in cls]
 
 
+class PremierEventType(Enum):
+    league = 'LEAGUE'
+    tournament = 'TOURNAMENT'
+
+
+class PremierMapSelectionStrategy(Enum):
+    random = 'RANDOM'
+    pickban = 'PICKBAN'
+
+
 class MapID(Enum):
     ascent = '7eaecc1b-4337-bbf6-6ab9-04b8f06b3319'
     bind = '2c9d57ec-4431-9c5e-2939-8f9ef6dd5cba'
