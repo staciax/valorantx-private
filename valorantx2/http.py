@@ -1089,40 +1089,172 @@ class HTTPClient:
 
     # premier endpoints
 
+    # def get_premier_roster_(self, roster_id: str) -> Response[Any]:
+    #     r = Route(
+    #         'GET',
+    #         '/premier/v1/rsp/rosters/v1/val-premier-{shard}/roster/{roster_id}',
+    #         self.region,
+    #         EndpointType.pd,
+    #         shard=self.region.shard,
+    #         roster_id=roster_id,
+    #     )
+    #     return self.request(r)
+
+    def get_premier_eligibility(self) -> Response[premiers.Eligibility]:
+        return self.request(Route('GET', '/premier/v1/player/eligibility', self.region, EndpointType.pd))
+
+    def get_premier_conferences(self) -> Response[premiers.Conferences]:
+        return self.request(
+            Route(
+                'GET',
+                '/premier/v1/affinities/{premier_region}/conferences',
+                self.region,
+                EndpointType.pd,
+                premier_region=self.region,
+            )
+        )
+
     @overload
-    def get_premier_seasons(self, active_season: Literal[True]) -> Response[premiers.PremierSeason]:
+    def get_premier_seasons(self, active_season: Literal[True]) -> Response[premiers.Season]:
         ...
 
     @overload
-    def get_premier_seasons(self, active_season: Literal[False]) -> Response[premiers.PremierSeasons]:
+    def get_premier_seasons(self, active_season: Literal[False]) -> Response[premiers.Seasons]:
         ...
 
     @overload
-    def get_premier_seasons(self, active_season: bool) -> Response[premiers.PremierSeason]:
+    def get_premier_seasons(self, active_season: bool) -> Response[premiers.Season]:
         ...
 
     def get_premier_seasons(self, active_season: bool) -> Response[Any]:
         r = Route(
             'GET',
-            '/premier/v1/affinities/{shard}/premier-seasons' + ('/active' if active_season else ''),
+            '/premier/v1/affinities/{premier_region}/premier-seasons' + ('/active' if active_season else ''),
             self.region,
             EndpointType.pd,
-            shard=self.region.shard,
+            premier_region=self.region.shard,
         )
         return self.request(r)
 
-    def get_premier_roster(self, roster_id: str) -> Response[Any]:
+    def get_premier_muc_token_proxy(self, realm: str, roster_id: str) -> Response[Any]:
         r = Route(
             'GET',
-            '/premier/v1/rsp/rosters/v1/val-premier-{shard}/roster/{roster_id}',
+            '/premier/v1/rsp/rosters/v1/{realm}/roster/{roster_id}/muctoken',
             self.region,
             EndpointType.pd,
-            shard=self.region.shard,
+            realm=realm,
             roster_id=roster_id,
         )
         return self.request(r)
 
-    # https://pd.{shard}.a.pvp.net/premier/v2/rosters/{rosterId}
+    def get_premier_player(self, puuid: Optional[str] = None) -> Response[premiers.Player]:
+        puuid = puuid or self.puuid
+        r = Route('GET', '/premier/v2/players/{puuid}', self.region, EndpointType.pd, puuid=puuid)
+        return self.request(r)
+
+    def get_premier_roster(self, roster_id: str) -> Response[Any]:
+        return self.request(
+            Route('GET', '/premier/v1/rosters/{roster_id}', self.region, EndpointType.pd, roster_id=roster_id)
+        )
+
+    def get_premier_roster_v2(self, roster_id: str) -> Response[Any]:
+        return self.request(
+            Route('GET', '/premier/v2/rosters/{roster_id}', self.region, EndpointType.pd, roster_id=roster_id)
+        )
+
+    def get_premier_roster_proxy(self, realm: str, roster_id: str) -> Response[Any]:
+        r = Route(
+            'GET',
+            '/premier/v1/rsp/rosters/v1/{realm}/roster/{rosterId}',
+            self.region,
+            EndpointType.pd,
+            realm=realm,
+            roster_id=roster_id,
+        )
+        return self.request(r)
+
+    def put_premier_set_roster_customization(
+        self,
+        roster_id: str,
+        icon: Optional[str] = None,
+        primary_color: Optional[str] = None,
+        secondary_color: Optional[str] = None,
+        tertiary_color: Optional[str] = None,
+    ) -> Response[Any]:
+        """payloed example:
+        {
+            "icon": "iconId", // example: 6ee21acd-46ee-1a92-b0af-e98b229bdece
+            "primaryColor": "(R=0.171441,G=0.003035,B=0.003035,A=1.000000)",
+            "secondaryColor": "(R=0.968628,G=0.780392,B=0.000000,A=1.000000)",
+            "tertiaryColor": "(R=0.090196,G=0.152941,B=0.454902,A=1.000000)"
+        }
+        """
+        payload = {}
+        if icon is not None:
+            payload['icon'] = icon
+        if primary_color is not None:
+            payload['primaryColor'] = primary_color
+        if secondary_color is not None:
+            payload['secondaryColor'] = secondary_color
+        if tertiary_color is not None:
+            payload['tertiaryColor'] = tertiary_color
+        r = Route('PUT', '/premier/v1/rosters/{roster_id}/customization', self.region, EndpointType.pd, roster_id=roster_id)
+        return self.request(r, json=payload)
+
+    def delete_premier_roster_proxy(self, realm: str, roster_id: str) -> Response[Any]:
+        r = Route(
+            'DELETE',
+            '/premier/v1/rsp/rosters/v1/{realm}/roster/{roster_id}',
+            self.region,
+            EndpointType.pd,
+            realm=realm,
+            roster_id=roster_id,
+        )
+        return self.request(r)
+
+    def put_premier_roster_enroll(self, roster_id: str, conference_id: str) -> Response[Any]:
+        payload = {"id": conference_id}
+        r = Route('PUT', '/premier/v1/rosters/{roster_id}/enroll', self.region, EndpointType.pd, roster_id=roster_id)
+        return self.request(r, json=payload)
+
+    def post_premier_create_invite(self, roster_id: str, puuid: str) -> Response[Any]:
+        r = Route(
+            'POST',
+            '/premier/v2/rosters/{roster_id}/invites/{puuid}',
+            self.region,
+            EndpointType.pd,
+            roster_id=roster_id,
+            puuid=puuid,
+        )
+        return self.request(r)
+
+    # account-verification-player endpoints
+
+    def post_account_verification_player_send(self) -> Response[Any]:
+        ...
+        # https://usw2-red.pp.sgp.pvp.net/account-verification-player/v1/sendActivationPin
+
+    def post_account_verification_player_confirm(self) -> Response[Any]:
+        ...
+        # https://euc1-red.pp.sgp.pvp.net/account-verification-player/v1/confirmActivationPin
+
+    # restrictions endpoints
+    # [Restrictions_GetPlayerAvoidList] GET https://pd.{region}.a.pvp.net/restrictions/v1/avoidList
+    # [Restrictions_AddPlayerAvoidListEntry] POST https://pd.{region}.a.pvp.net/restrictions/v1/avoidList/entry/{VALUE TO ADD} BODY: {}
+    # [Restrictions_RemovePlayerAvoidListEntry] DELETE https://pd.{region}.a.pvp.net/restrictions/v1/avoidList/entry/{VALUE TO REMOVE}
+
+    def get_restrictions_avoid_list(self) -> Response[Any]:
+        r = Route('GET', '/restrictions/v1/avoidList', self.region)
+        return self.request(r)
+
+    def post_restrictions_add_avoid_list_entry(self, puuid: str) -> Response[Any]:
+        payload = {}
+        r = Route('POST', '/restrictions/v1/avoidList/entry/{puuid}', self.region, puuid=puuid)
+        return self.request(r, json=payload)
+
+    def delete_restrictions_remove_avoid_list_entry(self, puuid: str) -> Response[Any]:
+        r = Route('DELETE', '/restrictions/v1/avoidList/entry/{puuid}', self.region, puuid=puuid)
+        return self.request(r)
 
     # local endpoints
 

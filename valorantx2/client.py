@@ -25,7 +25,7 @@ from .errors import AuthRequired
 from .http import HTTPClient
 from .models.contracts import Contracts
 from .models.patchnotes import PatchNotes
-from .models.premiers import PremierSeason
+from .models.premiers import PremierConference, PremierEligibility, PremierPleyer, PremierSeason
 from .models.store import Entitlements, Offers, StoreFront, Wallet
 from .models.user import ClientUser
 from .valorant_api_client import Client as ValorantAPIClient
@@ -372,7 +372,7 @@ class Client:
         :class:`Favorites`
             The favorites items for the current user.
         """
-        data = await self.http.favorites_fetch()
+        data = await self.http.get_favorites()
         import json
 
         with open('favorites.json', 'w') as f:
@@ -455,7 +455,7 @@ class Client:
         :class:`AccountXP`
             The account XP for the current user.
         """
-        data = await self.http.fetch_account_xp()
+        data = await self.http.get_account_xp_player()
         import json
 
         with open('account_xp.json', 'w') as f:
@@ -541,12 +541,12 @@ class Client:
     @_authorize_required
     async def fetch_match_history(
         self,
-        # puuid: Optional[str] = None,
+        puuid: Optional[str] = None,
         # queue: Optional[Union[str, QueueType]] = None,
         # *,
-        # start: int = 0,
-        # end: int = 15,
-        # with_details: bool = True,
+        start: int = 0,
+        end: int = 15,
+        with_details: bool = True,
     ) -> ...:  # Optional[MatchHistory]
         data = await self.http.get_match_history(self.me.puuid, 0, 15, 'competitive')
         import json
@@ -630,3 +630,18 @@ class Client:
     async def fetch_premier_seasons(self) -> List[PremierSeason]:
         data = await self.http.get_premier_seasons(active_season=False)
         return [PremierSeason(data=season) for season in data['PremierSeasons']]
+
+    @_authorize_required
+    async def fetch_premier_player(self, puuid: Optional[str] = None) -> PremierPleyer:
+        data = await self.http.get_premier_player(puuid)
+        return PremierPleyer(client=self, data=data)
+
+    @_authorize_required
+    async def fetch_premier_eligibility(self) -> PremierEligibility:
+        data = await self.http.get_premier_eligibility()
+        return PremierEligibility(data=data)
+
+    @_authorize_required
+    async def fetch_premier_conference(self) -> List[PremierConference]:
+        data = await self.http.get_premier_conferences()
+        return [PremierConference(data=conference) for conference in data['PremierConferences']]

@@ -27,7 +27,7 @@ class Event(TypedDict):
     PointsRequiredToParticipate: int
 
 
-class PremierSeason(TypedDict):
+class Season(TypedDict):
     ID: str
     CompetitiveSeasonID: str
     StartTime: str
@@ -39,5 +39,31 @@ class PremierSeason(TypedDict):
     EnrollmentPhaseEndDateTime: str
 
 
-class PremierSeasons(TypedDict):
-    PremierSeasons: List[PremierSeason]
+class Seasons(TypedDict):
+    PremierSeasons: List[Season]
+
+
+class Eligibility(TypedDict):
+    subject: str
+    accountVerificationStatus: bool
+    rankedPlacementCompletionStatus: bool
+
+
+class Player(TypedDict):
+    puuid: str
+    rosterId: str
+    invites: List
+    version: int
+    createdAt: int
+    updatedAt: int
+
+
+class Conference(TypedDict):
+    id: str
+    key: str
+    gamePods: List[str]
+    timezone: str
+
+
+class Conferences(TypedDict):
+    PremierConferences: List[Conference]

@@ -1,24 +1,32 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from ..enums import PremierEventType, PremierMapSelectionStrategy, try_enum
+from ..models.user import User
 
 if TYPE_CHECKING:
+    from ..client import Client
     from ..types.premiers import (
+        Conference as ConferencePayload,
+        Eligibility as EligibilityPayload,
         Event as EventPayload,
-        PremierSeason as PremierSeasonPayload,
+        Player as PlayerPayload,
         ScheduleConference as ScheduleConferencePayload,
         ScheduleDivision as ScheduleDivisionPayload,
+        Season as SeasonPayload,
     )
 
 # fmt: off
 __all__ = (
+    'PremierConference',
+    'PremierEligibility',
+    'PremierEvent',
+    'PremierSeason',
+    'PremierPleyer',
     'ScheduleDivision',
     'ScheduleConference',
-    'Event',
-    'PremierSeason',
 )
 # fmt: on
 
@@ -76,7 +84,7 @@ class ScheduleConference:
         return datetime.datetime.fromisoformat(self._end_date_time)
 
 
-class Event:
+class PremierEvent:
     def __init__(self, data: EventPayload) -> None:
         self.id: str = data['ID']
         self.type: PremierEventType = try_enum(PremierEventType, data['Type'])
@@ -99,7 +107,7 @@ class Event:
         return f'<Event id={self.id!r} type={self.type!r}>'
 
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, Event) and other.id == self.id
+        return isinstance(other, PremierEvent) and other.id == self.id
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
@@ -121,12 +129,12 @@ class Event:
 
 
 class PremierSeason:
-    def __init__(self, data: PremierSeasonPayload) -> None:
+    def __init__(self, data: SeasonPayload) -> None:
         self.id: str = data['ID']
         self.competitive_season_id: str = data['CompetitiveSeasonID']
         self._start_time: str = data['StartTime']
         self._end_time: str = data['EndTime']
-        self.events: List[Event] = [Event(event) for event in data['Events']]
+        self.events: List[PremierEvent] = [PremierEvent(event) for event in data['Events']]
         self.championship_point_requirement: int = data['ChampionshipPointRequirement']
         self.championship_event_id: str = data['ChampionshipEventID']
         self._enrollment_phase_start_date_time: str = data['EnrollmentPhaseStartDateTime']
@@ -159,3 +167,37 @@ class PremierSeason:
     @property
     def enrollment_phase_end_date_time(self) -> datetime.datetime:
         return datetime.datetime.fromisoformat(self._enrollment_phase_end_date_time)
+
+
+class PremierEligibility:
+    def __init__(self, data: EligibilityPayload) -> None:
+        self.subject: str = data['subject']
+        self.account_verification_status: bool = data['accountVerificationStatus']
+        self.ranked_placement_completion_status: bool = data['rankedPlacementCompletionStatus']
+
+    def __repr__(self) -> str:
+        return f'<PremierEligibility subject={self.subject!r}>'
+
+
+class PremierConference:
+    def __init__(self, data: ConferencePayload) -> None:
+        self.id: str = data['id']
+        self.key: str = data['key']
+        self.game_pods: List[str] = data['gamePods']
+        self.timezone: str = data['timezone']
+
+    def __repr__(self) -> str:
+        return f'<PremierConference id={self.id!r} key={self.key!r}>'
+
+
+class PremierPleyer(User):
+    def __init__(self, client: Client, data: PlayerPayload) -> None:
+        super().__init__(client, data=data)
+        self.roster_id: str = data['rosterId']
+        self.invites: List[Any] = data['invites']
+        self.version: int = data['version']
+        self.created_at: int = data['createdAt']
+        self.updated_at: int = data['updatedAt']
+
+    def __repr__(self) -> str:
+        return f'<PremierPlayer puuid={self.puuid!r} roster_id={self.roster_id!r} riot_id={self.roster_id!r}>'
