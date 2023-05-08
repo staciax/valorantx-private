@@ -572,9 +572,9 @@ class TestValorantAPI(BaseTest):
     def test_clear(self) -> None:
         self.valorant_api.clear()
         assert self.valorant_api.version is MISSING
-        for key in self.valorant_api._cache.__dict__.keys():
-            if key.startswith('_') and isinstance(self.valorant_api._cache.__dict__[key], dict):
-                assert len(self.valorant_api._cache.__dict__[key]) == 0
+        for key in self.valorant_api.cache.__dict__.keys():
+            if key.startswith('_') and isinstance(self.valorant_api.cache.__dict__[key], dict):
+                assert len(self.valorant_api.cache.__dict__[key]) == 0
 
     @pytest.mark.asyncio
     async def test_close(self) -> None:

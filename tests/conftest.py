@@ -23,9 +23,9 @@ else:
 
 load_dotenv()
 
-username = os.getenv('VALORANT_USERNAME')
+username = os.getenv('RIOT_USERNAME')
 assert username is not None
-password = os.getenv('VALORANT_PASSWORD')
+password = os.getenv('RIOT_PASSWORD')
 assert password is not None
 
 
