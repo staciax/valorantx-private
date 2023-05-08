@@ -20,21 +20,19 @@ class _BaseUser:
 
 
 class ClientUser(_BaseUser):
-    _username: Optional[str]
-    _tagline: Optional[str]
+    _game_name: Optional[str]
+    _tag_line: Optional[str]
     _region: Optional[str]
 
     def __init__(self, *, data: PartialUserPayload) -> None:
-        self._puuid: str = data["puuid"]
+        self._puuid: str = data['puuid']
         self._update(data)
 
     def __str__(self) -> str:
-        return f'{self.username}#{self.tagline}'
+        return f'{self.game_name}#{self.tag_line}'
 
     def __repr__(self) -> str:
-        return (
-            f"<ClientUser puuid={self.puuid!r} username={self.username!r} tagline={self.tagline!r} region={self.region!r}>"
-        )
+        return f"<ClientUser puuid={self.puuid!r} game_name={self.game_name!r} tag_line={self.tag_line!r} region={self.region!r}>"
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, ClientUser) and other.puuid == self.puuid
@@ -46,8 +44,8 @@ class ClientUser(_BaseUser):
         return hash(self.puuid)
 
     def _update(self, data: PartialUserPayload) -> None:
-        self._username = data.get('name')
-        self._tagline = data.get('tag')
+        self._game_name = data.get('game_name')
+        self._tagline = data.get('tag_line')
         self._region = data.get('region')
 
     @property
@@ -55,20 +53,12 @@ class ClientUser(_BaseUser):
         return self._puuid
 
     @property
-    def username(self) -> str:
-        return self._username or ''
+    def game_name(self) -> str:
+        return self._game_name or ''
 
     @property
-    def name(self) -> str:
-        return self.username
-
-    @property
-    def tagline(self) -> str:
+    def tag_line(self) -> str:
         return self._tagline or ''
-
-    @property
-    def tag(self) -> str:
-        return self.tagline
 
     @property
     def region(self) -> str:
@@ -76,7 +66,7 @@ class ClientUser(_BaseUser):
 
     @property
     def riot_id(self) -> str:
-        return f'{self.username}#{self.tagline}'
+        return f'{self.game_name}#{self.tag_line}'
 
     @property
     def display_name(self) -> str:
@@ -90,7 +80,7 @@ class User(ClientUser):
         self._update(data)
 
     def __repr__(self) -> str:
-        return f'<User puuid={self.puuid!r} username={self.username!r} tagline={self.tagline!r}>'
+        return f'<User puuid={self.puuid!r} game_name={self.game_name!r} tag_line={self.tag_line!r} region={self.region!r}>'
 
     async def update_identities(self) -> None:
         ...

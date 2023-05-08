@@ -224,8 +224,8 @@ class HTTPClient:
 
         data = dict(
             puuid=self._riot_auth.puuid,
-            name=self._riot_auth.name,
-            tag=self._riot_auth.tag,
+            game_name=self._riot_auth.game_name,
+            tag_line=self._riot_auth.tag_line,
             region=self._riot_auth.region,
         )
         return data  # type: ignore
@@ -240,8 +240,8 @@ class HTTPClient:
         await self.__build_headers()
         data = dict(
             puuid=self._riot_auth.puuid,
-            name=self._riot_auth.name,
-            tag=self._riot_auth.tag,
+            game_name=self._riot_auth.game_name,
+            tag_line=self._riot_auth.tag_line,
             region=self._riot_auth.region,
         )
         return data  # type: ignore

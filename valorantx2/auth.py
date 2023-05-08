@@ -2,8 +2,10 @@
 # Licensed under the MIT
 # riot-auth library: https://github.com/floxay/python-riot-auth
 
+from __future__ import annotations
+
 from secrets import token_urlsafe
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import aiohttp
 from riot_auth import RiotAuth as _RiotAuth
@@ -16,6 +18,9 @@ from .errors import (
     RiotUnknownResponseTypeError,
 )
 
+if TYPE_CHECKING:
+    from typing_extensions import Self
+
 # fmt: off
 __all__ = (
     'RiotAuth',
@@ -26,9 +31,12 @@ __all__ = (
 class RiotAuth(_RiotAuth):
     def __init__(self) -> None:
         super().__init__()
-        self.name: Optional[str] = None
-        self.tag: Optional[str] = None
+        self.game_name: Optional[str] = None
+        self.tag_line: Optional[str] = None
         self.region: Optional[str] = None
+        # multi-factor
+        # self.__waif_for_2fa: bool = False
+        self.multi_factor_email: Optional[str] = None
 
     @property
     def puuid(self) -> str:
@@ -36,9 +44,9 @@ class RiotAuth(_RiotAuth):
 
     @property
     def display_name(self) -> str:
-        if self.name is None or self.tag is None:
+        if self.game_name is None or self.tag_line is None:
             return ''
-        return f'{self.name}#{self.tag}'
+        return f'{self.game_name}#{self.tag_line}'
 
     async def authorize(
         self, username: str, password: str, use_query_response_mode: bool = False, remember: bool = False
@@ -111,6 +119,11 @@ class RiotAuth(_RiotAuth):
                         else:
                             raise RiotUnknownErrorTypeError(f'Got unknown error `{err}` during authentication.')
                     elif resp_type == 'multifactor':
+                        # pre for multi-factor authentication
+                        if 'method' in data['multifactor']:
+                            if data['multifactor']['method'] == 'email':
+                                self.multi_factor_email = data['multifactor']['email']
+                        # -
                         raise RiotMultifactorError('Multi-factor authentication is not currently supported.')
                     else:
                         raise RiotUnknownResponseTypeError(f'Got unknown response type `{resp_type}` during authentication.')
@@ -148,8 +161,8 @@ class RiotAuth(_RiotAuth):
             async with session.post('https://auth.riotgames.com/userinfo', headers=headers) as r:
                 data = await r.json()
                 # self.user_id = data['sub'] # puuid
-                self.name = data['acct']['game_name']
-                self.tag = data['acct']['tag_line']
+                self.game_name = data['acct']['game_name']
+                self.tag_line = data['acct']['tag_line']
 
     async def reauthorize(self) -> bool:
         """
@@ -163,19 +176,22 @@ class RiotAuth(_RiotAuth):
         except RiotAuthenticationError:  # because credentials are empty
             return False
 
-    def from_data(self, data: Dict[str, Any]) -> None:
+    @classmethod
+    def from_data(cls, data: Dict[str, Any]) -> Self:
         """
         Set the token data from a dictionary.
         """
+        self = cls()
         self.access_token = data['access_token']
         self.id_token = data['id_token']
         self.entitlements_token = data['entitlements_token']
         self.token_type = data['token_type']
         self.expires_at = int(data['expires_at'])
         self.user_id = data['user_id']
-        self.name = data['name']
-        self.tag = data['tag']
+        self.game_name = data['game_name']
+        self.tag_line = data['tag_line']
         self.region = data['region']
+        return self
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -188,8 +204,8 @@ class RiotAuth(_RiotAuth):
             'token_type': self.token_type,
             'expires_at': self.expires_at,
             'user_id': self.user_id,
-            'name': self.name,
-            'tag': self.tag,
+            'game_name': self.game_name,
+            'tag_line': self.tag_line,
             'region': self.region,
         }
         return payload
