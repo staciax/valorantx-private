@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, TypedDict
+from typing import Any, Dict, List, Literal, TypedDict
 
 
 class ScheduleDivision(TypedDict):
@@ -67,3 +67,50 @@ class Conference(TypedDict):
 
 class Conferences(TypedDict):
     PremierConferences: List[Conference]
+
+
+class RosterMember(TypedDict):
+    puuid: str
+    role: Literal['MEMBER', 'OWNER']
+    roleId: int
+    createdAt: int
+
+
+class RosterVersion(TypedDict):
+    socialVersion: int
+    premierVersion: int
+
+
+class RosterSeason(TypedDict):
+    id: str
+    isEnrolled: bool
+    conference: str
+    division: int
+    points: int
+    wins: int
+    gamesPlayed: int
+
+
+class Customization(TypedDict):
+    icon: str
+    primaryColor: str
+    secondaryColor: str
+    tertiaryColor: str
+
+
+class RosterV2(TypedDict):
+    rosterId: str
+    affinity: str
+    name: str
+    tag: str
+    customization: Customization
+    members: List[RosterMember]
+    invites: List[Any]
+    locks: List[Any]
+    season: RosterSeason
+    minimumRequiredMembersForEnrollment: int
+    matchesSinceReset: int
+    tournamentsSinceReset: int
+    version: RosterVersion
+    updatedAt: int
+    createdAt: int

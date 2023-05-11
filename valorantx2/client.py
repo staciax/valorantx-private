@@ -5,73 +5,19 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import (  # Dict,; Iterator,; List,; Mapping,; overload,
-    TYPE_CHECKING,
-    Any,
-    Awaitable,
-    Callable,
-    Coroutine,
-    Dict,
-    List,
-    Optional,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Coroutine, Dict, List, Optional, Type, TypeVar, Union
 
 from . import utils
-from .enums import Locale, Region, try_enum  # ItemType, QueueType, SeasonType,
+from .enums import Locale, Region, try_enum
 from .errors import AuthRequired
 from .http import HTTPClient
 from .models.contracts import Contracts
+from .models.loadout import Loadout
 from .models.patchnotes import PatchNotes
-from .models.premiers import PremierConference, PremierEligibility, PremierPleyer, PremierSeason
+from .models.premiers import Conference, Eligibility, PremierPleyer, PremierSeason, Roster
 from .models.store import Entitlements, Offers, StoreFront, Wallet
 from .models.user import ClientUser
 from .valorant_api_client import Client as ValorantAPIClient
-
-#     MMR,
-#     AccountXP,
-#     Agent,
-#     Buddy,
-#     BuddyLevel,
-#     Bundle,
-#     Ceremony,
-#     ClientPlayer,
-#     Collection,
-#     CompetitiveTier,
-#     Content,
-#     ContentTier,
-#     Contract,
-#     Currency,
-#     Event,
-#     Favorites,
-#     GameMode,
-#     GameModeEquippable,
-#     Gear,
-#     LevelBorder,
-#     Map,
-#     MatchDetails,
-#     MatchHistory,
-#     Mission,
-#     NameService,
-#     Party,
-#     PartyPlayer,
-#     PlayerCard,
-#     PlayerTitle,
-#     Season,
-#     SeasonCompetitive,
-#     Skin,
-#     SkinChroma,
-#     SkinLevel,
-#     Spray,
-#     SprayLevel,
-#     StoreFront,
-#     Theme,
-#     Tier,
-#     Version,
-#     Weapon,
-# )
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -219,7 +165,7 @@ class Client:
         self._ready = MISSING
         self.http.clear()
         self._is_authorized = False
-        # self.user = MISSING
+        self.me = MISSING
         # self.season = MISSING
         # self.act = MISSING
 
@@ -463,56 +409,21 @@ class Client:
         # return AccountXP(client=self, data=data)
 
     @_authorize_required
-    async def fetch_collection(self, *, with_xp: bool = True, with_favorite: bool = True) -> ...:  # Collection
-        """|coro|
-
-        Fetches the collection for the current user.
-
-        Parameters
-        ----------
-        with_xp: :class:`bool`
-            Whether to include the XP for each item in the loadout.
-        with_favorite: :class:`bool`
-            Whether to include the favorite status for each item in the loadout.
-
-        Returns
-        -------
-        :class:`Collection`
-            The collection for the current user.
-        """
-
+    async def fetch_loudout(self, *, include_account_xp: bool = True, include_favorite: bool = True) -> Loadout:
         data = await self.http.get_personal_player_loadout()
-        import json
+        loadout = Loadout(client=self, data=data)
 
-        with open('player_loadout.json', 'w') as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
-        # collection = Collection(client=self, data=data)
+        if include_account_xp:
+            await loadout._update_account_xp()
 
-        # if with_xp:
-        #     await collection.fetch_account_xp()
+        if include_favorite:
+            await loadout._update_favorites()
 
-        # if with_favorite:
-        #     await collection.fetch_favorites()
-
-        # return collection
+        return loadout
 
     # @_authorize_required
-    # async def put_loadout(self, loadout: Mapping[str, Any]) -> None:  # TODO: loadout object
-    #     """|coro|
-
-    #     Puts the loadout for the current user.
-
-    #     Parameters
-    #     ----------
-    #     loadout: :class:`Mapping`
-    #         The loadout to put.
-
-    #     Returns
-    #     -------
-    #     :class:`Any`
-    #         The response from the API.
-    #     """
-    #     # await self.http.put_player_loadout(loadout)
+    # async def put_loadout(self, loadout: LoadoutBuilder) -> None:
+    #     await self.http.put_personal_player_loadout(loadout)
     #     pass
 
     @_authorize_required
@@ -621,27 +532,36 @@ class Client:
     # async def fetch_pregame_player(self) -> Any:
     #     data = await self.http.pregame_fetch_player()
 
+    # premier
+
     @_authorize_required
     async def fetch_premier_season(self) -> PremierSeason:
         data = await self.http.get_premier_seasons(active_season=True)
-        return PremierSeason(data=data)
+        return PremierSeason(data)
 
     @_authorize_required
     async def fetch_premier_seasons(self) -> List[PremierSeason]:
         data = await self.http.get_premier_seasons(active_season=False)
-        return [PremierSeason(data=season) for season in data['PremierSeasons']]
+        return [PremierSeason(season) for season in data['PremierSeasons']]
 
     @_authorize_required
     async def fetch_premier_player(self, puuid: Optional[str] = None) -> PremierPleyer:
         data = await self.http.get_premier_player(puuid)
-        return PremierPleyer(client=self, data=data)
+        return PremierPleyer(self, data)
 
     @_authorize_required
-    async def fetch_premier_eligibility(self) -> PremierEligibility:
+    async def fetch_premier_eligibility(self) -> Eligibility:
         data = await self.http.get_premier_eligibility()
-        return PremierEligibility(data=data)
+        return Eligibility(data)
 
     @_authorize_required
-    async def fetch_premier_conference(self) -> List[PremierConference]:
+    async def fetch_premier_conference(self) -> List[Conference]:
         data = await self.http.get_premier_conferences()
-        return [PremierConference(data=conference) for conference in data['PremierConferences']]
+        return [Conference(conference) for conference in data['PremierConferences']]
+
+    @_authorize_required
+    async def fetch_premier_roster(self, roster_id: Optional[str] = None) -> Roster:
+        if roster_id is None:
+            roster_id = (await self.fetch_premier_player()).roster_id
+        data = await self.http.get_premier_roster_v2(roster_id)
+        return Roster(self, data)
