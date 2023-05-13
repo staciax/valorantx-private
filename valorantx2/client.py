@@ -460,7 +460,7 @@ class Client:
         end: int = 15,
         with_details: bool = True,
     ) -> ...:  # Optional[MatchHistory]
-        data = await self.http.get_match_history(self.me.puuid, 0, 15, 'competitive')
+        data = await self.http.get_match_history(self.me.puuid, 0, 15, 'deathmatch')
         import json
 
         with open('match_history.json', 'w') as f:

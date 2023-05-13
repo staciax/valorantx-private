@@ -645,10 +645,12 @@ class RoundResult:
         self.spike: Spike = Spike(match, data)
         self.round_result_code: str = data['roundResultCode']
         self.player_stats: List[RoundPlayerStat] = [RoundPlayerStat(match, player) for player in data['playerStats']]
-        self.player_economies: List[RoundPlayerEconomy] = [
-            RoundPlayerEconomy(match, player) for player in data['playerEconomies']
-        ]
-        self.player_scores: List[RoundPlayerScore] = [RoundPlayerScore(match, player) for player in data['playerScores']]
+        self.player_economies: List[RoundPlayerEconomy] = []
+        if data['playerEconomies'] is not None:
+            self.player_economies = [RoundPlayerEconomy(match, player) for player in data['playerEconomies']]
+        self.player_scores: List[RoundPlayerScore] = []
+        if data['playerScores'] is not None:
+            self.player_scores = [RoundPlayerScore(match, player) for player in data['playerScores']]
         for team in self._match.teams:
             if team.id == data['winningTeam']:
                 self.winning_team = team

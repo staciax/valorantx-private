@@ -268,8 +268,8 @@ class RoundResult(TypedDict):
     defuseLocation: Location
     playerStats: List[RoundPlayerStats]
     roundResultCode: str  # TODO: Literal
-    playerEconomies: List[RoundPlayerEconomy]
-    playerScores: List[RoundPlayerScore]
+    playerEconomies: Optional[List[RoundPlayerEconomy]]  # optional for deathmatch
+    playerScores: Optional[List[RoundPlayerScore]]  # optional for deathmatch
 
 
 Kill = TypedDict(
