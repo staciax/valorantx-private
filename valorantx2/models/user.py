@@ -25,7 +25,7 @@ class ClientUser(_BaseUser):
     _region: Optional[str]
 
     def __init__(self, *, data: PartialUserPayload) -> None:
-        self._puuid: str = data['puuid']
+        self._puuid: str = data.get('puuid') or data.get('subject', '-')
         self._update(data)
 
     def __str__(self) -> str:
@@ -44,8 +44,8 @@ class ClientUser(_BaseUser):
         return hash(self.puuid)
 
     def _update(self, data: PartialUserPayload) -> None:
-        self._game_name = data.get('game_name')
-        self._tagline = data.get('tag_line')
+        self._game_name = data.get('game_name') or data.get('gameName')
+        self._tag_line = data.get('tag_line') or data.get('tagLine')
         self._region = data.get('region')
 
     @property
@@ -56,9 +56,17 @@ class ClientUser(_BaseUser):
     def game_name(self) -> str:
         return self._game_name or ''
 
+    @game_name.setter
+    def game_name(self, value: str) -> None:
+        self._game_name = value
+
     @property
     def tag_line(self) -> str:
-        return self._tagline or ''
+        return self._tag_line or ''
+
+    @tag_line.setter
+    def tag_line(self, value: str) -> None:
+        self._tag_line = value
 
     @property
     def region(self) -> str:

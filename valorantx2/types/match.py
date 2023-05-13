@@ -145,7 +145,7 @@ class Player(TypedDict):
     gameName: str
     tagLine: str
     platformInfo: PlatformInfo
-    teamId: Literal['Blue', 'Red']
+    teamId: str  # Literal['Blue', 'Red']
     partyId: str
     characterId: str
     stats: PlayerStats

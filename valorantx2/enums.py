@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import Any, Final, List, Optional, Tuple, Type, TypeVar
 
 from valorantx2.valorant_api.enums import (
+    AbilityType as AbilityType,
     Enum as Enum,
     ItemType as ItemType,
     Locale as Locale,

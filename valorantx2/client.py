@@ -13,6 +13,7 @@ from .errors import AuthRequired
 from .http import HTTPClient
 from .models.contracts import Contracts
 from .models.loadout import Loadout
+from .models.match import MatchDetails
 from .models.patchnotes import PatchNotes
 from .models.premiers import Conference, Eligibility, PremierPleyer, PremierSeason, Roster
 from .models.store import Entitlements, Offers, StoreFront, Wallet
@@ -470,7 +471,7 @@ class Client:
         # return history
 
     @_authorize_required
-    async def fetch_match_details(self, match_id: str) -> ...:  # Optional[MatchDetails]
+    async def fetch_match_details(self, match_id: str) -> MatchDetails:
         """|coro|
 
         Fetches the match details for a given match.
@@ -485,12 +486,8 @@ class Client:
         Optional[:class:`MatchDetails`]
             The match details for a given match.
         """
-        match_details = await self.http.get_match_details(match_id)
-        import json
-
-        with open('match_details.json', 'w') as f:
-            json.dump(match_details, f, indent=4, ensure_ascii=False)
-        # return MatchDetails(client=self, data=match_details)
+        data = await self.http.get_match_details(match_id)
+        return MatchDetails(client=self, data=data)
 
     # # party endpoint
 
