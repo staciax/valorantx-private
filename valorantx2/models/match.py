@@ -224,7 +224,7 @@ class SpikePlant:
     def __init__(self, match: MatchDetails, data: RoundResultPayload) -> None:
         self.match: MatchDetails = match
         self._planter_id: Optional[str] = data.get('bombPlanter', None)
-        self.site: str = data.get('plantSite', '')
+        self.site: str = data['plantSite']
         self.round_time: int = data.get('plantRoundTime', 0)
         self.location: Optional[Location] = None
         # self.player_locations: List[MatchPlayerLocation] = []
