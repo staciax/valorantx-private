@@ -44,9 +44,7 @@ from .types import premiers
 MISSING = utils.MISSING
 
 if TYPE_CHECKING:
-    from .types import contracts, loadout, store, user
-
-    # from .types import collection, competitive, contract, match, party, player, store, version, weapons, xp
+    from .types import contracts, favorite, loadout, name_service, party, store, user
 
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
@@ -107,7 +105,7 @@ class HTTPClient:
         self._session: aiohttp.ClientSession = MISSING
         self._headers: Dict[str, Any] = {}
         self._client_platform = 'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9'  # noqa: E501
-        self._riot_auth: RiotAuth = RiotAuth()
+        self.riot_auth: RiotAuth = RiotAuth()
         self._puuid: Optional[str] = None
         self.region: Region = region
         self.riot_client_version: Optional[str] = None
@@ -148,7 +146,7 @@ class HTTPClient:
                     if response.status == 400:
                         if tries < 4:
                             try:
-                                await self._riot_auth.reauthorize()
+                                await self.riot_auth.reauthorize()
                             except RiotAuthenticationError:
                                 ...
                             else:
@@ -204,29 +202,29 @@ class HTTPClient:
         if self._session is MISSING:
             self._session = aiohttp.ClientSession()
 
-        await self._riot_auth.authorize(username.strip(), password.strip(), remember=remember)
+        await self.riot_auth.authorize(username.strip(), password.strip(), remember=remember)
         try:
-            await self._riot_auth.fetch_userinfo()  # fetch user info
+            await self.riot_auth.fetch_userinfo()  # fetch user info
         except TypeError:
             _log.warning('Could not find user info for Riot Auth')
 
         if self.region is MISSING:
             try:
-                region = await self._riot_auth.fetch_region()  # fetch region
+                region = await self.riot_auth.fetch_region()  # fetch region
             except KeyError:
                 self.region = Region.AP  # default to AP
                 _log.warning('Could not find region for Riot Auth, defaulting to AP')
             else:
                 self.region = try_enum(Region, region)
 
-        self._puuid = self._riot_auth.puuid
+        self._puuid = self.riot_auth.puuid
         await self.__build_headers()
 
         data = dict(
-            puuid=self._riot_auth.puuid,
-            game_name=self._riot_auth.game_name,
-            tag_line=self._riot_auth.tag_line,
-            region=self._riot_auth.region,
+            puuid=self.riot_auth.puuid,
+            game_name=self.riot_auth.game_name,
+            tag_line=self.riot_auth.tag_line,
+            region=self.riot_auth.region,
         )
         return data  # type: ignore
 
@@ -234,27 +232,27 @@ class HTTPClient:
         if self._session is MISSING:
             self._session = aiohttp.ClientSession()
 
-        self._riot_auth.from_data(data)
-        self._puuid = self._riot_auth.puuid
-        self.region = try_enum(Region, self._riot_auth.region)
+        self.riot_auth.from_data(data)
+        self._puuid = self.riot_auth.puuid
+        self.region = try_enum(Region, self.riot_auth.region)
         await self.__build_headers()
         data = dict(
-            puuid=self._riot_auth.puuid,
-            game_name=self._riot_auth.game_name,
-            tag_line=self._riot_auth.tag_line,
-            region=self._riot_auth.region,
+            puuid=self.riot_auth.puuid,
+            game_name=self.riot_auth.game_name,
+            tag_line=self.riot_auth.tag_line,
+            region=self.riot_auth.region,
         )
         return data  # type: ignore
 
     async def token_login(self, data: Dict[str, Any]) -> RiotAuth:
         """Riot Auth login."""
 
-        self._riot_auth.from_data(data)
-        self._puuid = self._riot_auth.puuid
+        self.riot_auth.from_data(data)
+        self._puuid = self.riot_auth.puuid
         await self.__build_headers()
         if self._session is MISSING:
             self._session = aiohttp.ClientSession()
-        return self._riot_auth
+        return self.riot_auth
 
     async def read_from_url(self, url: str) -> bytes:
         async with self._session.get(url) as resp:
@@ -471,7 +469,9 @@ class HTTPClient:
         """
         return self.request(Route('GET', '/v1/config/{region}', self.region, EndpointType.shard))
 
-    def get_name_service_playyers(self, puuid: Optional[Union[List[str], str]] = None) -> Response[List[player.NameService]]:
+    def get_name_service_playyers(
+        self, puuid: Optional[Union[List[str], str]] = None
+    ) -> Response[List[name_service.Player]]:
         """
         Name_service
         get player name tag by puuid
@@ -479,7 +479,7 @@ class HTTPClient:
         format ['PUUID']
         """
         if puuid is None:
-            puuid = []
+            puuid = [self.riot_auth.puuid]
 
         if isinstance(puuid, str):
             puuid = [puuid]
@@ -610,7 +610,7 @@ class HTTPClient:
 
     # party endpoints
 
-    def get_party_player(self) -> Response[party.PartyPlayer]:
+    def get_party_player(self) -> Response[party.Player]:
         """
         Party_FetchPlayer
         Get the Party ID that a given player belongs to
@@ -909,7 +909,7 @@ class HTTPClient:
 
     # favorite endpoints
 
-    def get_favorites(self) -> Response[weapons.Favorites]:
+    def get_favorites(self) -> Response[favorite.Favorites]:
         """
         FetchFavorite
         Get the favorite list of the authenticated user
@@ -917,7 +917,7 @@ class HTTPClient:
         r = Route('GET', '/favorites/v1/players/{puuid}/favorites', self.region, EndpointType.pd, puuid=self.puuid)
         return self.request(r)
 
-    def post_favorites(self, item_id: str) -> Response[weapons.Favorites]:
+    def post_favorites(self, item_id: str) -> Response[favorite.Favorites]:
         """
         PostFavorite
         Add a player to the favorite list of the authenticated user
@@ -926,7 +926,7 @@ class HTTPClient:
         payload = {'ItemID': item_id}
         return self.request(r, json=payload)
 
-    def delete_favorites(self, item_id: str) -> Response[weapons.Favorites]:
+    def delete_favorites(self, item_id: str) -> Response[favorite.Favorites]:
         """
         DeleteFavorite
         Remove a player from the favorite list of the authenticated user
@@ -1268,8 +1268,8 @@ class HTTPClient:
         # if self.riot_client_version is None:
         # self.riot_client_version = await self._get_current_version()
 
-        self._headers['Authorization'] = 'Bearer %s' % self._riot_auth.access_token
-        self._headers['X-Riot-Entitlements-JWT'] = self._riot_auth.entitlements_token
+        self._headers['Authorization'] = 'Bearer %s' % self.riot_auth.access_token
+        self._headers['X-Riot-Entitlements-JWT'] = self.riot_auth.entitlements_token
         self._headers['X-Riot-ClientPlatform'] = self._client_platform
         self._headers['X-Riot-ClientVersion'] = self.riot_client_version
 
