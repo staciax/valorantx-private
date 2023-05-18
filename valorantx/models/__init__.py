@@ -1,36 +1,26 @@
-"""
-valorant.models
-~~~~~~~~~~~~~~
-Typings for the Valorant API
-:copyright: (c) 2022-present xStacia
-:license: MIT, see LICENSE for more details.
-"""
-
-from .agent import *
-from .buddy import *
-from .bundle import *
-from .ceremony import *
-from .collection import *
-from .competitive import *
-from .content import *
-from .contract import *
-from .currency import *
-from .event import *
-from .gamemode import *
+from .abc import *
+from .agents import *
+from .buddies import *
+from .bundles import *
+from .ceremonies import *
+from .competitive_tiers import *
+from .content_tiers import *
+from .contracts import *
+from .currencies import *
+from .events import *
+from .gamemodes import *
 from .gear import *
-from .level_border import *
-from .map import *
-from .match import *
-from .mission import *
-from .party import *
-from .patchnote import *
-from .player import *
-from .player_card import *
-from .player_title import *
-from .season import *
-from .spray import *
+from .level_borders import *
+from .maps import *
+from .missions import *
+from .patchnotes import *
+from .player_cards import *
+from .player_titles import *
+from .premiers import *
+from .seasons import *
+from .sprays import *
 from .store import *
-from .theme import *
+from .themes import *
+from .user import *
 from .version import *
 from .weapons import *
-from .xp import *

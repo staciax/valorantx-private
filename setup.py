@@ -22,12 +22,12 @@ extras_require = {
 }
 
 packages = [
-    'valorantx2',
-    'valorantx2.models',
-    'valorantx2.types',
-    'valorantx2.valorant_api',
-    'valorantx2.valorant_api.models',
-    'valorantx2.valorant_api.types',
+    'valorantx',
+    'valorantx.models',
+    'valorantx.types',
+    'valorantx.valorant_api',
+    'valorantx.valorant_api.models',
+    'valorantx.valorant_api.types',
 ]
 
 setup(

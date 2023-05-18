@@ -10,8 +10,8 @@ import pytest
 import pytest_asyncio
 from dotenv import load_dotenv
 
-import valorantx2 as valorantx
-from valorantx2.valorant_api import Client as ValorantAPIClient
+import valorantx as valorantx
+from valorantx.valorant_api import Client as ValorantAPIClient
 
 try:
     import uvloop

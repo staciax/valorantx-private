@@ -1,36 +1,12 @@
-"""
-The MIT License (MIT)
-
-Copyright (c) 2022-present xStacia
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
-"""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, TypedDict
-
-from .player import Player
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, TypedDict
 
 if TYPE_CHECKING:
     from typing_extensions import NotRequired
 
 
-class MatchHistoryList(TypedDict):
+class History(TypedDict):
     MatchID: str
     GameStartTime: int
     QueueID: int
@@ -41,7 +17,7 @@ class MatchHistory(TypedDict):
     BeginIndex: int
     EndIndex: int
     Total: int
-    History: List[MatchHistoryList]
+    History: List[History]
 
 
 class MatchInfo(TypedDict):
@@ -53,7 +29,7 @@ class MatchInfo(TypedDict):
     gameVersion: str
     gameLengthMillis: int
     gameStartMillis: int
-    provisioningFlowID: str
+    provisioningFlowID: str  # TODO: literal
     isCompleted: bool
     customGameName: str
     forcePostProcessing: bool
@@ -64,21 +40,16 @@ class MatchInfo(TypedDict):
     seasonId: str
     completionState: str
     platformType: str
-    partyRRPenalties: Dict[str, float]
+    premierMatchInfo: Any  # TODO: add patch 06.08, implement
+    partyRRPenalties: Dict[str, float]  # NOTE: int or float?
     shouldMatchDisablePenalties: bool
 
 
-class PlayerPlatformInfo(TypedDict):
-    platformType: str
-    platformOS: str
+class PlatformInfo(TypedDict):
+    platformType: str  # Literal['PC'] # NOTE: add other platforms ?
+    platformOS: str  # Literal['Windows'] # NOTE: add other platforms ?
     platformOSVersion: str
     platformChipset: str
-
-
-class RoundDamage(TypedDict):
-    round: int
-    receiver: str
-    damage: int
 
 
 class AbilityCasts(TypedDict):
@@ -88,13 +59,7 @@ class AbilityCasts(TypedDict):
     ultimateCasts: int
 
 
-class AbilityEffect(TypedDict):
-    ability1Effect: Optional[Any]
-    ability2Effect: Optional[Any]
-    ultimateEffect: Optional[Any]
-
-
-class MatchPlayerStats(TypedDict):
+class PlayerStats(TypedDict):
     score: int
     roundsPlayed: int
     kills: int
@@ -104,39 +69,59 @@ class MatchPlayerStats(TypedDict):
     abilityCasts: AbilityCasts
 
 
+# fmt: off
+RoundDamage = TypedDict(
+    'RoundDamage', {
+        'round': int,
+        'receiver': str,
+        'damage': int}
+)
+# fmt: on
+
+
+class BehaviorFactors(TypedDict):
+    afkRounds: int
+    collisions: float
+    damageParticipationOutgoing: int
+    friendlyFireIncoming: int
+    friendlyFireOutgoing: int
+    mouseMovement: int
+    stayedInSpawnRounds: int
+
+
 class XPModification(TypedDict):
     Value: float
     ID: str
 
 
-class BasicNewPlayer(TypedDict):
+class NewPlayerExperience(TypedDict):
     idleTimeMillis: int
     objectiveCompleteTimeMillis: int
 
 
-class BasicMovement(BasicNewPlayer):
+class BasicMovement(NewPlayerExperience):
     pass
 
 
-class BasicGunSkill(BasicNewPlayer):
+class BasicGunSkill(NewPlayerExperience):
     pass
 
 
-class AdaptiveBots(BasicNewPlayer):
+class AdaptiveBots(NewPlayerExperience):
     adaptiveBotAverageDurationMillisAllAttempts: int
     adaptiveBotAverageDurationMillisFirstAttempt: int
     killDetailsFirstAttempt: Optional[Any]
 
 
-class Ability(BasicNewPlayer):
+class Ability(NewPlayerExperience):
     pass
 
 
-class BombPlant(BasicNewPlayer):
+class BombPlant(NewPlayerExperience):
     pass
 
 
-class DefendBombSite(BasicNewPlayer):
+class DefendBombSite(NewPlayerExperience):
     success: bool
 
 
@@ -155,18 +140,35 @@ class NewPlayerExperienceDetails:
     settingStatus: SettingStatus
 
 
-class BehaviorFactors(TypedDict):
-    afkRounds: int
-    collisions: float
-    damageParticipationOutgoing: int
-    friendlyFireIncoming: int
-    friendlyFireOutgoing: int
-    mouseMovement: int
-    stayedInSpawnRounds: int
+class Player(TypedDict):
+    subject: str
+    gameName: str
+    tagLine: str
+    platformInfo: PlatformInfo
+    teamId: str  # Literal['Blue', 'Red']
+    partyId: str
+    characterId: str
+    stats: PlayerStats
+    roundDamage: List[RoundDamage]
+    competitiveTier: int
+    isObserver: bool
+    playerCard: str
+    playerTitle: str
+    preferredLevelBorder: str
+    accountLevel: int
+    sessionPlaytimeMinutes: int
+    xpModifications: NotRequired[List[XPModification]]
+    behaviorFactors: BehaviorFactors
+    newPlayerExperienceDetails: NewPlayerExperienceDetails
+
+
+class Coach(TypedDict):
+    subject: str
+    teamId: str
 
 
 class Team(TypedDict):
-    teamId: str
+    teamId: Literal['Red', 'Blue']
     won: bool
     roundsPlayed: int
     roundsWon: int
@@ -190,36 +192,7 @@ class FinishingDamage(TypedDict):
     isSecondaryFireMode: bool
 
 
-class MatchKill(TypedDict):
-    gameTime: int
-    roundTime: int
-    round: int
-    killer: str
-    victim: str
-    victimLocation: Location
-    assistants: List[str]
-    playerLocations: List[PlayerLocation]
-    finishingDamage: FinishingDamage
-
-
-class Economy(TypedDict):
-    loadoutValue: int
-    weapon: str
-    armor: str
-    remaining: int
-    spent: int
-
-
-class PlayerEconomy(Economy):
-    subject: str
-
-
-class PlayerScore(TypedDict):
-    subject: str
-    score: int
-
-
-class PlayerStatKill(TypedDict):
+class RoundPlayerStatKill(TypedDict):
     gameTime: int
     roundTime: int
     killer: str
@@ -230,7 +203,7 @@ class PlayerStatKill(TypedDict):
     finishingDamage: FinishingDamage
 
 
-class PlayerDamage(TypedDict):
+class RoundPlayerDamage(TypedDict):
     receiver: str
     damage: int
     legshots: int
@@ -238,69 +211,88 @@ class PlayerDamage(TypedDict):
     headshots: int
 
 
-class MatchRoundPlayerStats(TypedDict):
+class Economy(TypedDict):
+    loadoutValue: int
+    weapon: str
+    armor: str
+    remaining: int
+    spent: int
+
+
+class RoundPlayerAbility(TypedDict):
+    grenadeEffects: Optional[Any]
+    ability1Effects: Optional[Any]
+    ability2Effects: Optional[Any]
+    ultimateEffects: Optional[Any]
+
+
+class RoundPlayerStats(TypedDict):
     subject: str
-    kills: List[PlayerStatKill]
-    damage: List[PlayerDamage]
+    kills: List[RoundPlayerStatKill]
+    damage: List[RoundPlayerDamage]
     score: int
     economy: Economy
-    ability: Dict[Any, Any]
+    ability: RoundPlayerAbility
     wasAfk: bool
     wasPenalized: bool
     stayedInSpawn: bool
 
 
-class MatchRoundResult(TypedDict, total=False):
+class RoundPlayerEconomy(Economy):
+    subject: str
+    loadoutValue: int
+    weapon: str
+    armor: str
+    remaining: int
+    spent: int
+
+
+class RoundPlayerScore(TypedDict):
+    subject: str
+    score: int
+
+
+class RoundResult(TypedDict):
     roundNum: int
-    roundResult: str
+    roundResult: str  # TODO: Literal
     roundCeremony: str
-    winningTeam: str
+    winningTeam: Literal['Red', 'Blue']
     bombPlanter: NotRequired[str]
     bombDefuser: NotRequired[str]
     plantRoundTime: int
     plantPlayerLocations: Optional[List[PlayerLocation]]
     plantLocation: Location
-    plantSite: str
+    plantSite: Literal['A', 'B', 'C']
     defuseRoundTime: int
     defusePlayerLocations: Optional[List[PlayerLocation]]
     defuseLocation: Location
-    playerStats: List[MatchRoundPlayerStats]
-    roundResultCode: str
-    playerEconomies: List[PlayerEconomy]
-    playerScores: List[PlayerScore]
+    playerStats: List[RoundPlayerStats]
+    roundResultCode: str  # TODO: Literal
+    playerEconomies: Optional[List[RoundPlayerEconomy]]  # optional for deathmatch
+    playerScores: Optional[List[RoundPlayerScore]]  # optional for deathmatch
 
 
-class Coach(TypedDict):
-    subject: str
-    teamId: str
+Kill = TypedDict(
+    'MatchKill',
+    {
+        'gameTime': int,
+        'roundTime': int,
+        'round': int,
+        'killer': str,
+        'victim': str,
+        'victimLocation': Location,
+        'assistants': List[str],
+        'playerLocations': List[PlayerLocation],
+        'finishingDamage': FinishingDamage,
+    },
+)
 
 
 class MatchDetails(TypedDict):
     matchInfo: MatchInfo
-    players: List[PlayerMatch]
-    bots: List[Dict[str, Any]]  # TODO: i dont know what this is
+    players: List[Player]
+    bots: List[Any]  # NOTE: unknown type
     coaches: List[Coach]
     teams: List[Team]
-    roundResults: List[MatchRoundResult]
-    kills: List[MatchKill]
-
-
-class PlayerMatch(Player):
-    subject: str
-    gameName: str
-    tagLine: str
-    platformInfo: PlayerPlatformInfo
-    teamId: str
-    partyId: str
-    characterId: str
-    stats: MatchPlayerStats
-    roundDamage: List[RoundDamage]
-    competitiveTier: int
-    playerCard: str
-    playerTitle: str
-    preferredLevelBorder: str
-    accountLevel: int
-    sessionPlaytimeMinutes: int
-    xpModifications: List[XPModification]
-    behaviorFactors: BehaviorFactors
-    newPlayerExperienceDetails: NewPlayerExperienceDetails
+    roundResults: List[RoundResult]
+    kills: List[Kill]

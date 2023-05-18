@@ -1,6 +1,6 @@
 import pytest
 
-from valorantx2.utils import MISSING
+from valorantx.utils import MISSING
 
 from .conftest import BaseTest
 

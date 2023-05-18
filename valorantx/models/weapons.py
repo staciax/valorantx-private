@@ -1,919 +1,180 @@
-"""
-The MIT License (MIT)
-
-Copyright (c) 2022-present xStacia
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
-"""
-
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Union, overload
+from typing import TYPE_CHECKING, List, Optional
 
-from .. import utils
-from ..asset import Asset
-from ..enums import MELEE_WEAPON_ID, CurrencyType, ItemType, Locale
-from ..localization import Localization
-from .base import BaseModel, FeaturedBundleItem
+from valorantx.valorant_api.models.weapons import (
+    AdsStats as AdsStats,
+    AirBurstStats as AirBurstStats,
+    AltShotgunStats as AltShotgunStats,
+    DamageRange as DamageRange,
+    Skin as SkinValorantAPI,
+    SkinChroma as SkinChromaValorantAPI,
+    SkinLevel as SkinLevelValorantAPI,
+    Weapon as WeaponValorantAPI,
+    WeaponStats as WeaponStats,
+)
+
+from .abc import BonusItemOffer, BundleItemOffer, Item, ItemOffer
 
 if TYPE_CHECKING:
-    import datetime
-
     from typing_extensions import Self
 
-    from ..client import Client
-    from ..types.collection import SkinLoadout as SkinLoadoutPayload
-    from ..types.store import BonusStoreOffer as BonusStoreOfferPayload, FeaturedBundleItem as FeaturedBundleItemPayload
-    from .buddy import Buddy, BuddyLevel
-    from .content import ContentTier
-    from .theme import Theme
+    from valorantx.valorant_api.types.weapons import (
+        Skin as ValorantAPISkinPayload,
+        SkinChroma as ValorantAPISkinChromaPayload,
+        SkinLevel as ValorantAPISkinLevelPayload,
+        Weapon as ValorantAPIWeaponPayload,
+    )
+
+    from ..types.store import (
+        BonusStoreOffer as BonusStoreOfferPayload,
+        BundleItemOffer as BundleItemOfferPayload,
+        Offer as OfferPayload,
+    )
+    from ..valorant_api_cache import CacheState
 
 __all__ = (
+    'AdsStats',
+    'AirBurstStats',
+    'AltShotgunStats',
+    'DamageRange',
     'Skin',
-    'SkinBundle',
     'SkinChroma',
-    'SkinChromaLoadout',
     'SkinLevel',
-    'SkinLevelLoadout',
-    'SkinLoadout',
-    'SkinNightMarket',
+    'SkinLevelBonus',
+    'SkinLevelBundle',
+    'SkinLevelNightmarket',
+    'SkinLevelOffer',
     'Weapon',
 )
 
-# TODO: rework this file
-# TODO: patch 6.x support variants favorites colors of skins
 
-# --- sup models ---
+class Weapon(WeaponValorantAPI, Item):
+    def __init__(self, *, state: CacheState, data: ValorantAPIWeaponPayload) -> None:
+        super().__init__(state=state, data=data)
+        self.skins: List[Skin] = [Skin(state=state, data=skin, parent=self) for skin in data['skins']]
+        Item.__init__(self)
 
 
-class GridPosition:
-    def __init__(self, data: Dict[str, Union[int, float]]) -> None:
-        self.row: float = data['row']
-        self.column: float = data['column']
-
-    def __repr__(self) -> str:
-        return f"<GridPosition row={self.row} column={self.column}>"
-
-    def __eq__(self, other: object) -> bool:
-        return isinstance(other, GridPosition) and self.row == other.row and self.column == other.column
-
-    def __ne__(self, other: object) -> bool:
-        return not self.__eq__(other)
-
-
-class AdsStats:
-    def __init__(self, data: Dict[str, Union[int, float]]) -> None:
-        self.zoom_multiplier: float = data['zoomMultiplier']
-        self.fire_rate: float = data['fireRate']
-        self.run_speed_multiplier: float = data['runSpeedMultiplier']
-        self.burst_count: float = data['burstCount']
-        self.first_bullet_accuracy: float = data['firstBulletAccuracy']
-
-    def __repr__(self) -> str:
-        attrs = [
-            ('zoom_multiplier', self.zoom_multiplier),
-            ('fire_rate', self.fire_rate),
-            ('run_speed_multiplier', self.run_speed_multiplier),
-            ('burst_count', self.burst_count),
-            ('first_bullet_accuracy', self.first_bullet_accuracy),
-        ]
-        joined = ' '.join('%s=%r' % t for t in attrs)
-        return f'<{self.__class__.__name__} {joined}>'
-
-
-class AltShotgunStats:
-    def __init__(self, data: Dict[str, Union[int, float]]) -> None:
-        self.shotgun_pellet_count: float = data['shotgunPelletCount']
-        self.burst_rate: float = data['burstRate']
-
-    def __repr__(self) -> str:
-        return f"<AltShotgunStats shotgun_pellet_count={self.shotgun_pellet_count} burst_rate={self.burst_rate}>"
-
-
-class AirBurstStats:
-    def __init__(self, data: Dict[str, Union[int, float]]) -> None:
-        self.shotgun_pellet_count: float = data['shotgunPelletCount']
-        self.burst_distance: float = data['burstDistance']
-
-    def __repr__(self) -> str:
-        return f"<AirBurstStats shotgun_pellet_count={self.shotgun_pellet_count} burst_distance={self.burst_distance}>"
-
-
-class DamageRange:
-    def __init__(self, data: Dict[str, Any]) -> None:
-        self.range_start_meters: int = data['rangeStartMeters']
-        self.range_end_meters: float = data['rangeEndMeters']
-        self.head_damage: float = data['headDamage']
-        self.body_damage: int = data['bodyDamage']
-        self.leg_damage: float = data['legDamage']
-
-    def __repr__(self) -> str:
-        attrs = [
-            ('range_start_meters', self.range_start_meters),
-            ('range_end_meters', self.range_end_meters),
-            ('head_damage', self.head_damage),
-            ('body_damage', self.body_damage),
-            ('leg_damage', self.leg_damage),
-        ]
-        joined = ' '.join('%s=%r' % t for t in attrs)
-        return f'<{self.__class__.__name__} {joined}>'
-
-
-class WeaponStats:
-    def __init__(self, data: Dict[str, Any]) -> None:
-        self.fire_rate: int = data.get('fireRate', 0)
-        self.magazine_size: int = data.get('magazineSize', 0)
-        self.run_speed_multiplier: float = data.get('runSpeedMultiplier', 0)
-        self.equip_time_seconds: float = data.get('equipTimeSeconds', 0)
-        self.reload_time_seconds: int = data.get('reloadTimeSeconds', 0)
-        self.first_bullet_accuracy: float = data.get('firstBulletAccuracy', 0)
-        self.shotgun_pellet_count: int = data.get('shotgunPelletCount', 0)
-        self._wall_penetration: Optional[str] = data.get('wallPenetration')
-        self._feature: Optional[str] = data.get('feature')
-        self._fire_mode: Optional[str] = data.get('fireMode')
-        self._alt_fire_type: Optional[str] = data.get('altFireType')
-        self.ads_stats: Optional[AdsStats] = AdsStats(data['adsStats']) if data.get('adsStats') else None
-        self.alt_shotgun_stats: AltShotgunStats = AltShotgunStats(data['altShotgunStats'])
-        self.air_burst_stats: AirBurstStats = AirBurstStats(data['airBurstStats'])
-        self.damage_ranges: List[DamageRange] = [DamageRange(x) for x in data['damageRanges']]
-
-    def __repr__(self) -> str:
-        attrs = [
-            ('fire_rate', self.fire_rate),
-            ('magazine_size', self.magazine_size),
-            ('run_speed_multiplier', self.run_speed_multiplier),
-            ('equip_time_seconds', self.equip_time_seconds),
-            ('reload_time_seconds', self.reload_time_seconds),
-            ('first_bullet_accuracy', self.first_bullet_accuracy),
-            ('shotgun_pellet_count', self.shotgun_pellet_count),
-            ('wall_penetration', self.wall_penetration),
-            ('feature', self.feature),
-            ('fire_mode', self.fire_mode),
-            ('alt_fire_type', self.alt_fire_type),
-            ('ads_stats', self.ads_stats),
-            ('alt_shotgun_stats', self.alt_shotgun_stats),
-            ('air_burst_stats', self.air_burst_stats),
-            ('damage_ranges', self.damage_ranges),
-        ]
-        joined = ' '.join('%s=%r' % t for t in attrs)
-        return f'<{self.__class__.__name__} {joined}>'
-
-    @property
-    def fire_mode(self) -> Optional[str]:
-        if self._fire_mode is not None:
-            return utils.removeprefix(self._fire_mode, 'EWeaponFireModeDisplayType::')
-        return None
-
-    @property
-    def wall_penetration(self) -> Optional[str]:
-        if self._wall_penetration is not None:
-            return utils.removeprefix(self._wall_penetration, 'EWallPenetrationDisplayType::')
-        return None
-
-    @property
-    def feature(self) -> Optional[str]:
-        if self._feature is not None:
-            return utils.removeprefix(self._feature, 'WeaponStatsFeature::')
-        return None
-
-    @property
-    def alt_fire_type(self) -> Optional[str]:
-        if self._alt_fire_type is not None:
-            return utils.removeprefix(self._alt_fire_type, 'EWeaponAltFireDisplayType::')
-        return None
-
-
-class ShopData:
-    def __init__(self, weapon: Weapon, data: Dict[str, Any]) -> None:
-        self._weapon: Weapon = weapon
-        self._client: Client = weapon._client
-        self.cost: int = data['cost']
-        self.category: Optional[str] = data['category']
-        self._category_text: Dict[str, str] = data['categoryText']
-        self._grid_position = data.get('gridPosition')
-        self._can_be_trashed: bool = data['canBeTrashed']
-        self._image: Optional[str] = data['image']
-        self._new_image: Optional[str] = data['newImage']
-        self._new_image_2: Optional[str] = data['newImage2']
-        self.asset_path: str = data['assetPath']
-        self._category_text_localized: Localization = Localization(self._category_text, locale=self._client.locale)
-        if self._client is not None:
-            self._weapon.cost = self.cost
-
-    def __repr__(self) -> str:
-        return f"<ShopData category_text={self.category_text} cost={self.cost}>"
-
-    def __int__(self) -> int:
-        return self.cost
-
-    def __eq__(self, other: object) -> bool:
-        return isinstance(other, ShopData) and self._weapon == other._weapon and self.cost == other.cost
-
-    def __ne__(self, other: object) -> bool:
-        return not self.__eq__(other)
-
-    @property
-    def grid_position(self) -> Optional[GridPosition]:
-        return GridPosition(self._grid_position) if self._grid_position else None
-
-    def category_text_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
-        return self._category_text_localized.from_locale(locale)
-
-    @property
-    def category_text(self) -> Localization:
-        """:class: `str` Returns the weapon's shop category text."""
-        return self._category_text_localized
-
-    def can_be_trashed(self) -> bool:
-        """:class: `bool` Returns whether the weapon can be trashed."""
-        return self._can_be_trashed
-
-    @property
-    def image(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the weapon's image."""
-        return Asset._from_url(client=self._client, url=self._image) if self._image else None
-
-    @property
-    def new_image(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the weapon's new image."""
-        return Asset._from_url(client=self._client, url=self._new_image) if self._new_image else None
-
-    @property
-    def new_image_2(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the weapon's new image 2."""
-        return Asset._from_url(client=self._client, url=self._new_image_2) if self._new_image_2 else None
-
-
-# --- end sub modules ---
-
-
-class Weapon(BaseModel):
-    def __init__(self, *, client: Client, data: Mapping[str, Any]) -> None:
-        super().__init__(client=client, data=data)
-        self._uuid: str = data['uuid']
-        self._display_name: Dict[str, str] = data['displayName']
-        self._category: str = data['category']
-        self.default_skin_uuid: str = data['defaultSkinUuid']
-        self._display_icon: str = data['displayIcon']
-        self._kill_stream_icon: str = data['killStreamIcon']
-        self.asset_path: str = data['assetPath']
-        self._stats: Dict[str, Any] = data['weaponStats']
-        self._shop_data: Optional[Dict[str, Any]] = data.get('shopData')
-        self._cost: int = 0
-        self._skins: List[Dict[str, Any]] = data['skins']
-        self.type: ItemType = ItemType.weapon
-        self._is_melee: bool = True if self.uuid == str(MELEE_WEAPON_ID) else False
-        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
-
-    def __str__(self) -> str:
-        return self.display_name.locale
-
-    def __repr__(self) -> str:
-        return f"<Weapon display_name={self.display_name!r}>"
-
-    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
-        return self._display_name_localized.from_locale(locale)
-
-    @property
-    def display_name(self) -> Localization:
-        """:class: `str` Returns the weapon's name."""
-        return self._display_name_localized
-
-    @property
-    def category(self) -> str:
-        """:class: `str` Returns the weapon's category."""
-        #  self._category.removeprefix("EEquippableCategory::")
-        return utils.removeprefix(self._category, "EEquippableCategory::")
-
-    @property
-    def display_icon(self) -> Asset:
-        """:class: `Asset` Returns the weapon's icon."""
-        return Asset._from_url(self._client, self._display_icon)
-
-    @property
-    def kill_stream_icon(self) -> Asset:
-        """:class: `Asset` Returns the weapon's kill stream icon."""
-        return Asset._from_url(self._client, self._kill_stream_icon)
-
-    @property
-    def stats(self) -> WeaponStats:
-        """:class: `dict` Returns the weapon's stats."""
-        return WeaponStats(self._stats)
-
-    @property
-    def cost(self) -> int:
-        """:class: `int` Returns the weapon's cost."""
-        return self._cost
-
-    @cost.setter
-    def cost(self, value: int) -> None:
-        self._cost = value
-
-    @property
-    def price(self) -> int:
-        """:class: `int` Returns the weapon's price."""
-        return self.cost
-
-    @property
-    def shop_data(self) -> Optional[ShopData]:
-        """:class: `ShopData` Returns the weapon's shop data."""
-        return ShopData(self, self._shop_data) if self._shop_data else None
-
-    @property
-    def skins(self) -> List[Skin]:
-        """:class: `list` Returns the weapon's skins."""
-        return [Skin(client=self._client, data=skin) for skin in self._skins]
-
-    def is_melee(self) -> bool:
-        """:class: `bool` Returns whether the weapon is a melee weapon."""
-        return self._is_melee
-
-    def get_skins(self) -> List[Skin]:
-        """:class: `list` Returns the weapon's skins."""
-        return self.skins
-
-    @classmethod
-    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
-        """Returns the weapon with the given UUID."""
-        data = client._assets.get_weapon(uuid)
-        return cls(client=client, data=data) if data else None
-
-
-class Skin(BaseModel):
-    def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs) -> None:
-        super().__init__(client=client, data=data, **kwargs)
-        self._uuid = data['uuid']
-        self._base_weapon_uuid: Optional[str] = data.get('WeaponID')
-        self._display_name: Dict[str, str] = data['displayName']
-        self._theme_uuid: str = data['themeUuid']
-        self._content_tier_uuid: Optional[str] = data['contentTierUuid']
-        self._display_icon: str = data['displayIcon']
-        self._wallpaper: Optional[str] = data['wallpaper']
-        self.asset_path: str = data['assetPath']
-        self._chromas: List[Dict[str, Any]] = data['chromas']
-        self._levels: List[Dict[str, Any]] = data['levels']
-        self._price: int = 0
-        self._is_favorite: bool = False
-        self.type: ItemType = ItemType.skin
-        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
-
-    def __str__(self) -> str:
-        return self.display_name.locale
-
-    def __repr__(self) -> str:
-        return f"<Skin display_name={self.display_name!r}>"
-
-    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
-        return self._display_name_localized.from_locale(locale)
-
-    @property
-    def display_name(self) -> Localization:
-        """:class: `str` Returns the skin's name."""
-        return self._display_name_localized
-
-    @property
-    def theme(self) -> Optional[Theme]:
-        """:class: `Theme` Returns the skin's theme uuid."""
-        return self._client.get_theme(uuid=self._theme_uuid)
-
-    @property
-    def rarity(self) -> Optional[ContentTier]:
-        """:class: `ContentTier` Returns the skin's rarity."""
-        return self._client.get_content_tier(uuid=self._content_tier_uuid) if self._content_tier_uuid else None
-
-    @property
-    def display_icon(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the skin's icon."""
-        display_icon = self._display_icon or (self.levels[0].display_icon if len(self.levels) > 0 else None)
-        return Asset._from_url(self._client, str(display_icon)) if display_icon else None
-
-    @property
-    def wallpaper(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the skin's wallpaper."""
-        return Asset._from_url(client=self._client, url=self._wallpaper) if self._wallpaper else None
-
-    @property
-    def chromas(self) -> List[SkinChroma]:
-        """:class: `list` Returns the skin's chromas."""
-        return [SkinChroma(client=self._client, data=data) for data in self._chromas]
-
-    @property
-    def levels(self) -> List[SkinLevel]:
-        """:class: `list` Returns the skin's levels."""
-        return [SkinLevel(client=self._client, data=data) for data in self._levels]
-
-    def get_weapon(self) -> Optional[Weapon]:
-        """:class: `Weapon` Returns the skin's base weapon."""
-        return self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
-
-    @property
-    def price(self) -> int:
-        """:class: `int` Returns the skin's price."""
-        if self._price == 0:
-            if len(self.levels) > 0:
-                self.price = self.levels[0]._price
-        return self.price
-
-    @price.setter
-    def price(self, value: int) -> None:
-        self._price = value
-
-    def is_melee(self) -> bool:
-        """:class: `bool` Returns whether the bundle is a melee."""
-        weapon = self.get_weapon()
-        return weapon.is_melee() if weapon else False
-
-    def get_skin_level(self, level: int) -> Optional[SkinLevel]:
-        """get the skin's level with the given level.
-
-        Parameters
-        ----------
-        level: :class: `int`
-            The level of the skin level to get.
-
-        Returns
-        -------
-        Optional[:class: `SkinLevel`]
-            The skin level with the given level.
-        """
-        return next((skin_level for skin_level in self.levels if skin_level.level_number == level), None)
-
-    def is_favorite(self) -> bool:
-        """:class: `bool` Returns whether the skin is favorited."""
-        return self._is_favorite
-
-    def to_favorite(self) -> None:
-        self._is_favorite = True
-
-    async def add_favorite(self, *, force: bool = False) -> bool:
-        """coro Adds the skin to the user's favorites."""
-
-        if self.is_favorite() and not force:
-            return False
-        to_fav = await self._client.add_favorite(self)
-        if self in to_fav._skins:
-            self._is_favorite = True
-        return self.is_favorite()
-
-    async def remove_favorite(self, *, force: bool = False) -> bool:
-        """coro Removes the skin from the user's favorites."""
-        if not self.is_favorite() and not force:
-            return False
-        remove_fav = await self._client.remove_favorite(self)
-        if self not in remove_fav._skins:
-            self._is_favorite = False
-        return self.is_favorite()
-
-    @classmethod
-    @overload
-    def _from_uuid(cls, client: Client, uuid: str, all_type: bool = True) -> Optional[Union[Self, SkinLevel, SkinChroma]]:
-        ...
-
-    @classmethod
-    @overload
-    def _from_uuid(cls, client: Client, uuid: str, all_type: bool = False) -> Union[Self, SkinLevel, SkinChroma]:
-        ...
-
-    @classmethod
-    def _from_uuid(cls, client: Client, uuid: str, all_type: bool = False) -> Optional[Union[Self, SkinLevel, SkinChroma]]:
-        """Returns the skin with the given UUID."""
-        data = client._assets.get_skin(uuid)
-        if not all_type and data is not None:
-            return cls(client=client, data=data)
-        else:
-            return client.get_skin_level(uuid) or client.get_skin_chroma(uuid)
-
-
-class SkinChroma(BaseModel):
-    def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs) -> None:
-        super().__init__(client=client, data=data, **kwargs)
-        self._uuid: str = data['uuid']
-        self._base_weapon_uuid: Optional[str] = data.get('WeaponID')
-        self._base_skin_uuid: Optional[str] = data.get('SkinID')
-        self._display_name: Dict[str, str] = data['displayName']
-        self._display_icon: str = data['displayIcon']
-        self._full_render: str = data['fullRender']
-        self._swatch: Optional[str] = data['swatch']
-        self._streamed_video: Optional[str] = data['streamedVideo']
-        self.asset_path: str = data['assetPath']
-        self._price: int = 0
-        self.type: ItemType = ItemType.skin_chroma
-        self._base_weapon: Optional[Weapon] = (
-            self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
-        )
-        self._base_skin: Optional[Skin] = (
-            self._client.get_skin(uuid=self._base_skin_uuid, level=False, chroma=False) if self._base_skin_uuid else None
-        )
-        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
-
-    def __str__(self) -> str:
-        return self.display_name.locale
-
-    def __repr__(self) -> str:
-        return f"<SkinChroma display_name={self.display_name!r}>"
-
-    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
-        """Returns the skin's display name localized to the given locale."""
-        return self._display_name_localized.from_locale(locale=locale)
-
-    @property
-    def display_name(self) -> Localization:
-        """:class: `str` Returns the skin's name."""
-        return self._display_name_localized
-
-    @property
-    def display_icon(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the skin's icon."""
-        base_skin = self.get_skin()
-        display_icon = self._display_icon or (base_skin.display_icon if base_skin else None)
-        weapon = self.get_weapon()
-        if weapon is not None:
-            if utils.removeprefix(self.display_name.locale, 'Standard ') == weapon.display_name:
-                display_icon = weapon.display_icon or display_icon
-        return Asset._from_url(client=self._client, url=str(display_icon)) if display_icon else None
-
-    @property
-    def display_icon_full_render(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the skin's icon full render."""
-        return Asset._from_url(client=self._client, url=self._full_render) if self._full_render else None
-
-    @property
-    def swatch(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the skin's swatch."""
-        return Asset._from_url(client=self._client, url=self._swatch) if self._swatch else None
-
-    @property
-    def video(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the skin's video."""
-        return Asset._from_url(client=self._client, url=self._streamed_video) if self._streamed_video else None
-
-    def get_weapon(self) -> Optional[Weapon]:
-        """:class: `Weapon` Returns the skin's base weapon."""
-        return self._base_weapon
-
-    def get_skin(self) -> Optional[Skin]:
-        """:class: `Skin` Returns the skin's base skin."""
-        return self._base_skin
-
-    @property
-    def theme(self) -> Optional[Theme]:
-        """:class: `Theme` Returns the skin's theme uuid."""
-        return self._base_skin.theme if self._base_skin else None
-
-    @property
-    def rarity(self) -> Optional[ContentTier]:
-        """:class: `ContentTier` Returns the skin's rarity."""
-        return self._base_skin.rarity if self._base_skin else None
-
-    @property
-    def price(self) -> Optional[int]:
-        """:class: `int` Returns the skin's price."""
-        if self._price == 0:
-            if self._base_skin is not None:
-                self._price = self._base_skin.price
-        return self._price
-
-    @price.setter
-    def price(self, value: int) -> None:
-        self._price = value
-
-    def is_melee(self) -> bool:
-        """:class: `bool` Returns whether the bundle is a melee."""
-        return self._base_weapon.is_melee() if self._base_weapon else False
-
-    def is_favorite(self) -> bool:
-        """:class: `bool` Returns whether the skin is in the user's favorites."""
-        return self._base_skin.is_favorite() if self._base_skin is not None else False
-
-    def to_favorite(self) -> None:
-        if self._base_skin is not None:
-            self._base_skin.to_favorite()
-
-    async def add_favorite(self, *, force: bool = False) -> bool:
-        """|coro|
-
-        Parameters
-        ----------
-        force: :class:`bool`
-            Whether to force add the skin to the user's favorites.
-
-        Returns
-        -------
-        :class:`bool`
-            Whether the skin was added to the user's favorites.
-        """
-        if self._base_skin is not None:
-            return await self._base_skin.add_favorite(force=force)
-        return False
-
-    async def remove_favorite(self, *, force: bool = False) -> bool:
-        """|coro|
-
-        Parameters
-        ----------
-        force: :class:`bool`
-            Whether to force remove the skin from the user's favorites.
-
-        Returns
-        -------
-        :class:`bool`
-            Whether the skin was removed from the user's favorites.
-        """
-        if self._base_skin is not None:
-            return await self._base_skin.remove_favorite(force=force)
-        return False
-
-    @classmethod
-    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
-        """Returns the skin with the given UUID."""
-        data = client._assets.get_skin_chroma(uuid)
-        return cls(client=client, data=data) if data else None
-
-
-class SkinLevel(BaseModel):
-    def __init__(self, *, client: Client, data: Mapping[str, Any], **kwargs) -> None:
-        super().__init__(client=client, data=data, **kwargs)
-        self._uuid: str = data['uuid']
-        self._base_weapon_uuid: Optional[str] = data.get('WeaponID')
-        self._base_skin_uuid: Optional[str] = data.get('SkinID')
-        self._display_name: Dict[str, str] = data['displayName']
-        self._level: Optional[str] = data.get('levelItem')
-        self._display_icon: str = data['displayIcon']
-        self._streamed_video: Optional[str] = data.get('streamedVideo')
-        self.asset_path: str = data['assetPath']
-        self._price: int = self._client.get_item_price(self.uuid)
-        self.level_number: int = data.get('levelNumber', 0)
-        self._is_level_one: bool = self.level_number == 1
-        self.type: ItemType = ItemType.skin_level
-        self._base_weapon: Optional[Weapon] = (
-            self._client.get_weapon(uuid=self._base_weapon_uuid) if self._base_weapon_uuid else None
-        )
-        self._base_skin: Optional[Skin] = (
-            self._client.get_skin(uuid=self._base_skin_uuid, level=False, chroma=False) if self._base_skin_uuid else None
-        )
-        self._display_name_localized: Localization = Localization(self._display_name, locale=self._client.locale)
-
-    def __str__(self) -> str:
-        return str(self.display_name)
-
-    def __repr__(self) -> str:
-        return f"<SkinLevel display_name={self.display_name!r} level={self.level!r}>"
-
-    def display_name_localized(self, locale: Optional[Union[Locale, str]] = None) -> str:
-        return self._display_name_localized.from_locale(locale=locale)
-
-    @property
-    def display_name(self) -> Localization:
-        """:class: `str` Returns the skin's name."""
-        return self._display_name_localized
-
-    @property
-    def level(self) -> str:
-        """:class: `str` Returns the skin's level."""
-        if self._level is None:
-            return 'Normal'
-        return utils.removeprefix(self._level, 'EEquippableSkinLevelItem::')
-
-    @property
-    def display_icon(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the skin's icon."""
-        display_icon = (
-            self._display_icon
-            or (self._base_skin.display_icon if self._base_skin else None)
-            or (self._base_weapon.display_icon if self._base_weapon else None)
-        )
-        return Asset._from_url(client=self._client, url=str(display_icon)) if display_icon else None
-
-    @property
-    def video(self) -> Optional[Asset]:
-        """:class: `Asset` Returns the skin's video."""
-        return Asset._from_url(client=self._client, url=self._streamed_video) if self._streamed_video else None
-
-    def get_weapon(self) -> Optional[Weapon]:
-        """:class: `Weapon` Returns the skin's base weapon."""
-        return self._base_weapon
-
-    def get_skin(self) -> Optional[Skin]:
-        """:class: `Skin` Returns the skin's base skin."""
-        return self._base_skin
-
-    @property
-    def theme(self) -> Optional[Theme]:
-        """:class: `Theme` Returns the skin's theme uuid."""
-        return self._base_skin.theme if self._base_skin else None
-
-    @property
-    def rarity(self) -> Optional[ContentTier]:
-        """:class: `ContentTier` Returns the skin's rarity."""
-        return self._base_skin.rarity if self._base_skin else None
-
-    @property
-    def price(self) -> Optional[int]:
-        """:class: `int` Returns the skin's price."""
-        return self._price
-
-    @price.setter
-    def price(self, value: int) -> None:
-        self._price = value
-
-    def is_level_one(self) -> bool:
-        """:class: `bool` Returns whether the skin is level one."""
-        return self._is_level_one
-
-    def is_favorite(self) -> bool:
-        """:class: `bool` Returns whether the skin is favorited."""
-        return self._base_skin.is_favorite() if self._base_skin is not None else False
-
-    def is_melee(self) -> bool:
-        """:class: `bool` Returns whether the bundle is a melee."""
-        return self._base_weapon.is_melee() if self._base_weapon is not None else False
-
-    def to_favorite(self) -> None:
-        if self._base_skin is not None:
-            self._base_skin.to_favorite()
-
-    async def add_favorite(self, *, force: bool = False) -> bool:
-        """|coro|
-
-        Parameters
-        ----------
-        force: :class:`bool`
-            Whether to force add the skin to the user's favorites.
-
-        Returns
-        -------
-        :class:`bool`
-            Whether the skin was added to the user's favorites.
-        """
-        if self._base_skin is not None:
-            return await self._base_skin.add_favorite(force=force)
-        return False
-
-    async def remove_favorite(self, *, force: bool = False) -> bool:
-        """|coro|
-
-        Parameters
-        ----------
-        force: :class:`bool`
-            Whether to force remove the skin from the user's favorites.
-
-        Returns
-        -------
-        :class:`bool`
-            Whether the skin was removed from the user's favorites.
-        """
-        if self._base_skin is not None:
-            return await self._base_skin.remove_favorite(force=force)
-        return False
-
-    @classmethod
-    def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
-        """Returns the skin with the given UUID."""
-        data = client._assets.get_skin_level(uuid)
-        return cls(client=client, data=data) if data else None
-
-
-class SkinNightMarket(SkinLevel):
-    def __init__(self, *, client: Client, data: Mapping[str, Any], extras: Any) -> None:
-        super().__init__(client=client, data=data)
-        self.discount_percent: int = extras['DiscountPercent']
-        self._price: int = extras['Offer']['Cost'][str(CurrencyType.valorant)]
-        self.discount_price: int = extras['DiscountCosts'][str(CurrencyType.valorant)]
-        self._is_direct_purchase: bool = extras['Offer']['IsDirectPurchase']
-        self._is_seen: bool = extras['IsSeen']
-        self._rewards: List[Dict[str, Any]] = extras['Offer']['Rewards']
-        self._start_time_iso: str = extras['Offer']['StartDate']
-
-    def __repr__(self) -> str:
-        return f"<SkinNightMarket display_name={self.display_name!r} price={self.price!r} discount_price={self.discount_price!r}>"
-
-    def is_seen(self) -> bool:
-        """Returns whether the skin is seen."""
-        return self._is_seen
-
-    def is_direct_purchase(self) -> bool:
-        """Returns whether the skin is direct purchase."""
-        return self._is_direct_purchase
-
-    @property
-    def price_difference(self) -> int:
-        """Returns the difference between the base price and the discounted price"""
-        return self.price_difference - self.discount_price
-
-    @property
-    def start_time(self) -> datetime.datetime:
-        """Returns the time the offer started"""
-        return utils.parse_iso_datetime(self._start_time_iso)
-
-    @classmethod
-    def _from_data(cls, client: Client, skin_data: BonusStoreOfferPayload) -> Self:
-        """Returns the skin with the given UUID."""
-        uuid = skin_data['Offer']['OfferID']  # type: ignore
-        data = client._assets.get_skin_level(uuid)
-        if data is None:
-            raise ValueError(f'Invalid skin UUID: {uuid}')
-        return cls(client=client, data=data, extras=skin_data)
-
-
-class SkinBundle(SkinLevel, FeaturedBundleItem):
-    def __init__(
-        self, *, client: Client, data: Mapping[str, Any], bundle: Union[FeaturedBundleItemPayload, Dict[str, Any]]
-    ) -> None:
-        super().__init__(client=client, data=data, bundle=bundle)
-
-    def __repr__(self) -> str:
-        attrs = [('display_name', self.display_name), ('price', self.price), ('discounted_price', self.discounted_price)]
-        joined = ' '.join('%s=%r' % t for t in attrs)
-        return f'<{self.__class__.__name__} {joined}>'
-
-    @classmethod
-    def _from_bundle(cls, client: Client, uuid: str, bundle: Dict[str, Any]) -> Optional[Self]:
-        """Returns the spray level with the given UUID."""
-        data = client._assets.get_skin_level(uuid)
-        return cls(client=client, data=data, bundle=bundle) if data else None
-
-
-class BaseLoadout:
+class Skin(SkinValorantAPI['Weapon'], Item):
     if TYPE_CHECKING:
-        _client: Client
+        _state: CacheState
 
-    def __init__(self, loadout: SkinLoadoutPayload, *args, **kwargs: Any) -> None:
-        self._buddy_uuid = loadout.get('CharmID')
-        self._buddy_level_uuid = loadout.get('CharmLevelID')
-        self._buddy: Optional[Buddy] = None
-        self._buddy_level: Optional[BuddyLevel] = None
-
-    def is_random(self) -> bool:
-        """:class:`bool` Returns whether the skin is random."""
-        try:
-            asset_path = getattr(self, 'asset_path')
-        except AttributeError:
-            return False
-        else:
-            return 'Random' in asset_path
-
-    def get_buddy(self) -> Optional[Buddy]:
-        """Returns the get_buddy for this skin"""
-        if self._buddy is None:
-            self._buddy = self._client.get_buddy(uuid=self._buddy_uuid) if self._buddy_uuid else None
-        return self._buddy
-
-    def get_buddy_level(self) -> Optional[BuddyLevel]:
-        """Returns the get_buddy level for this skin"""
-        if self._buddy_level is None:
-            self._buddy_level = self._client.get_buddy_level(uuid=self._buddy_level_uuid) if self._buddy_level_uuid else None
-        return self._buddy_level
+    def __init__(self, *, state: CacheState, data: ValorantAPISkinPayload, parent: Weapon) -> None:
+        super().__init__(state=state, data=data, parent=parent)
+        self.chromas: List[SkinChroma] = [SkinChroma(state=state, data=chroma, parent=self) for chroma in data['chromas']]
+        self.levels: List[SkinLevel] = [
+            SkinLevel(state=state, data=level, parent=self, level_number=index) for index, level in enumerate(data['levels'])
+        ]
+        Item.__init__(self)
 
 
-class SkinLoadout(Skin, BaseLoadout):
-    def __init__(self, *, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
-        super().__init__(client=client, data=data, loadout=loadout)
+class SkinLevel(SkinLevelValorantAPI['Skin'], Item):
+    if TYPE_CHECKING:
+        _state: CacheState
 
-    def __repr__(self) -> str:
-        return f"<SkinLoadout display_name={self.display_name!r}>"
-
-    @classmethod
-    def _from_loadout(cls, client: Client, uuid: str, loadout: SkinLoadoutPayload) -> Optional[Self]:
-        data = client._assets.get_skin(uuid)
-        return cls(client=client, data=data, loadout=loadout) if data else None
+    def __init__(self, *, state: CacheState, data: ValorantAPISkinLevelPayload, parent: Skin, level_number: int) -> None:
+        super().__init__(state=state, data=data, parent=parent, level_number=level_number)
+        Item.__init__(self)
 
 
-class SkinLevelLoadout(SkinLevel, BaseLoadout):
-    def __init__(self, *, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
-        super().__init__(client=client, data=data, loadout=loadout)
+class SkinChroma(SkinChromaValorantAPI['Skin'], Item):
+    if TYPE_CHECKING:
+        _state: CacheState
+
+    def __init__(self, *, state: CacheState, data: ValorantAPISkinChromaPayload, parent: Skin) -> None:
+        super().__init__(state=state, data=data, parent=parent)
+        Item.__init__(self)
+
+
+class SkinLevelOffer(SkinLevel, ItemOffer):
+    def __init__(
+        self,
+        *,
+        state: CacheState,
+        data: ValorantAPISkinLevelPayload,
+        parent: Skin,
+        level_number: int,
+        data_offer: OfferPayload,
+    ) -> None:
+        SkinLevel.__init__(self, state=state, data=data, parent=parent, level_number=level_number)
+        ItemOffer.__init__(self, data=data_offer)
 
     def __repr__(self) -> str:
-        return f"<SkinLevelLoadout display_name={self.display_name!r}>"
+        return f'<SkinLevelOffer display_name={self.display_name!r}>'
 
     @classmethod
-    def _from_loadout(cls, client: Client, uuid: str, loadout: SkinLoadoutPayload) -> Self:
-        data = client._assets.get_skin_level(uuid)
-        return cls(client=client, data=data, loadout=loadout)
+    def from_data(cls, *, state: CacheState, data_offer: OfferPayload) -> Optional[Self]:
+        skin_level = state.get_skin_level(data_offer['OfferID'])
+        if skin_level is None:
+            return None
+        return cls(
+            state=state,
+            data=skin_level._data,
+            parent=skin_level.parent,
+            level_number=skin_level.level_number,
+            data_offer=data_offer,
+        )
 
 
-class SkinChromaLoadout(SkinChroma, BaseLoadout):
-    def __init__(self, *, client: Client, data: Any, loadout: SkinLoadoutPayload) -> None:
-        super().__init__(client=client, data=data, loadout=loadout)
+class SkinLevelBonus(SkinLevel, BonusItemOffer):
+    def __init__(
+        self,
+        *,
+        state: CacheState,
+        data: ValorantAPISkinLevelPayload,
+        parent: Skin,
+        level_number: int,
+        data_bonus: BonusStoreOfferPayload,
+    ) -> None:
+        SkinLevel.__init__(self, state=state, data=data, parent=parent, level_number=level_number)
+        BonusItemOffer.__init__(self, data=data_bonus)
 
     def __repr__(self) -> str:
-        return f"<SkinChromaLoadout display_name={self.display_name!r}>"
+        return f'<SkinLevelNightmarket display_name={self.display_name!r}>'
 
     @classmethod
-    def _from_loadout(cls, client: Client, uuid: str, loadout: SkinLoadoutPayload) -> Self:
-        data = client._assets.get_skin_chroma(uuid)
-        return cls(client=client, data=data, loadout=loadout)
+    def from_data(cls, *, state: CacheState, data_bonus: BonusStoreOfferPayload) -> Optional[Self]:
+        skin_level = state.get_skin_level(data_bonus['Offer']['OfferID'])
+        if skin_level is None:
+            return None
+        return cls(
+            state=state,
+            data=skin_level._data,
+            parent=skin_level.parent,
+            level_number=skin_level.level_number,
+            data_bonus=data_bonus,
+        )
+
+
+class SkinLevelBundle(SkinLevel, BundleItemOffer):
+    def __init__(
+        self,
+        *,
+        state: CacheState,
+        data: ValorantAPISkinLevelPayload,
+        parent: Skin,
+        level_number: int,
+        data_bundle: BundleItemOfferPayload,
+    ) -> None:
+        SkinLevel.__init__(self, state=state, data=data, parent=parent, level_number=level_number)
+        BundleItemOffer.__init__(self, data=data_bundle)
+
+    def __repr__(self) -> str:
+        return f'<SkinLevelBundle display_name={self.display_name!r}>'
+
+    @classmethod
+    def from_data(cls, *, state: CacheState, data_bundle: BundleItemOfferPayload) -> Optional[Self]:
+        skin_level = state.get_skin_level(data_bundle['BundleItemOfferID'])
+        if skin_level is None:
+            return None
+        return cls(
+            state=state,
+            data=skin_level._data,
+            parent=skin_level.parent,
+            level_number=skin_level.level_number,
+            data_bundle=data_bundle,
+        )
+
+
+SkinLevelNightmarket = SkinLevelBonus
