@@ -54,7 +54,6 @@ class Client(ClientValorantAPI):
     # buddies
 
     if TYPE_CHECKING:
-        ...
 
         def get_buddy(self, uuid: str) -> Optional[Buddy]:
             ...

@@ -67,6 +67,10 @@ class Skin(SkinValorantAPI['Weapon'], Item):
             SkinLevel(state=state, data=level, parent=self, level_number=index) for index, level in enumerate(data['levels'])
         ]
         Item.__init__(self)
+        # self._is_favorite: bool = False
+
+    # def is_favorite(self) -> bool:
+    #     return self._is_favorite
 
 
 class SkinLevel(SkinLevelValorantAPI['Skin'], Item):
@@ -76,6 +80,10 @@ class SkinLevel(SkinLevelValorantAPI['Skin'], Item):
     def __init__(self, *, state: CacheState, data: ValorantAPISkinLevelPayload, parent: Skin, level_number: int) -> None:
         super().__init__(state=state, data=data, parent=parent, level_number=level_number)
         Item.__init__(self)
+        self._is_favorite: bool = False
+
+    def is_favorite(self) -> bool:
+        return self._is_favorite
 
 
 class SkinChroma(SkinChromaValorantAPI['Skin'], Item):
@@ -85,6 +93,10 @@ class SkinChroma(SkinChromaValorantAPI['Skin'], Item):
     def __init__(self, *, state: CacheState, data: ValorantAPISkinChromaPayload, parent: Skin) -> None:
         super().__init__(state=state, data=data, parent=parent)
         Item.__init__(self)
+        self._is_favorite: bool = False
+
+    def is_favorite(self) -> bool:
+        return self._is_favorite
 
 
 class SkinLevelOffer(SkinLevel, ItemOffer):

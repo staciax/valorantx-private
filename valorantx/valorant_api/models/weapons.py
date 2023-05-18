@@ -174,6 +174,7 @@ class Weapon(BaseModel):
     def __init__(self, *, state: CacheState, data: WeaponPayload) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
+        self._data: WeaponPayload = data
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._category: str = data['category']
         self._default_skin_uuid: str = data['defaultSkinUuid']
@@ -190,6 +191,7 @@ class Weapon(BaseModel):
         self.type: ItemType = ItemType.weapon
         self._is_melee: bool = True if self.uuid == MELEE_WEAPON_ID else False
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
+        self._is_random: bool = 'random' in self.asset_path.lower()
 
     def __str__(self) -> str:
         return self.display_name.locale
@@ -230,6 +232,11 @@ class Weapon(BaseModel):
         """:class: `Optional[WeaponStats]` alias for :attr: `weapon_stats`"""
         return self.weapon_stats
 
+    # helpers
+
+    def is_random(self) -> bool:
+        return self._is_random
+
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
     #     """Returns the weapon with the given UUID."""
@@ -258,6 +265,7 @@ class Skin(BaseModel, Generic[WeaponT]):
         self.type: ItemType = ItemType.skin
         self.parent: WeaponT = parent
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
+        self._is_random: bool = 'random' in self.asset_path.lower()
 
     def __str__(self) -> str:
         return self.display_name.locale
@@ -316,6 +324,9 @@ class Skin(BaseModel, Generic[WeaponT]):
         """:class: `bool` Returns whether the bundle is a melee."""
         return self.parent.is_melee()
 
+    def is_random(self) -> bool:
+        return self._is_random
+
     # def get_skin_level(self, level: int) -> Optional[SkinLevel]:
     #     """get the skin's level with the given level.
 
@@ -365,6 +376,7 @@ class SkinChroma(BaseModel, Generic[SkinT]):
         self.type: ItemType = ItemType.skin_chroma
         self.parent: SkinT = parent
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
+        self._is_random: bool = 'random' in self.asset_path.lower()
 
     def __str__(self) -> str:
         return self.display_name.locale
@@ -476,6 +488,7 @@ class SkinLevel(BaseModel, Generic[SkinT]):
         self.type: ItemType = ItemType.skin_level
         self.parent: SkinT = parent
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
+        self._is_random: bool = 'random' in self.asset_path.lower()
 
     def __str__(self) -> str:
         return str(self.display_name)
@@ -561,6 +574,10 @@ class SkinLevel(BaseModel, Generic[SkinT]):
     def is_melee(self) -> bool:
         """:class: `bool` Returns whether the bundle is a melee."""
         return self.parent.is_melee()
+
+    def is_random(self) -> bool:
+        """:class: `bool` Returns whether the skin is random."""
+        return self._is_random
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

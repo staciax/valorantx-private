@@ -53,6 +53,8 @@ def event_loop():
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
+        # policy = asyncio.get_event_loop_policy()
+        # loop = policy.new_event_loop()
         loop = asyncio.new_event_loop()
     yield loop
     loop.close()

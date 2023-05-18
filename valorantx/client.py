@@ -12,6 +12,7 @@ from .enums import Locale, Region, try_enum
 from .errors import AuthRequired
 from .http import HTTPClient
 from .models.contracts import Contracts
+from .models.favorites import Favorites
 from .models.loadout import Loadout
 from .models.match import MatchDetails
 from .models.patchnotes import PatchNotes
@@ -309,7 +310,7 @@ class Client:
     # favorite endpoints
 
     @_authorize_required
-    async def fetch_favorites(self) -> ...:
+    async def fetch_favorites(self) -> Favorites:
         """|coro|
 
         Fetches the favorites items for the current user.
@@ -320,6 +321,7 @@ class Client:
             The favorites items for the current user.
         """
         data = await self.http.get_favorites()
+        return Favorites(state=self.valorant_api.cache, data=data)
 
     # @_authorize_required
     # async def add_favorite(self, item: Union[str, Buddy, PlayerCard, Skin, Spray, LevelBorder]) -> Favorites:
@@ -411,8 +413,7 @@ class Client:
         loadout = Loadout(client=self, data=data)
 
         if include_favorite:
-            # fav = await self.fetch_favorites()
-            await loadout._update_favorites()
+            loadout.favorites = await self.fetch_favorites()
 
         return loadout
 
