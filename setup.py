@@ -18,9 +18,17 @@ with open('README.md') as f:
 
 extras_require = {
     'local': ['urllib3>=1.26.12,<1.27'],
+    'speed': ['orjson>=3.8.10,<4.0'],
 }
 
-packages = ['valorantx', 'valorantx.models', 'valorantx.types', 'valorantx.ext.scrapers']
+packages = [
+    'valorantx',
+    'valorantx.models',
+    'valorantx.types',
+    'valorantx.valorant_api',
+    'valorantx.valorant_api.models',
+    'valorantx.valorant_api.types',
+]
 
 setup(
     name='valorantx',
@@ -32,7 +40,7 @@ setup(
     version=version,
     packages=packages,
     license='MIT',
-    description='An Asynchronous Unofficial Valorant API Wrapper for Python',
+    description='An Asynchronous Unofficial Valorant API Wrapper with valorant-api.com API Wrapper for Python',
     long_description=readme,
     include_package_data=True,
     install_requires=requirements,

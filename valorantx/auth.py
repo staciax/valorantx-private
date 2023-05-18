@@ -1,33 +1,11 @@
-"""
-The MIT License (MIT)
+# Copyright (c) 2023-present STACiA, 2022 Huba Tuba (floxay)
+# Licensed under the MIT
+# riot-auth library: https://github.com/floxay/python-riot-auth
 
-Copyright (c) 2022-present Huba Tuba (floxay)
-Copyright (c) 2022-present xStacia
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-Links to the original source code: https://github.com/floxay/python-riot-auth
-
-"""
+from __future__ import annotations
 
 from secrets import token_urlsafe
-from typing import Any, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import aiohttp
 from riot_auth import RiotAuth as _RiotAuth
@@ -40,55 +18,35 @@ from .errors import (
     RiotUnknownResponseTypeError,
 )
 
+if TYPE_CHECKING:
+    from typing_extensions import Self
+
 # fmt: off
-__all__: Tuple[str, ...] = (
+__all__ = (
     'RiotAuth',
 )
 # fmt: on
 
 
-class _CookieSentinel:
-    __slots__ = ()
-
-    def __getattr__(self, attr: str) -> None:
-        msg = 'loop attribute cannot be accessed in non-async contexts. '
-        raise AttributeError(msg)
-
-
-_cookie_jar: Any = _CookieSentinel()
-
-
 class RiotAuth(_RiotAuth):
     def __init__(self) -> None:
-        self._auth_ssl_ctx = RiotAuth.create_riot_auth_ssl_ctx()
-        self._cookie_jar: aiohttp.CookieJar = _cookie_jar
-        self.access_token: Optional[str] = None
-        self.scope: Optional[str] = None
-        self.id_token: Optional[str] = None
-        self.token_type: Optional[str] = None
-        self.expires_at: int = 0
-        self.user_id: Optional[str] = None
-        self.entitlements_token: Optional[str] = None
-        self.name: Optional[str] = None
-        self.tag: Optional[str] = None
+        super().__init__()
+        self.game_name: Optional[str] = None
+        self.tag_line: Optional[str] = None
         self.region: Optional[str] = None
         # multi-factor
-        self.__waif_for_2fa: bool = False
+        # self.__waif_for_2fa: bool = False
         self.multi_factor_email: Optional[str] = None
 
     @property
     def puuid(self) -> str:
         return self.user_id or ''
 
-    @puuid.setter
-    def puuid(self, value: str) -> None:
-        self.user_id = value
-
     @property
     def display_name(self) -> str:
-        if self.name is None or self.tag is None:
+        if self.game_name is None or self.tag_line is None:
             return ''
-        return f'{self.name}#{self.tag}'
+        return f'{self.game_name}#{self.tag_line}'
 
     async def authorize(
         self, username: str, password: str, use_query_response_mode: bool = False, remember: bool = False
@@ -96,9 +54,6 @@ class RiotAuth(_RiotAuth):
         """
         Authenticate using username and password.
         """
-        if self._cookie_jar is _cookie_jar:
-            self._cookie_jar = aiohttp.CookieJar()
-
         if username and password:
             self._cookie_jar.clear()
 
@@ -164,19 +119,20 @@ class RiotAuth(_RiotAuth):
                         else:
                             raise RiotUnknownErrorTypeError(f'Got unknown error `{err}` during authentication.')
                     elif resp_type == 'multifactor':
-                        if self.__waif_for_2fa:
-                            if 'method' in data['multifactor']:
-                                if data['multifactor']['method'] == 'email':
-                                    self.multi_factor_email = data['multifactor']['email']
+                        # pre for multi-factor authentication
+                        if 'method' in data['multifactor']:
+                            if data['multifactor']['method'] == 'email':
+                                self.multi_factor_email = data['multifactor']['email']
+                        # -
                         raise RiotMultifactorError('Multi-factor authentication is not currently supported.')
                     else:
                         raise RiotUnknownResponseTypeError(f'Got unknown response type `{resp_type}` during authentication.')
                 # endregion
 
-            self._cookie_jar = session.cookie_jar  # type: ignore
+            self._cookie_jar = session.cookie_jar
             self.__set_tokens_from_uri(data)
 
-            # region Get new entitlements token
+            # Get new entitlements token
             headers['Authorization'] = f'{self.token_type} {self.access_token}'
             async with session.post(
                 'https://entitlements.auth.riotgames.com/api/token/v1',
@@ -186,23 +142,27 @@ class RiotAuth(_RiotAuth):
             ) as r:
                 self.entitlements_token = (await r.json())['entitlements_token']
 
-            # Get user info
-
-            async with session.post('https://auth.riotgames.com/userinfo', headers=headers) as r:
-                data = await r.json()
-                self.puuid = data['sub']
-                self.name = data['acct']['game_name']
-                self.tag = data['acct']['tag_line']
-
-            # Get regions
-
-            body = {'id_token': self.id_token}
+    async def fetch_region(self) -> Optional[str]:
+        # Get regions
+        body = {'id_token': self.id_token}
+        headers = {'Authorization': f'{self.token_type} {self.access_token}'}
+        async with aiohttp.ClientSession(cookie_jar=self._cookie_jar) as session:
             async with session.put(
                 'https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant', headers=headers, json=body
             ) as r:
                 data = await r.json()
                 self.region = data['affinities']['live']
-            # endregion
+        return self.region
+
+    async def fetch_userinfo(self) -> None:
+        # Get user info
+        headers = {'Authorization': f'{self.token_type} {self.access_token}'}
+        async with aiohttp.ClientSession(cookie_jar=self._cookie_jar) as session:
+            async with session.post('https://auth.riotgames.com/userinfo', headers=headers) as r:
+                data = await r.json()
+                # self.user_id = data['sub'] # puuid
+                self.game_name = data['acct']['game_name']
+                self.tag_line = data['acct']['tag_line']
 
     async def reauthorize(self) -> bool:
         """
@@ -216,34 +176,36 @@ class RiotAuth(_RiotAuth):
         except RiotAuthenticationError:  # because credentials are empty
             return False
 
-    def from_data(self, data: Dict[str, Any]) -> None:
+    @classmethod
+    def from_data(cls, data: Dict[str, Any]) -> Self:
         """
         Set the token data from a dictionary.
         """
+        self = cls()
         self.access_token = data['access_token']
         self.id_token = data['id_token']
         self.entitlements_token = data['entitlements_token']
         self.token_type = data['token_type']
         self.expires_at = int(data['expires_at'])
         self.user_id = data['user_id']
-        self.puuid = data['puuid']
-        self.name = data['name']
-        self.tag = data['tag']
+        self.game_name = data['game_name']
+        self.tag_line = data['tag_line']
         self.region = data['region']
+        return self
 
     def to_dict(self) -> Dict[str, Any]:
         """
         Return the token data as a dictionary.
         """
-        return {
+        payload = {
             'access_token': self.access_token,
             'id_token': self.id_token,
             'entitlements_token': self.entitlements_token,
             'token_type': self.token_type,
             'expires_at': self.expires_at,
             'user_id': self.user_id,
-            'puuid': self.puuid,
-            'name': self.name,
-            'tag': self.tag,
+            'game_name': self.game_name,
+            'tag_line': self.tag_line,
             'region': self.region,
         }
+        return payload

@@ -17,7 +17,8 @@ include = [
     "valorantx",
     "valorantx/models",
     "valorantx/types",
-    "valorantx/ext/scrapers"
+    "valorantx/valorant_api/models",
+    "valorantx/valorant_api/types"
 ]
 exclude = [
     "**/__pycache__",
@@ -31,3 +32,4 @@ typeCheckingMode = "basic"
 
 [tool.pytest.ini_options]
 asyncio_mode = "strict"
+addopts = "-rfEsw -v"
