@@ -30,7 +30,7 @@ from . import __version__, utils
 from .auth import RiotAuth
 from .enums import Locale, QueueType, Region, try_enum
 from .errors import BadRequest, Forbidden, HTTPException, InternalServerError, NotFound, RateLimited, RiotAuthenticationError
-from .types import premiers
+from .types import favorites, premiers
 
 # try:
 #     import urllib3
@@ -44,7 +44,7 @@ from .types import premiers
 MISSING = utils.MISSING
 
 if TYPE_CHECKING:
-    from .types import contracts, favorite, loadout, name_service, party, store, user
+    from .types import account_xp, content, contracts, loadout, match, mmr, name_service, party, store, user
 
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
@@ -298,14 +298,14 @@ class HTTPClient:
 
     # PVP endpoints
 
-    def get_content(self) -> Response[Mapping[str, Any]]:
+    def get_content(self) -> Response[content.Content]:
         """
         Content_FetchContent
         Get names and ids for game content such as agents, maps, guns, etc.
         """
         return self.request(Route('GET', '/content-service/v3/content', self.region, EndpointType.shard))
 
-    def get_account_xp_player(self) -> Response[xp.AccountXP]:
+    def get_account_xp_player(self) -> Response[account_xp.AccountXP]:
         """
         AccountXP_GetPlayer
         Get the account level, XP, and XP history for the active player
@@ -342,7 +342,7 @@ class HTTPClient:
         )
         return self.request(r, json=loadout)
 
-    def get_mmr_player(self, puuid: Optional[str] = None) -> Response[competitive.MatchmakingRating]:
+    def get_mmr_player(self, puuid: Optional[str] = None) -> Response[mmr.MatchmakingRating]:
         """
         MMR_FetchPlayer
         Get the match making rating for a player
@@ -402,7 +402,7 @@ class HTTPClient:
         start_index: int = 0,
         end_index: int = 15,
         queue_id: Union[str, QueueType] = QueueType.competitive,
-    ) -> Response[Mapping[str, Any]]:
+    ) -> Response[mmr.PlayerCompetitiveUpdates]:
         """
         MMR_FetchCompetitiveUpdates
         Get recent games and how they changed ranking
@@ -423,9 +423,10 @@ class HTTPClient:
         self,
         season_id: Optional[str],
         start_index: int = 0,
-        size: int = 25,
-        region: Union[str, Region] = Region.AP,
-    ) -> Response[Mapping[str, Any]]:
+        size: int = 510,
+        query: Optional[str] = None,
+        region: Optional[Region] = None,
+    ) -> Response[mmr.Leaderboards]:
         """
         MMR_FetchLeaderboard
         Get the competitive leaderboard for a given season
@@ -434,17 +435,19 @@ class HTTPClient:
         if season_id is None:
             raise ValueError('Season cannot be empty')
 
-        region = try_enum(Region, region, Region.AP)
+        region = region or self.region
 
         r = Route(
             'GET',
             '/mmr/v1/leaderboards/affinity/{shard}/queue/competitive/season/{season}',
-            self.region,
+            region,
             EndpointType.pd,
-            shard=self.region.shard,
+            shard=region.shard,
             season=season_id,
         )
-        params = {'startIndex': start_index, 'size': size}
+        params: Dict[str, Any] = {'startIndex': start_index, 'size': size}
+        if query is not None:
+            params['query'] = query
 
         return self.request(r, params=params)
 
@@ -909,7 +912,7 @@ class HTTPClient:
 
     # favorite endpoints
 
-    def get_favorites(self) -> Response[favorite.Favorites]:
+    def get_favorites(self) -> Response[favorites.Favorites]:
         """
         FetchFavorite
         Get the favorite list of the authenticated user
@@ -917,7 +920,7 @@ class HTTPClient:
         r = Route('GET', '/favorites/v1/players/{puuid}/favorites', self.region, EndpointType.pd, puuid=self.puuid)
         return self.request(r)
 
-    def post_favorites(self, item_id: str) -> Response[favorite.Favorites]:
+    def post_favorites(self, item_id: str) -> Response[favorites.Favorites]:
         """
         PostFavorite
         Add a player to the favorite list of the authenticated user
@@ -926,7 +929,7 @@ class HTTPClient:
         payload = {'ItemID': item_id}
         return self.request(r, json=payload)
 
-    def delete_favorites(self, item_id: str) -> Response[favorite.Favorites]:
+    def delete_favorites(self, item_id: str) -> Response[favorites.Favorites]:
         """
         DeleteFavorite
         Remove a player from the favorite list of the authenticated user

@@ -107,6 +107,12 @@ class CacheState(CacheStateValorantAPI):
         def get_spray(self, uuid: Optional[str]) -> Optional[Spray]:
             ...
 
+        def get_buddy(self, uuid: Optional[str]) -> Optional[Buddy]:
+            ...
+
+        def get_weapon(self, uuid: Optional[str]) -> Optional[Weapon]:
+            ...
+
     def insert_cost(self, uuid: str, type: ItemType, cost: int) -> None:
         if type is ItemType.skin_level:
             self._insert_skin_level_cost(uuid, cost)

@@ -320,10 +320,6 @@ class Client:
             The favorites items for the current user.
         """
         data = await self.http.get_favorites()
-        import json
-
-        with open('favorites.json', 'w') as f:
-            json.dump(data, f, indent=4)
 
     # @_authorize_required
     # async def add_favorite(self, item: Union[str, Buddy, PlayerCard, Skin, Spray, LevelBorder]) -> Favorites:
@@ -410,14 +406,12 @@ class Client:
         # return AccountXP(client=self, data=data)
 
     @_authorize_required
-    async def fetch_loudout(self, *, include_account_xp: bool = True, include_favorite: bool = True) -> Loadout:
+    async def fetch_loudout(self, *, include_favorite: bool = True) -> Loadout:
         data = await self.http.get_personal_player_loadout()
         loadout = Loadout(client=self, data=data)
 
-        if include_account_xp:
-            await loadout._update_account_xp()
-
         if include_favorite:
+            # fav = await self.fetch_favorites()
             await loadout._update_favorites()
 
         return loadout
@@ -444,10 +438,10 @@ class Client:
             The MMR for the current user or a given user.
         """
         data = await self.http.get_mmr_player(puuid)
-        import json
+        # import json
 
-        with open('mmr.json', 'w') as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
+        # with open('mmr.json', 'w') as f:
+        #     json.dump(data, f, indent=4, ensure_ascii=False)
         # return MMR(client=self, data=data)
 
     @_authorize_required

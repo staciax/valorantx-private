@@ -355,6 +355,7 @@ class SkinChroma(BaseModel, Generic[SkinT]):
     def __init__(self, *, state: CacheState, data: SkinChromaPayload, parent: SkinT) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
+        self._data: SkinChromaPayload = data
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
         self._full_render: str = data['fullRender']
