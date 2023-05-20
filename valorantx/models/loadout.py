@@ -62,7 +62,14 @@ class SkinLevelLoadout(SkinLevel):
 
 
 class Gun(Weapon):
-    def __init__(self, *, state: CacheState, data: ValorantAPIWeaponPayload, data_loadout: GunPayload) -> None:
+    def __init__(
+        self,
+        state: CacheState,
+        data: ValorantAPIWeaponPayload,
+        data_loadout: GunPayload,
+        *,
+        favorites: Optional[Favorites] = None,
+    ) -> None:
         super().__init__(state=state, data=data)
         self.data_loadout = data_loadout
         self._skin_loadout: Optional[Union[Skin, SkinLevel, SkinChroma]] = None
@@ -115,11 +122,13 @@ class Gun(Weapon):
         return self._buddy_level_loadout
 
     @classmethod
-    def from_loadout(cls, *, state: CacheState, data_loadout: GunPayload) -> Optional[Self]:
+    def from_loadout(
+        cls, *, state: CacheState, data_loadout: GunPayload, favorites: Optional[Favorites] = None
+    ) -> Optional[Self]:
         weapon = state.get_weapon(uuid=data_loadout['ID'])
         if weapon is None:
             return None
-        return cls(state=state, data=weapon._data, data_loadout=data_loadout)
+        return cls(state=state, data=weapon._data, data_loadout=data_loadout, favorites=favorites)
 
 
 class Identity:
@@ -179,8 +188,9 @@ class Identity:
 
 
 class SprayLoadout:
-    def __init__(self, client: Client, data: SprayPayload) -> None:
+    def __init__(self, client: Client, data: SprayPayload, *, favorite: bool) -> None:
         self._client: Client = client
+        self._favorite: bool = favorite
         self.equip_slot_id: str = data['EquipSlotID']
         self._spray_id: str = data['SprayID']
         self._spray_level_id: Optional[str] = data['SprayLevelID']
@@ -200,6 +210,10 @@ class SprayLoadout:
             return 2
         return -1
 
+    @property
+    def favorite(self) -> bool:
+        return self._favorite
+
     def get_spray(self) -> Optional[Spray]:
         return self._spray
 
@@ -207,8 +221,8 @@ class SprayLoadout:
         return self._spray_level
 
 
-class GunLoadouts:
-    def __init__(self, state: CacheState, guns: List[GunPayload]) -> None:
+class GunsLoadout:
+    def __init__(self, state: CacheState, guns: List[GunPayload], favorites: Optional[Favorites] = None) -> None:
         self._state: CacheState = state
         self.melee: Optional[Gun] = None
         self.classic: Optional[Gun] = None
@@ -230,7 +244,7 @@ class GunLoadouts:
         self.odin: Optional[Gun] = None
 
         for data in guns:
-            gun = Gun.from_loadout(state=state, data_loadout=data)
+            gun = Gun.from_loadout(state=state, data_loadout=data, favorites=favorites)
             if gun is None:
                 _log.warning('could not find gun for loadout %r', data)
                 continue
@@ -303,16 +317,27 @@ class GunLoadouts:
 
 
 class Loadout:
-    def __init__(self, client: Client, data: LoadoutPayload) -> None:
+    def __init__(self, client: Client, data: LoadoutPayload, favorites: Optional[Favorites] = None) -> None:
         self._client: Client = client
         self.subject: str = data['Subject']
         self.version: int = data['Version']
-        self.guns: GunLoadouts = GunLoadouts(client.valorant_api.cache, data['Guns'])
+        self.guns: GunsLoadout = GunsLoadout(client.valorant_api.cache, data['Guns'], favorites=favorites)
+        # for gun_data in data['Guns']:
+        #     gun = Gun.from_loadout(state=client.valorant_api.cache, data_loadout=gun_data)
+        # if gun is None:
+        #     _log.warning('could not find gun for loadout %r', data)
+        #     continue
+        # attrname = gun.display_name.default.lower()
+        # if hasattr(self, attrname):
+        #     setattr(self, attrname, gun)
+        # else:
+        #     _log.warning('could not find attribute for gun %r', gun)
+
         self._sprays: Dict[str, SprayLoadout] = {}
         self.identity: Identity = Identity(self._client, data['Identity'])
         self.incognito: bool = data['Incognito']
         for spray in data['Sprays']:
-            spray_loadout = SprayLoadout(self._client, spray)
+            spray_loadout = SprayLoadout(self._client, spray, favorite=False)
             self._sprays[str(spray_loadout.slot_number)] = spray_loadout
         self.favorites: Optional[Favorites] = None
 

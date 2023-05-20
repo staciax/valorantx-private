@@ -409,13 +409,10 @@ class Client:
 
     @_authorize_required
     async def fetch_loudout(self, *, include_favorite: bool = True) -> Loadout:
+        favorites = await self.fetch_favorites() if include_favorite else None
+
         data = await self.http.get_personal_player_loadout()
-        loadout = Loadout(client=self, data=data)
-
-        if include_favorite:
-            loadout.favorites = await self.fetch_favorites()
-
-        return loadout
+        return Loadout(client=self, data=data, favorites=favorites)
 
     # @_authorize_required
     # async def put_loadout(self, loadout: LoadoutBuilder) -> None:
