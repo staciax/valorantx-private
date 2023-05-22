@@ -9,6 +9,8 @@ from ..localization import Localization
 from .abc import BaseModel, ShopData
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from ..cache import CacheState
     from ..types.weapons import (
         AdsStats as AdsStatsPayload,
@@ -237,6 +239,26 @@ class Weapon(BaseModel):
     def is_random(self) -> bool:
         return self._is_random
 
+    @classmethod
+    def _copy(cls, weapon: Self) -> Self:
+        self = cls.__new__(cls)  # bypass __init__
+        self._state = weapon._state
+        self._data = weapon._data.copy()
+        self._display_name = weapon._display_name
+        self._category = weapon._category
+        self._default_skin_uuid = weapon._default_skin_uuid
+        self._display_icon = weapon._display_icon
+        self._kill_stream_icon = weapon._kill_stream_icon
+        self.asset_path = weapon.asset_path
+        self.weapon_stats = weapon.weapon_stats
+        self.shop_data = weapon.shop_data
+        self.skins = weapon.skins
+        self.type = weapon.type
+        self._is_melee = weapon._is_melee
+        self._display_name_localized = weapon._display_name_localized
+        self._is_random = weapon._is_random
+        return self
+
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
     #     """Returns the weapon with the given UUID."""
@@ -326,6 +348,25 @@ class Skin(BaseModel, Generic[WeaponT]):
 
     def is_random(self) -> bool:
         return self._is_random
+
+    @classmethod
+    def _copy(cls, skin: Self) -> Self:
+        self = cls.__new__(cls)  # bypass __init__
+        self._state = skin._state
+        self._data = skin._data.copy()
+        self._display_name = skin._display_name
+        self._theme_uuid = skin._theme_uuid
+        self._content_tier_uuid = skin._content_tier_uuid
+        self._display_icon = skin._display_icon
+        self._wallpaper = skin._wallpaper
+        self.asset_path = skin.asset_path
+        self.chromas = skin.chromas.copy()
+        self.levels = skin.levels.copy()
+        self.type = skin.type
+        self.parent = skin.parent
+        self._display_name_localized = skin._display_name_localized
+        self._is_random = skin._is_random
+        return self
 
     # def get_skin_level(self, level: int) -> Optional[SkinLevel]:
     #     """get the skin's level with the given level.
@@ -466,6 +507,24 @@ class SkinChroma(BaseModel, Generic[SkinT]):
         """:class: `bool` Returns whether the bundle is a melee."""
         return self.parent.is_melee()
 
+    @classmethod
+    def _copy(cls, skin_chroma: SkinChroma) -> Self:
+        """Copies the given skin_chroma with the given parent."""
+        self = cls.__new__(cls)  # bypass __init__
+        self._state = skin_chroma._state
+        self._data = skin_chroma._data.copy()
+        self._display_name = skin_chroma._display_name
+        self._display_icon = skin_chroma._display_icon
+        self._full_render = skin_chroma._full_render
+        self._swatch = skin_chroma._swatch
+        self._streamed_video = skin_chroma._streamed_video
+        self.asset_path = skin_chroma.asset_path
+        self.type = skin_chroma.type
+        self.parent = skin_chroma.parent
+        self._display_name_localized = skin_chroma._display_name_localized
+        self._is_random = skin_chroma._is_random
+        return self
+
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
     #     """Returns the skin with the given UUID."""
@@ -578,6 +637,23 @@ class SkinLevel(BaseModel, Generic[SkinT]):
     def is_random(self) -> bool:
         """:class: `bool` Returns whether the skin is random."""
         return self._is_random
+
+    @classmethod
+    def _copy(cls, skin_level: SkinLevel) -> Self:
+        """Copies the given skin_level with the given parent."""
+        self = cls.__new__(cls)  # bypass __init__
+        self._state = skin_level._state
+        self._data = skin_level._data.copy()
+        self._display_name = skin_level._display_name
+        self._level = skin_level._level
+        self._display_icon = skin_level._display_icon
+        self._streamed_video = skin_level._streamed_video
+        self.asset_path = skin_level.asset_path
+        self.type = skin_level.type
+        self.parent = skin_level.parent
+        self._display_name_localized = skin_level._display_name_localized
+        self._is_random = skin_level._is_random
+        return self
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

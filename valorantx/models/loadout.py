@@ -3,23 +3,18 @@ from __future__ import annotations
 import logging
 
 # TODO: loadoutbuilder
-from typing import TYPE_CHECKING, Dict, Iterator, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 
 from valorantx.models.weapons import Weapon
 from valorantx.valorant_api_cache import CacheState
 
 from ..enums import LevelBorderID, SpraySlotID
-from .weapons import Skin, SkinChroma, SkinLevel, Weapon
+from .weapons import Weapon
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from valorantx.valorant_api.types.weapons import (
-        Skin as ValorantAPISkinPayload,
-        SkinChroma as ValorantAPISkinChromaPayload,
-        SkinLevel as ValorantAPISkinLevelPayload,
-        Weapon as ValorantAPIWeaponPayload,
-    )
+    from valorantx.valorant_api.types.weapons import Weapon as ValorantAPIWeaponPayload
 
     from ..client import Client
     from ..types.loadout import (
@@ -34,7 +29,8 @@ if TYPE_CHECKING:
     from .level_borders import LevelBorder
     from .player_cards import PlayerCard
     from .player_titles import PlayerTitle
-    from .sprays import Spray, SprayLevel
+    from .sprays import Spray
+    from .weapons import Skin, SkinChroma, SkinLevel
 
 
 _log = logging.getLogger(__name__)
@@ -42,23 +38,7 @@ _log = logging.getLogger(__name__)
 __all__ = (
     'Loadout',
     'Identity',
-    'SprayLoadout',
 )
-
-
-class SkinLoadout(Skin):
-    def __init__(self, *, state: CacheState, data: ValorantAPISkinPayload, parent: Weapon) -> None:
-        super().__init__(state=state, data=data, parent=parent)
-
-
-class SkinChromaLoadout(SkinChroma):
-    def __init__(self, *, state: CacheState, data: ValorantAPISkinChromaPayload, parent: Skin) -> None:
-        super().__init__(state=state, data=data, parent=parent)
-
-
-class SkinLevelLoadout(SkinLevel):
-    def __init__(self, *, state: CacheState, data: ValorantAPISkinLevelPayload, parent: Skin, level_number: int) -> None:
-        super().__init__(state=state, data=data, parent=parent, level_number=level_number)
 
 
 class Gun(Weapon):
@@ -67,34 +47,52 @@ class Gun(Weapon):
         state: CacheState,
         data: ValorantAPIWeaponPayload,
         data_loadout: GunPayload,
-        *,
-        favorites: Optional[Favorites] = None,
+        favorites: Favorites,
     ) -> None:
         super().__init__(state=state, data=data)
         self.data_loadout = data_loadout
+        self.favorites = favorites
         self._skin_loadout: Optional[Union[Skin, SkinLevel, SkinChroma]] = None
         self._buddy_loadout: Optional[Buddy] = None
         self._buddy_level_loadout: Optional[BuddyLevel] = None
 
         # skin loadout
         if data_loadout.get('ChromaID'):
-            self._skin_loadout = state.get_skin_chroma(data_loadout['ChromaID'])  # type: ignore
+            skin_chroma = state.get_skin_chroma(data_loadout['ChromaID'])
+            if skin_chroma is not None:
+                self._skin_loadout = skin_chroma.from_loadout(
+                    skin_chroma=skin_chroma, favorite=skin_chroma.uuid in favorites.favorited_content
+                )
+            else:
+                _log.warning('could not find skin chroma for gun %r', self.uuid)
         elif data_loadout.get('SkinLevelID'):
-            self._skin_loadout = state.get_skin_level(data_loadout['SkinLevelID'])
+            skin_level = state.get_skin_level(data_loadout['SkinLevelID'])
+            if skin_level is not None:
+                self._skin_loadout = skin_level.from_loadout(
+                    skin_level=skin_level, favorite=skin_level.uuid in favorites.favorited_content
+                )
+            else:
+                _log.warning('could not find skin level for gun %r', self.uuid)
         elif data_loadout.get('SkinID'):
-            self._skin_loadout = state.get_skin(data_loadout['SkinID'])  # type: ignore
-        if self._skin_loadout is None:
-            _log.warning('could not find skin for gun %r', self.uuid)
+            skin = state.get_skin(data_loadout['SkinID'])
+            if skin is not None:
+                self._skin_loadout = skin.from_loadout(skin=skin, favorite=skin.uuid in favorites.favorited_content)
+            else:
+                _log.warning('could not find skin for gun %r', self.uuid)
 
         # buddy loadout
         if data_loadout.get('CharmID'):
-            self._buddy_loadout = state.get_buddy(uuid=self.data_loadout.get('CharmID'))
-            if self._buddy_loadout is None:
+            buddy = state.get_buddy(uuid=self.data_loadout.get('CharmID'))
+            if buddy is not None:
+                self._buddy_loadout = buddy.from_loadout(buddy=buddy, favorite=buddy.uuid in favorites.favorited_content)
+            else:
                 _log.warning('could not find buddy for gun %r', self.uuid)
 
         if data_loadout.get('CharmLevelID'):
-            self._buddy_level_loadout = state.get_buddy_level(uuid=self.data_loadout.get('CharmLevelID'))
-            if self._buddy_level_loadout is None:
+            buddy_level = state.get_buddy_level(uuid=self.data_loadout.get('CharmLevelID'))
+            if buddy_level is not None:
+                self._buddy_level_loadout = buddy_level._copy(buddy_level=buddy_level)
+            else:
                 _log.warning('could not find buddy level for gun %r', self.uuid)
 
     @property
@@ -122,9 +120,7 @@ class Gun(Weapon):
         return self._buddy_level_loadout
 
     @classmethod
-    def from_loadout(
-        cls, *, state: CacheState, data_loadout: GunPayload, favorites: Optional[Favorites] = None
-    ) -> Optional[Self]:
+    def from_loadout(cls, *, state: CacheState, data_loadout: GunPayload, favorites: Favorites) -> Optional[Self]:
         weapon = state.get_weapon(uuid=data_loadout['ID'])
         if weapon is None:
             return None
@@ -132,8 +128,9 @@ class Gun(Weapon):
 
 
 class Identity:
-    def __init__(self, client: Client, data: IdentityPayload) -> None:
+    def __init__(self, client: Client, data: IdentityPayload, favorites: Favorites) -> None:
         self._client = client
+        self.favorites = favorites
         self._player_card_id: str = data['PlayerCardID']
         self._player_title_id: str = data['PlayerTitleID']
         self.account_level: int = data['AccountLevel']
@@ -144,20 +141,41 @@ class Identity:
         self._preferred_level_border: Optional[LevelBorder] = None
 
         # player card
-        self.player_card = self._client.valorant_api.get_player_card(self._player_card_id)
-        if self.player_card is None:
+        player_card = self._client.valorant_api.get_player_card(self._player_card_id)
+        if player_card is not None:
+            self.player_card = player_card.from_loadout(
+                player_card=player_card, favorite=player_card.uuid in favorites.favorited_content
+            )
+        else:
             _log.warning(f'player card {self._player_card_id!r} not found')
 
         # player title
-        self.player_title = self._client.valorant_api.get_player_title(self._player_title_id)
-        if self.player_title is None:
+        player_title = self._client.valorant_api.get_player_title(self._player_title_id)
+        if player_title is not None:
+            self.player_title = player_title.from_loadout(
+                player_title=player_title,
+                favorite=player_title.uuid in favorites.favorited_content,  # NOTE: player title not support favorite
+            )
+        else:
             _log.warning(f'player title {self._player_title_id!r} not found')
 
         # level border
         if self._preferred_level_border_id != LevelBorderID.empty.value:
-            self.preferred_level_border = self._client.valorant_api.get_level_border(self._preferred_level_border_id)
-            if self.preferred_level_border is None:
+            preferred_level_border = self._client.valorant_api.get_level_border(self._preferred_level_border_id)
+            if preferred_level_border is not None:
+                self.preferred_level_border = preferred_level_border.from_loadout(
+                    level_border=preferred_level_border,
+                    favorite=preferred_level_border.uuid in favorites.favorited_content,
+                )
+            else:
                 _log.warning(f'level border {self._preferred_level_border_id!r} not found')
+
+    # def _update_from_data(self, data: IdentityPayload) -> None:
+    #     self._player_card_id = data['PlayerCardID']
+    #     self._player_title_id = data['PlayerTitleID']
+    #     self.account_level = data['AccountLevel']
+    #     self._preferred_level_border_id = data['PreferredLevelBorderID']
+    #     self.hide_account_level = data['HideAccountLevel']
 
     @property
     def player_card(self) -> Optional[PlayerCard]:
@@ -187,42 +205,8 @@ class Identity:
     #     account_xp = await self._client.fetch_account_xp()
 
 
-class SprayLoadout:
-    def __init__(self, client: Client, data: SprayPayload, *, favorite: bool) -> None:
-        self._client: Client = client
-        self._favorite: bool = favorite
-        self.equip_slot_id: str = data['EquipSlotID']
-        self._spray_id: str = data['SprayID']
-        self._spray_level_id: Optional[str] = data['SprayLevelID']
-        # cache spray and spray level
-        self._spray: Optional[Spray] = self._client.valorant_api.get_spray(self._spray_id)
-        self._spray_level: Optional[SprayLevel] = None
-        if self._spray_level_id is not None:
-            self._spray_level = self._client.valorant_api.get_spray_level(self._spray_level_id)
-
-    @property
-    def slot_number(self) -> int:
-        if self.equip_slot_id == SpraySlotID.slot_1.value:
-            return 0
-        elif self.equip_slot_id == SpraySlotID.slot_2.value:
-            return 1
-        elif self.equip_slot_id == SpraySlotID.slot_3.value:
-            return 2
-        return -1
-
-    @property
-    def favorite(self) -> bool:
-        return self._favorite
-
-    def get_spray(self) -> Optional[Spray]:
-        return self._spray
-
-    def get_spray_level(self) -> Optional[SprayLevel]:
-        return self._spray_level
-
-
 class GunsLoadout:
-    def __init__(self, state: CacheState, guns: List[GunPayload], favorites: Optional[Favorites] = None) -> None:
+    def __init__(self, state: CacheState, guns: List[GunPayload], favorites: Favorites) -> None:
         self._state: CacheState = state
         self.melee: Optional[Gun] = None
         self.classic: Optional[Gun] = None
@@ -316,29 +300,52 @@ class GunsLoadout:
         return [self.melee, *self.sidearms, *self.smgs, *self.shotguns, *self.rifles, *self.snipers, *self.machine_guns]
 
 
+class SpraysLoadout:
+    def __init__(self, state: CacheState, sprays: List[SprayPayload], favorites: Favorites) -> None:
+        self.slot_1: Optional[Spray] = None
+        self.slot_2: Optional[Spray] = None
+        self.slot_3: Optional[Spray] = None
+        self.slot_4: Optional[Spray] = None  # TODO: patch 6.10 support sprays in 4th slot
+        for spray_data in sprays:
+            equip_slot_id = spray_data['EquipSlotID']
+            spray = state.get_spray(spray_data['SprayID'])
+            if spray is not None:
+                spray = spray.from_loadout(spray=spray, favorite=spray.uuid in favorites.favorited_content)
+                if equip_slot_id == SpraySlotID.slot_1.value:
+                    self.slot_1 = spray
+                elif equip_slot_id == SpraySlotID.slot_2.value:
+                    self.slot_2 = spray
+                elif equip_slot_id == SpraySlotID.slot_3.value:
+                    self.slot_3 = spray
+                else:
+                    _log.warning('unknown spray slot %r', spray_data)
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('slot_1', self.slot_1),
+            ('slot_2', self.slot_2),
+            ('slot_3', self.slot_3),
+            ('slot_4', self.slot_4),
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
+    def __iter__(self) -> Iterator[Optional[Spray]]:
+        return iter([self.slot_1, self.slot_2, self.slot_3, self.slot_4])
+
+    def to_list(self) -> List[Optional[Spray]]:
+        return [self.slot_1, self.slot_2, self.slot_3, self.slot_4]
+
+
 class Loadout:
-    def __init__(self, client: Client, data: LoadoutPayload, favorites: Optional[Favorites] = None) -> None:
+    def __init__(self, client: Client, data: LoadoutPayload, favorites: Favorites) -> None:
         self._client: Client = client
         self.subject: str = data['Subject']
         self.version: int = data['Version']
         self.guns: GunsLoadout = GunsLoadout(client.valorant_api.cache, data['Guns'], favorites=favorites)
-        # for gun_data in data['Guns']:
-        #     gun = Gun.from_loadout(state=client.valorant_api.cache, data_loadout=gun_data)
-        # if gun is None:
-        #     _log.warning('could not find gun for loadout %r', data)
-        #     continue
-        # attrname = gun.display_name.default.lower()
-        # if hasattr(self, attrname):
-        #     setattr(self, attrname, gun)
-        # else:
-        #     _log.warning('could not find attribute for gun %r', gun)
-
-        self._sprays: Dict[str, SprayLoadout] = {}
-        self.identity: Identity = Identity(self._client, data['Identity'])
+        self.sprays: SpraysLoadout = SpraysLoadout(client.valorant_api.cache, data['Sprays'], favorites=favorites)
+        self.identity: Identity = Identity(self._client, data['Identity'], favorites)
         self.incognito: bool = data['Incognito']
-        for spray in data['Sprays']:
-            spray_loadout = SprayLoadout(self._client, spray, favorite=False)
-            self._sprays[str(spray_loadout.slot_number)] = spray_loadout
         self.favorites: Optional[Favorites] = None
 
     def __repr__(self) -> str:
@@ -353,55 +360,9 @@ class Loadout:
     def __hash__(self) -> int:
         return hash((self.subject, self.version, self.incognito))
 
-    @property
-    def sprays(self) -> List[SprayLoadout]:
-        return list(self._sprays.values())
-
-    def get_spray(self, slot_number: Literal[0, 1, 2]) -> Optional[SprayLoadout]:
-        return self._sprays.get(str(slot_number))
-
     #     account_xp = await self._client.fetch_account_xp()
     #     self._client.user.account_level = account_xp.level
     #     self.identity.account_level = account_xp.level
-
-    async def _update_favorites(self):
-        ...
-        # self.favorites = await self._client.fetch_favorites()
-
-    #     for i_fav in favorite.items:
-    #         if i_fav.type == ItemType.skin:
-    #             for i_skin in self._skins:
-    #                 if i_skin is not None:
-    #                     skin_loadout = i_skin.get_skin() if i_skin.type != ItemType.skin else i_skin
-    #                     if skin_loadout is not None:
-    #                         if skin_loadout == i_fav:
-    #                             i_skin.to_favorite()
-
-    #         if i_fav.type == ItemType.buddy:
-    #             for i_skin in self._skins:
-    #                 if i_skin is not None:
-    #                     skin_buddy = i_skin.get_buddy()
-    #                     if skin_buddy is not None:
-    #                         if skin_buddy == i_fav:
-    #                             skin_buddy.to_favorite()
-
-    #         if i_fav.type == ItemType.spray:
-    #             for i_spray in self.get_sprays():
-    #                 if i_spray is not None:
-    #                     if i_spray == i_fav:
-    #                         i_spray.to_favorite()
-
-    #         if i_fav.type == ItemType.player_card:
-    #             player_card = self.get_player_card()
-    #             if player_card == i_fav:
-    #                 if player_card is not None:
-    #                     player_card.to_favorite()
-
-    #         if i_fav.type == ItemType.level_border:
-    #             level_border = self.get_level_border()
-    #             if level_border is not None:
-    #                 if level_border == i_fav:
-    #                     level_border.to_favorite()
 
 
 class LoadoutBuilder:

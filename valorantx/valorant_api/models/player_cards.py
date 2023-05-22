@@ -8,7 +8,8 @@ from ..localization import Localization
 from .abc import BaseModel
 
 if TYPE_CHECKING:
-    # from typing_extensions import Self
+    from typing_extensions import Self
+
     from ..cache import CacheState
     from ..types.player_cards import PlayerCard as PlayerCardPayload
     from .themes import Theme
@@ -105,3 +106,20 @@ class PlayerCard(BaseModel):
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
     #     data = client._assets.get_player_card(uuid=uuid)
     #     return cls(client=client, data=data) if data else None
+
+    @classmethod
+    def _copy(cls, player_card: Self) -> Self:
+        self = cls.__new__(cls)  # bypass __init__
+        self._state = player_card._state
+        self._data = player_card._data.copy()
+        self._display_name = player_card._display_name
+        self._is_hidden_if_not_owned = player_card._is_hidden_if_not_owned
+        self._theme_uuid = player_card._theme_uuid
+        self._display_icon = player_card._display_icon
+        self._small_art = player_card._small_art
+        self._wide_art = player_card._wide_art
+        self._large_art = player_card._large_art
+        self.asset_path = player_card.asset_path
+        self.type = player_card.type
+        self._display_name_localized = player_card._display_name_localized
+        return self

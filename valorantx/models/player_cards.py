@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from valorantx.valorant_api.models.player_cards import PlayerCard as PlayerCardValorantAPI
 
@@ -16,9 +16,29 @@ if TYPE_CHECKING:
 
 
 class PlayerCard(PlayerCardValorantAPI, Item):
-    def __init__(self, *, state: CacheState, data: PlayerCardPayloadValorantAPI) -> None:
+    if TYPE_CHECKING:
+        _state: CacheState
+
+    def __init__(self, *, state: CacheState, data: PlayerCardPayloadValorantAPI, favorite: bool = False) -> None:
         super().__init__(state=state, data=data)
         Item.__init__(self)
+        self._is_favorite: bool = favorite
+
+    def is_favorite(self) -> bool:
+        return self._is_favorite
+
+    @classmethod
+    def _copy(cls, player_card: Self) -> Self:
+        self = super()._copy(player_card)
+        self._cost = player_card._cost
+        self._is_favorite = player_card._is_favorite
+        return self
+
+    @classmethod
+    def from_loadout(cls, *, player_card: Self, favorite: bool = False) -> Self:
+        self = player_card._copy(player_card)
+        self._is_favorite = favorite
+        return self
 
 
 class PlayerCardBundle(PlayerCard, BundleItemOffer):
@@ -32,8 +52,6 @@ class PlayerCardBundle(PlayerCard, BundleItemOffer):
         return f'<PlayerCardBundle display_name={self.display_name!r}>'
 
     @classmethod
-    def from_data(cls, *, state: CacheState, data_bundle: BundleItemOfferPayload) -> Optional[Self]:
-        player_card = state.get_player_card(data_bundle['BundleItemOfferID'])
-        if player_card is None:
-            return None
-        return cls(state=state, data=player_card._data, data_bundle=data_bundle)
+    def from_bundle(cls, *, player_card: PlayerCard, data: BundleItemOfferPayload) -> Self:
+        plyaer_card = player_card._copy(player_card)
+        return cls(state=plyaer_card._state, data=plyaer_card._data, data_bundle=data)

@@ -15,6 +15,7 @@ from .valorant_api_cache import CacheState
 
 if TYPE_CHECKING:
     from .models.buddies import Buddy, BuddyLevel
+    from .models.level_borders import LevelBorder
     from .models.player_cards import PlayerCard
     from .models.player_titles import PlayerTitle
     from .models.sprays import Spray, SprayLevel
@@ -91,4 +92,9 @@ class Client(ClientValorantAPI):
         # player titles
 
         def get_player_title(self, uuid: str) -> Optional[PlayerTitle]:
+            ...
+
+        # level borders
+
+        def get_level_border(self, uuid: str) -> Optional[LevelBorder]:
             ...

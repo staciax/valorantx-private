@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List
 
 from valorantx.valorant_api.models.sprays import Spray as SprayValorantAPI, SprayLevel as SprayLevelValorantAPI
 
@@ -19,10 +19,29 @@ if TYPE_CHECKING:
 
 
 class Spray(SprayValorantAPI, Item):
-    def __init__(self, *, state: CacheState, data: SprayPayloadValorantAPI) -> None:
+    if TYPE_CHECKING:
+        _state: CacheState
+
+    def __init__(self, *, state: CacheState, data: SprayPayloadValorantAPI, favorite: bool = False) -> None:
         super().__init__(state=state, data=data)
         Item.__init__(self)
         self.levels: List[SprayLevel] = [SprayLevel(state=state, data=level, parent=self) for level in data['levels']]
+        self._is_favorite: bool = favorite
+
+    def is_favorite(self) -> bool:
+        return self._is_favorite
+
+    @classmethod
+    def _copy(cls, spray: Self) -> Self:
+        self = super()._copy(spray)
+        self._cost = spray._cost
+        return self
+
+    @classmethod
+    def from_loadout(cls, *, spray: Self, favorite: bool) -> Self:
+        self = spray._copy(spray)
+        self._is_favorite = favorite
+        return self
 
 
 class SprayLevel(SprayLevelValorantAPI['Spray']):
@@ -38,6 +57,11 @@ class SprayLevel(SprayLevelValorantAPI['Spray']):
     @property
     def price(self) -> int:
         return self.cost
+
+    @classmethod
+    def _copy(cls, spray: Self) -> Self:
+        self = super()._copy(spray)
+        return self
 
 
 class SprayBundle(Spray, BundleItemOffer):
@@ -55,8 +79,6 @@ class SprayBundle(Spray, BundleItemOffer):
         return f'<SprayBundle display_name={self.display_name!r}>'
 
     @classmethod
-    def from_data(cls, *, state: CacheState, data_bundle: BundleItemOfferPayload) -> Optional[Self]:
-        spray = state.get_spray(data_bundle['BundleItemOfferID'])
-        if spray is None:
-            return None
-        return cls(state=state, data=spray._data, data_bundle=data_bundle)
+    def from_bundle(cls, *, spray: Spray, data: BundleItemOfferPayload) -> Self:
+        spray = spray._copy(spray)
+        return cls(state=spray._state, data=spray._data, data_bundle=data)

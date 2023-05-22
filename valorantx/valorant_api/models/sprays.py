@@ -9,7 +9,8 @@ from ..localization import Localization
 from .abc import BaseModel
 
 if TYPE_CHECKING:
-    # from typing_extensions import Self
+    from typing_extensions import Self
+
     from ..cache import CacheState
     from ..types.sprays import Spray as SprayPayload, SprayLevel as SprayLevelPayload
     from .themes import Theme
@@ -97,6 +98,25 @@ class Spray(BaseModel):
             return None
         return Asset._from_url(state=self._state, url=self._animation_gif)
 
+    @classmethod
+    def _copy(cls, spray: Self) -> Self:
+        self = cls.__new__(cls)  # bypass __init__
+        self._state = spray._state
+        self._data = spray._data.copy()
+        self._display_name = spray._display_name
+        self._category = spray._category
+        self._theme_uuid = spray._theme_uuid
+        self._display_icon = spray._display_icon
+        self._full_icon = spray._full_icon
+        self._full_transparent_icon = spray._full_transparent_icon
+        self._animation_png = spray._animation_png
+        self._animation_gif = spray._animation_gif
+        self.asset_path = spray.asset_path
+        self.levels = spray.levels.copy()
+        self.type = spray.type
+        self._display_name_localized = spray._display_name_localized
+        return self
+
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
     #     """Returns the spray with the given uuid."""
@@ -108,6 +128,7 @@ class SprayLevel(BaseModel, Generic[SprayT]):
     def __init__(self, state: CacheState, data: SprayLevelPayload, parent: SprayT) -> None:
         super().__init__(data['uuid'])
         self._state: CacheState = state
+        self._data: SprayLevelPayload = data
         self.spray_level: int = data['sprayLevel']
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
@@ -139,6 +160,20 @@ class SprayLevel(BaseModel, Generic[SprayT]):
     def display_icon(self) -> Optional[Asset]:
         """:class: `str` Returns the spray's display icon."""
         return Asset._from_url(state=self._state, url=self._display_icon) if self._display_icon else None
+
+    @classmethod
+    def _copy(cls, spray_level: Self) -> Self:
+        self = cls.__new__(cls)  # bypass __init__
+        self._state = spray_level._state
+        self._data = spray_level._data.copy()
+        self.spray_level = spray_level.spray_level
+        self._display_name = spray_level._display_name
+        self._display_icon = spray_level._display_icon
+        self.asset_path = spray_level.asset_path
+        self.type = spray_level.type
+        self.parent = spray_level.parent._copy(spray_level.parent)
+        self._display_name_localized = spray_level._display_name_localized
+        return self
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

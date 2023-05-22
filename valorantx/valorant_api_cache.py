@@ -10,6 +10,7 @@ from valorantx.valorant_api.cache import CacheState as CacheStateValorantAPI
 
 from .enums import ItemType, Locale
 from .models.buddies import Buddy
+from .models.level_borders import LevelBorder
 from .models.player_cards import PlayerCard
 from .models.player_titles import PlayerTitle
 from .models.sprays import Spray
@@ -17,7 +18,7 @@ from .models.weapons import Weapon
 
 if TYPE_CHECKING:
     from valorantx.valorant_api.http import HTTPClient as HTTPClientValorantAPI
-    from valorantx.valorant_api.types import buddies, player_cards, player_titles, sprays, weapons
+    from valorantx.valorant_api.types import buddies, level_borders, player_cards, player_titles, sprays, weapons
 
     from .models.buddies import BuddyLevel
     from .models.sprays import SprayLevel
@@ -44,6 +45,7 @@ class CacheState(CacheStateValorantAPI):
         _player_cards: Dict[str, PlayerCard]
         _weapons: Dict[str, Weapon]
         _player_titles: Dict[str, PlayerTitle]
+        _level_borders: Dict[str, LevelBorder]
 
     def __init__(self, *, locale: Locale, http: HTTPClientValorantAPI, to_file: bool = False) -> None:
         super().__init__(locale=locale, http=http, to_file=to_file)
@@ -93,9 +95,22 @@ class CacheState(CacheStateValorantAPI):
                 self._skin_levels[level.uuid] = level
         return weapon
 
+    # level borders
+
+    def store_level_border(self, data: level_borders.LevelBorder) -> LevelBorder:
+        level_border_id = data['uuid']
+        self._level_borders[level_border_id] = level_border = LevelBorder(state=self, data=data)
+        return level_border
+
     if TYPE_CHECKING:
 
+        def get_skin(self, uuid: Optional[str]) -> Optional[Skin]:
+            ...
+
         def get_skin_level(self, uuid: Optional[str]) -> Optional[SkinLevel]:
+            ...
+
+        def get_skin_chroma(self, uuid: Optional[str]) -> Optional[SkinChroma]:
             ...
 
         def get_player_card(self, uuid: Optional[str]) -> Optional[PlayerCard]:
@@ -111,6 +126,9 @@ class CacheState(CacheStateValorantAPI):
             ...
 
         def get_weapon(self, uuid: Optional[str]) -> Optional[Weapon]:
+            ...
+
+        def get_level_border(self, uuid: Optional[str]) -> Optional[LevelBorder]:
             ...
 
     def insert_cost(self, uuid: str, type: ItemType, cost: int) -> None:

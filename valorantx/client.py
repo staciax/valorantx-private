@@ -408,9 +408,8 @@ class Client:
         # return AccountXP(client=self, data=data)
 
     @_authorize_required
-    async def fetch_loudout(self, *, include_favorite: bool = True) -> Loadout:
-        favorites = await self.fetch_favorites() if include_favorite else None
-
+    async def fetch_loudout(self) -> Loadout:
+        favorites = await self.fetch_favorites()
         data = await self.http.get_personal_player_loadout()
         return Loadout(client=self, data=data, favorites=favorites)
 

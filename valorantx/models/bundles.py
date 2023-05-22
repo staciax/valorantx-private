@@ -57,22 +57,23 @@ class FeaturedBundle(Bundle):
             for item in data_bundle['ItemOffers']:
                 for reward in item['Offer']['Rewards']:
                     item_type = reward['ItemTypeID']
+                    item_offer_id = item['BundleItemOfferID']
                     if item_type == ItemType.skin_level.value:
-                        skin_level = SkinLevelBundle.from_data(state=state, data_bundle=item)
+                        skin_level = state.get_skin_level(item_offer_id)
                         if skin_level is not None:
-                            self._items.append(skin_level)
+                            self._items.append(SkinLevelBundle.from_bundle(skin_level=skin_level, data=item))
                     elif item_type == ItemType.spray.value:
-                        spray = SprayBundle.from_data(state=state, data_bundle=item)
+                        spray = state.get_spray(item_offer_id)
                         if spray is not None:
-                            self._items.append(spray)
+                            self._items.append(SprayBundle.from_bundle(spray=spray, data=item))
                     elif item_type == ItemType.buddy_level.value:
-                        buddy_level = BuddyLevelBundle.from_data(state=state, data_bundle=item)
+                        buddy_level = state.get_buddy_level(item_offer_id)
                         if buddy_level is not None:
-                            self._items.append(buddy_level)
+                            self._items.append(BuddyLevelBundle.from_bundle(buddy_level=buddy_level, data=item))
                     elif item_type == ItemType.player_card.value:
-                        player_card = PlayerCardBundle.from_data(state=state, data_bundle=item)
+                        player_card = state.get_player_card(item_offer_id)
                         if player_card is not None:
-                            self._items.append(player_card)
+                            self._items.append(PlayerCardBundle.from_bundle(player_card=player_card, data=item))
                     else:
                         _log.warning('Unknown item type: %s uuid: %s', item_type, reward['ItemID'])
 
