@@ -60,7 +60,7 @@ class Gun(Weapon):
         if data_loadout.get('ChromaID'):
             skin_chroma = state.get_skin_chroma(data_loadout['ChromaID'])
             if skin_chroma is not None:
-                self._skin_loadout = skin_chroma.from_loadout(
+                self._skin_loadout = skin_chroma.__class__.from_loadout(
                     skin_chroma=skin_chroma, favorite=skin_chroma.uuid in favorites.favorited_content
                 )
             else:
@@ -68,7 +68,7 @@ class Gun(Weapon):
         elif data_loadout.get('SkinLevelID'):
             skin_level = state.get_skin_level(data_loadout['SkinLevelID'])
             if skin_level is not None:
-                self._skin_loadout = skin_level.from_loadout(
+                self._skin_loadout = skin_level.__class__.from_loadout(
                     skin_level=skin_level, favorite=skin_level.uuid in favorites.favorited_content
                 )
             else:
@@ -76,7 +76,9 @@ class Gun(Weapon):
         elif data_loadout.get('SkinID'):
             skin = state.get_skin(data_loadout['SkinID'])
             if skin is not None:
-                self._skin_loadout = skin.from_loadout(skin=skin, favorite=skin.uuid in favorites.favorited_content)
+                self._skin_loadout = skin.__class__.from_loadout(
+                    skin=skin, favorite=skin.uuid in favorites.favorited_content
+                )
             else:
                 _log.warning('could not find skin for gun %r', self.uuid)
 
@@ -84,7 +86,9 @@ class Gun(Weapon):
         if data_loadout.get('CharmID'):
             buddy = state.get_buddy(uuid=self.data_loadout.get('CharmID'))
             if buddy is not None:
-                self._buddy_loadout = buddy.from_loadout(buddy=buddy, favorite=buddy.uuid in favorites.favorited_content)
+                self._buddy_loadout = buddy.__class__.from_loadout(
+                    buddy=buddy, favorite=buddy.uuid in favorites.favorited_content
+                )
             else:
                 _log.warning('could not find buddy for gun %r', self.uuid)
 
@@ -120,11 +124,12 @@ class Gun(Weapon):
         return self._buddy_level_loadout
 
     @classmethod
-    def from_loadout(cls, *, state: CacheState, data_loadout: GunPayload, favorites: Favorites) -> Optional[Self]:
-        weapon = state.get_weapon(uuid=data_loadout['ID'])
-        if weapon is None:
-            return None
-        return cls(state=state, data=weapon._data, data_loadout=data_loadout, favorites=favorites)
+    def from_loadout(cls, *, weapon: Weapon, data_loadout: GunPayload, favorites: Favorites) -> Self:
+        weapon = weapon._copy(weapon=weapon)
+        return cls(state=weapon._state, data=weapon._data, data_loadout=data_loadout, favorites=favorites)
+
+    def to_payload(self) -> GunPayload:
+        return self.data_loadout
 
 
 class Identity:
@@ -143,7 +148,7 @@ class Identity:
         # player card
         player_card = self._client.valorant_api.get_player_card(self._player_card_id)
         if player_card is not None:
-            self.player_card = player_card.from_loadout(
+            self.player_card = player_card.__class__.from_loadout(
                 player_card=player_card, favorite=player_card.uuid in favorites.favorited_content
             )
         else:
@@ -152,7 +157,7 @@ class Identity:
         # player title
         player_title = self._client.valorant_api.get_player_title(self._player_title_id)
         if player_title is not None:
-            self.player_title = player_title.from_loadout(
+            self.player_title = player_title.__class__.from_loadout(
                 player_title=player_title,
                 favorite=player_title.uuid in favorites.favorited_content,  # NOTE: player title not support favorite
             )
@@ -163,7 +168,7 @@ class Identity:
         if self._preferred_level_border_id != LevelBorderID.empty.value:
             preferred_level_border = self._client.valorant_api.get_level_border(self._preferred_level_border_id)
             if preferred_level_border is not None:
-                self.preferred_level_border = preferred_level_border.from_loadout(
+                self.preferred_level_border = preferred_level_border.__class__.from_loadout(
                     level_border=preferred_level_border,
                     favorite=preferred_level_border.uuid in favorites.favorited_content,
                 )
@@ -204,6 +209,18 @@ class Identity:
     # async def refresh_account_level(self) -> None:
     #     account_xp = await self._client.fetch_account_xp()
 
+    def to_payload(self) -> IdentityPayload:
+        payload: IdentityPayload = {
+            'PlayerCardID': self.player_card.uuid if self.player_card is not None else self._player_card_id,
+            'PlayerTitleID': self.player_title.uuid if self.player_title is not None else self._player_title_id,
+            'AccountLevel': self.account_level,
+            'PreferredLevelBorderID': self.preferred_level_border.uuid
+            if self.preferred_level_border is not None
+            else self._preferred_level_border_id,
+            'HideAccountLevel': self.hide_account_level,
+        }
+        return payload
+
 
 class GunsLoadout:
     def __init__(self, state: CacheState, guns: List[GunPayload], favorites: Favorites) -> None:
@@ -228,7 +245,11 @@ class GunsLoadout:
         self.odin: Optional[Gun] = None
 
         for data in guns:
-            gun = Gun.from_loadout(state=state, data_loadout=data, favorites=favorites)
+            weapon = state.get_weapon(uuid=data['ID'])
+            if weapon is None:
+                _log.warning('could not find weapon for loadout %r', data)
+                continue
+            gun = Gun.from_loadout(weapon=weapon, data_loadout=data, favorites=favorites)
             if gun is None:
                 _log.warning('could not find gun for loadout %r', data)
                 continue
@@ -299,9 +320,17 @@ class GunsLoadout:
     def to_list(self) -> List[Optional[Gun]]:
         return [self.melee, *self.sidearms, *self.smgs, *self.shotguns, *self.rifles, *self.snipers, *self.machine_guns]
 
+    def to_payload(self) -> List[GunPayload]:
+        payload = []
+        for gun in self.to_list():
+            if gun is not None:
+                payload.append(gun.to_payload())
+        return payload
+
 
 class SpraysLoadout:
     def __init__(self, state: CacheState, sprays: List[SprayPayload], favorites: Favorites) -> None:
+        self._sprays: List[SprayPayload] = sprays
         self.slot_1: Optional[Spray] = None
         self.slot_2: Optional[Spray] = None
         self.slot_3: Optional[Spray] = None
@@ -309,16 +338,18 @@ class SpraysLoadout:
         for spray_data in sprays:
             equip_slot_id = spray_data['EquipSlotID']
             spray = state.get_spray(spray_data['SprayID'])
-            if spray is not None:
-                spray = spray.from_loadout(spray=spray, favorite=spray.uuid in favorites.favorited_content)
-                if equip_slot_id == SpraySlotID.slot_1.value:
-                    self.slot_1 = spray
-                elif equip_slot_id == SpraySlotID.slot_2.value:
-                    self.slot_2 = spray
-                elif equip_slot_id == SpraySlotID.slot_3.value:
-                    self.slot_3 = spray
-                else:
-                    _log.warning('unknown spray slot %r', spray_data)
+            if spray is None:
+                _log.warning('could not find spray for loadout %r', spray_data)
+                continue
+            spray = spray.from_loadout(spray=spray, favorite=spray.uuid in favorites.favorited_content)
+            if equip_slot_id == SpraySlotID.slot_1.value:
+                self.slot_1 = spray
+            elif equip_slot_id == SpraySlotID.slot_2.value:
+                self.slot_2 = spray
+            elif equip_slot_id == SpraySlotID.slot_3.value:
+                self.slot_3 = spray
+            else:
+                _log.warning('unknown spray slot %r', spray_data)
 
     def __repr__(self) -> str:
         attrs = [
@@ -335,6 +366,13 @@ class SpraysLoadout:
 
     def to_list(self) -> List[Optional[Spray]]:
         return [self.slot_1, self.slot_2, self.slot_3, self.slot_4]
+
+    def to_payload(self) -> List[SprayPayload]:
+        # payload = []
+        # for spray in self.to_list():
+        #     if spray is not None:
+        #         payload.append(spray.to_payload())
+        return self._sprays
 
 
 class Loadout:
@@ -364,6 +402,64 @@ class Loadout:
     #     self._client.user.account_level = account_xp.level
     #     self.identity.account_level = account_xp.level
 
+    def to_payload(self) -> LoadoutPayload:
+        payload: LoadoutPayload = {
+            'Subject': self.subject,
+            'Version': self.version,
+            'Guns': self.guns.to_payload(),
+            'Sprays': self.sprays.to_payload(),
+            'Identity': self.identity.to_payload(),
+            'Incognito': self.incognito,
+        }
+        return payload
 
-class LoadoutBuilder:
-    ...  # TODO: implement
+
+# class GunsBuilder:
+#     def __init__(
+#         self,
+#         melee: Optional[Gun] = None,
+#         classic: Optional[Gun] = None,
+#         shorty: Optional[Gun] = None,
+#         frenzy: Optional[Gun] = None,
+#         ghost: Optional[Gun] = None,
+#         sheriff: Optional[Gun] = None,
+#         stinger: Optional[Gun] = None,
+#         spectre: Optional[Gun] = None,
+#         bucky: Optional[Gun] = None,
+#         judge: Optional[Gun] = None,
+#         bulldog: Optional[Gun] = None,
+#         guardian: Optional[Gun] = None,
+#         phantom: Optional[Gun] = None,
+#         vandal: Optional[Gun] = None,
+#         marshal: Optional[Gun] = None,
+#         operator: Optional[Gun] = None,
+#         ares: Optional[Gun] = None,
+#         odin: Optional[Gun] = None,
+#     ) -> None:
+#         self.melee: Optional[Gun] = melee
+#         self.classic: Optional[Gun] = classic
+#         self.shorty: Optional[Gun] = shorty
+#         self.frenzy: Optional[Gun] = frenzy
+#         self.ghost: Optional[Gun] = ghost
+#         self.sheriff: Optional[Gun] = sheriff
+#         self.stinger: Optional[Gun] = stinger
+#         self.spectre: Optional[Gun] = spectre
+#         self.bucky: Optional[Gun] = bucky
+#         self.judge: Optional[Gun] = judge
+#         self.bulldog: Optional[Gun] = bulldog
+#         self.guardian: Optional[Gun] = guardian
+#         self.phantom: Optional[Gun] = phantom
+#         self.vandal: Optional[Gun] = vandal
+#         self.marshal: Optional[Gun] = marshal
+#         self.operator: Optional[Gun] = operator
+#         self.ares: Optional[Gun] = ares
+#         self.odin: Optional[Gun] = odin
+
+
+# class LoadoutBuilder:
+#     def __init__(self, client: Client, subject: str, version: int = 0) -> None:
+#         self._client: Client = client
+#         self.subject: str = subject
+#         self.version: int = version
+
+#         self.incognito: bool = False
