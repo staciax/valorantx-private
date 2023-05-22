@@ -50,6 +50,9 @@ __all__ = (
 
 
 class Weapon(WeaponValorantAPI, Item):
+    if TYPE_CHECKING:
+        _state: CacheState
+
     def __init__(self, *, state: CacheState, data: ValorantAPIWeaponPayload, favorite: bool = False) -> None:
         super().__init__(state=state, data=data)
         self.skins: List[Skin] = [Skin(state=state, data=skin, parent=self) for skin in data['skins']]
