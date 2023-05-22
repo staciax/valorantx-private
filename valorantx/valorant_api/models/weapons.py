@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Generic, List, Optional, TypeVar, Union  # overload
+from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar, Union  # overload
 
 from .. import utils
 from ..asset import Asset
@@ -41,7 +41,7 @@ __all__ = (
 # TODO: patch 6.x support variants favorites colors of skins
 
 WeaponT = TypeVar('WeaponT', bound='Weapon')
-SkinT = TypeVar('SkinT', bound='Skin')
+SkinT = TypeVar('SkinT', bound='Skin[Any]')
 
 
 class AdsStats:
@@ -510,7 +510,7 @@ class SkinChroma(BaseModel, Generic[SkinT]):
         return self.parent.is_melee()
 
     @classmethod
-    def _copy(cls, skin_chroma: SkinChroma) -> Self:
+    def _copy(cls, skin_chroma: Self) -> Self:
         """Copies the given skin_chroma with the given parent."""
         self = cls.__new__(cls)  # bypass __init__
         self._uuid = skin_chroma._uuid
@@ -642,7 +642,7 @@ class SkinLevel(BaseModel, Generic[SkinT]):
         return self._is_random
 
     @classmethod
-    def _copy(cls, skin_level: SkinLevel) -> Self:
+    def _copy(cls, skin_level: Self) -> Self:
         """Copies the given skin_level with the given parent."""
         self = cls.__new__(cls)  # bypass __init__
         self._uuid = skin_level._uuid
@@ -653,8 +653,10 @@ class SkinLevel(BaseModel, Generic[SkinT]):
         self._display_icon = skin_level._display_icon
         self._streamed_video = skin_level._streamed_video
         self.asset_path = skin_level.asset_path
+        self._level_number = skin_level._level_number
+        self._is_level_one = skin_level._is_level_one
         self.type = skin_level.type
-        self.parent = skin_level.parent
+        self.parent = skin_level.parent._copy(skin_level.parent)
         self._display_name_localized = skin_level._display_name_localized
         self._is_random = skin_level._is_random
         return self
