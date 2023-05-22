@@ -58,6 +58,7 @@ class LevelBorder(BaseModel):
     def _copy(cls, level_border: Self) -> Self:
         """Returns a copy of the level border."""
         self = cls.__new__(cls)  # bypass __init__
+        self._uuid = level_border._uuid
         self._state = level_border._state
         self.starting_level = level_border.starting_level
         self._level_number_appearance = level_border._level_number_appearance

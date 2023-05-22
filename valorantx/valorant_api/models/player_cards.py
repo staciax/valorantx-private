@@ -110,6 +110,7 @@ class PlayerCard(BaseModel):
     @classmethod
     def _copy(cls, player_card: Self) -> Self:
         self = cls.__new__(cls)  # bypass __init__
+        self._uuid = player_card._uuid
         self._state = player_card._state
         self._data = player_card._data.copy()
         self._display_name = player_card._display_name

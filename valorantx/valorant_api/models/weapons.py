@@ -242,6 +242,7 @@ class Weapon(BaseModel):
     @classmethod
     def _copy(cls, weapon: Self) -> Self:
         self = cls.__new__(cls)  # bypass __init__
+        self._uuid = weapon._uuid
         self._state = weapon._state
         self._data = weapon._data.copy()
         self._display_name = weapon._display_name
@@ -352,6 +353,7 @@ class Skin(BaseModel, Generic[WeaponT]):
     @classmethod
     def _copy(cls, skin: Self) -> Self:
         self = cls.__new__(cls)  # bypass __init__
+        self._uuid = skin._uuid
         self._state = skin._state
         self._data = skin._data.copy()
         self._display_name = skin._display_name
@@ -511,6 +513,7 @@ class SkinChroma(BaseModel, Generic[SkinT]):
     def _copy(cls, skin_chroma: SkinChroma) -> Self:
         """Copies the given skin_chroma with the given parent."""
         self = cls.__new__(cls)  # bypass __init__
+        self._uuid = skin_chroma._uuid
         self._state = skin_chroma._state
         self._data = skin_chroma._data.copy()
         self._display_name = skin_chroma._display_name
@@ -642,6 +645,7 @@ class SkinLevel(BaseModel, Generic[SkinT]):
     def _copy(cls, skin_level: SkinLevel) -> Self:
         """Copies the given skin_level with the given parent."""
         self = cls.__new__(cls)  # bypass __init__
+        self._uuid = skin_level._uuid
         self._state = skin_level._state
         self._data = skin_level._data.copy()
         self._display_name = skin_level._display_name

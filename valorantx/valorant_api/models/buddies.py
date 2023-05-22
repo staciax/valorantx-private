@@ -71,6 +71,7 @@ class Buddy(BaseModel):
     def _copy(cls, buddy: Self) -> Self:
         """Creates a copy of the given buddy."""
         self = cls.__new__(cls)  # bypass __init__
+        self._uuid = buddy._uuid
         self._state = buddy._state
         self._display_name = buddy._display_name
         self._is_hidden_if_not_owned = buddy._is_hidden_if_not_owned
@@ -124,6 +125,7 @@ class BuddyLevel(BaseModel, Generic[BuddyT]):
     def _copy(cls, buddy_level: Self) -> Self:
         """Creates a copy of the given buddy level."""
         self = cls.__new__(cls)  # bypass __init__
+        self._uuid = buddy_level._uuid
         self._state = buddy_level._state
         self._data = buddy_level._data.copy()
         self.charm_level = buddy_level.charm_level

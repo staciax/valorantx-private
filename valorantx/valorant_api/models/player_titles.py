@@ -61,6 +61,7 @@ class PlayerTitle(BaseModel):
     @classmethod
     def _copy(cls, player_title: Self) -> Self:
         self = cls.__new__(cls)  # bypass __init__
+        self._uuid = player_title._uuid
         self._state = player_title._state
         self._display_name = player_title._display_name
         self._title_text = player_title._title_text

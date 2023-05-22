@@ -101,6 +101,7 @@ class Spray(BaseModel):
     @classmethod
     def _copy(cls, spray: Self) -> Self:
         self = cls.__new__(cls)  # bypass __init__
+        self._uuid = spray._uuid
         self._state = spray._state
         self._data = spray._data.copy()
         self._display_name = spray._display_name
@@ -164,6 +165,7 @@ class SprayLevel(BaseModel, Generic[SprayT]):
     @classmethod
     def _copy(cls, spray_level: Self) -> Self:
         self = cls.__new__(cls)  # bypass __init__
+        self._uuid = spray_level._uuid
         self._state = spray_level._state
         self._data = spray_level._data.copy()
         self.spray_level = spray_level.spray_level
