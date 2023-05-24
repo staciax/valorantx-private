@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import logging
-
-# TODO: loadoutbuilder
 from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 
 from valorantx.models.weapons import Weapon
@@ -348,6 +346,8 @@ class SpraysLoadout:
                 self.slot_2 = spray
             elif equip_slot_id == SpraySlotID.slot_3.value:
                 self.slot_3 = spray
+            elif equip_slot_id == SpraySlotID.slot_4.value:
+                self.slot_4 = spray
             else:
                 _log.warning('unknown spray slot %r', spray_data)
 
@@ -414,52 +414,80 @@ class Loadout:
         return payload
 
 
-# class GunsBuilder:
-#     def __init__(
-#         self,
-#         melee: Optional[Gun] = None,
-#         classic: Optional[Gun] = None,
-#         shorty: Optional[Gun] = None,
-#         frenzy: Optional[Gun] = None,
-#         ghost: Optional[Gun] = None,
-#         sheriff: Optional[Gun] = None,
-#         stinger: Optional[Gun] = None,
-#         spectre: Optional[Gun] = None,
-#         bucky: Optional[Gun] = None,
-#         judge: Optional[Gun] = None,
-#         bulldog: Optional[Gun] = None,
-#         guardian: Optional[Gun] = None,
-#         phantom: Optional[Gun] = None,
-#         vandal: Optional[Gun] = None,
-#         marshal: Optional[Gun] = None,
-#         operator: Optional[Gun] = None,
-#         ares: Optional[Gun] = None,
-#         odin: Optional[Gun] = None,
-#     ) -> None:
-#         self.melee: Optional[Gun] = melee
-#         self.classic: Optional[Gun] = classic
-#         self.shorty: Optional[Gun] = shorty
-#         self.frenzy: Optional[Gun] = frenzy
-#         self.ghost: Optional[Gun] = ghost
-#         self.sheriff: Optional[Gun] = sheriff
-#         self.stinger: Optional[Gun] = stinger
-#         self.spectre: Optional[Gun] = spectre
-#         self.bucky: Optional[Gun] = bucky
-#         self.judge: Optional[Gun] = judge
-#         self.bulldog: Optional[Gun] = bulldog
-#         self.guardian: Optional[Gun] = guardian
-#         self.phantom: Optional[Gun] = phantom
-#         self.vandal: Optional[Gun] = vandal
-#         self.marshal: Optional[Gun] = marshal
-#         self.operator: Optional[Gun] = operator
-#         self.ares: Optional[Gun] = ares
-#         self.odin: Optional[Gun] = odin
-
-
 # class LoadoutBuilder:
-#     def __init__(self, client: Client, subject: str, version: int = 0) -> None:
+#     def __init__(self, client: Client, subject: str, version: int, incognito: bool = False) -> None:
 #         self._client: Client = client
 #         self.subject: str = subject
 #         self.version: int = version
+#         self.incognito: bool = incognito
 
-#         self.incognito: bool = False
+#     #     self.guns: GunsLoadoutBuilder = GunsLoadoutBuilder(client)
+#     #     self.sprays: SpraysLoadoutBuilder = SpraysLoadoutBuilder(client)
+
+#     def __repr__(self) -> str:
+#         return f'<LoadoutBuilder subject={self.subject!r} version={self.version}>'
+
+#     def skins(
+#         self,
+#         *,
+#         melee: Optional[str] = None,
+#         classic: Optional[str] = None,
+#         shorty: Optional[str] = None,
+#         frenzy: Optional[str] = None,
+#         ghost: Optional[str] = None,
+#         sheriff: Optional[str] = None,
+#         stinger: Optional[str] = None,
+#         spectre: Optional[str] = None,
+#         bucky: Optional[str] = None,
+#         judge: Optional[str] = None,
+#         bulldog: Optional[str] = None,
+#         guardian: Optional[str] = None,
+#         phantom: Optional[str] = None,
+#         vandal: Optional[str] = None,
+#         marshal: Optional[str] = None,
+#         operator: Optional[str] = None,
+#         ares: Optional[str] = None,
+#         odin: Optional[str] = None,
+#     ) -> None:
+#         ...
+
+#     def sprays(
+#         self,
+#         *,
+#         slot_1: Optional[str] = None,
+#         slot_2: Optional[str] = None,
+#         slot_3: Optional[str] = None,
+#         slot_4: Optional[str] = None,
+#     ) -> None:
+#         ...
+
+#     def identity(
+#         self,
+#         *,
+#         player_card: Optional[str] = None,
+#         player_title: Optional[str] = None,
+#         level_border: Optional[str] = None,
+#     ) -> None:
+#         ...
+
+#     def to_payload(self) -> LoadoutPayload:
+#         payload: LoadoutPayload = {
+#             'Subject': self.subject,
+#             'Version': self.version,
+#             # 'Guns': self.guns.to_payload(),
+#             # 'Sprays': self.sprays.to_payload(),
+#             # 'Identity': self.identity.to_payload(),
+#             'Incognito': self.incognito,
+#         }
+#         return payload
+
+#     # def to_payload(self) -> LoadoutPayload:
+#     #     payload: LoadoutPayload = {
+#     #         'Subject': self.subject,
+#     #         'Version': self.version,
+#     #         # 'Guns': self.guns.to_payload(),
+#     #         # 'Sprays': self.sprays.to_payload(),
+#     #         # 'Identity': self.identity.to_payload(),
+#     #         'Incognito': self.incognito,
+#     #     }
+#     #     return payload

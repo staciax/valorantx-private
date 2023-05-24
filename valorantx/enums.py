@@ -303,6 +303,7 @@ class SpraySlotID(Enum):
     slot_1 = '0814b2fe-4512-60a4-5288-1fbdcec6ca48'
     slot_2 = '04af080a-4071-487b-61c0-5b9c0cfaac74'
     slot_3 = '5863985e-43ac-b05d-cb2d-139e72970014'
+    slot_4 = '7cdc908e-4f69-9140-a604-899bd879eed1'
 
     def __str__(self) -> str:
         return str(self.value)
@@ -318,6 +319,8 @@ class SpraySlotID(Enum):
             return 2
         elif slot_id == cls.slot_3.value:
             return 3
+        elif slot_id == cls.slot_4.value:
+            return 4
 
         raise ValueError(f'Unknown slot id: {slot_id}')
 
