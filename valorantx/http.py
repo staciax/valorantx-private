@@ -44,6 +44,8 @@ from .types import favorites, premiers
 MISSING = utils.MISSING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .types import account_xp, content, contracts, loadout, match, mmr, name_service, party, store, user
 
     T = TypeVar('T')
@@ -72,7 +74,7 @@ class Route:
         self,
         method: str,
         path: str,
-        region: Region,
+        region: Region = Region.AP,
         endpoint: EndpointType = EndpointType.pd,
         **parameters: Any,
     ) -> None:
@@ -83,7 +85,6 @@ class Route:
         self.parameters = parameters
 
         url = ''
-
         if endpoint == EndpointType.pd:
             url = self.BASE_PD_URL.format(shard=str(region.shard)) + path
         elif endpoint == EndpointType.glz:
@@ -97,6 +98,16 @@ class Route:
             url = url.format_map({k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
 
         self.url: str = url
+
+    @classmethod
+    def from_url(cls, method: str, url: str, **parameters: Any) -> Self:
+        self = cls.__new__(cls)
+        self.method = method
+        self.url = url
+        self.parameters = parameters
+        if parameters:
+            self.url = self.url.format_map({k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
+        return self
 
 
 class HTTPClient:
@@ -567,6 +578,16 @@ class HTTPClient:
         Get the currently available items in the store
         """
         return self.request(Route('GET', '/store/v2/storefront/{puuid}', self.region, EndpointType.pd, puuid=self.puuid))
+
+    def post_store_storefront(self) -> Response[store.StoreFront]:
+        """
+        Store_PostStorefrontV3
+        Get the currently available items in the store
+        """
+        payload = {}
+        return self.request(
+            Route('POST', '/store/v3/storefront/{puuid}', self.region, EndpointType.pd, puuid=self.puuid), json=payload
+        )
 
     def get_store_wallet(self) -> Response[store.Wallet]:
         """
@@ -1231,6 +1252,26 @@ class HTTPClient:
         )
         return self.request(r)
 
+    def get_premier_roster_match_history(self, roster_id: str) -> Response[Any]:
+        r = Route('GET', '/premier/v1/rosters/{roster_id}/matchhistory', self.region, EndpointType.pd, roster_id=roster_id)
+        return self.request(r)
+
+    def post_premier_roster_match_history(self, roster_id: str, puuid: str) -> Response[Any]:
+        r = Route(
+            'POST',
+            '/premier/v2/rosters/{roster_id}/invites/{puuid}/accept',
+            self.region,
+            EndpointType.pd,
+            roster_id=roster_id,
+            puuid=puuid,
+        )
+        payload = {}
+        return self.request(r, json=payload)
+
+    # [Leaderboard_JumpToMe] GET `https://euc1-red.pp.sgp.pvp.net/leaderboard/v1/name/val-premier/region/{region}/season/{seasonId}/grouping/{conference}:{division}/jump-to-entry/{rosterId}?pageSize={pageSize}`
+    # [Leaderboard_GetEntriesByRange] GET `https://euc1-red.pp.sgp.pvp.net/leaderboard/v1/name/val-premier/region/{region}/season/{seasonId}/grouping/{conference}:{division}?startRank={startRank}&endRank={endRank}`
+    # [Party_MakePremierGame] POST `https://glz-{region}-1.{shard}.a.pvp.net/parties/v1/parties/{partyId}/makePremierGame `Body: ```{}```
+
     # account-verification-player endpoints
 
     def post_account_verification_player_send(self) -> Response[Any]:
@@ -1242,9 +1283,20 @@ class HTTPClient:
         # https://euc1-red.pp.sgp.pvp.net/account-verification-player/v1/confirmActivationPin
 
     # restrictions endpoints
-    # [Restrictions_GetPlayerAvoidList] GET https://pd.{region}.a.pvp.net/restrictions/v1/avoidList
-    # [Restrictions_AddPlayerAvoidListEntry] POST https://pd.{region}.a.pvp.net/restrictions/v1/avoidList/entry/{VALUE TO ADD} BODY: {}
-    # [Restrictions_RemovePlayerAvoidListEntry] DELETE https://pd.{region}.a.pvp.net/restrictions/v1/avoidList/entry/{VALUE TO REMOVE}
+
+    def get_restrictions_player_avoid_list(self) -> Response[Any]:
+        r = Route('PUT', '/restrictions/v1/avoidlist', self.region, EndpointType.pd)
+        return self.request(r)
+
+    def post_restrictions_add_player_avoid_list_entry(self, data: Any) -> Response[Any]:
+        r = Route('PUT', '/restrictions/v1/avoidList/entry', self.region, EndpointType.pd)
+        payload = {}
+        return self.request(r, json=payload)
+
+    def delete_restrictions_remove_player_avoid_list_entry(self, data: Any) -> Response[Any]:
+        r = Route('PUT', '/restrictions/v1/avoidList/entry', self.region, EndpointType.pd)
+        payload = {}
+        return self.request(r, json=payload)
 
     def get_restrictions_avoid_list(self) -> Response[Any]:
         r = Route('GET', '/restrictions/v1/avoidList', self.region)
@@ -1257,6 +1309,16 @@ class HTTPClient:
 
     def delete_restrictions_remove_avoid_list_entry(self, puuid: str) -> Response[Any]:
         r = Route('DELETE', '/restrictions/v1/avoidList/entry/{puuid}', self.region, puuid=puuid)
+        return self.request(r)
+
+    # tournaments endpoints
+
+    def get_tournaments_overview(self, tournament_id: str) -> Response[Any]:
+        r = Route.from_url(
+            'GET',
+            'https://euc1-red.pp.sgp.pvp.net/tournaments-query/v1/product/VALORANT/tournaments/{tournament_id}/overview',
+            tournament_id=tournament_id,
+        )
         return self.request(r)
 
     # local endpoints
