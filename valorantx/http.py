@@ -966,6 +966,17 @@ class HTTPClient:
         )
         return self.request(r)
 
+    # [Favorites_ModifyFavorites] POST   https://pd.ap.a.pvp.net/favorites/v1/players/{user_id}/favorites-batch
+
+    def post_favorites_modify(self) -> Response[favorites.Favorites]:
+        """
+        PostModifyFavorites
+        Add a player to the favorite list of the authenticated user
+        """
+        r = Route('POST', '/favorites/v1/players/{puuid}/favorites-batch', self.region, EndpointType.pd, puuid=self.puuid)
+        payload = {}
+        return self.request(r, json=payload)
+
     # pre game endpoints
     # exceptions = {404: [PhaseError, "You are not in a pre-game"]},
 
