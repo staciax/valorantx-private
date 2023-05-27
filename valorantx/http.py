@@ -5,7 +5,9 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import enum
+import json
 import logging
 from typing import (
     TYPE_CHECKING,
@@ -115,7 +117,17 @@ class HTTPClient:
         self.loop: asyncio.AbstractEventLoop = loop
         self._session: aiohttp.ClientSession = MISSING
         self._headers: Dict[str, Any] = {}
-        self._client_platform = 'ew0KCSJwbGF0Zm9ybVR5cGUiOiAiUEMiLA0KCSJwbGF0Zm9ybU9TIjogIldpbmRvd3MiLA0KCSJwbGF0Zm9ybU9TVmVyc2lvbiI6ICIxMC4wLjE5MDQyLjEuMjU2LjY0Yml0IiwNCgkicGxhdGZvcm1DaGlwc2V0IjogIlVua25vd24iDQp9'  # noqa: E501
+        self._client_platform = base64.b64encode(
+            json.dumps(
+                {
+                    'platformType': 'PC',
+                    'platformOS': 'Windows',
+                    'platformOSVersion': '10.0.19042.1.256.64bit',
+                    'platformChipset': 'Unknown',
+                },
+                indent=4,
+            ).encode()
+        ).decode()
         self.riot_auth: RiotAuth = RiotAuth()
         self._puuid: Optional[str] = None
         self.region: Region = region
@@ -132,9 +144,10 @@ class HTTPClient:
     async def request(self, route: Route, **kwargs: Any) -> Any:
         method = route.method
         url = route.url
-        # re_authorize = kwargs.pop('re_authorize', True)
-        extra_exceptions = kwargs.pop('exceptions', None)
-        kwargs['headers'] = kwargs.get('headers', self._headers)
+        exceptions: Optional[Dict[int, str]] = kwargs.pop('exceptions', None)
+
+        if 'headers' not in kwargs:
+            kwargs['headers'] = self._headers
 
         response: Optional[aiohttp.ClientResponse] = None
         data: Optional[Union[Dict[str, Any], str]] = None
@@ -177,11 +190,12 @@ class HTTPClient:
                         await asyncio.sleep(1 + tries * 2)
                         continue
 
+                    if exceptions is not None and response.status in exceptions:
+                        raise HTTPException(response, data)
+
                     if response.status == 403:
                         raise Forbidden(response, data)
                     elif response.status == 404:
-                        if extra_exceptions is not None:
-                            raise NotFound(response, extra_exceptions)
                         raise NotFound(response, data)
                     elif response.status >= 500:
                         raise InternalServerError(response, data)
@@ -966,8 +980,6 @@ class HTTPClient:
         )
         return self.request(r)
 
-    # [Favorites_ModifyFavorites] POST   https://pd.ap.a.pvp.net/favorites/v1/players/{user_id}/favorites-batch
-
     def post_favorites_modify(self) -> Response[favorites.Favorites]:
         """
         PostModifyFavorites
@@ -978,7 +990,6 @@ class HTTPClient:
         return self.request(r, json=payload)
 
     # pre game endpoints
-    # exceptions = {404: [PhaseError, "You are not in a pre-game"]},
 
     def get_pregame_player(self) -> Response[Mapping[str, Any]]:
         """
@@ -986,7 +997,7 @@ class HTTPClient:
         Get the ID of a game in the pre-game stage
         """
         r = Route('GET', '/pregame/v1/players/{puuid}', self.region, EndpointType.glz, puuid=self.puuid)
-        return self.request(r)
+        return self.request(r, exceptions={404: "You are not in a pre-game"})
 
     def get_pregame_match(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
         """
@@ -994,7 +1005,7 @@ class HTTPClient:
         Get info for a game in the pre-game stage
         """
         r = Route('GET', '/pregame/v1/matches/{match_id}', self.region, EndpointType.glz, match_id=match_id)
-        return self.request(r)
+        return self.request(r, exceptions={404: "You are not in a pre-game"})
 
     def get_pregame_match_loadouts(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
         """
@@ -1002,7 +1013,7 @@ class HTTPClient:
         Get player skins and sprays for a game in the pre-game stage
         """
         r = Route('GET', '/pregame/v1/matches/{match_id}/loadouts', self.region, EndpointType.glz, match_id=match_id)
-        return self.request(r)
+        return self.request(r, exceptions={404: "You are not in a pre-game"})
 
     def get_pregame_chat_token(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
         """
@@ -1010,7 +1021,7 @@ class HTTPClient:
         Get a chat token
         """
         r = Route('GET', '/pregame/v1/matches/{match_id}/chattoken', self.region, EndpointType.glz, match_id=match_id)
-        return self.request(r)
+        return self.request(r, exceptions={404: "You are not in a pre-game"})
 
     def get_pregame_voice_token(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
         """
@@ -1018,7 +1029,7 @@ class HTTPClient:
         Get a voice token
         """
         r = Route('GET', '/pregame/v1/matches/{match_id}/voicetoken', self.region, EndpointType.glz, match_id=match_id)
-        return self.request(r)
+        return self.request(r, exceptions={404: "You are not in a pre-game"})
 
     def post_pregame_select_character(self, agent_id: str, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
         """
@@ -1034,7 +1045,7 @@ class HTTPClient:
             match_id=match_id,
             agent_id=agent_id,
         )
-        return self.request(r)
+        return self.request(r, exceptions={404: "You are not in a pre-game"})
 
     def post_pregame_lock_character(self, agent_id: str, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
         """
@@ -1050,7 +1061,7 @@ class HTTPClient:
             match_id=match_id,
             agent_id=agent_id,
         )
-        return self.request(r)
+        return self.request(r, exceptions={404: "You are not in a pre-game"})
 
     def post_pregame_quit_match(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
         """
@@ -1058,10 +1069,9 @@ class HTTPClient:
         Quit a match in the pre-game stage
         """
         r = Route('POST', '/pregame/v1/matches/{match_id}/quit', self.region, EndpointType.glz, match_id=match_id)
-        return self.request(r)
+        return self.request(r, exceptions={404: "You are not in a pre-game"})
 
     # live game endpoints
-    # exceptions={404: [PhaseError, "You are not in a core-game"]},
 
     def get_coregame_player(self) -> Response[Mapping[str, Any]]:
         """
@@ -1069,7 +1079,7 @@ class HTTPClient:
         Get the game ID for an ongoing game the player is in
         """
         r = Route('GET', '/core-game/v1/players/{puuid}', self.region, EndpointType.glz, puuid=self.puuid)
-        return self.request(r)
+        return self.request(r, exceptions={404: "You are not in a core-game"})
 
     def get_coregame_match(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
         """
@@ -1077,7 +1087,7 @@ class HTTPClient:
         Get information about an ongoing game
         """
         r = Route('GET', '/core-game/v1/matches/{match_id}', self.region, EndpointType.glz, match_id=match_id)
-        return self.request(r)
+        return self.request(r, exceptions={404: "You are not in a core-game"})
 
     def get_coregame_match_loadouts(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
         """
@@ -1085,7 +1095,7 @@ class HTTPClient:
         Get player skins and sprays for an ongoing game
         """
         r = Route('GET', '/core-game/v1/matches/{match_id}/loadouts', self.region, EndpointType.glz, match_id=match_id)
-        return self.request(r)
+        return self.request(r, exceptions={404: "You are not in a core-game"})
 
     def get_coregame_team_chat_muc_token(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
         """
@@ -1095,7 +1105,7 @@ class HTTPClient:
         r = Route(
             'GET', '/core-game/v1/matches/{match_id}/teamchatmuctoken', self.region, EndpointType.glz, match_id=match_id
         )
-        return self.request(r)
+        return self.request(r, exceptions={404: "You are not in a core-game"})
 
     def get_coregame_all_chat_muc_token(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
         """
@@ -1105,7 +1115,7 @@ class HTTPClient:
         r = Route(
             'GET', '/core-game/v1/matches/{match_id}/allchatmuctoken', self.region, EndpointType.glz, match_id=match_id
         )
-        return self.request(r)
+        return self.request(r, exceptions={404: "You are not in a core-game"})
 
     def get_coregame_disassociate_player(self, match_id: Optional[str] = None) -> Response[Mapping[str, Any]]:
         """
@@ -1120,7 +1130,7 @@ class HTTPClient:
             puuid=self.puuid,
             match_id=match_id,
         )
-        return self.request(r)
+        return self.request(r, exceptions={404: "You are not in a core-game"})
 
     # premier endpoints
 
@@ -1279,9 +1289,67 @@ class HTTPClient:
         payload = {}
         return self.request(r, json=payload)
 
-    # [Leaderboard_JumpToMe] GET `https://euc1-red.pp.sgp.pvp.net/leaderboard/v1/name/val-premier/region/{region}/season/{seasonId}/grouping/{conference}:{division}/jump-to-entry/{rosterId}?pageSize={pageSize}`
-    # [Leaderboard_GetEntriesByRange] GET `https://euc1-red.pp.sgp.pvp.net/leaderboard/v1/name/val-premier/region/{region}/season/{seasonId}/grouping/{conference}:{division}?startRank={startRank}&endRank={endRank}`
-    # [Party_MakePremierGame] POST `https://glz-{region}-1.{shard}.a.pvp.net/parties/v1/parties/{partyId}/makePremierGame `Body: ```{}```
+    def get_premier_leaderboard_jump_to_me(
+        self,
+        conference: str,
+        division: str,
+        roster_id: str,
+        season_id: str,
+        page_size: Optional[int] = None,
+    ) -> Response[Any]:
+        """Leaderboard_JumpToMe"""
+        url = 'https://euc1-red.pp.sgp.pvp.net/leaderboard/v1/name/val-premier/region/{region}/season/{season_id}/grouping/{conference}:{division}/jump-to-entry/{roster_id}'
+        if page_size is not None:
+            url += f'?pageSize={page_size}'
+        r = Route.from_url(
+            'GET',
+            url=url,
+            region=self.region,
+            conference=conference,
+            division=division,
+            rosterId=roster_id,
+            page_size=page_size,
+            season_id=season_id,
+        )
+        return self.request(r)
+
+    def get_premier_leaderboard_get_entries_by_range(
+        self,
+        conference: str,
+        division: str,
+        season_id: str,
+        start_rank: int,
+        end_rank: int,
+    ) -> Response[Any]:
+        """Leaderboard_GetEntriesByRange"""
+        url = 'https://euc1-red.pp.sgp.pvp.net/leaderboard/v1/name/val-premier/region/{region}/season/{season_id}/grouping/{conference}:{division}'
+        url += f'?startRank={start_rank}&endRank={end_rank}'
+        r = Route.from_url(
+            'GET',
+            url=url,
+            region=self.region,
+            conference=conference,
+            division=division,
+            season_id=season_id,
+            start_rank=start_rank,
+            end_rank=end_rank,
+        )
+        return self.request(r)
+
+    def post_party_make_premier_game(self, party_id: str) -> Response[Any]:
+        """Party_MakePremierGame"""
+        r = Route(
+            'POST',
+            '/parties/v1/parties/{party_id}/makePremierGame',
+            self.region,
+            EndpointType.pd,
+            party_id=party_id,
+        )
+        payload = {}
+        return self.request(r, json=payload)
+
+    #  https://pd.{shard}.a.pvp.net/premier/v1/rosters/{rosterId}/tournament-history
+    #  https://pd.{shard}.a.pvp.net/premier/v1/tournaments/{tournamentId}/match-history
 
     # account-verification-player endpoints
 
@@ -1295,36 +1363,28 @@ class HTTPClient:
 
     # restrictions endpoints
 
-    def get_restrictions_player_avoid_list(self) -> Response[Any]:
-        r = Route('PUT', '/restrictions/v1/avoidlist', self.region, EndpointType.pd)
-        return self.request(r)
-
-    def post_restrictions_add_player_avoid_list_entry(self, data: Any) -> Response[Any]:
-        r = Route('PUT', '/restrictions/v1/avoidList/entry', self.region, EndpointType.pd)
-        payload = {}
-        return self.request(r, json=payload)
-
-    def delete_restrictions_remove_player_avoid_list_entry(self, data: Any) -> Response[Any]:
-        r = Route('PUT', '/restrictions/v1/avoidList/entry', self.region, EndpointType.pd)
-        payload = {}
-        return self.request(r, json=payload)
-
     def get_restrictions_avoid_list(self) -> Response[Any]:
-        r = Route('GET', '/restrictions/v1/avoidList', self.region)
+        r = Route('GET', '/restrictions/v1/avoidList', self.region, EndpointType.pd)
         return self.request(r)
 
-    def post_restrictions_add_avoid_list_entry(self, puuid: str) -> Response[Any]:
+    def post_restrictions_add_avoid_list_entry(self, puuid: Optional[str] = None) -> Response[Any]:
+        puuid = puuid or self.puuid
         payload = {}
-        r = Route('POST', '/restrictions/v1/avoidList/entry/{puuid}', self.region, puuid=puuid)
+        r = Route('POST', '/restrictions/v1/avoidList/entry/{puuid}', self.region, EndpointType.pd, puuid=puuid)
         return self.request(r, json=payload)
 
-    def delete_restrictions_remove_avoid_list_entry(self, puuid: str) -> Response[Any]:
-        r = Route('DELETE', '/restrictions/v1/avoidList/entry/{puuid}', self.region, puuid=puuid)
+    def delete_restrictions_remove_avoid_list_entry(self, puuid: Optional[str] = None) -> Response[Any]:
+        puuid = puuid or self.puuid
+        r = Route('DELETE', '/restrictions/v1/avoidList/entry/{puuid}', self.region, EndpointType.pd, puuid=puuid)
         return self.request(r)
 
     # tournaments endpoints
 
-    def get_tournaments_overview(self, tournament_id: str) -> Response[Any]:
+    def get_tournaments(self) -> Response[Any]:
+        r = Route.from_url('GET', 'https://euc1-red.pp.sgp.pvp.net/tournaments-query/v1/product/VALORANT/tournaments')
+        return self.request(r)
+
+    def get_tournament_overview(self, tournament_id: str) -> Response[Any]:
         r = Route.from_url(
             'GET',
             'https://euc1-red.pp.sgp.pvp.net/tournaments-query/v1/product/VALORANT/tournaments/{tournament_id}/overview',
