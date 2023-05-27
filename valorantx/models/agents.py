@@ -9,8 +9,14 @@ from valorantx.valorant_api.models.agents import (
     VoiceLineLocalization as VoiceLineLocalization,
 )
 
-__all__ = ('Ability', 'Agent', 'Media', 'Role', 'VoiceLine', 'VoiceLineLocalization')
-
+__all__ = (
+    'Ability',
+    'Agent',
+    'Media',
+    'Role',
+    'VoiceLine',
+    'VoiceLineLocalization',
+)
 
 # from typing import TYPE_CHECKING
 

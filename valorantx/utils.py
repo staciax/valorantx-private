@@ -13,12 +13,12 @@ from valorantx.valorant_api.utils import (
 )
 
 __all__ = (
+    'MISSING',
     'calculate_level_xp',
     'is_uuid',
-    'percent',
     'json_or_text',
-    'MISSING',
     'parse_iso_datetime',
+    'percent',
 )
 
 

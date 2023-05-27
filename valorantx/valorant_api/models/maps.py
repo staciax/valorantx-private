@@ -14,8 +14,8 @@ if TYPE_CHECKING:
 # fmt: off
 __all__ = (
     'Map',
-    'MapLocation',
     'MapCallout',
+    'MapLocation',
 )
 # fmt: on
 

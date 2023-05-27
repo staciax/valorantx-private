@@ -23,12 +23,12 @@ if TYPE_CHECKING:
     from .currencies import Currency
 
 __all__ = (
-    'SkinsPanelLayout',
     'BonusStore',
-    'StoreFront',
-    'Wallet',
     'Entitlements',
     'Offers',
+    'SkinsPanelLayout',
+    'StoreFront',
+    'Wallet',
 )
 
 _log = logging.getLogger(__name__)

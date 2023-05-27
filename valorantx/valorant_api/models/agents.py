@@ -19,12 +19,12 @@ if TYPE_CHECKING:
 
 # fmt: off
 __all__ = (
-    'Agent',
-    'Role',
     'Ability',
+    'Agent',
     'Media',
+    'Role',
     'VoiceLine',
-    'VoiceLineLocalization'
+    'VoiceLineLocalization',
 )
 # fmt: on
 

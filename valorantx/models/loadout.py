@@ -34,8 +34,11 @@ if TYPE_CHECKING:
 _log = logging.getLogger(__name__)
 
 __all__ = (
-    'Loadout',
+    'Gun',
+    'GunsLoadout',
     'Identity',
+    'Loadout',
+    'SpraysLoadout',
 )
 
 

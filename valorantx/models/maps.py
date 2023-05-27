@@ -2,8 +2,8 @@ from valorantx.valorant_api.models.maps import Callout as Callout, Location as L
 
 # fmt: off
 __all__ = (
-    'Map',
     'Callout',
     'Location',
+    'Map',
 )
 # fmt: on

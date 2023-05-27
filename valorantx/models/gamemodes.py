@@ -8,8 +8,8 @@ from valorantx.valorant_api.models.gamemodes import (
 # fmt: off
 __all__ = (
     'GameFeatureOverride',
-    'GameRuleBoolOverride',
     'GameMode',
     'GameModeEquippable',
+    'GameRuleBoolOverride',
 )
 # fmt: on

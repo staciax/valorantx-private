@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 
 # fmt: off
 __all__ = (
-    'Tier',
     'CompetitiveTier',
+    'Tier',
 )
 # fmt: on
 

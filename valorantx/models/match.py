@@ -46,6 +46,34 @@ if TYPE_CHECKING:
     from .seasons import Season
     from .weapons import Weapon
 
+__all__ = (
+    'AbilityCasts',
+    'BehaviorFactors',
+    'Coach',
+    'Damage',
+    'Economy',
+    'FinishingDamage',
+    'History',
+    'Kill',
+    'Location',
+    'MatchDetails',
+    'MatchInfo',
+    'MatchPlayer',
+    'NewPlayerExperienceDetails',
+    'PlatformInfo',
+    'PlayerLocation',
+    'PlayerStats',
+    'RoundPlayerEconomy',
+    'RoundPlayerScore',
+    'RoundPlayerStat',
+    'RoundResult',
+    'Spike',
+    'SpikeDefuse',
+    'SpikePlant',
+    'Team',
+    'XPModification',
+)
+
 _log = logging.getLogger(__name__)
 
 

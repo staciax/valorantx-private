@@ -63,15 +63,15 @@ if TYPE_CHECKING:
 # _log = logging.getLogger(__name__)
 # fmt: off
 __all__ = (
-    'Reward',
-    'Progression',
-    'ProcessedMatch',
+    'Chapter',
+    'Content',
     'Contract',
     'Contracts',
-    'Content',
-    'Chapter',
     'Level',
-    'RewardValorantAPI'
+    'ProcessedMatch',
+    'Progression',
+    'Reward',
+    'RewardValorantAPI',
 )
 # fmt: on
 

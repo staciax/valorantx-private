@@ -2,7 +2,7 @@ from valorantx.valorant_api.models.seasons import CompetitiveSeason as Competiti
 
 # fmt: off
 __all__ = (
-    'Season',
     'CompetitiveSeason',
+    'Season',
 )
 # fmt: on

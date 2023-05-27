@@ -21,8 +21,10 @@ if TYPE_CHECKING:
 
 # fmt: off
 __all__ = (
+    'GameFeatureOverride',
     'GameMode',
     'GameModeEquippable',
+    'GameRuleBoolOverride',
 )
 # fmt: on
 

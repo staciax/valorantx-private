@@ -16,21 +16,21 @@ from valorantx.valorant_api.errors import (
 )
 
 __all__ = (
-    'ValorantXException',
-    'ValorantAPIError',
-    'HTTPException',
-    'BadRequest',
-    'NotFound',
-    'InternalServerError',
-    'Forbidden',
-    'RateLimited',
     'AuthRequired',
+    'BadRequest',
+    'Forbidden',
+    'HTTPException',
+    'InternalServerError',
+    'NotFound',
+    'RateLimited',
     'RiotAuthError',
     'RiotAuthenticationError',
-    'RiotRatelimitError',
     'RiotMultifactorError',
-    'RiotUnknownResponseTypeError',
+    'RiotRatelimitError',
     'RiotUnknownErrorTypeError',
+    'RiotUnknownResponseTypeError',
+    'ValorantAPIError',
+    'ValorantXException',
 )
 
 

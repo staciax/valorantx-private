@@ -15,7 +15,10 @@ if TYPE_CHECKING:
     from ..types.sprays import Spray as SprayPayload, SprayLevel as SprayLevelPayload
     from .themes import Theme
 
-__all__ = ('Spray', 'SprayLevel')
+__all__ = (
+    'Spray',
+    'SprayLevel',
+)
 
 SprayT = TypeVar('SprayT', bound='Spray')
 

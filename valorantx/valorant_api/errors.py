@@ -9,15 +9,15 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 if TYPE_CHECKING:
     from aiohttp import ClientResponse
 
-__all__: Tuple[str, ...] = (
-    'ValorantXException',
-    'ValorantAPIError',
-    'HTTPException',
+__all__ = (
     'BadRequest',
     'Forbidden',
-    'NotFound',
+    'HTTPException',
     'InternalServerError',
+    'NotFound',
     'RateLimited',
+    'ValorantAPIError',
+    'ValorantXException',
 )
 
 

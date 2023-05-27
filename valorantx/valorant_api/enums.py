@@ -140,12 +140,12 @@ else:
 
 # --
 
-__all__: Tuple[str, ...] = (
-    'MELEE_WEAPON_ID',
-    'EMPTY_TITLE_ID',
+__all__ = (
     'AbilityType',
+    'EMPTY_TITLE_ID',
     'ItemType',
     'Locale',
+    'MELEE_WEAPON_ID',
     'MissionType',
     'RelationType',
     'RewardType',

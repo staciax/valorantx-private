@@ -18,6 +18,13 @@ if TYPE_CHECKING:
     from ..valorant_api_cache import CacheState
 
 
+__all__ = (
+    'Spray',
+    'SprayBundle',
+    'SprayLevel',
+)
+
+
 class Spray(SprayValorantAPI, Item):
     if TYPE_CHECKING:
         _state: CacheState

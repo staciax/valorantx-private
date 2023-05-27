@@ -30,9 +30,9 @@ __all__ = (
     'Eligibility',
     'PremierEvent',
     'PremierSeason',
-    'ScheduleDivision',
-    'ScheduleConference',
     'Roster',
+    'ScheduleConference',
+    'ScheduleDivision',
 )
 # fmt: on
 

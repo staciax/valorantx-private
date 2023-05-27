@@ -31,11 +31,11 @@ __all__ = (
     'AirBurstStats',
     'AltShotgunStats',
     'DamageRange',
-    'WeaponStats',
-    'Weapon',
     'Skin',
     'SkinChroma',
     'SkinLevel',
+    'Weapon',
+    'WeaponStats',
 )
 
 # TODO: patch 6.x support variants favorites colors of skins

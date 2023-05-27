@@ -8,8 +8,8 @@ if TYPE_CHECKING:
 
 
 __all__ = (
-    'Favorites',
     'Favorite',
+    'Favorites',
 )
 
 

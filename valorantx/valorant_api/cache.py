@@ -5,7 +5,7 @@ import asyncio
 # import json
 # import os
 import logging
-from typing import TYPE_CHECKING, Dict, List, Optional  # Any, Callable, Coroutine,
+from typing import TYPE_CHECKING, Any, Dict, List, Optional  # Any, Callable, Coroutine,
 
 from .models import (
     Agent,
@@ -161,7 +161,7 @@ class CacheState:
         # else:
         # results = await self._fetch_data_from_api(tasks)
 
-        results = await asyncio.gather(*[task() for task in tasks])
+        results = await asyncio.gather(*(task() for task in tasks))
         for func, result in zip(tasks, results):
             assert result is not None
             funcname = func.__name__.split('_')[1:]

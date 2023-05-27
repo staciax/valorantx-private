@@ -14,7 +14,10 @@ if TYPE_CHECKING:
     from ..types.buddies import Buddy as BuddyPayload, BuddyLevel as BuddyLevelPayload
     from .themes import Theme
 
-__all__ = ('Buddy', 'BuddyLevel')
+__all__ = (
+    'Buddy',
+    'BuddyLevel',
+)
 
 BuddyT = TypeVar('BuddyT', bound='Buddy')
 

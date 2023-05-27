@@ -15,14 +15,11 @@ from valorantx.valorant_api.enums import (
     try_enum as try_enum,
 )
 
-# --
-
 __all__ = (
     'AgentID',
     'CurrencyID',
     'GameModeID',
     'GameModeURL',
-    # 'ItemType',
     'LevelBorderID',
     'Locale',
     'MapID',
