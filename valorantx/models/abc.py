@@ -15,12 +15,13 @@ if TYPE_CHECKING:
         Reward as RewardPayload,
     )
 
-# fmt: off
 __all__ = (
     'GridPosition',
     'ShopData',
+    'ItemOffer',
+    'BundleItemOffer',
+    'BonusItemOffer',
 )
-# fmt: on
 
 
 class Item:

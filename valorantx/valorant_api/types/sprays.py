@@ -7,7 +7,7 @@ from .response import Response
 class Level(Object):
     sprayLevel: int
     displayName: Union[str, Dict[str, str]]
-    displayIcon: str
+    displayIcon: Optional[str]
     assetPath: str
 
 

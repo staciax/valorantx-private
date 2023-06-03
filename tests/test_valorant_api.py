@@ -468,8 +468,9 @@ class TestValorantAPI(BaseTest):
                 assert level.parent is not None
                 assert level.spray_level is not None
                 assert level.display_name is not None
-                assert level.display_icon is not None
                 assert level.asset_path is not None
+                if level.display_icon:
+                    assert level.display_icon is not None
 
     @pytest.mark.asyncio
     async def test_themes(self) -> None:
