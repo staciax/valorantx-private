@@ -64,6 +64,7 @@ class PlayerTitle(BaseModel):
         self = cls.__new__(cls)  # bypass __init__
         self._uuid = player_title._uuid
         self._state = player_title._state
+        self._data = player_title._data
         self._display_name = player_title._display_name
         self._title_text = player_title._title_text
         self._is_hidden_if_not_owned = player_title._is_hidden_if_not_owned

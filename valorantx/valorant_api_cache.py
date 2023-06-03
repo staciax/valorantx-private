@@ -143,6 +143,8 @@ class CacheState(CacheStateValorantAPI):
             self._insert_buddy_level_cost(uuid, cost)
         elif type is ItemType.spray:
             self._insert_spray_cost(uuid, cost)
+        elif type is ItemType.player_title:
+            self._insert_player_title_cost(uuid, cost)
         elif type is ItemType.currency:
             return
         else:
@@ -165,5 +167,10 @@ class CacheState(CacheStateValorantAPI):
 
     def _insert_spray_cost(self, uuid: str, cost: int) -> None:
         item = self.get_spray(uuid)
+        if item is not None:
+            item.cost = cost
+
+    def _insert_player_title_cost(self, uuid: str, cost: int) -> None:
+        item = self.get_player_title(uuid)
         if item is not None:
             item.cost = cost
