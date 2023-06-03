@@ -116,6 +116,9 @@ class CacheState(CacheStateValorantAPI):
         def get_player_card(self, uuid: Optional[str]) -> Optional[PlayerCard]:
             ...
 
+        def get_player_title(self, uuid: Optional[str]) -> Optional[PlayerTitle]:
+            ...
+
         def get_buddy_level(self, uuid: Optional[str]) -> Optional[BuddyLevel]:
             ...
 

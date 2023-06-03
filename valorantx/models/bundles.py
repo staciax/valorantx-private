@@ -10,6 +10,7 @@ from ..enums import VALORANT_POINT_UUID, ItemType
 from .abc import Item
 from .buddies import BuddyLevelBundle
 from .player_cards import PlayerCardBundle
+from .player_titles import PlayerTitleBundle
 from .sprays import SprayBundle
 from .weapons import SkinLevelBundle
 
@@ -52,7 +53,7 @@ class FeaturedBundle(Bundle):
         super().__init__(state=state, data=data)
         self._currency_id: str = data_bundle['CurrencyID']
 
-        self._items: List[Union[BuddyLevelBundle, PlayerCardBundle, SkinLevelBundle, SprayBundle]] = []
+        self._items: List[Union[BuddyLevelBundle, PlayerCardBundle, SkinLevelBundle, SprayBundle, PlayerTitleBundle]] = []
         if data_bundle['ItemOffers'] is not None:
             for item in data_bundle['ItemOffers']:
                 for reward in item['Offer']['Rewards']:
@@ -74,6 +75,10 @@ class FeaturedBundle(Bundle):
                         player_card = state.get_player_card(item_offer_id)
                         if player_card is not None:
                             self._items.append(PlayerCardBundle.from_bundle(player_card=player_card, data=item))
+                    elif item_type == ItemType.player_title.value:
+                        player_title = state.get_player_title(item_offer_id)
+                        if player_title is not None:
+                            self._items.append(PlayerTitleBundle.from_bundle(player_title=player_title, data=item))
                     else:
                         _log.warning('Unknown item type: %s uuid: %s', item_type, reward['ItemID'])
 
@@ -101,7 +106,7 @@ class FeaturedBundle(Bundle):
         return dt
 
     @property
-    def items(self) -> List[Union[BuddyLevelBundle, PlayerCardBundle, SkinLevelBundle, SprayBundle]]:
+    def items(self) -> List[Union[BuddyLevelBundle, PlayerCardBundle, SkinLevelBundle, SprayBundle, PlayerTitleBundle]]:
         """:class:`List[Union[BuddyLevelBundle, PlayerCardBundle, SkinLevelBundle, SprayBundle]]`: List of items in the bundle."""
         return self._items
 
