@@ -8,6 +8,7 @@ from secrets import token_urlsafe
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import aiohttp
+import yarl
 from riot_auth import RiotAuth as _RiotAuth
 
 from .errors import (
@@ -191,6 +192,8 @@ class RiotAuth(_RiotAuth):
         self.game_name = data['game_name']
         self.tag_line = data['tag_line']
         self.region = data['region']
+        if 'ssid' in data:
+            self._cookie_jar.update_cookies({'ssid': data['ssid']}, yarl.URL('https://auth.riotgames.com'))
         return self
 
     def to_dict(self) -> Dict[str, Any]:
@@ -208,4 +211,8 @@ class RiotAuth(_RiotAuth):
             'tag_line': self.tag_line,
             'region': self.region,
         }
+        riotgames_cookies = self._cookie_jar.filter_cookies(yarl.URL('https://auth.riotgames.com'))
+        ssid = riotgames_cookies.get('ssid')
+        if ssid:
+            payload['ssid'] = ssid.value
         return payload
