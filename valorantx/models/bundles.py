@@ -23,8 +23,13 @@ if TYPE_CHECKING:
     from ..valorant_api_cache import CacheState
     from .buddies import Buddy
     from .player_cards import PlayerCard
+    from .player_titles import PlayerTitle
     from .sprays import Spray
     from .weapons import Skin
+
+    BundleItem = Union[Skin, Buddy, Spray, PlayerCard, PlayerTitle]
+    FeaturedBundleItem = Union[BuddyLevelBundle, PlayerCardBundle, SkinLevelBundle, SprayBundle, PlayerTitleBundle]
+
 
 _log = logging.getLogger(__name__)
 
@@ -41,10 +46,10 @@ class Bundle(BundleValorantAPI, Item):
         super().__init__(state=state, data=data)
 
     if TYPE_CHECKING:
-        _items: List[Union[Skin, Buddy, Spray, PlayerCard]] = []
+        _items: List[BundleItem] = []
 
         @property
-        def items(self) -> List[Union[Skin, Buddy, Spray, PlayerCard]]:
+        def items(self) -> List[BundleItem]:
             return super().items  # type: ignore
 
 
@@ -53,7 +58,7 @@ class FeaturedBundle(Bundle):
         super().__init__(state=state, data=data)
         self._currency_id: str = data_bundle['CurrencyID']
 
-        self._items: List[Union[BuddyLevelBundle, PlayerCardBundle, SkinLevelBundle, SprayBundle, PlayerTitleBundle]] = []
+        self._items: List[FeaturedBundleItem] = []
         if data_bundle['ItemOffers'] is not None:
             for item in data_bundle['ItemOffers']:
                 for reward in item['Offer']['Rewards']:
@@ -106,7 +111,7 @@ class FeaturedBundle(Bundle):
         return dt
 
     @property
-    def items(self) -> List[Union[BuddyLevelBundle, PlayerCardBundle, SkinLevelBundle, SprayBundle, PlayerTitleBundle]]:
+    def items(self) -> List[FeaturedBundleItem]:
         """:class:`List[Union[BuddyLevelBundle, PlayerCardBundle, SkinLevelBundle, SprayBundle]]`: List of items in the bundle."""
         return self._items
 
