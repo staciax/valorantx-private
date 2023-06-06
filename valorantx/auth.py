@@ -113,21 +113,23 @@ class RiotAuth(_RiotAuth):
                         err = data.get('error')
                         if err == 'auth_failure':
                             raise RiotAuthenticationError(
-                                f'Failed to authenticate. Make sure username and password are correct. `{err}`.'
+                                r, f'Failed to authenticate. Make sure username and password are correct. `{err}`.'
                             )
                         elif err == 'rate_limited':
-                            raise RiotRatelimitError()
+                            raise RiotRatelimitError(r, f'Rate limited. Try again later. `{err}`.')
                         else:
-                            raise RiotUnknownErrorTypeError(f'Got unknown error `{err}` during authentication.')
+                            raise RiotUnknownErrorTypeError(r, f'Got unknown error `{err}` during authentication.')
                     elif resp_type == 'multifactor':
                         # pre for multi-factor authentication
                         if 'method' in data['multifactor']:
                             if data['multifactor']['method'] == 'email':
                                 self.multi_factor_email = data['multifactor']['email']
                         # -
-                        raise RiotMultifactorError('Multi-factor authentication is not currently supported.')
+                        raise RiotMultifactorError(r, 'Multi-factor authentication is not currently supported.')
                     else:
-                        raise RiotUnknownResponseTypeError(f'Got unknown response type `{resp_type}` during authentication.')
+                        raise RiotUnknownResponseTypeError(
+                            r, f'Got unknown response type `{resp_type}` during authentication.'
+                        )
                 # endregion
 
             self._cookie_jar = session.cookie_jar

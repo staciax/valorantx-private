@@ -40,7 +40,7 @@ class AuthRequired(ValorantXException):
     pass
 
 
-class RiotAuthError(ValorantXException):
+class RiotAuthError(HTTPException):
     """Base class for RiotAuth errors."""
 
     pass
