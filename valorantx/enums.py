@@ -11,6 +11,7 @@ from valorantx.valorant_api.enums import (
     Enum as Enum,
     ItemType as ItemType,
     Locale as Locale,
+    MissionType as MissionType,
     RelationType as RelationType,
     try_enum as try_enum,
 )

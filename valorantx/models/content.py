@@ -3,6 +3,8 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, List, Optional
 
+from ..enums import SeasonType, try_enum
+
 if TYPE_CHECKING:
     from ..client import Client
     from ..types.content import Content as ContentPayload, Event as EventPayload, Season as SeasonPayload
@@ -24,7 +26,7 @@ class Season:
         self._start_time: str = data['StartTime']
         self._end_time: str = data['EndTime']
         self._is_active: bool = data['IsActive']
-        self.type: str = data['Type']
+        self.type: SeasonType = try_enum(SeasonType, data['Type'])
 
     def is_active(self) -> bool:
         return self._is_active
