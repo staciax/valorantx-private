@@ -8,7 +8,7 @@ import logging
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Coroutine, Dict, List, Optional, Type, TypeVar, Union
 
 from . import utils
-from .enums import Locale, Region, try_enum
+from .enums import Locale, Region, SeasonType, try_enum
 from .errors import AuthRequired
 from .http import HTTPClient
 from .models.account_xp import AccountXP
@@ -99,14 +99,13 @@ class Client:
         self.valorant_api: ValorantAPIClient = ValorantAPIClient(self.http._session, self.locale)
         self.me: ClientUser = MISSING
         self._closed: bool = False
-        self._is_authorized: bool = False
+        self._authorized: asyncio.Event = MISSING
         self._ready: asyncio.Event = MISSING
         self._version: Version = MISSING
         self._season: Season = MISSING
         self._act: Season = MISSING
 
     async def __aenter__(self) -> Self:
-        await self.init()
         return self
 
     async def __aexit__(
@@ -142,15 +141,29 @@ class Client:
                 'Please use the authorize method or asynchronous context manager before calling this method'
             )
 
-    async def init(self) -> None:
+    async def wait_until_authorize(self) -> None:
+        """|coro|
+        Waits until the client's internal cache is all ready.
+        """
+        if self._authorized is not MISSING:
+            await self._authorized.wait()
+        else:
+            raise RuntimeError(
+                'Client has not been properly initialised. '
+                'Please use the authorize method or asynchronous context manager before calling this method'
+            )
+
+    async def _init(self) -> None:
         _log.debug('initializing client')
 
         loop = asyncio.get_running_loop()
         self.loop = loop
         self.http.loop = loop
+        self._ready = asyncio.Event()
+        self._authorized = asyncio.Event()
 
         # valorant-api
-        self.loop.create_task(self.valorant_api.init())
+        await self.valorant_api.init()
         try:
             await asyncio.wait_for(self.valorant_api.wait_until_ready(), timeout=30)
         except asyncio.TimeoutError:
@@ -160,7 +173,28 @@ class Client:
             self.http.riot_client_version = self._version.riot_client_version
             _log.debug('assets valorant version: %s', self._version.version)
 
+        self.loop.create_task(self._init_after_authorize())
         _log.debug('client initialized')
+
+    async def _init_after_authorize(self) -> None:
+        await self.wait_until_authorize()
+
+        offers = await self.fetch_offers()
+        self.valorant_api.insert_cost(offers)
+
+        content = await self.fetch_content()
+        for season_content in reversed(content.seasons):
+            if not season_content.is_active():
+                continue
+
+            season = self.valorant_api.get_season(uuid=season_content.id)
+            if season is not None:
+                if season_content.type == SeasonType.episode:
+                    self._season = season
+                elif season_content.type == SeasonType.act:
+                    self._act = season
+
+        self._ready.set()
 
     async def close(self) -> None:
         """|coro|
@@ -178,10 +212,11 @@ class Client:
         self._closed = False
         self._ready = MISSING
         self.http.clear()
-        self._is_authorized = False
+        self._authorized = MISSING
         self.me = MISSING
-        # self.season = MISSING
-        # self.act = MISSING
+        self._version = MISSING
+        self._season = MISSING
+        self._act = MISSING
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
@@ -193,7 +228,7 @@ class Client:
 
     def is_authorized(self) -> bool:
         """:class:`bool`: Whether the client is authorized."""
-        return self._is_authorized
+        return self._authorized.is_set()
 
     async def authorize(self, username: str, password: str, *, remember: bool = False) -> None:
         """|coro|
@@ -211,24 +246,16 @@ class Client:
         if not username or not password:
             raise ValueError('username and password must be provided')
 
+        if self.loop is _loop:
+            await self._init()
+
         _log.info('logging using username and password')
-        self._ready = asyncio.Event()
         data = await self.http.static_login(username, password, remember=remember)
         self.me = me = ClientUser(data=data)
-        self._is_authorized = True
-        self._ready.set()
+        self._authorized.set()
         _log.info('Logged as %s', me.riot_id)
 
-        # TODO: below to asyncio.create_task
-        # insert items cost
-        offers = await self.fetch_offers()
-        self.valorant_api.insert_cost(offers)
-        # TODO: set season and act
-        # fetch price and set season
-        #     try:
-        #         self.loop.create_task(self._set_season())
-        #     except Exception as e:
-        #         _log.exception('Failed to set season', exc_info=e)
+        await self.wait_until_ready()
 
     async def authorize_from_data(self, auth_data: Dict[str, Any]) -> None:
         """|coro|
@@ -242,16 +269,16 @@ class Client:
         """
 
         _log.info('logging using auth data')
-        self._ready = asyncio.Event()
+
+        if self.loop is _loop:
+            await self._init()
+
         data = await self.http.cookie_login(auth_data)
         self.me = me = ClientUser(data=data)
-        self._is_authorized = True
-        self._ready.set()
+        self._authorized.is_set()
         _log.info('Logged as %s', me.riot_id)
 
-        # insert items cost
-        offers = await self.fetch_offers()
-        self.valorant_api.insert_cost(offers)
+        await self.wait_until_ready()
 
     # patch notes endpoint
 
