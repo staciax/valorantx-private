@@ -4,7 +4,7 @@ if TYPE_CHECKING:
     from typing_extensions import NotRequired
 
 
-class SeasonInfo(TypedDict):
+class SeasonalInfo(TypedDict):
     SeasonID: str
     NumberOfWins: int
     NumberOfWinsWithPlacements: int
@@ -23,7 +23,7 @@ class QueueSkill(TypedDict):
     TotalGamesNeededForRating: int
     TotalGamesNeededForLeaderboard: int
     CurrentSeasonGamesNeededForRating: int
-    SeasonalInfoBySeasonID: Dict[str, SeasonInfo]
+    SeasonalInfoBySeasonID: Dict[str, SeasonalInfo]
 
 
 class QueueSkills(TypedDict):
@@ -59,7 +59,7 @@ class MatchmakingRating(TypedDict):
     Version: int
     Subject: str
     NewPlayerExperienceFinished: bool
-    # QueueSkills: QueueSkills
+    QueueSkills: QueueSkills
     LatestCompetitiveUpdate: LatestCompetitiveUpdate
     IsLeaderboardAnonymized: bool
     IsActRankBadgeHidden: bool

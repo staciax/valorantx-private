@@ -13,6 +13,7 @@ from .gear import *
 from .level_borders import *
 from .maps import *
 from .missions import *
+from .mmr import *
 from .patchnotes import *
 from .player_cards import *
 from .player_titles import *

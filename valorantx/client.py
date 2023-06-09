@@ -15,6 +15,7 @@ from .models.contracts import Contracts
 from .models.favorites import Favorites
 from .models.loadout import Loadout
 from .models.match import MatchDetails
+from .models.mmr import MatchmakingRating
 from .models.patchnotes import PatchNotes
 from .models.premiers import Conference, Eligibility, PremierPleyer, PremierSeason, Roster
 from .models.store import Entitlements, Offers, StoreFront, Wallet
@@ -26,6 +27,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import ParamSpec, Self
 
+    from .models.seasons import Season
     from .models.version import Version
 
     P = ParamSpec('P')
@@ -98,8 +100,8 @@ class Client:
         self._is_authorized: bool = False
         self._ready: asyncio.Event = MISSING
         self._version: Version = MISSING
-        # self._season: Season = MISSING
-        # self._act: Season = MISSING
+        self._season: Season = MISSING
+        self._act: Season = MISSING
 
     async def __aenter__(self) -> Self:
         await self.init()
@@ -117,6 +119,14 @@ class Client:
     @property
     def version(self) -> Version:
         return self._version
+
+    @property
+    def season(self) -> Season:
+        return self._season
+
+    @property
+    def act(self) -> Season:
+        return self._act
 
     async def wait_until_ready(self) -> None:
         """|coro|
@@ -419,7 +429,7 @@ class Client:
     #     pass
 
     @_authorize_required
-    async def fetch_mmr(self, puuid: Optional[str] = None) -> ...:  # MMR
+    async def fetch_mmr(self, puuid: Optional[str] = None) -> MatchmakingRating:
         """|coro|
 
         Fetches the MMR for the current user or a given user.
@@ -431,15 +441,11 @@ class Client:
 
         Returns
         -------
-        :class:`MMR`
+        :class:`MatchmakingRating`
             The MMR for the current user or a given user.
         """
         data = await self.http.get_mmr_player(puuid)
-        # import json
-
-        # with open('mmr.json', 'w') as f:
-        #     json.dump(data, f, indent=4, ensure_ascii=False)
-        # return MMR(client=self, data=data)
+        return MatchmakingRating(self, data)
 
     @_authorize_required
     async def fetch_match_history(

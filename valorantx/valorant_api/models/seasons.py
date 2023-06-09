@@ -17,8 +17,8 @@ if TYPE_CHECKING:
         CompetitiveSeason as CompetitiveSeasonPayload,
         Season as SeasonPayload,
     )
+    from .competitive_tiers import CompetitiveTier
 
-    # from .competitive_tiers import CompetitiveTier
     # from typing_extensions import Self
 
 # fmt: off
@@ -134,16 +134,16 @@ class CompetitiveSeason(BaseModel):
         self._state: CacheState = state
         self._start_time_iso: Union[str, datetime.datetime] = data['startTime']
         self._end_time_iso: Union[str, datetime.datetime] = data['endTime']
-        self._season_uuid: str = data['seasonUuid']
-        self._competitive_tiers_uuid: str = data['competitiveTiersUuid']
+        self.season_uuid: str = data['seasonUuid']
+        self.competitive_tiers_uuid: str = data['competitiveTiersUuid']
         self.borders: Optional[List[Border]] = None
         if data['borders'] is not None:
             self.borders = [Border(state=self._state, data=border) for border in data['borders']]
         self.asset_path: str = data['assetPath']
-        # self._season: Optional[Season] = self._client.get_season(uuid=self._season_uuid)
-        # self._competitive_tiers: Optional[CompetitiveTier] = self._client.get_competitive_tier(
-        # uuid=self._competitive_tiers_uuid
-        # )
+        self._season: Optional[Season] = self._state.get_season(uuid=self.season_uuid)
+        self._competitive_tiers: Optional[CompetitiveTier] = self._state.get_competitive_tier(
+            uuid=self.competitive_tiers_uuid
+        )
 
     def __repr__(self) -> str:
         attrs = [
@@ -163,11 +163,12 @@ class CompetitiveSeason(BaseModel):
         """:class: `datetime.datetime` Returns the season's end time."""
         return utils.parse_iso_datetime(str(self._end_time_iso))
 
-    # @property
-    # def season(self) -> Optional[Season]:
-    #     """:class: `Season` Returns the season."""
-    #     return self._season
+    @property
+    def season(self) -> Optional[Season]:
+        """:class: `Season` Returns the season."""
+        return self._season
 
-    # def get_competitive_tiers(self) -> Optional[CompetitiveTier]:
-    #     """:class: `CompetitiveTier` Returns the competitive tiers."""
-    #     return self._competitive_tiers
+    @property
+    def competitive_tiers(self) -> Optional[CompetitiveTier]:
+        """:class: `CompetitiveTier` Returns the competitive tiers."""
+        return self._competitive_tiers

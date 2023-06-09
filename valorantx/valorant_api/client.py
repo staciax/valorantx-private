@@ -335,6 +335,12 @@ class Client:
     def get_competitive_season(self, uuid: str) -> Optional[CompetitiveSeason]:
         return self.cache.get_competitive_season(uuid)
 
+    def get_competitive_season_season_id(self, uuid: str) -> Optional[CompetitiveSeason]:
+        for season in self.competitive_seasons:
+            if season.season_uuid == uuid:
+                return season
+        return None
+
     async def fetch_competitive_season(self, uuid: str) -> Optional[CompetitiveSeason]:
         await self.cache.fetch_competitive_seasons()
         return self.get_competitive_season(uuid)
