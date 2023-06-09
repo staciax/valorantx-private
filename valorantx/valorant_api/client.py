@@ -66,6 +66,9 @@ class Client:
     def is_closed(self) -> bool:
         return self._closed
 
+    def is_ready(self) -> bool:
+        return self._ready.is_set()
+
     async def close(self) -> None:
         if self._closed:
             return
