@@ -17,15 +17,19 @@ from valorantx.valorant_api.enums import (
 )
 
 __all__ = (
+    'AbilityType',
     'AgentID',
     'CurrencyID',
     'GameModeID',
     'GameModeURL',
+    'ItemType',
     'LevelBorderID',
     'Locale',
     'MapID',
+    'MissionType',
     'QueueType',
     'Region',
+    'RelationType',
     'RoundResultCode',
     'RoundResultType',
     'SeasonType',
