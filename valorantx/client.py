@@ -11,6 +11,8 @@ from . import utils
 from .enums import Locale, Region, try_enum
 from .errors import AuthRequired
 from .http import HTTPClient
+from .models.account_xp import AccountXP
+from .models.content import Content
 from .models.contracts import Contracts
 from .models.favorites import Favorites
 from .models.loadout import Loadout
@@ -382,7 +384,7 @@ class Client:
     # PVP endpoints
 
     @_authorize_required
-    async def fetch_content(self) -> ...:  # Content
+    async def fetch_content(self) -> Content:
         """|coro|
 
         Fetches the content for the current version of Valorant.
@@ -393,14 +395,10 @@ class Client:
             The content for the current version of Valorant.
         """
         data = await self.http.get_content()
-        import json
-
-        with open('content.json', 'w') as f:
-            json.dump(data, f, indent=4)
-        # return Content(client=self, data=data)
+        return Content(client=self, data=data)
 
     @_authorize_required
-    async def fetch_account_xp(self) -> ...:  # AccountXP
+    async def fetch_account_xp(self) -> AccountXP:
         """|coro|
 
         Fetches the account XP for the current user.
@@ -411,17 +409,13 @@ class Client:
             The account XP for the current user.
         """
         data = await self.http.get_account_xp_player()
-        import json
-
-        with open('account_xp.json', 'w') as f:
-            json.dump(data, f, indent=4)
-        # return AccountXP(client=self, data=data)
+        return AccountXP(self, data)
 
     @_authorize_required
     async def fetch_loudout(self) -> Loadout:
         favorites = await self.fetch_favorites()
         data = await self.http.get_personal_player_loadout()
-        return Loadout(client=self, data=data, favorites=favorites)
+        return Loadout(self, data, favorites=favorites)
 
     # @_authorize_required
     # async def put_loadout(self, loadout: LoadoutBuilder) -> None:

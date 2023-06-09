@@ -59,7 +59,7 @@ class LatestCompetitiveUpdate:
 
     def get_season(self) -> Optional[Season]:
         """:class: `Season` Returns the season."""
-        return self._client.valorant_api.get_season(uuid=self.season_id)
+        return self._client.valorant_api.get_season(self.season_id)
 
     async def fetch_match_details(self) -> Optional[MatchDetails]:
         """coro :class: `MatchDetails` Returns the match details."""
@@ -100,7 +100,7 @@ class SeasonalInfo:
 
         competitive_season: Optional[CompetitiveSeason] = None
 
-        competitive_season = self._client.valorant_api.get_competitive_season_season_id(uuid=self.season_id)
+        competitive_season = self._client.valorant_api.get_competitive_season_season_id(self.season_id)
         if competitive_season is None:
             return None
 
