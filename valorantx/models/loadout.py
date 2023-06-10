@@ -342,15 +342,15 @@ class SpraysLoadout:
             if spray is None:
                 _log.warning('could not find spray for loadout %r', spray_data)
                 continue
-            spray = spray.from_loadout(spray=spray, favorite=spray.uuid in favorites.favorited_content)
+            spray_lo = spray.from_loadout(spray=spray, favorite=spray.uuid in favorites.favorited_content)
             if equip_slot_id == SpraySlotID.slot_1.value:
-                self.slot_1 = spray
+                self.slot_1 = spray_lo
             elif equip_slot_id == SpraySlotID.slot_2.value:
-                self.slot_2 = spray
+                self.slot_2 = spray_lo
             elif equip_slot_id == SpraySlotID.slot_3.value:
-                self.slot_3 = spray
+                self.slot_3 = spray_lo
             elif equip_slot_id == SpraySlotID.slot_4.value:
-                self.slot_4 = spray
+                self.slot_4 = spray_lo
             else:
                 _log.warning('unknown spray slot %r', spray_data)
 
