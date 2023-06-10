@@ -104,6 +104,7 @@ class Client:
         self._version: Version = MISSING
         self._season: Season = MISSING
         self._act: Season = MISSING
+        self._tasks: Dict[str, asyncio.Task[Any]] = {}
 
     async def __aenter__(self) -> Self:
         return self
@@ -141,7 +142,7 @@ class Client:
                 'Please use the authorize method or asynchronous context manager before calling this method'
             )
 
-    async def wait_until_authorize(self) -> None:
+    async def wait_until_authorized(self) -> None:
         """|coro|
         Waits until the client's internal cache is all ready.
         """
@@ -173,11 +174,14 @@ class Client:
             self.http.riot_client_version = self._version.riot_client_version
             _log.debug('assets valorant version: %s', self._version.version)
 
-        self.loop.create_task(self._init_after_authorize())
+        self._tasks['after_authorize'] = self.loop.create_task(
+            self._init_after_authorize(), name='valorantx: after_authorize'
+        )
+
         _log.debug('client initialized')
 
     async def _init_after_authorize(self) -> None:
-        await self.wait_until_authorize()
+        await self.wait_until_authorized()
 
         offers = await self.fetch_offers()
         self.valorant_api.insert_cost(offers)
@@ -204,8 +208,19 @@ class Client:
         if self._closed:
             return
         self._closed = True
+
         await self.http.close()
         await self.valorant_api.close()
+        if self._ready is not MISSING:
+            self._ready.clear()
+
+        if self._authorized is not MISSING:
+            self._authorized.clear()
+
+        for task in self._tasks.values():
+            task.cancel()
+
+        self.loop = MISSING
 
     def clear(self) -> None:
         """Clears the internal cache."""
@@ -228,7 +243,7 @@ class Client:
 
     def is_authorized(self) -> bool:
         """:class:`bool`: Whether the client is authorized."""
-        return self._authorized.is_set()
+        return self._authorized is not MISSING and self._authorized.is_set()
 
     async def authorize(self, username: str, password: str, *, remember: bool = False) -> None:
         """|coro|
