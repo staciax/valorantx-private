@@ -32,6 +32,7 @@ assert password is not None
 @pytest_asyncio.fixture
 async def client() -> AsyncGenerator[valorantx.Client, None]:
     async with valorantx.Client(locale=valorantx.Locale.thai) as v_client:
+        await v_client.authorize(username, password)
         yield v_client
 
 
@@ -80,8 +81,8 @@ class BaseAuthTest(BaseTest):
     async def test_authorize(self) -> None:
         assert self.client is not None
         assert self.client.is_ready() is False
-        await self.client.init()
         await self.client.authorize(self.riot_username, self.riot_password)
         await self.client.wait_until_ready()
+        await self.client.wait_until_authorized()
         assert self.client.is_authorized() is True
         assert self.client.is_ready() is True

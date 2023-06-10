@@ -8,12 +8,12 @@ from .conftest import BaseTest
 class TestInGameAPI(BaseTest):
     @pytest.mark.asyncio
     async def test_client_init(self) -> None:
-        await self.client.init()
+        assert self.client is not None
+        await self.client._init()
 
     @pytest.mark.asyncio
     async def test_client(self) -> None:
         assert self.client is not None
-
         assert self.client.is_ready() is False
         assert self.client.is_authorized() is False
         assert self.client.is_closed() is False
@@ -31,3 +31,7 @@ class TestInGameAPI(BaseTest):
         assert self.client.is_ready() is False
         assert self.client.is_authorized() is False
         assert self.client.is_closed() is False
+
+    @pytest.mark.asyncio
+    async def test_close(self) -> None:
+        await self.client.close()

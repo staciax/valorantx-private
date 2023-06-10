@@ -427,8 +427,8 @@ class TestValorantAPI(BaseTest):
             assert cs is not None
             assert cs.start_time is not None
             assert cs.end_time is not None
-            assert cs._season_uuid is not None
-            assert cs._competitive_tiers_uuid is not None
+            assert cs.season_uuid is not None
+            assert cs.competitive_tiers_uuid is not None
             if cs.borders is not None:
                 for border in cs.borders:
                     assert border is not None
