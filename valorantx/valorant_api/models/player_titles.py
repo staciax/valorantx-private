@@ -12,7 +12,6 @@ if TYPE_CHECKING:
     from ..cache import CacheState
     from ..types.player_titles import PlayerTitle as PlayerTitlePayload
 
-    # from ..client import Client
 
 # fmt: off
 __all__ = (

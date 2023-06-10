@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
 
 class Client:
-    def __init__(self, session: aiohttp.ClientSession = MISSING, locale: Locale = Locale.english) -> None:
+    def __init__(self, session: aiohttp.ClientSession = MISSING, locale: Locale = Locale.american_english) -> None:
         self.http: HTTPClient = HTTPClient(session)
         self.cache: CacheState = CacheState(locale=locale, http=self.http)
         self._ready: asyncio.Event = MISSING

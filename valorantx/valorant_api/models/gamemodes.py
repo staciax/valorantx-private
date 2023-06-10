@@ -82,13 +82,11 @@ class GameMode(BaseModel):
     def __repr__(self) -> str:
         return f'<GameMode display_name={self.display_name!r}>'
 
-    # def __eq__(self, other: Union[GameMode, GameModeType]) -> bool:
-    #     if isinstance(other, GameMode):
-    #         return self.uuid == other.uuid
-    #     return self.uuid == str(other)
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, GameMode) and self.uuid == other.uuid
 
-    # def __ne__(self, other: Union[GameMode, GameModeType]) -> bool:
-    #     return not self.__eq__(other)
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
     # def __contains__(self, item: Union[GameMode, GameModeType]) -> bool:
     #     ...

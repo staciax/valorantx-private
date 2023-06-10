@@ -84,15 +84,6 @@ class PlayerCard(BaseModel):
         """:class: `Theme` Returns the player card's theme."""
         return self._state.get_theme(uuid=self._theme_uuid)
 
-    # @property
-    # def price(self) -> int:
-    #     """:class: `int` Returns the player card's price."""
-    #     return self._price
-
-    # @price.setter
-    # def price(self, value: int) -> None:
-    #     self._price = value
-
     def is_hidden_if_not_owned(self) -> bool:
         """:class: `bool` Returns whether the player card is hidden if not owned."""
         return self._is_hidden_if_not_owned

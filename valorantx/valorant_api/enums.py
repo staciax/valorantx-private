@@ -248,7 +248,7 @@ class Locale(Enum):
     taiwan_chinese = 'zh-TW'
 
     # aliases
-    english = american_english
+    english = 'en-US'
 
     def __str__(self) -> str:
         return str(self.value)

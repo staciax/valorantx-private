@@ -370,20 +370,20 @@ class Skin(BaseModel, Generic[WeaponT]):
         self._is_random = skin._is_random
         return self
 
-    # def get_skin_level(self, level: int) -> Optional[SkinLevel]:
-    #     """get the skin's level with the given level.
+    def get_skin_level(self, level: int) -> Optional[SkinLevel]:
+        """get the skin's level with the given level.
 
-    #     Parameters
-    #     ----------
-    #     level: :class: `int`
-    #         The level of the skin level to get.
+        Parameters
+        ----------
+        level: :class: `int`
+            The level of the skin level to get.
 
-    #     Returns
-    #     -------
-    #     Optional[:class: `SkinLevel`]
-    #         The skin level with the given level.
-    #     """
-    #     return next((skin_level for skin_level in self.levels if skin_level.level_number == level), None)
+        Returns
+        -------
+        Optional[:class: `SkinLevel`]
+            The skin level with the given level.
+        """
+        return next((skin_level for skin_level in self.levels if skin_level.level_number == level), None)
 
     # @classmethod
     # @overload
@@ -447,20 +447,24 @@ class SkinChroma(BaseModel, Generic[SkinT]):
     def display_icon_fix(self) -> Optional[Asset]:
         """:class: `Asset` Returns the skin's icon with fixed white background."""
 
-        display_icon = (
-            self._display_icon
-            or self.parent._display_icon
-            or (self.parent.levels[0]._display_icon if len(self.parent.levels) > 0 else None)
-        )
-        name = utils.removeprefix(self.display_name.american_english, 'Standard ')
-        if name.lower() == self.parent.parent.display_name.default.lower():
-            display_icon = self.parent.display_icon or display_icon
+        skin = self.parent
 
-        if display_icon is None:
-            return None
+        if skin is None:
+            return self.display_icon
 
-        return None
-        # return Asset._from_url(self._state, url=str(display_icon))
+        display_icon = skin.display_icon
+        if len(skin.levels) > 0:
+            display_icon = skin.levels[0].display_icon
+
+        weapon = skin.parent
+        if weapon is None:
+            return display_icon
+
+        self_name = utils.removeprefix(self.display_name.default, 'Standard ')
+        if self_name.lower() == weapon.display_name.default.lower():  # check if skin name is same as weapon name
+            display_icon = weapon.display_icon or display_icon
+
+        return display_icon
 
     @property
     def full_render(self) -> Optional[Asset]:

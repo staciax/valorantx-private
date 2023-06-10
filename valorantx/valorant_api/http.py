@@ -40,8 +40,6 @@ if TYPE_CHECKING:
         weapons,
     )
 
-    # from .types import collection, competitive, contract, match, party, player, store, version, weapons, xp
-
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
 
@@ -97,7 +95,7 @@ class HTTPClient:
 
     async def init(self) -> None:
         if self.__session is MISSING:
-            self.__session = aiohttp.ClientSession()  # connector=aiohttp.TCPConnector(limit=0),
+            self.__session = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=0))
 
     async def request(self, route: Route, **kwargs: Any) -> Any:
         method = route.method
