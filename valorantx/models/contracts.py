@@ -119,20 +119,18 @@ class Contract(ContractValorantAPI):
         self.progression: Progression = Progression(contract=self, data=data_contract['ContractProgression'])
         self._content: Content = Content(self._state, data['content'])
         # self.maximum_levels: int = sum(len([level.reward for level in chapter.levels]) for chapter in self.content.chapters)
-
-    #         self.total_progression_earned: int = contract['ContractProgression']['TotalProgressionEarned']
-    #         self.highest_rewarded_level: int = contract['ContractProgression']['HighestRewardedLevel'][
-    #             self.free_reward_schedule_uuid
-    #         ]
-    #         self.progression_level_reached: int = contract.get('ProgressionLevelReached', 0)
-    #         self.progression_towards_next_level: int = contract['ProgressionTowardsNextLevel']
-    #         self.reward_per_chapter: int = min(len(chapter._rewards) for chapter in self.content._chapters)
-    #         self.total_chapters: int = len(self.content._chapters)
-    #         self.maximum_tier: int = sum(len(chapter._rewards) for chapter in self.content._chapters)
-
-    #         # TODO: new algorithm {'chapter': len(rewards), 'chapter': len(rewards), ...} for accuracy
-    #         self.chapter: int = self.progression_level_reached // self.reward_per_chapter
-    #         self.chapter_reward_index: int = self.progression_level_reached % self.reward_per_chapter
+        # self.total_progression_earned: int = contract['ContractProgression']['TotalProgressionEarned']
+        # self.highest_rewarded_level: int = contract['ContractProgression']['HighestRewardedLevel'][
+        #     self.free_reward_schedule_uuid
+        # ]
+        # self.progression_level_reached: int = contract.get('ProgressionLevelReached', 0)
+        # self.progression_towards_next_level: int = contract['ProgressionTowardsNextLevel']
+        # self.reward_per_chapter: int = min(len(chapter._rewards) for chapter in self.content._chapters)
+        # self.total_chapters: int = len(self.content._chapters)
+        # self.maximum_tier: int = sum(len(chapter._rewards) for chapter in self.content._chapters)
+        # TODO: new algorithm {'chapter': len(rewards), 'chapter': len(rewards), ...} for accuracy
+        # self.chapter: int = self.progression_level_reached // self.reward_per_chapter
+        # self.chapter_reward_index: int = self.progression_level_reached % self.reward_per_chapter
 
     def __repr__(self) -> str:
         return f'<Contract display_name={self.display_name!r}>'

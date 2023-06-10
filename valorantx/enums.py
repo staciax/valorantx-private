@@ -39,25 +39,14 @@ __all__ = (
     'try_enum',
 )
 
-# ItemType = ValorantAPIItemType
-
-# class ObjectType(Enum):
-#     agents = 'agents'
-#     buddies = 'buddies'
-#     buddies_levels = 'buddies_levels'
-#     bundles = 'bundles'
-#     # TODO: add more
-
 
 VALORANT_POINT_UUID: Final[str] = '85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741'
 RADIANITE_POINT_UUID: Final[str] = 'e59aa87c-4cbf-517a-5983-6e81511be9b7'
-# fmt: off
 CURRENCY_UUIDS: Final[Tuple[str, ...]] = (
     'f9cfa034-c7e1-4995-904c-1a296e7b1760',
     'da0edbc8-31fb-468e-95a8-27ac25cd76ed',
-    'a61e8526-bb1f-4135-b7df-95e67b416efe'
+    'a61e8526-bb1f-4135-b7df-95e67b416efe',
 )
-# fmt: on
 
 
 class Region(Enum):

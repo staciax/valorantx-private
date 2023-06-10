@@ -335,7 +335,7 @@ class SpraysLoadout:
         self.slot_1: Optional[Spray] = None
         self.slot_2: Optional[Spray] = None
         self.slot_3: Optional[Spray] = None
-        self.slot_4: Optional[Spray] = None  # TODO: patch 6.10 support sprays in 4th slot
+        self.slot_4: Optional[Spray] = None
         for spray_data in sprays:
             equip_slot_id = spray_data['EquipSlotID']
             spray = state.get_spray(spray_data['SprayID'])
