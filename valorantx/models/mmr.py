@@ -53,9 +53,7 @@ class LatestCompetitiveUpdate:
 
     def get_map(self) -> Optional[Map]:
         """:class: `Map` Returns the map."""
-        # TODO: implement this
-        # to_uuid = MapType.from_url(self._map_id)
-        # return self._client.get_map(uuid=to_uuid)
+        return self._client.valorant_api.get_map_by_url(self.map_id)
 
     def get_season(self) -> Optional[Season]:
         """:class: `Season` Returns the season."""

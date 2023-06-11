@@ -149,14 +149,14 @@ class Player(TypedDict):
     partyId: str
     characterId: str
     stats: PlayerStats
-    roundDamage: List[RoundDamage]
+    roundDamage: Optional[List[RoundDamage]]
     competitiveTier: int
     isObserver: bool
     playerCard: str
     playerTitle: str
     preferredLevelBorder: str
     accountLevel: int
-    sessionPlaytimeMinutes: int
+    sessionPlaytimeMinutes: NotRequired[int]
     xpModifications: NotRequired[List[XPModification]]
     behaviorFactors: BehaviorFactors
     newPlayerExperienceDetails: NewPlayerExperienceDetails

@@ -90,20 +90,16 @@ class User(ClientUser):
     def __repr__(self) -> str:
         return f'<User puuid={self.puuid!r} game_name={self.game_name!r} tag_line={self.tag_line!r} region={self.region!r}>'
 
-    async def update_identities(self) -> None:
-        ...
-        # match_history = await self._client.fetch_match_history(puuid=self.puuid, end=1)
-        # if match_history is not None:
-        #     for match in match_history:
-        #         for player in match.players:
-        #             if player.puuid == self.puuid:
-        #                 self.name = player.name
-        #                 self.tag = player.tag
-        #                 self.player_card = player.player_card
-        #                 self.player_title = player.player_title
-        #                 self.level_border = player.level_border
-        #                 self.account_level = player.account_level
-        #                 self.last_update = match.started_at
-        # TODO: return rank
-        # data = await self._client.http.get_user_data(self.puuid)
-        # self._update(data)
+    async def refresh_identities(self) -> None:
+        match_history = await self._client.fetch_match_history(puuid=self.puuid, end=1, with_details=True)
+        for match in match_history:
+            for player in match.players:
+                if player.puuid != self.puuid:
+                    continue
+                self.game_name = player.game_name
+                self.tag_line = player.tag_line
+                # self.player_card = player.player_card
+                # self.player_title = player.player_title
+                # self.level_border = player.level_border
+                # self.account_level = player.account_level
+                # self.last_update = match.started_at

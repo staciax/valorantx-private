@@ -497,17 +497,13 @@ class HTTPClient:
         """
         return self.request(Route('GET', '/v1/config/{region}', self.region, EndpointType.shard))
 
-    def get_name_service_playyers(
-        self, puuid: Optional[Union[List[str], str]] = None
-    ) -> Response[List[name_service.Player]]:
+    def get_name_service_players(self, puuid: Union[List[str], str]) -> Response[List[name_service.Player]]:
         """
         Name_service
         get player name tag by puuid
         NOTE:
         format ['PUUID']
         """
-        if puuid is None:
-            puuid = [self.riot_auth.puuid]
 
         if isinstance(puuid, str):
             puuid = [puuid]

@@ -8,6 +8,8 @@ from aiohttp import ClientSession
 
 from valorantx.valorant_api.client import Client as ClientValorantAPI
 from valorantx.valorant_api.http import HTTPClient
+from valorantx.valorant_api.models.maps import Map
+from valorantx.valorant_api.models.seasons import CompetitiveSeason
 
 from .enums import ItemType, Locale
 from .models.store import Offers
@@ -15,6 +17,7 @@ from .valorant_api_cache import CacheState
 
 if TYPE_CHECKING:
     from .models.buddies import Buddy, BuddyLevel
+    from .models.competitive_tiers import Tier
     from .models.level_borders import LevelBorder
     from .models.player_cards import PlayerCard
     from .models.player_titles import PlayerTitle
@@ -98,3 +101,30 @@ class Client(ClientValorantAPI):
 
         def get_level_border(self, uuid: str) -> Optional[LevelBorder]:
             ...
+
+    # custom
+
+    def get_map_by_url(self, url: str) -> Optional[Map]:
+        for map in self.cache.maps:
+            if map.url == url:
+                return map
+        return None
+
+    def get_competitive_season_by_season_id(self, season_id: str) -> Optional[CompetitiveSeason]:
+        for ss_com in self.competitive_seasons:
+            if ss_com.season is None:
+                continue
+            if ss_com.season.id == season_id:
+                return ss_com
+        return None
+
+    def get_tier(self, season_id: str, tier: int) -> Optional[Tier]:
+        competitive_season = self.get_competitive_season_by_season_id(season_id)
+        if competitive_season is None:
+            return None
+        if competitive_season.competitive_tiers is None:
+            return None
+        for t in competitive_season.competitive_tiers.tiers:
+            if t.tier == tier:
+                return t
+        return None

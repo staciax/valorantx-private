@@ -207,8 +207,25 @@ class Identity:
     def preferred_level_border(self, value: Optional[LevelBorder]) -> None:
         self._preferred_level_border = value
 
-    # async def refresh_account_level(self) -> None:
-    #     account_xp = await self._client.fetch_account_xp()
+    async def refresh_account_level(self) -> None:
+        account_xp = await self._client.fetch_account_xp()
+        self.account_level = account_xp.level
+
+    async def refresh_identities(self) -> None:
+        match_history = await self._client.fetch_match_history(puuid=self.favorites.subject, end=1, with_details=True)
+        if len(match_history.match_details) == 0:
+            return
+        match = match_history.match_details[0]
+        for player in match.players:
+            if player.puuid != self.favorites.subject:
+                continue
+            # self.game_name = player.game_name
+            # self.tag_line = player.tag_line
+            self.player_card = player.player_card
+            self.player_title = player.player_title
+            self.preferred_level_border = player.preferred_level_border
+            self.account_level = player.account_level
+            self.last_update = match.started_at
 
     def to_payload(self) -> IdentityPayload:
         payload: IdentityPayload = {

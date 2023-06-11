@@ -8,7 +8,7 @@ import logging
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Coroutine, Dict, List, Optional, Type, TypeVar, Union
 
 from . import utils
-from .enums import Locale, Region, SeasonType, try_enum
+from .enums import Locale, QueueType, Region, SeasonType, try_enum
 from .errors import AuthRequired
 from .http import HTTPClient
 from .models.account_xp import AccountXP
@@ -16,7 +16,7 @@ from .models.content import Content
 from .models.contracts import Contracts
 from .models.favorites import Favorites
 from .models.loadout import Loadout
-from .models.match import MatchDetails
+from .models.match import MatchDetails, MatchHistory
 from .models.mmr import MatchmakingRating
 from .models.patchnotes import PatchNotes
 from .models.premiers import Conference, Eligibility, PremierPleyer, PremierSeason, Roster
@@ -323,6 +323,13 @@ class Client:
 
         return PatchNotes(state=self.valorant_api.cache, data=data, locale=locale)
 
+    # name service endpoints
+
+    @_authorize_required
+    async def fetch_player_name_by_puuid(self, puuid: Union[List[str], str]) -> Any:
+        data = await self.http.get_name_service_players(puuid)
+        return data
+
     # store endpoints
 
     @_authorize_required
@@ -487,21 +494,19 @@ class Client:
     async def fetch_match_history(
         self,
         puuid: Optional[str] = None,
-        # queue: Optional[Union[str, QueueType]] = None,
-        # *,
+        queue: Optional[Union[str, QueueType]] = None,
+        *,
         start: int = 0,
         end: int = 15,
         with_details: bool = True,
-    ) -> ...:  # Optional[MatchHistory]
-        data = await self.http.get_match_history(self.me.puuid, 0, 15, 'deathmatch')
-        import json
-
-        with open('match_history.json', 'w') as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
-        # history = MatchHistory(client=self, data=data) if data else None
-        # if with_details and history is not None:
-        #     await history.fetch_details()
-        # return history
+    ) -> MatchHistory:
+        if isinstance(queue, QueueType):
+            queue = queue.value
+        data = await self.http.get_match_history(puuid, start, end, queue)
+        history = MatchHistory(client=self, data=data)
+        if with_details:
+            await history.fetch_details()
+        return history
 
     @_authorize_required
     async def fetch_match_details(self, match_id: str) -> MatchDetails:

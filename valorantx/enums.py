@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Final, List, Optional, Tuple, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Final, List, Optional, Tuple, Type, TypeVar
 
 from valorantx.valorant_api.enums import (
     AbilityType as AbilityType,
@@ -15,6 +15,9 @@ from valorantx.valorant_api.enums import (
     RelationType as RelationType,
     try_enum as try_enum,
 )
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 __all__ = (
     'AbilityType',
@@ -177,10 +180,10 @@ class MapID(Enum):
         return getattr(MapURL, self.name).value
 
     @classmethod
-    def from_url(cls, map_url: str) -> str:
-        for x in cls:
-            if x.url == map_url:
-                return str(x.value)
+    def from_url(cls, map_url: str) -> Self:
+        for value in cls:
+            if value.url == map_url:
+                return value
         raise ValueError(f'No map found for url {map_url}')
 
 
@@ -197,14 +200,14 @@ class MapURL(Enum):
     the_range = '/Game/Maps/Poveglia/Range'
 
     @property
-    def uuid(self) -> str:
+    def id(self) -> str:
         return getattr(MapID, self.name).value
 
     @classmethod
-    def from_id(cls, map_id: str) -> str:
-        for x in cls:
-            if x.uuid == map_id:
-                return str(x.value)
+    def from_id(cls, map_id: str) -> Self:
+        for value in cls:
+            if value.id == map_id:
+                return value
         raise ValueError(f'No map found for uuid {map_id}')
 
 
