@@ -163,7 +163,8 @@ class Identity:
                 favorite=player_title.uuid in favorites.favorited_content,  # NOTE: player title not support favorite
             )
         else:
-            _log.warning(f'player title {self._player_title_id!r} not found')
+            if self._player_title_id != '00000000-0000-0000-0000-000000000000':
+                _log.warning(f'player title {self._player_title_id!r} not found')
 
         # level border
         if self._preferred_level_border_id != LevelBorderID.empty.value:
@@ -174,7 +175,8 @@ class Identity:
                     favorite=preferred_level_border.uuid in favorites.favorited_content,
                 )
             else:
-                _log.warning(f'level border {self._preferred_level_border_id!r} not found')
+                if self._preferred_level_border_id != '00000000-0000-0000-0000-000000000000':
+                    _log.warning(f'level border {self._preferred_level_border_id!r} not found')
 
     # def _update_from_data(self, data: IdentityPayload) -> None:
     #     self._player_card_id = data['PlayerCardID']
