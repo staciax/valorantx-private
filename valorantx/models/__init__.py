@@ -15,6 +15,7 @@ from .gear import *
 from .level_borders import *
 from .loadout import *
 from .maps import *
+from .match import *
 from .missions import *
 from .mmr import *
 from .patchnotes import *

@@ -144,7 +144,7 @@ class MatchInfo:
         self.force_post_processing: bool = data['forcePostProcessing']
         self.queue_id: str = data['queueID']
         self._game_mode_url: str = data['gameMode']
-        self._game_mode: Optional[GameMode] = self._client.valorant_api.get_game_mode(self._game_mode_url)
+        self._game_mode: Optional[GameMode] = self._client.valorant_api.get_game_mode_by_url(self._game_mode_url)
         self._is_ranked: bool = data['isRanked']
         self._is_match_sampled: bool = data['isMatchSampled']
         self.season_id: str = data['seasonId']

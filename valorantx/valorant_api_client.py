@@ -18,6 +18,7 @@ from .valorant_api_cache import CacheState
 if TYPE_CHECKING:
     from .models.buddies import Buddy, BuddyLevel
     from .models.competitive_tiers import Tier
+    from .models.gamemodes import GameMode
     from .models.level_borders import LevelBorder
     from .models.player_cards import PlayerCard
     from .models.player_titles import PlayerTitle
@@ -108,6 +109,30 @@ class Client(ClientValorantAPI):
         for map in self.cache.maps:
             if map.url == url:
                 return map
+        return None
+
+    def get_game_mode_by_url(self, url: str) -> Optional[GameMode]:
+        if url == '/Game/GameModes/Bomb/BombGameMode.BombGameMode_C':
+            return self.get_game_mode('96bd3920-4f36-d026-2b28-c683eb0bcac5')
+        elif url == '/Game/GameModes/Deathmatch/DeathmatchGameMode.DeathmatchGameMode_C':
+            return self.get_game_mode('a8790ec5-4237-f2f0-e93b-08a8e89865b2')
+        elif url == '/Game/GameModes/GunGame/GunGameTeamsGameMode.GunGameTeamsGameMode_C':
+            return self.get_game_mode('a4ed6518-4741-6dcb-35bd-f884aecdc859')
+        elif url == '/Game/GameModes/OneForAll/OneForAll_GameMode.OneForAll_GameMode_C':
+            return self.get_game_mode('4744698a-4513-dc96-9c22-a9aa437e4a58')
+        elif url == '/Game/GameModes/QuickBomb/QuickBombGameMode.QuickBombGameMode_C':
+            return self.get_game_mode('e921d1e6-416b-c31f-1291-74930c330b7b')
+        elif url == '/Game/GameModes/SnowballFight/SnowballFightGameMode.SnowballFightGameMode_C':
+            return self.get_game_mode('57038d6d-49b1-3a74-c5ef-3395d9f23a97')
+        elif url == '/Game/GameModes/ShootingRange/ShootingRangeGameMode.ShootingRangeGameMode_C':
+            return self.get_game_mode('e2dc3878-4fe5-d132-28f8-3d8c259efcc6')
+        elif url == '/Game/GameModes/NewPlayerExperience/NPEGameMode.NPEGameMode_C':
+            return self.get_game_mode('d2b4e425-4cab-8d95-eb26-bb9b444551dc')
+        elif (
+            url
+            == '/Game/GameModes/_Development/Swiftplay_EndOfRoundCredits/Swiftplay_EoRCredits_GameMode.Swiftplay_EoRCredits_GameMode_C'
+        ):
+            return self.get_game_mode('5d0f264b-4ebe-cc63-c147-809e1374484b')
         return None
 
     def get_competitive_season_by_season_id(self, season_id: str) -> Optional[CompetitiveSeason]:

@@ -250,7 +250,7 @@ class GameModeURL(Enum):
         return str(self.value)
 
     @property
-    def uuid(self) -> str:
+    def id(self) -> str:
         return getattr(GameModeID, self.name).value
 
 
@@ -264,8 +264,10 @@ class GameModeID(Enum):
     practice = 'e2dc3878-4fe5-d132-28f8-3d8c259efcc6'
     on_board = 'd2b4e425-4cab-8d95-eb26-bb9b444551dc'
     swiftplay = '5d0f264b-4ebe-cc63-c147-809e1374484b'
-    unrated = standard
-    competitive = standard
+
+    # aliases
+    unrated = '96bd3920-4f36-d026-2b28-c683eb0bcac5'
+    competitive = '96bd3920-4f36-d026-2b28-c683eb0bcac5'
 
     def __str__(self) -> str:
         return str(self.value)
