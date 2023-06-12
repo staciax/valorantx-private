@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Coroutine, Dict, List, Optional, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Optional, Type, TypeVar, Union
 
 from . import utils
 from .enums import Locale, QueueType, Region, SeasonType, try_enum
@@ -43,7 +43,7 @@ __all__ = (
 # fmt: on
 
 T = TypeVar('T')
-Coro = TypeVar('Coro', bound=Callable[..., Coroutine[Any, Any, Any]])
+Coro = Coroutine[Any, Any, T]
 
 _log = logging.getLogger(__name__)
 
@@ -69,13 +69,13 @@ _loop: Any = _LoopSentinel()
 # --
 
 
-def _authorize_required(fn: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
+def _authorize_required(fn: Callable[P, Coro[T]]) -> Callable[P, Coro[T]]:
     async def inner(*args: P.args, **kwargs: P.kwargs) -> T:
         for arg in args:
             if isinstance(arg, Client):
                 if not arg.is_authorized():
-                    client_func = f'Client.{fn.__name__}'
-                    raise AuthRequired(f"{client_func!r} requires authorization")
+                    func = f'{arg.__class__.__name__}.{fn.__name__}'
+                    raise AuthRequired(f"{func!r} requires authorization")
                 break
         return await fn(*args, **kwargs)
 
