@@ -92,7 +92,7 @@ class Shard(Enum):
     AP = 'ap'
     KR = 'kr'
     PBE = 'pbe'
-    CN = '...'
+    # CN = '...'
 
     def __str__(self) -> str:
         return str(self.value)
@@ -134,7 +134,7 @@ class QueueType(Enum):
     spikerush = 'spikerush'
     unrated = 'unrated'
     replication = 'onefa'
-    new_map = 'newmap'
+    newmap = 'newmap'
     swiftplay = 'swiftplay'
 
     def __str__(self) -> str:
@@ -149,15 +149,24 @@ class PremierEventType(Enum):
     league = 'LEAGUE'
     tournament = 'TOURNAMENT'
 
+    def __str__(self) -> str:
+        return str(self.value)
+
 
 class PremierMapSelectionStrategy(Enum):
     random = 'RANDOM'
     pickban = 'PICKBAN'
 
+    def __str__(self) -> str:
+        return str(self.value)
+
 
 class PremierRole(Enum):
     member = 'MEMBER'
     owner = 'OWNER'
+
+    def __str__(self) -> str:
+        return str(self.value)
 
 
 class MapID(Enum):
@@ -288,8 +297,10 @@ class CurrencyID(Enum):
     valorant = '85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741'
     radianite = 'e59aa87c-4cbf-517a-5983-6e81511be9b7'
     free_agent = 'f08d4ae3-939c-4576-ab26-09ce1f23bb37'
-    vp = valorant
-    rad = radianite
+
+    # aliases
+    vp = '85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741'
+    rad = 'e59aa87c-4cbf-517a-5983-6e81511be9b7'
 
     def __str__(self) -> str:
         return str(self.value)

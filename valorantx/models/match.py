@@ -4,7 +4,6 @@ import asyncio
 import contextlib
 import datetime
 import logging
-from functools import cached_property
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
 
 from .. import utils
@@ -212,7 +211,7 @@ class Coach:
     def __repr__(self) -> str:
         return f'<Coach subject={self.subject!r} team_id={self.team_id!r}>'
 
-    @cached_property
+    @property
     def team(self) -> Optional[Team]:
         """:class:`Team`: coach's team"""
         return self._match.get_team(self.team_id)
@@ -541,7 +540,7 @@ class FinishingDamage:
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
-    @cached_property
+    @property
     def item(self) -> Optional[Any]:
         """:class:`Weapon` Returns the weapon used to kill the player."""
         return self.match._client.valorant_api.get_weapon(uuid=self._item_uuid.lower())
@@ -657,14 +656,14 @@ class Economy:
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
-    @cached_property
+    @property
     def weapon(self) -> Optional[Weapon]:
         """:class:`Weapon`: The weapon used by the player."""
         if self._weapon is None:
             return None
         return self.match._client.valorant_api.get_weapon(uuid=self._weapon.lower())
 
-    @cached_property
+    @property
     def armor(self) -> Optional[Gear]:
         """:class:`Gear`: The armor used by the player."""
         if self._armor is None:
@@ -688,7 +687,7 @@ class RoundDamage:
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
 
-    @cached_property
+    @property
     def receiver(self) -> Optional[MatchPlayer]:
         """:class:`MatchPlayer`: The player who received the damage."""
         return self.match.get_player(self._receiver_uuid)
@@ -758,7 +757,7 @@ class RoundPlayerStat:
         if self.stayed_in_spawn:
             stats.stayed_in_spawn += 1
 
-    @cached_property
+    @property
     def player(self) -> Optional[MatchPlayer]:
         """:class:`MatchPlayer`: The player this stat belongs to."""
         return self._match.get_player(self.subject)
@@ -810,7 +809,7 @@ class RoundPlayerScore:
     def __int__(self) -> int:
         return self.score
 
-    @cached_property
+    @property
     def player(self) -> Optional[MatchPlayer]:
         """:class:`MatchPlayer`: Returns the player that this score belongs to."""
         return self._match.get_player(self.subject)
@@ -1023,28 +1022,28 @@ class PlayerStats:
                 self.head_shots, self.body_shots, self.leg_shots
             )
 
-    @cached_property
+    @property
     def average_combat_score(self) -> float:
         """:class:`float` average combat score"""
         with contextlib.suppress(ZeroDivisionError):
             return self.score / self.rounds_played
         return 0
 
-    @cached_property
+    @property
     def kd_ratio(self) -> float:
         """:class:`float`: kill/death ratio"""
         with contextlib.suppress(ZeroDivisionError):
             return self.kills / self.deaths
         return 0
 
-    @cached_property
+    @property
     def kda_ratio(self) -> float:
         """:class:`float`: KDA ratio"""
         with contextlib.suppress(ZeroDivisionError):
             return self.kills / self.deaths / self.assists
         return 0
 
-    @cached_property
+    @property
     def damage_per_round(self) -> float:
         """:class:`float`: average damage per round"""
         with contextlib.suppress(ZeroDivisionError):
@@ -1123,11 +1122,9 @@ class MatchPlayer(User):  # Player
         """:class:`list[MatchPlayer]`: list of opponents"""
         return [player for player in self._match.players if player.team != self.team]
 
-    def get_opponent_stats(self, opponent: MatchPlayer) -> OpponentStats:
+    def get_opponents_stats(self) -> List[OpponentStats]:
         """:class:`Opponent` of the given player."""
-        if opponent.team == self.team:
-            raise ValueError('Player Opponent is your teammate')
-        return OpponentStats(self._match, self, opponent)
+        return [OpponentStats(self._match, self, opponent) for opponent in self.get_opponents()]
 
 
 class MatchDetails:
@@ -1174,7 +1171,7 @@ class MatchDetails:
 
     # properties
 
-    @cached_property
+    @property
     def started_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: The time this match started."""
         return datetime.datetime.fromtimestamp(self.match_info.game_start_millis / 1000)
