@@ -1218,3 +1218,19 @@ class MatchDetails:
     def team_mvp(self) -> Optional[MatchPlayer]:
         """:class:`MatchPlayer`: Returns the team mvp."""
         return self._player_team_mvp
+
+    # helpers
+
+    def is_draw(self) -> bool:
+        blue_team = self.get_team('Blue')
+        red_team = self.get_team('Red')
+        if blue_team is not None and red_team is not None:
+            if blue_team.rounds_won == red_team.rounds_won:
+                return True
+        return False
+
+    def get_members(self, player: MatchPlayer) -> List[MatchPlayer]:
+        return [p for p in self.players if p.team_id == player.team_id]
+
+    def get_opponents(self, player: MatchPlayer) -> List[MatchPlayer]:
+        return [p for p in self.players if p.team_id != player.team_id]
