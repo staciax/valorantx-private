@@ -268,7 +268,7 @@ class Client:
         data = await self.http.static_login(username, password, remember=remember)
         self.me = me = ClientUser(data=data)
         self._authorized.set()
-        _log.info('Logged as %s', me.riot_id)
+        _log.info('logged as %s', me.riot_id)
 
         await self.wait_until_ready()
 
@@ -291,7 +291,7 @@ class Client:
         data = await self.http.cookie_login(auth_data)
         self.me = me = ClientUser(data=data)
         self._authorized.is_set()
-        _log.info('Logged as %s', me.riot_id)
+        _log.info('logged as %s', me.riot_id)
 
         await self.wait_until_ready()
 
