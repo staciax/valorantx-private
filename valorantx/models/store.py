@@ -4,7 +4,7 @@ import datetime
 import logging
 from typing import TYPE_CHECKING, Any, List, Optional
 
-from ..enums import RADIANITE_POINT_UUID, VALORANT_POINT_UUID, ItemType, try_enum
+from ..enums import KINGDOM_POINT_UUID, RADIANITE_POINT_UUID, VALORANT_POINT_UUID, ItemType, try_enum
 from ..valorant_api_cache import CacheState
 from .bundles import FeaturedBundle
 from .weapons import SkinLevelBonus, SkinLevelOffer
@@ -103,6 +103,7 @@ class Wallet:
         self._balances = data['Balances']
         self._valorant_value: int = self._balances.get(VALORANT_POINT_UUID, 0)
         self._radiant_value: int = self._balances.get(RADIANITE_POINT_UUID, 0)
+        self._kingdom_value: int = self._balances.get(KINGDOM_POINT_UUID, 0)
 
     def __repr__(self) -> str:
         return f'<Wallet valorant_points={self.valorant_points!r} radiant_points={self.radiant_points!r}>'
@@ -124,6 +125,11 @@ class Wallet:
         """Returns the radiant points for the wallet"""
         return self._radiant_value
 
+    @property
+    def kingdom_points(self) -> int:
+        """Returns the kingdom points for the wallet"""
+        return self._kingdom_value
+
     # helper methods
 
     def get_valorant_currency(self) -> Optional[Currency]:
@@ -131,6 +137,9 @@ class Wallet:
 
     def get_radiant_currency(self) -> Optional[Currency]:
         return self._state.get_currency(RADIANITE_POINT_UUID)
+
+    def get_kingdom_currency(self) -> Optional[Currency]:
+        return self._state.get_currency(KINGDOM_POINT_UUID)
 
 
 class Reward:
