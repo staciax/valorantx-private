@@ -17,7 +17,6 @@ __all__ = (
     'NotFound',
     'RateLimited',
     'ValorantAPIError',
-    'ValorantXException',
 )
 
 
@@ -39,13 +38,7 @@ def _flatten_error_dict(d: Dict[str, Any], key: str = '') -> Dict[str, str]:
     return dict(items)
 
 
-class ValorantXException(Exception):
-    """Base class for all exceptions in this module."""
-
-    pass
-
-
-class ValorantAPIError(ValorantXException):
+class ValorantAPIError(Exception):
     """Exception that's raised when a Valorant API request operation fails."""
 
     pass
