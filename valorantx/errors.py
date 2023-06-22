@@ -10,13 +10,13 @@ if TYPE_CHECKING:
     from aiohttp import ClientResponse
 
 __all__ = (
-    'AuthRequired',
     'BadRequest',
     'Forbidden',
     'HTTPException',
     'InternalServerError',
     'NotFound',
     'RateLimited',
+    'RiotAuthRequired',
     'RiotAuthError',
     'RiotAuthenticationError',
     'RiotMultifactorError',
@@ -93,7 +93,13 @@ class HTTPException(ValorantXError):
         super().__init__(fmt.format(self.response, self.code, self.text))
 
 
-class BadRequest(HTTPException):
+class ValorantInGameAPIError(HTTPException):
+    """Exception that's raised when an in-game error occurs."""
+
+    pass
+
+
+class BadRequest(ValorantInGameAPIError):
     """Exception that's raised for when status code 400 occurs.
     Subclass of :exc:`HTTPException`
     """
@@ -101,7 +107,7 @@ class BadRequest(HTTPException):
     pass
 
 
-class Forbidden(HTTPException):
+class Forbidden(ValorantInGameAPIError):
     """Exception that's raised for when status code 403 occurs.
     Subclass of :exc:`HTTPException`
     """
@@ -109,7 +115,7 @@ class Forbidden(HTTPException):
     pass
 
 
-class NotFound(HTTPException):
+class NotFound(ValorantInGameAPIError):
     """Exception that's raised for when status code 404 occurs.
     Subclass of :exc:`HTTPException`
     """
@@ -117,7 +123,7 @@ class NotFound(HTTPException):
     pass
 
 
-class InternalServerError(HTTPException):
+class InternalServerError(ValorantInGameAPIError):
     """Exception that's raised for when status code 500 occurs.
     Subclass of :exc:`HTTPException`
     """
@@ -125,7 +131,7 @@ class InternalServerError(HTTPException):
     pass
 
 
-class RateLimited(HTTPException):
+class RateLimited(ValorantInGameAPIError):
     """Exception that's raised for when a 429 status code occurs.
     Subclass of :exc:`HTTPException`.
     """
@@ -133,7 +139,7 @@ class RateLimited(HTTPException):
     pass
 
 
-class AuthRequired(ValorantXError):
+class RiotAuthRequired(ValorantXError):
     """Exception that's raised when the client is not logged in."""
 
     pass

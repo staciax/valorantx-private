@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Optional
 
 from . import utils
 from .enums import Locale, QueueType, Region, SeasonType, try_enum
-from .errors import AuthRequired
+from .errors import RiotAuthRequired
 from .http import HTTPClient
 from .models.account_xp import AccountXP
 from .models.content import Content
@@ -75,7 +75,7 @@ def _authorize_required(fn: Callable[P, Coro[T]]) -> Callable[P, Coro[T]]:
             if isinstance(arg, Client):
                 if not arg.is_authorized():
                     func = f'{arg.__class__.__name__}.{fn.__name__}'
-                    raise AuthRequired(f"{func!r} requires authorization")
+                    raise RiotAuthRequired(f"{func!r} requires authorization")
                 break
         return await fn(*args, **kwargs)
 
