@@ -23,7 +23,7 @@ __all__ = (
     'RiotRatelimitError',
     'RiotUnknownErrorTypeError',
     'RiotUnknownResponseTypeError',
-    'ValorantXException',
+    'ValorantXError',
 )
 
 
@@ -45,13 +45,13 @@ def _flatten_error_dict(d: Dict[str, Any], key: str = '') -> Dict[str, str]:
     return dict(items)
 
 
-class ValorantXException(Exception):
+class ValorantXError(Exception):
     """Base class for all exceptions in this module."""
 
     pass
 
 
-class HTTPException(ValorantXException):
+class HTTPException(ValorantXError):
     """Exception that's raised when an HTTP request operation fails.
     Attributes
     ------------
@@ -133,7 +133,7 @@ class RateLimited(HTTPException):
     pass
 
 
-class AuthRequired(ValorantXException):
+class AuthRequired(ValorantXError):
     """Exception that's raised when the client is not logged in."""
 
     pass
