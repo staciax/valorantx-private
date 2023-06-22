@@ -93,13 +93,13 @@ class HTTPException(ValorantXError):
         super().__init__(fmt.format(self.response, self.code, self.text))
 
 
-class ValorantInGameAPIError(HTTPException):
+class InGameAPIError(HTTPException):
     """Exception that's raised when an in-game error occurs."""
 
     pass
 
 
-class BadRequest(ValorantInGameAPIError):
+class BadRequest(InGameAPIError):
     """Exception that's raised for when status code 400 occurs.
     Subclass of :exc:`HTTPException`
     """
@@ -107,7 +107,7 @@ class BadRequest(ValorantInGameAPIError):
     pass
 
 
-class Forbidden(ValorantInGameAPIError):
+class Forbidden(InGameAPIError):
     """Exception that's raised for when status code 403 occurs.
     Subclass of :exc:`HTTPException`
     """
@@ -115,7 +115,7 @@ class Forbidden(ValorantInGameAPIError):
     pass
 
 
-class NotFound(ValorantInGameAPIError):
+class NotFound(InGameAPIError):
     """Exception that's raised for when status code 404 occurs.
     Subclass of :exc:`HTTPException`
     """
@@ -123,7 +123,7 @@ class NotFound(ValorantInGameAPIError):
     pass
 
 
-class InternalServerError(ValorantInGameAPIError):
+class InternalServerError(InGameAPIError):
     """Exception that's raised for when status code 500 occurs.
     Subclass of :exc:`HTTPException`
     """
@@ -131,7 +131,7 @@ class InternalServerError(ValorantInGameAPIError):
     pass
 
 
-class RateLimited(ValorantInGameAPIError):
+class RateLimited(InGameAPIError):
     """Exception that's raised for when a 429 status code occurs.
     Subclass of :exc:`HTTPException`.
     """
