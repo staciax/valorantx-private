@@ -124,7 +124,7 @@ class CompetitiveTier(BaseModel):
         super().__init__(data['uuid'])
         self._state: CacheState = state
         self.asset_object_name: str = data['assetObjectName']
-        self._tiers: List[Tier] = [Tier(state=self._state, data=tier) for tier in data['tiers']]
+        self._tiers: Dict[int, Tier] = {tier['tier']: Tier(state=self._state, data=tier) for tier in data['tiers']}
         self.asset_path: str = data['assetPath']
 
     def __str__(self) -> str:
@@ -136,7 +136,11 @@ class CompetitiveTier(BaseModel):
     @property
     def tiers(self) -> List[Tier]:
         """:class: `list` Returns the competitive tier's tiers."""
-        return self._tiers
+        return list(self._tiers.values())
+
+    def get_tier(self, tier: int) -> Optional[Tier]:
+        """Returns the tier with the given tier number."""
+        return self._tiers.get(tier)
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

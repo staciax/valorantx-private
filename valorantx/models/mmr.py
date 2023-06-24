@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
+
+from ..utils import MISSING
 
 if TYPE_CHECKING:
     from ..client import Client
@@ -105,11 +107,15 @@ class SeasonalInfo:
         if competitive_season.competitive_tiers is None:
             return None
 
-        for tier in competitive_season.competitive_tiers.tiers:
-            if tier.tier == self.competitive_tier_number:
-                return tier
+        return competitive_season.competitive_tiers.get_tier(self.competitive_tier_number)
 
-        # return None
+    # helpers
+
+    def get_winrate(self) -> float:
+        """:class: `float` Returns the winrate."""
+        if self.number_of_games == 0:
+            return 0.0
+        return self.number_of_wins / self.number_of_games * 100
 
 
 class QueueSkill:
@@ -118,7 +124,10 @@ class QueueSkill:
         self.total_games_needed_for_rating: int = data['TotalGamesNeededForRating']
         self.total_games_needed_for_leaderboard: int = data['TotalGamesNeededForLeaderboard']
         self.current_season_games_needed_for_rating: int = data['CurrentSeasonGamesNeededForRating']
-        self._seasonal_info_list: Dict[str, Any] = data['SeasonalInfoBySeasonID']
+        self._seasonal_info_by_season_id: Dict[str, SeasonalInfo] = {}
+        if data['SeasonalInfoBySeasonID'] is not None:
+            for season_id, seasonal_info in data['SeasonalInfoBySeasonID'].items():
+                self._seasonal_info_by_season_id[season_id] = SeasonalInfo(client=self._client, data=seasonal_info)
 
     # def __repr__(self) -> str:
     #     attrs = [
@@ -129,13 +138,28 @@ class QueueSkill:
     #     joined = ' '.join('%s=%r' % t for t in attrs)
     #     return f'<{self.__class__.__name__} {joined}>'
 
-    def get_seasonal_info(self) -> Optional[List[SeasonalInfo]]:
-        """:class: `list` Returns the seasonal info."""
+    def get_seasonal_info(self, season_id: str, /) -> Optional[SeasonalInfo]:
+        """:class: `SeasonalInfo` Returns the seasonal info."""
 
-        if self._seasonal_info_list is None:
+        if self._seasonal_info_by_season_id is None:
             return None
 
-        return [SeasonalInfo(client=self._client, data=seasonal_info) for seasonal_info in self._seasonal_info_list.values()]
+        return self._seasonal_info_by_season_id.get(season_id)
+
+    @property
+    def seasonal_info(self) -> List[SeasonalInfo]:
+        """:class: `list` Returns the seasonal info."""
+        return list(self._seasonal_info_by_season_id.values())
+
+    def get_latest_seasonal_info(self) -> Optional[SeasonalInfo]:
+        """:class: `SeasonalInfo` Returns the latest seasonal info."""
+        if self._seasonal_info_by_season_id is None:
+            return None
+
+        if self._client.act is MISSING:
+            return None
+
+        return self.get_seasonal_info(self._client.act.id)
 
 
 class QueueSkills:
@@ -233,6 +257,8 @@ class MatchmakingRating:
         """:class: `LatestCompetitiveUpdate` Returns the latest competitive update."""
         return self._latest_competitive_update
 
+    # helpers
+
     def get_latest_rank_tier(self, season_act: Optional[Season] = None) -> Optional[Tier]:
         """:class: `Tier` Returns the last rank tier."""
         if season_act is None:
@@ -242,12 +268,10 @@ class MatchmakingRating:
         if competitive is None:
             return None
 
-        seasonal_info = competitive.get_seasonal_info()
-        if seasonal_info is None:
+        if competitive.seasonal_info is None:
             return None
 
-        for info in seasonal_info:
-            if info.season == season_act:
-                return info.get_tier()
-
-        return None
+        season_info = competitive.get_seasonal_info(season_act.id)
+        if season_info is None:
+            return None
+        return season_info.get_tier()
