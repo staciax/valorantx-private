@@ -127,3 +127,13 @@ class Entitlements(TypedDict):
 
 class Offers(TypedDict):
     Offers: List[Offer]
+
+
+class AgentStoreFront(TypedDict):
+    AgentStoreOffers: List[AgentStoreOffer]
+    FeaturedAgent: str
+
+
+class AgentStoreOffer(TypedDict):
+    AgentID: str
+    StoreOffers: List[Offer]

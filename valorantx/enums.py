@@ -181,6 +181,9 @@ class MapID(Enum):
     split = 'd960549e-485c-e861-8d71-aa9d1aed12a2'
     pearl = 'fd267378-4d1d-484f-ff52-77821ed10dc2'
     the_range = 'ee613ee9-28b7-4beb-9666-08db13bb2244'
+    district = ''
+    piazza = ''
+    kasbah = ''
 
     def __str__(self) -> str:
         return str(self.value)

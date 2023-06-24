@@ -599,6 +599,14 @@ class HTTPClient:
             Route('POST', '/store/v3/storefront/{puuid}', self.region, EndpointType.pd, puuid=self.puuid), json=payload
         )
 
+    def get_store_storefronts_agent(self) -> Response[store.AgentStoreFront]:
+        """
+        Store_GetAgentStorefront
+        Get the currently available items in the store
+        """
+        r = Route('GET', '/store/v1/storefronts/agent', self.region, EndpointType.pd)
+        return self.request(r)
+
     def get_store_wallet(self) -> Response[store.Wallet]:
         """
         Store_GetWallet
