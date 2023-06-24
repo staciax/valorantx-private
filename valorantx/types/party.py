@@ -22,7 +22,7 @@ class Player(TypedDict):
     PlatformInfo: PlatformInfo
 
 
-class MemberIdentity(TypedDict):
+class PlayerIdentity(TypedDict):
     Subject: str
     PlayerCardID: str
     PlayerTitleID: str
@@ -39,8 +39,8 @@ class Ping(TypedDict):
 
 class Member(TypedDict):
     Subject: str
-    CompetitiveTier: str
-    PlayerIdentity: MemberIdentity
+    CompetitiveTier: int
+    PlayerIdentity: PlayerIdentity
     SeasonalBadgeInfo: Optional[Any]
     IsOwner: bool
     QueueEligibleRemainingAccountLevels: int
@@ -90,6 +90,27 @@ class MatchmakingData(TypedDict):
     SkillDisparityRRPenalty: int
 
 
+class Invite(TypedDict):
+    ID: str
+    PartyID: str
+    Subject: str
+    InvitedBySubject: str
+    CreatedAt: str
+    RefreshedAt: str
+    ExpiresIn: int
+
+
+class Request(TypedDict):
+    ID: str
+    PartyID: str
+    RequestedBySubject: str
+    Subjects: List[str]
+    CreatedAt: str
+    RequestedAt: str
+    RefreshedAt: str
+    ExpiresIn: int
+
+
 class CheatData(TypedDict):
     GamePodOverride: str
     ForcePostGameProcessing: bool
@@ -101,19 +122,19 @@ class Party(TypedDict):
     VoiceRoomID: str
     Version: int
     ClientVersion: str
-    Members: List[Member]
+    Members: Optional[List[Member]]
     State: str  # Literal ...
     PreviousState: str
     StateTransitionReason: str
     Accessibility: str
     CustomGameData: CustomGameData
     MatchmakingData: MatchmakingData
-    Invites: Optional[Any]
-    Requests: List[Any]
+    Invites: Optional[List[Invite]]
+    Requests: Optional[List[Request]]
     QueueEntryTime: str
     ErrorNotification: str
     RestrictedSeconds: int
     EligibleQueues: List[str]
-    QueueIneligibilities: List[Any]
+    QueueIneligibilities: Optional[List[Any]]
     CheatData: CheatData
-    XPBonuses: List[Any]
+    XPBonuses: Optional[List[Any]]

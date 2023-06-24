@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 
-class Player(TypedDict):
+class NameServive(TypedDict):
     DisplayName: str
     Subject: str
     GameName: str

@@ -18,6 +18,8 @@ from .models.favorites import Favorites
 from .models.loadout import Loadout
 from .models.match import MatchDetails, MatchHistory
 from .models.mmr import MatchmakingRating
+from .models.name_service import NameService
+from .models.party import Party, PartyPlayer
 from .models.patchnotes import PatchNotes
 from .models.premiers import Conference, Eligibility, PremierPleyer, PremierSeason, Roster
 from .models.store import Entitlements, Offers, StoreFront, Wallet
@@ -326,9 +328,9 @@ class Client:
     # name service endpoints
 
     @_authorize_required
-    async def fetch_player_name_by_puuid(self, puuid: Union[List[str], str]) -> Any:
+    async def fetch_player_name_by_puuid(self, puuid: Union[List[str], str]) -> List[NameService]:
         data = await self.http.get_name_service_players(puuid)
-        return data
+        return [NameService(data=name) for name in data]
 
     # store endpoints
 
@@ -527,35 +529,29 @@ class Client:
         data = await self.http.get_match_details(match_id)
         return MatchDetails(client=self, data=data)
 
-    # # party endpoint
+    # party
 
-    # @_authorize_required
-    # async def fetch_party(self, party_id: Optional[Union[Party, PartyPlayer, str]] = None) -> Party:
-    #     if party_id is None:
-    #         party_id = await self.fetch_party_player()
+    @_authorize_required
+    async def fetch_party(self, party_id: Optional[str] = None, /) -> Party:
+        if party_id is None:
+            party_player = await self.fetch_party_player()
+            party_id = party_player.current_party_id
 
-    #     if isinstance(party_id, PartyPlayer):
-    #         party_id = party_id.id
+        data = await self.http.get_party(party_id=party_id)
+        party = Party(client=self, data=data)
+        # await party.update_member_display_name()
+        return party
 
-    #     data = await self.http.fetch_party(party_id=str(party_id))
-    #     party = Party(client=self, data=data)
-    #     await party.update_member_display_name()
-    #     return party
-
-    # @_authorize_required
-    # async def fetch_party_player(self) -> PartyPlayer:
-    #     data = await self.http.party_fetch_player()
-    #     return PartyPlayer(client=self, data=data)
+    @_authorize_required
+    async def fetch_party_player(self) -> PartyPlayer:
+        data = await self.http.get_party_player()
+        return PartyPlayer(client=self, data=data)
 
     # @_authorize_required
     # async def party_request_to_join(self, party_id: str) -> Any:
-    #     return ...
+    #     return
 
-    # @_authorize_required
-    # async def party_leave_from_party(self, party_id: str) -> Any:
-    #     return ...
-
-    # # pre game lobby endpoints
+    # pre game
 
     # @_authorize_required
     # async def fetch_pregame_match(self, match: Optional[str] = None) -> Any:

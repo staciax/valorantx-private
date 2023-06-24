@@ -497,7 +497,7 @@ class HTTPClient:
         """
         return self.request(Route('GET', '/v1/config/{region}', self.region, EndpointType.shard))
 
-    def get_name_service_players(self, puuid: Union[List[str], str]) -> Response[List[name_service.Player]]:
+    def get_name_service_players(self, puuid: Union[List[str], str]) -> Response[List[name_service.NameServive]]:
         """
         Name_service
         get player name tag by puuid
@@ -721,7 +721,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def post_party_refresh_pings(self, party_id: str) -> Response[Mapping[str, Any]]:
+    def post_party_refresh_pings(self, party_id: str) -> Response[party.Party]:
         """
         Party_RefreshPings
         Refreshes the pings for a player
@@ -745,7 +745,7 @@ class HTTPClient:
         payload = {'queueID': str(queue_id)}
         return self.request(r, json=payload)
 
-    def post_party_start_custom_game(self, party_id: str) -> Response[Mapping[str, Any]]:
+    def post_party_start_custom_game(self, party_id: str) -> Response[party.Party]:
         """
         Party_StartCustomGame
         Starts a custom game
@@ -753,7 +753,7 @@ class HTTPClient:
         r = Route('POST', '/parties/v1/parties/{party_id}/startcustomgame', self.region, EndpointType.glz, party_id=party_id)
         return self.request(r)
 
-    def post_party_matchmaking_join(self, party_id: str) -> Response[Mapping[str, Any]]:
+    def post_party_matchmaking_join(self, party_id: str) -> Response[party.Party]:
         """
         Party_EnterMatchmakingQueue
         Enters the matchmaking queue
@@ -767,7 +767,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def post_party_matchmaking_leave(self, party_id: str) -> Response[Mapping[str, Any]]:
+    def post_party_matchmaking_leave(self, party_id: str) -> Response[party.Party]:
         """
         Party_LeaveMatchmakingQueue
         Leaves the matchmaking queue
@@ -813,7 +813,7 @@ class HTTPClient:
         )
         return self.request(r, json=settings)
 
-    def post_party_invite_by_display_name(self, party_id: str, name: str, tag: str) -> Response[Mapping[str, Any]]:
+    def post_party_invite_by_display_name(self, party_id: str, name: str, tag: str) -> Response[party.Party]:
         """
         Party_InviteToPartyByDisplayName
         Invites a player to the party with their display name
