@@ -173,7 +173,7 @@ class Client:
             raise RuntimeError('Valorant API did not become ready in time')
         else:
             self._version = self.valorant_api.version
-            self.http.riot_client_version = self._version.riot_client_version
+            HTTPClient.RIOT_CLIENT_VERSION = self._version.riot_client_version
             _log.debug('assets valorant version: %s', self._version.version)
 
         self._tasks['after_authorize'] = self.loop.create_task(

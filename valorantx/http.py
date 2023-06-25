@@ -113,6 +113,9 @@ class Route:
 
 
 class HTTPClient:
+    
+    RIOT_CLIENT_VERSION: ClassVar[str] = ''
+
     def __init__(self, loop: asyncio.AbstractEventLoop, *, region: Region) -> None:
         self.loop: asyncio.AbstractEventLoop = loop
         self._session: aiohttp.ClientSession = MISSING
@@ -131,7 +134,6 @@ class HTTPClient:
         self.riot_auth: RiotAuth = RiotAuth()
         self._puuid: Optional[str] = None
         self.region: Region = region
-        self.riot_client_version: Optional[str] = None
 
     @property
     def puuid(self) -> Optional[str]:
@@ -1411,7 +1413,7 @@ class HTTPClient:
         self._headers['Authorization'] = 'Bearer %s' % self.riot_auth.access_token
         self._headers['X-Riot-Entitlements-JWT'] = self.riot_auth.entitlements_token
         self._headers['X-Riot-ClientPlatform'] = self._client_platform
-        self._headers['X-Riot-ClientVersion'] = self.riot_client_version
+        self._headers['X-Riot-ClientVersion'] = HTTPClient.RIOT_CLIENT_VERSION
 
     async def _get_current_version(self) -> str:
         ...
