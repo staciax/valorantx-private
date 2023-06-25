@@ -113,24 +113,23 @@ class Route:
 
 
 class HTTPClient:
-    
     RIOT_CLIENT_VERSION: ClassVar[str] = ''
+    RIOT_CLIENT_PLATFORM: ClassVar[str] = base64.b64encode(
+        json.dumps(
+            {
+                'platformType': 'PC',
+                'platformOS': 'Windows',
+                'platformOSVersion': '10.0.19042.1.256.64bit',
+                'platformChipset': 'Unknown',
+            },
+            indent=4,
+        ).encode()
+    ).decode()
 
     def __init__(self, loop: asyncio.AbstractEventLoop, *, region: Region) -> None:
         self.loop: asyncio.AbstractEventLoop = loop
         self._session: aiohttp.ClientSession = MISSING
         self._headers: Dict[str, Any] = {}
-        self._client_platform = base64.b64encode(
-            json.dumps(
-                {
-                    'platformType': 'PC',
-                    'platformOS': 'Windows',
-                    'platformOSVersion': '10.0.19042.1.256.64bit',
-                    'platformChipset': 'Unknown',
-                },
-                indent=4,
-            ).encode()
-        ).decode()
         self.riot_auth: RiotAuth = RiotAuth()
         self._puuid: Optional[str] = None
         self.region: Region = region
@@ -1412,7 +1411,7 @@ class HTTPClient:
 
         self._headers['Authorization'] = 'Bearer %s' % self.riot_auth.access_token
         self._headers['X-Riot-Entitlements-JWT'] = self.riot_auth.entitlements_token
-        self._headers['X-Riot-ClientPlatform'] = self._client_platform
+        self._headers['X-Riot-ClientPlatform'] = HTTPClient.RIOT_CLIENT_PLATFORM
         self._headers['X-Riot-ClientVersion'] = HTTPClient.RIOT_CLIENT_VERSION
 
     async def _get_current_version(self) -> str:
