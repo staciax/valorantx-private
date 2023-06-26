@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 __all__ = (
     'AbilityType',
     'AgentID',
-    'CurrencyID',
+    'CurrencyType',
     'GameModeID',
     'GameModeURL',
     'ItemType',
@@ -45,7 +45,7 @@ __all__ = (
 
 VALORANT_POINT_UUID: Final[str] = '85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741'
 RADIANITE_POINT_UUID: Final[str] = 'e59aa87c-4cbf-517a-5983-6e81511be9b7'
-KINGDOM_POINT_UUID: Final[str] = ''  # TODO: Add kingdom point uuid
+KINGDOM_POINT_UUID: Final[str] = '85ca954a-41f2-ce94-9b45-8ca3dd39a00d'
 CURRENCY_UUIDS: Final[Tuple[str, ...]] = (
     'f9cfa034-c7e1-4995-904c-1a296e7b1760',
     'da0edbc8-31fb-468e-95a8-27ac25cd76ed',
@@ -106,6 +106,7 @@ class AgentID(Enum):
     chamber = '22697a3d-45bf-8dd7-4fec-84a9e28c69d7'
     cypher = '117ed9e3-49f3-6512-3ccf-0cada7e3823b'
     fade = 'dade69b4-4f5a-8528-247b-219e5a1facd6'
+    deadlock = ''
     gekko = 'e370fa57-4757-3604-3648-499e1f642d3f'
     harbor = '95b78ed7-4637-86d9-7e41-71ba8c293152'
     jett = 'add6443a-41bd-e414-f6ad-e58d267f4e95'
@@ -297,10 +298,11 @@ class GameModeID(Enum):
         raise ValueError(f'No game mode found for url {game_mode_url}')
 
 
-class CurrencyID(Enum):
+class CurrencyType(Enum):
     valorant = '85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741'
     radianite = 'e59aa87c-4cbf-517a-5983-6e81511be9b7'
     free_agent = 'f08d4ae3-939c-4576-ab26-09ce1f23bb37'
+    kingdom = '85ca954a-41f2-ce94-9b45-8ca3dd39a00d'
 
     # aliases
     vp = '85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741'

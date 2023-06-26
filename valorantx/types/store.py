@@ -105,6 +105,7 @@ class StoreFront(TypedDict):
     SkinsPanelLayout: SkinsPanelLayout
     UpgradeCurrencyStore: UpgradeCurrencyStore
     BonusStore: NotRequired[BonusStore]
+    AccessoryStore: AccessoryStore
 
 
 class Wallet(TypedDict):
@@ -137,3 +138,14 @@ class AgentStoreFront(TypedDict):
 class AgentStoreOffer(TypedDict):
     AgentID: str
     StoreOffers: List[Offer]
+
+
+class AccessoryStoreOffer(TypedDict):
+    Offer: Offer
+    ContractID: str
+
+
+class AccessoryStore(TypedDict):
+    AccessoryStoreOffers: List[AccessoryStoreOffer]
+    AccessoryStoreRemainingDurationInSeconds: int
+    StorefrontID: str

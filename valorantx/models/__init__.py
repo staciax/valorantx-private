@@ -18,6 +18,7 @@ from .maps import *
 from .match import *
 from .missions import *
 from .mmr import *
+from .party import *
 from .patchnotes import *
 from .player_cards import *
 from .player_titles import *

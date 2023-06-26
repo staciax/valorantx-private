@@ -2,15 +2,17 @@ from __future__ import annotations
 
 import datetime
 import logging
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 
-from ..enums import KINGDOM_POINT_UUID, RADIANITE_POINT_UUID, VALORANT_POINT_UUID, ItemType, try_enum
+from ..enums import KINGDOM_POINT_UUID, RADIANITE_POINT_UUID, VALORANT_POINT_UUID, CurrencyType, ItemType, try_enum
 from ..valorant_api_cache import CacheState
 from .bundles import FeaturedBundle
 from .weapons import SkinLevelBonus, SkinLevelOffer
 
 if TYPE_CHECKING:
     from ..types.store import (
+        AccessoryStore as AccessoryStorePayload,
+        AccessoryStoreOffer as AccessoryStoreOfferPayload,
         BonusStore as BonusStorePayload,
         Entitlements as EntitlementsPayload,
         Offer as OfferPayload,
@@ -20,7 +22,27 @@ if TYPE_CHECKING:
         StoreFront as StoreFrontPayload,
         Wallet as WalletPayload,
     )
+    from .agents import Agent
+    from .buddies import BuddyLevel
+    from .contracts import ContractValorantAPI
     from .currencies import Currency
+    from .player_cards import PlayerCard
+    from .player_titles import PlayerTitle
+    from .sprays import Spray, SprayLevel
+    from .weapons import SkinChroma, SkinLevel
+
+    RewardItem = Union[
+        Agent,
+        BuddyLevel,
+        ContractValorantAPI,
+        SkinLevel,
+        SkinChroma,
+        Spray,
+        SprayLevel,
+        PlayerCard,
+        PlayerTitle,
+        Currency,
+    ]
 
 __all__ = (
     'BonusStore',
@@ -29,6 +51,8 @@ __all__ = (
     'SkinsPanelLayout',
     'StoreFront',
     'Wallet',
+    'AccessoryStore',
+    'AccessoryStoreOffer',
 )
 
 _log = logging.getLogger(__name__)
@@ -83,6 +107,9 @@ class StoreFront:
                 "No bundles found, but bundle is not None. Maybe the game is updating?. trying update client use 'client.??"
             )
             # TODO:: method to update client
+
+        # patch 7.0
+        # self.accessory_store: AccessoryStore = AccessoryStore(state, data['AccessoryStore'])
 
         self.bonus_store: Optional[BonusStore] = None
         if 'BonusStore' in data:
@@ -143,7 +170,8 @@ class Wallet:
 
 
 class Reward:
-    def __init__(self, data: RewardPayload) -> None:
+    def __init__(self, state: CacheState, data: RewardPayload) -> None:
+        self._state = state
         self.type: ItemType = try_enum(ItemType, data['ItemTypeID'])
         self.id: str = data['ItemID']
         self.quantity: int = data['Quantity']
@@ -157,18 +185,46 @@ class Reward:
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
-    # @property
-    # def item(self) -> Any:
-    #     ...
+    @property
+    def item(self) -> Optional[RewardItem]:
+        if self.type == ItemType.agent:
+            return self._state.get_agent(self.id)
+        elif self.type == ItemType.buddy_level:
+            return self._state.get_buddy_level(self.id)
+        elif self.type == ItemType.contract:
+            return self._state.get_contract(self.id)
+        elif self.type == ItemType.skin_level:
+            return self._state.get_skin_level(self.id)
+        elif self.type == ItemType.skin_chroma:
+            return self._state.get_skin_chroma(self.id)
+        elif self.type == ItemType.spray:
+            return self._state.get_spray(self.id)
+        elif self.type == ItemType.spray_level:
+            return self._state.get_spray_level(self.id)
+        elif self.type == ItemType.player_card:
+            return self._state.get_player_card(self.id)
+        elif self.type == ItemType.player_title:
+            return self._state.get_player_title(self.id)
+        elif self.type == ItemType.currency:
+            return self._state.get_currency(self.id)
+        else:
+            _log.warning(f'Unknown reward type {self.type}')
+            return None
 
 
 class Offer:
-    def __init__(self, data: OfferPayload, item: Optional[Any] = None) -> None:
+    def __init__(self, state: CacheState, data: OfferPayload, item: Optional[Any] = None) -> None:
+        self._state = state
         self.id: str = data['OfferID']
         self._is_direct_purchase: bool = data['IsDirectPurchase']
-        self.cost: int = data['Cost'][VALORANT_POINT_UUID]
-        self.rewards: List[Reward] = [Reward(reward) for reward in data['Rewards']]
-        self.item: Optional[Any] = item
+        self.currency_type: CurrencyType = try_enum(CurrencyType, list(data['Cost'].keys())[0])
+        self.cost: int = data['Cost'][self.currency_type.value]
+        self.rewards: List[Reward] = [Reward(state, reward) for reward in data['Rewards']]
+        self._item: Optional[Any] = item
+
+    @property
+    def item(self) -> Optional[Any]:
+        return self._item
 
     def __repr__(self) -> str:
         return f'<Offer offer_id={self.id!r}>'
@@ -185,8 +241,8 @@ class Offer:
 
 
 class Offers:
-    def __init__(self, data: OffersPayload) -> None:
-        self.offers: List[Offer] = [Offer(offer) for offer in data['Offers']]
+    def __init__(self, state: CacheState, data: OffersPayload) -> None:
+        self.offers: List[Offer] = [Offer(state, offer) for offer in data['Offers']]
 
     def __repr__(self) -> str:
         return f'<Offers offers={self.offers!r}>'
@@ -309,3 +365,31 @@ class Entitlements:
     #         if contract is not None:
     #             contracts.append(contract)
     #     return contracts
+
+
+class AccessoryStoreOffer:
+    def __init__(self, state: CacheState, data: AccessoryStoreOfferPayload) -> None:
+        self._state: CacheState = state
+        self.offer: Offer = Offer(state, data['Offer'])
+        self.contract_id: str = data['ContractID']
+        self._contract: Optional[ContractValorantAPI] = self._state.get_contract(uuid=self.contract_id)
+
+    @property
+    def contract(self) -> Optional[ContractValorantAPI]:
+        return self._contract
+
+
+class AccessoryStore:
+    def __init__(self, state: CacheState, data: AccessoryStorePayload) -> None:
+        self.offers: List[AccessoryStoreOffer] = [
+            AccessoryStoreOffer(state, offer) for offer in data['AccessoryStoreOffers']
+        ]
+        self.remaining_duration_in_seconds: int = data['AccessoryStoreRemainingDurationInSeconds']
+        self.store_front_id: str = data['StorefrontID']
+
+    @property
+    def remaining_time_utc(self) -> datetime.datetime:
+        return datetime.datetime.utcnow() + datetime.timedelta(seconds=self.remaining_duration_in_seconds)
+
+    def __repr__(self) -> str:
+        return f'<AccessoryStore offers={self.offers} remaining_duration_in_seconds={self.remaining_duration_in_seconds} store_front_id={self.store_front_id}>'

@@ -85,7 +85,12 @@ def _authorize_required(fn: Callable[P, Coro[T]]) -> Callable[P, Coro[T]]:
 
 
 class Client:
-    def __init__(self, *, region: Region = MISSING, locale: Locale = Locale.american_english) -> None:
+    def __init__(
+        self,
+        *,
+        region: Region = MISSING,
+        locale: Locale = Locale.american_english,
+    ) -> None:
         if region is MISSING:
             _log.warning(
                 'You did not specify a region. The region will be checked automatically.'
@@ -336,7 +341,7 @@ class Client:
 
     @_authorize_required
     async def fetch_storefront(self) -> StoreFront:
-        data = await self.http.get_store_storefront()
+        data = await self.http.post_store_storefront()
         return StoreFront(self.valorant_api.cache, data)
 
     @_authorize_required
@@ -352,7 +357,7 @@ class Client:
     @_authorize_required
     async def fetch_offers(self) -> Offers:
         data = await self.http.get_store_offers()
-        return Offers(data)
+        return Offers(self.valorant_api.cache, data)
 
     # contract endpoints
 

@@ -64,7 +64,7 @@ class BundleItemOffer:
         # avoid circular import
         from .store import Offer
 
-        self.offer: Offer = Offer(data['Offer'], self)
+        self.offer: Offer = Offer(self._state, data['Offer'], self)  # type: ignore
         if hasattr(self.offer, 'cost'):
             self.cost = self.offer.cost
         self._discounted_cost: int = data['DiscountedCost'][VALORANT_POINT_UUID]
@@ -85,7 +85,7 @@ class BonusItemOffer:
         # avoid circular import
         from .store import Offer
 
-        self.offer: Offer = Offer(data['Offer'], self)
+        self.offer: Offer = Offer(self._state, data['Offer'], self)  # type: ignore
         if hasattr(self.offer, 'cost'):
             self.cost = self.offer.cost
         self._discount_percent: float = data['DiscountPercent']
