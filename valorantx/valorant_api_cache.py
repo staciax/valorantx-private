@@ -125,6 +125,9 @@ class CacheState(CacheStateValorantAPI):
         def get_spray(self, uuid: Optional[str]) -> Optional[Spray]:
             ...
 
+        def get_spray_level(self, uuid: Optional[str]) -> Optional[SprayLevel]:
+            ...
+
         def get_buddy(self, uuid: Optional[str]) -> Optional[Buddy]:
             ...
 
