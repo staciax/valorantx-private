@@ -239,6 +239,11 @@ class Offer:
         """Returns if the offer is a direct purchase"""
         return self._is_direct_purchase
 
+    @property
+    def currency(self) -> Optional[Currency]:
+        """Returns the currency for the offer"""
+        return self._state.get_currency(self.currency_type.value)
+
 
 class Offers:
     def __init__(self, state: CacheState, data: OffersPayload) -> None:
