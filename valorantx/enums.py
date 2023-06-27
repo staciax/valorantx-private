@@ -54,6 +54,16 @@ CURRENCY_UUIDS: Final[Tuple[str, ...]] = (
 
 
 class Region(Enum):
+    AsiaPacific = 'ap'
+    NorthAmerica = 'na'
+    Europe = 'eu'
+    LatinAmerica = 'latam'
+    Brazil = 'br'
+    Korea = 'kr'
+    PublicBetaEnvironment = 'pbe'
+    # China = '...'
+
+    # aliases
     NA = 'na'
     EU = 'eu'
     LATAM = 'latam'
@@ -62,16 +72,6 @@ class Region(Enum):
     KR = 'kr'
     PBE = 'pbe'
     # CN = '...'  # TODO: Add chinese region?
-
-    # aliases
-    AsiaPacific = AP
-    NorthAmerica = NA
-    Europe = EU
-    LatinAmerica = LATAM
-    Brazil = BR
-    Korea = KR
-    PublicBetaEnvironment = PBE
-    # China = CN
 
     def __str__(self) -> str:
         if self.shard == 'pbe':
@@ -86,6 +86,16 @@ class Region(Enum):
 
 
 class Shard(Enum):
+    AsiaPacific = 'ap'
+    NorthAmerica = 'na'
+    Europe = 'eu'
+    LatinAmerica = 'na'
+    Brazil = 'na'
+    Korea = 'kr'
+    PublicBetaEnvironment = 'pbe'
+    # China = '...'
+
+    # aliases
     NA = 'na'
     EU = 'eu'
     LATAM = 'na'
