@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, Optional, Union
 
 from ..asset import Asset
-from ..enums import ItemType, Locale
+from ..enums import Locale
 from ..localization import Localization
 from .abc import BaseModel
 
@@ -34,7 +34,7 @@ class PlayerCard(BaseModel):
         self._wide_art: Optional[str] = data['wideArt']
         self._large_art: Optional[str] = data['largeArt']
         self.asset_path: str = data['assetPath']
-        self.type: ItemType = ItemType.player_card
+
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 
     def __str__(self) -> str:
@@ -112,6 +112,5 @@ class PlayerCard(BaseModel):
         self._wide_art = player_card._wide_art
         self._large_art = player_card._large_art
         self.asset_path = player_card.asset_path
-        self.type = player_card.type
         self._display_name_localized = player_card._display_name_localized
         return self

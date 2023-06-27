@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, Generic, List, Optional, TypeVar, Union
 
 from ..asset import Asset
-from ..enums import ItemType, Locale
+from ..enums import Locale
 from ..localization import Localization
 from .abc import BaseModel
 
@@ -32,7 +32,6 @@ class Buddy(BaseModel):
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
         self.levels: List[BuddyLevel] = [BuddyLevel(state=self._state, data=level, parent=self) for level in data['levels']]
-        self.type: ItemType = ItemType.buddy
         self._name_localized = Localization(self._display_name, locale=self._state.locale)
 
     def __str__(self) -> str:
@@ -82,7 +81,6 @@ class Buddy(BaseModel):
         self._display_icon = buddy._display_icon
         self.asset_path = buddy.asset_path
         self.levels = buddy.levels.copy()
-        self.type = buddy.type
         self._name_localized = buddy._name_localized
         return self
 
@@ -97,7 +95,6 @@ class BuddyLevel(BaseModel, Generic[BuddyT]):
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
         self.parent: BuddyT = parent
-        self.type: ItemType = ItemType.buddy_level
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 
     def __str__(self) -> str:
@@ -136,6 +133,5 @@ class BuddyLevel(BaseModel, Generic[BuddyT]):
         self._display_icon = buddy_level._display_icon
         self.asset_path = buddy_level.asset_path
         self.parent = buddy_level.parent._copy(buddy_level.parent)
-        self.type = buddy_level.type
         self._display_name_localized = buddy_level._display_name_localized
         return self

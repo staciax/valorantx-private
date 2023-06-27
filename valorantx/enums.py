@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Final, List, Optional, Tuple, Type, TypeV
 from valorantx.valorant_api.enums import (
     AbilityType as AbilityType,
     Enum as Enum,
-    ItemType as ItemType,
+    ItemTypeID as ItemTypeID,
     Locale as Locale,
     MissionType as MissionType,
     RelationType as RelationType,
@@ -25,7 +25,7 @@ __all__ = (
     'CurrencyType',
     'GameModeID',
     'GameModeURL',
-    'ItemType',
+    'ItemTypeID',
     'LevelBorderID',
     'Locale',
     'MapID',
@@ -192,9 +192,9 @@ class MapID(Enum):
     split = 'd960549e-485c-e861-8d71-aa9d1aed12a2'
     pearl = 'fd267378-4d1d-484f-ff52-77821ed10dc2'
     the_range = 'ee613ee9-28b7-4beb-9666-08db13bb2244'
-    district = ''
-    piazza = ''
-    kasbah = ''
+    district = '690b3ed2-4dff-945b-8223-6da834e30d24'
+    kasbah = '12452a9d-48c3-0b02-e7eb-0381c3520404'
+    piazza = 'de28aa9b-4cbe-1003-320e-6cb3ec309557'
 
     def __str__(self) -> str:
         return str(self.value)
@@ -222,6 +222,9 @@ class MapURL(Enum):
     split = '/Game/Maps/Bonsai/Bonsai'
     pearl = '/Game/Maps/Pitt/Pitt'
     the_range = '/Game/Maps/Poveglia/Range'
+    district = ''
+    kasbah = ''
+    piazza = ''
 
     @property
     def id(self) -> str:

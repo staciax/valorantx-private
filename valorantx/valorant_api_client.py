@@ -11,7 +11,7 @@ from valorantx.valorant_api.http import HTTPClient
 from valorantx.valorant_api.models.maps import Map
 from valorantx.valorant_api.models.seasons import CompetitiveSeason
 
-from .enums import ItemType, Locale
+from .enums import ItemTypeID, Locale
 from .models.store import Offers
 from .valorant_api_cache import CacheState
 
@@ -53,7 +53,7 @@ class Client(ClientValorantAPI):
     def insert_cost(self, offers: Offers) -> None:
         for offer in offers.offers:
             for reward in offer.rewards:
-                if not reward.type is ItemType.currency:
+                if not reward.type is ItemTypeID.currency:
                     self.cache.insert_cost(reward.id, reward.type, offer.cost)
 
     # buddies

@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ..asset import Asset
-from ..enums import ItemType
 from .abc import BaseModel
 
 if TYPE_CHECKING:
@@ -27,7 +26,6 @@ class LevelBorder(BaseModel):
         self._level_number_appearance: str = data['levelNumberAppearance']
         self._small_player_card_appearance: str = data['smallPlayerCardAppearance']
         self.asset_path: str = data['assetPath']
-        self.type: ItemType = ItemType.level_border
 
     def __repr__(self) -> str:
         return f'<LevelBorder starting_level={self.starting_level!r}>'
@@ -64,7 +62,6 @@ class LevelBorder(BaseModel):
         self._level_number_appearance = level_border._level_number_appearance
         self._small_player_card_appearance = level_border._small_player_card_appearance
         self.asset_path = level_border.asset_path
-        self.type = level_border.type
         return self
 
     # @classmethod

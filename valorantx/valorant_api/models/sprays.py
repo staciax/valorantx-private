@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Dict, Generic, List, Optional, TypeVar, Union
 
 from .. import utils
 from ..asset import Asset
-from ..enums import ItemType, Locale
+from ..enums import Locale
 from ..localization import Localization
 from .abc import BaseModel
 
@@ -38,7 +38,6 @@ class Spray(BaseModel):
         self._animation_gif: Optional[str] = data['animationGif']
         self.asset_path: str = data['assetPath']
         self.levels: List[SprayLevel] = [SprayLevel(state=self._state, data=level, parent=self) for level in data['levels']]
-        self.type: ItemType = ItemType.spray
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 
     def __str__(self) -> str:
@@ -117,7 +116,6 @@ class Spray(BaseModel):
         self._animation_gif = spray._animation_gif
         self.asset_path = spray.asset_path
         self.levels = spray.levels.copy()
-        self.type = spray.type
         self._display_name_localized = spray._display_name_localized
         return self
 
@@ -137,7 +135,6 @@ class SprayLevel(BaseModel, Generic[SprayT]):
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._display_icon: Optional[str] = data['displayIcon']
         self.asset_path: str = data['assetPath']
-        self.type: ItemType = ItemType.spray_level
         self.parent: SprayT = parent
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
 
@@ -175,7 +172,6 @@ class SprayLevel(BaseModel, Generic[SprayT]):
         self._display_name = spray_level._display_name
         self._display_icon = spray_level._display_icon
         self.asset_path = spray_level.asset_path
-        self.type = spray_level.type
         self.parent = spray_level.parent._copy(spray_level.parent)
         self._display_name_localized = spray_level._display_name_localized
         return self

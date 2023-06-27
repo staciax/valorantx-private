@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Dict, Optional
 
 from valorantx.valorant_api.cache import CacheState as CacheStateValorantAPI
 
-from .enums import ItemType, Locale
+from .enums import ItemTypeID, Locale
 from .models.buddies import Buddy
 from .models.level_borders import LevelBorder
 from .models.player_cards import PlayerCard
@@ -137,18 +137,18 @@ class CacheState(CacheStateValorantAPI):
         def get_level_border(self, uuid: Optional[str]) -> Optional[LevelBorder]:
             ...
 
-    def insert_cost(self, uuid: str, type: ItemType, cost: int) -> None:
-        if type is ItemType.skin_level:
+    def insert_cost(self, uuid: str, type: ItemTypeID, cost: int) -> None:
+        if type is ItemTypeID.skin_level:
             self._insert_skin_level_cost(uuid, cost)
-        elif type is ItemType.player_card:
+        elif type is ItemTypeID.player_card:
             self._insert_player_card_cost(uuid, cost)
-        elif type is ItemType.buddy_level:
+        elif type is ItemTypeID.buddy_level:
             self._insert_buddy_level_cost(uuid, cost)
-        elif type is ItemType.spray:
+        elif type is ItemTypeID.spray:
             self._insert_spray_cost(uuid, cost)
-        elif type is ItemType.player_title:
+        elif type is ItemTypeID.player_title:
             self._insert_player_title_cost(uuid, cost)
-        elif type is ItemType.currency:
+        elif type is ItemTypeID.currency:
             return
         else:
             _log.warning(f'Could not find item with uuid {uuid!r} to insert cost {cost!r}')

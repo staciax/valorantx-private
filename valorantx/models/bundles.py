@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, List, Optional, Union
 
 from valorantx.valorant_api.models.bundles import Bundle as BundleValorantAPI
 
-from ..enums import VALORANT_POINT_UUID, ItemType
+from ..enums import VALORANT_POINT_UUID, ItemTypeID, try_enum
 from .abc import Item
 from .buddies import BuddyLevelBundle
 from .player_cards import PlayerCardBundle
@@ -62,25 +62,25 @@ class FeaturedBundle(Bundle):
         if data_bundle['ItemOffers'] is not None:
             for item in data_bundle['ItemOffers']:
                 for reward in item['Offer']['Rewards']:
-                    item_type = reward['ItemTypeID']
+                    item_type = try_enum(ItemTypeID, reward['ItemTypeID'])
                     item_offer_id = item['BundleItemOfferID']
-                    if item_type == ItemType.skin_level.value:
+                    if item_type == ItemTypeID.skin_level:
                         skin_level = state.get_skin_level(item_offer_id)
                         if skin_level is not None:
                             self._items.append(SkinLevelBundle.from_bundle(skin_level=skin_level, data=item))
-                    elif item_type == ItemType.spray.value:
+                    elif item_type == ItemTypeID.spray:
                         spray = state.get_spray(item_offer_id)
                         if spray is not None:
                             self._items.append(SprayBundle.from_bundle(spray=spray, data=item))
-                    elif item_type == ItemType.buddy_level.value:
+                    elif item_type == ItemTypeID.buddy_level:
                         buddy_level = state.get_buddy_level(item_offer_id)
                         if buddy_level is not None:
                             self._items.append(BuddyLevelBundle.from_bundle(buddy_level=buddy_level, data=item))
-                    elif item_type == ItemType.player_card.value:
+                    elif item_type == ItemTypeID.player_card:
                         player_card = state.get_player_card(item_offer_id)
                         if player_card is not None:
                             self._items.append(PlayerCardBundle.from_bundle(player_card=player_card, data=item))
-                    elif item_type == ItemType.player_title.value:
+                    elif item_type == ItemTypeID.player_title:
                         player_title = state.get_player_title(item_offer_id)
                         if player_title is not None:
                             self._items.append(PlayerTitleBundle.from_bundle(player_title=player_title, data=item))

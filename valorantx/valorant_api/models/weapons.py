@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar, U
 
 from .. import utils
 from ..asset import Asset
-from ..enums import MELEE_WEAPON_ID, ItemType, Locale
+from ..enums import MELEE_WEAPON_ID, Locale
 from ..localization import Localization
 from .abc import BaseModel, ShopData
 
@@ -190,7 +190,6 @@ class Weapon(BaseModel):
         if data['shopData'] is not None:
             self.shop_data = ShopData(state=self._state, item=self, data=data['shopData'])
         self.skins: List[Skin] = [Skin(state=self._state, data=skin, parent=self) for skin in data['skins']]
-        self.type: ItemType = ItemType.weapon
         self._is_melee: bool = True if self.uuid == MELEE_WEAPON_ID else False
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
         self._is_random: bool = 'random' in self.asset_path.lower()
@@ -254,7 +253,6 @@ class Weapon(BaseModel):
         self.weapon_stats = weapon.weapon_stats
         self.shop_data = weapon.shop_data
         self.skins = weapon.skins
-        self.type = weapon.type
         self._is_melee = weapon._is_melee
         self._display_name_localized = weapon._display_name_localized
         self._is_random = weapon._is_random
@@ -285,7 +283,6 @@ class Skin(BaseModel, Generic[WeaponT]):
             SkinLevel(state=self._state, data=level, parent=self, level_number=index)
             for index, level in enumerate(data['levels'])
         ]
-        self.type: ItemType = ItemType.skin
         self.parent: WeaponT = parent
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
         self._is_random: bool = 'random' in self.asset_path.lower()
@@ -364,7 +361,6 @@ class Skin(BaseModel, Generic[WeaponT]):
         self.asset_path = skin.asset_path
         self.chromas = skin.chromas.copy()
         self.levels = skin.levels.copy()
-        self.type = skin.type
         self.parent = skin.parent
         self._display_name_localized = skin._display_name_localized
         self._is_random = skin._is_random
@@ -416,7 +412,6 @@ class SkinChroma(BaseModel, Generic[SkinT]):
         self._swatch: Optional[str] = data['swatch']
         self._streamed_video: Optional[str] = data['streamedVideo']
         self.asset_path: str = data['assetPath']
-        self.type: ItemType = ItemType.skin_chroma
         self.parent: SkinT = parent
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
         self._is_random: bool = 'random' in self.asset_path.lower()
@@ -526,7 +521,6 @@ class SkinChroma(BaseModel, Generic[SkinT]):
         self._swatch = skin_chroma._swatch
         self._streamed_video = skin_chroma._streamed_video
         self.asset_path = skin_chroma.asset_path
-        self.type = skin_chroma.type
         self.parent = skin_chroma.parent
         self._display_name_localized = skin_chroma._display_name_localized
         self._is_random = skin_chroma._is_random
@@ -551,7 +545,6 @@ class SkinLevel(BaseModel, Generic[SkinT]):
         self.asset_path: str = data['assetPath']
         self._level_number: int = level_number
         self._is_level_one: bool = level_number == 0
-        self.type: ItemType = ItemType.skin_level
         self.parent: SkinT = parent
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
         self._is_random: bool = 'random' in self.asset_path.lower()
@@ -659,7 +652,6 @@ class SkinLevel(BaseModel, Generic[SkinT]):
         self.asset_path = skin_level.asset_path
         self._level_number = skin_level._level_number
         self._is_level_one = skin_level._is_level_one
-        self.type = skin_level.type
         self.parent = skin_level.parent._copy(skin_level.parent)
         self._display_name_localized = skin_level._display_name_localized
         self._is_random = skin_level._is_random

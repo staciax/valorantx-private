@@ -143,7 +143,7 @@ else:
 __all__ = (
     'AbilityType',
     'EMPTY_TITLE_ID',
-    'ItemType',
+    'ItemTypeID',
     'Locale',
     'MELEE_WEAPON_ID',
     'MissionType',
@@ -165,7 +165,7 @@ class AbilityType(Enum):
     ultimate = 'Ultimate'
 
 
-class ItemType(Enum):
+class ItemTypeID(Enum):
     agent = '01bb38e1-da47-4e6a-9b3d-945fe4655707'
     buddy = 'buddy'  # unknown type
     buddy_level = 'dd3bf334-87f3-40bd-b043-682a57a8dc3a'
