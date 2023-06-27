@@ -22,7 +22,7 @@ from .models.name_service import NameService
 from .models.party import Party, PartyPlayer
 from .models.patchnotes import PatchNotes
 from .models.premiers import Conference, Eligibility, PremierPleyer, PremierSeason, Roster
-from .models.store import Entitlements, Offers, StoreFront, Wallet
+from .models.store import AgentStore, Entitlements, Offers, StoreFront, Wallet
 from .models.user import ClientUser
 from .valorant_api_client import Client as ValorantAPIClient
 
@@ -358,6 +358,11 @@ class Client:
     async def fetch_offers(self) -> Offers:
         data = await self.http.get_store_offers()
         return Offers(self.valorant_api.cache, data)
+
+    @_authorize_required
+    async def fetch_agent_store(self) -> AgentStore:
+        data = await self.http.get_store_storefronts_agent()
+        return AgentStore(self, data['AgentStore'])
 
     # contract endpoints
 

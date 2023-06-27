@@ -4,7 +4,7 @@ import datetime
 import logging
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
-from ..enums import KINGDOM_POINT_UUID, RADIANITE_POINT_UUID, VALORANT_POINT_UUID, CurrencyType, ItemTypeID, try_enum
+from ..enums import KINGDOM_POINT_UUID, RADIANITE_POINT_UUID, VALORANT_POINT_UUID, ItemTypeID, try_enum
 from ..valorant_api_cache import CacheState
 from .bundles import FeaturedBundle
 from .weapons import SkinLevelBonus, SkinLevelOffer
@@ -14,6 +14,8 @@ if TYPE_CHECKING:
     from ..types.store import (
         AccessoryStore as AccessoryStorePayload,
         AccessoryStoreOffer as AccessoryStoreOfferPayload,
+        AgentStore as AgentStorePayload,
+        AgentStoreOffer as AgentStoreOfferPayload,
         BonusStore as BonusStorePayload,
         Entitlements as EntitlementsPayload,
         EntitlementsByType as EntitlementsByTypePayload,
@@ -55,6 +57,8 @@ __all__ = (
     'Wallet',
     'AccessoryStore',
     'AccessoryStoreOffer',
+    'AgentStore',
+    'AgentStoreOffer',
 )
 
 _log = logging.getLogger(__name__)
@@ -110,12 +114,11 @@ class StoreFront:
             )
             # TODO:: method to update client
 
-        # patch 7.0
-        # self.accessory_store: AccessoryStore = AccessoryStore(state, data['AccessoryStore'])
-
         self.bonus_store: Optional[BonusStore] = None
         if 'BonusStore' in data:
             self.bonus_store = BonusStore(state, data['BonusStore'])
+
+        self.accessory_store: AccessoryStore = AccessoryStore(state, data['AccessoryStore'])
 
     @property
     def daily_store(self) -> SkinsPanelLayout:
@@ -219,8 +222,12 @@ class Offer:
         self._state = state
         self.id: str = data['OfferID']
         self._is_direct_purchase: bool = data['IsDirectPurchase']
-        self.currency_type: CurrencyType = try_enum(CurrencyType, list(data['Cost'].keys())[0])
-        self.cost: int = data['Cost'][self.currency_type.value]
+        self.cost: int = 0
+        self.currency_id: Optional[str] = None
+        for key, value in data['Cost'].items():
+            self.currency_id = key
+            self.cost = value
+            break
         self.rewards: List[Reward] = [Reward(state, reward) for reward in data['Rewards']]
         self._item: Optional[Any] = item
 
@@ -244,7 +251,9 @@ class Offer:
     @property
     def currency(self) -> Optional[Currency]:
         """Returns the currency for the offer"""
-        return self._state.get_currency(self.currency_type.value)
+        if self.currency_id is None:
+            return None
+        return self._state.get_currency(self.currency_id)
 
 
 class Offers:
@@ -402,3 +411,36 @@ class AccessoryStore:
 
     def __repr__(self) -> str:
         return f'<AccessoryStore offers={self.offers} remaining_duration_in_seconds={self.remaining_duration_in_seconds} store_front_id={self.store_front_id}>'
+
+
+class AgentStoreOffer:
+    def __init__(self, client: Client, data: AgentStoreOfferPayload) -> None:
+        self._client: Client = client
+        self.agent_id: str = data['AgentID']
+        self.store_offers: List[Offer] = [Offer(client.valorant_api.cache, offer) for offer in data['StoreOffers']]
+
+    def __repr__(self) -> str:
+        return f'<AgentStoreOffer agent={self.agent}>'
+
+    @property
+    def agent(self) -> Optional[Agent]:
+        return self._client.valorant_api.get_agent(self.agent_id)
+
+
+class AgentStore:
+    def __init__(self, client: Client, data: AgentStorePayload) -> None:
+        self._client: Client = client
+        self.agent_store_offers: List[AgentStoreOffer] = [
+            AgentStoreOffer(client, offer) for offer in data['AgentStoreOffers']
+        ]
+        self.featured_agent_id: str = data['FeaturedAgent']
+
+    def __repr__(self) -> str:
+        return f'<AgentStore featured_agent={self.featured_agent} agent_store_offers={self.agent_store_offers}>'
+
+    def __hash__(self) -> int:
+        return hash((self.featured_agent_id, tuple(self.agent_store_offers)))
+
+    @property
+    def featured_agent(self) -> Optional[Agent]:
+        return self._client.valorant_api.get_agent(self.featured_agent_id)

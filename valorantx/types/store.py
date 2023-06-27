@@ -131,6 +131,10 @@ class Offers(TypedDict):
 
 
 class AgentStoreFront(TypedDict):
+    AgentStore: AgentStore
+
+
+class AgentStore(TypedDict):
     AgentStoreOffers: List[AgentStoreOffer]
     FeaturedAgent: str
 
