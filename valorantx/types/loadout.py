@@ -34,7 +34,7 @@ class Identity(TypedDict):
 class Loadout(TypedDict):
     Subject: str
     Version: int
-    Guns: List[Gun]
-    Sprays: List[Spray]
+    Guns: Optional[List[Gun]]
+    Sprays: Optional[List[Spray]]
     Identity: Identity
     Incognito: bool

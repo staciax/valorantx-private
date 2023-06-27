@@ -28,7 +28,7 @@ class Mission(MissionValorantAPI):
         super().__init__(state=state, data=data)
         self.id: str = data_mission['ID']
         self._is_complete: bool = data_mission['Complete']
-        self._expiration_time: str = data_mission['ExpirationTime']
+        self._expiration_time: Optional[str] = data_mission.get('ExpirationTime')
         self.current_progress: int = 0
         self.left_progress: int = 0
         self.total_progress: int = 0
@@ -54,8 +54,10 @@ class Mission(MissionValorantAPI):
         return self._is_complete
 
     @property
-    def expiration_time(self) -> datetime.datetime:  # maybe optional?
+    def expiration_time(self) -> Optional[datetime.datetime]:
         """:class: `datetime.datetime` Returns the contract's expiration time."""
+        if self._expiration_time is None:
+            return None
         return utils.parse_iso_datetime(self._expiration_time)
 
     @classmethod
@@ -69,8 +71,8 @@ class Mission(MissionValorantAPI):
 
 class MissionMetadata:
     def __init__(self, data: MissionMetadataPayload) -> None:
-        self.npe_completed: bool = data['NPECompleted']
-        self._weekly_check_point: str = data.get('WeeklyCheckpoint')
+        self.npe_completed: bool = data.get('NPECompleted', False)
+        self._weekly_check_point: Optional[str] = data.get('WeeklyCheckpoint')
         self._weekly_refill_time: Optional[str] = data.get('WeeklyRefillTime')
 
     def __bool__(self) -> bool:
@@ -96,8 +98,10 @@ class MissionMetadata:
         return not self.__eq__(other)
 
     @property
-    def weekly_check_point(self) -> datetime.datetime:
+    def weekly_check_point(self) -> Optional[datetime.datetime]:
         """:class: `datetime.datetime` Returns the weekly check point."""
+        if self._weekly_check_point is None:
+            return None
         return utils.parse_iso_datetime(self._weekly_check_point)
 
     @property

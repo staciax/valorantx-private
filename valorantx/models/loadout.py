@@ -153,7 +153,8 @@ class Identity:
                 player_card=player_card, favorite=player_card.uuid in favorites.favorited_content
             )
         else:
-            _log.warning(f'player card {self._player_card_id!r} not found')
+            if self._player_card_id != '00000000-0000-0000-0000-000000000000':
+                _log.warning(f'player card {self._player_card_id!r} not found')
 
         # player title
         player_title = self._client.valorant_api.get_player_title(self._player_title_id)
@@ -402,8 +403,12 @@ class Loadout:
         self._client: Client = client
         self.subject: str = data['Subject']
         self.version: int = data['Version']
-        self.guns: GunsLoadout = GunsLoadout(client.valorant_api.cache, data['Guns'], favorites=favorites)
-        self.sprays: SpraysLoadout = SpraysLoadout(client.valorant_api.cache, data['Sprays'], favorites=favorites)
+        self.guns: Optional[GunsLoadout] = None
+        if data['Guns'] is not None:
+            self.guns = GunsLoadout(client.valorant_api.cache, data['Guns'], favorites=favorites)
+        self.sprays: Optional[SpraysLoadout] = None
+        if data['Sprays'] is not None:
+            self.sprays = SpraysLoadout(client.valorant_api.cache, data['Sprays'], favorites=favorites)
         self.identity: Identity = Identity(self._client, data['Identity'], favorites)
         self.incognito: bool = data['Incognito']
         self.favorites: Optional[Favorites] = None
@@ -428,11 +433,15 @@ class Loadout:
         payload: LoadoutPayload = {
             'Subject': self.subject,
             'Version': self.version,
-            'Guns': self.guns.to_payload(),
-            'Sprays': self.sprays.to_payload(),
+            'Guns': None,
+            'Sprays': None,
             'Identity': self.identity.to_payload(),
             'Incognito': self.incognito,
         }
+        if self.guns is not None:
+            payload['Guns'] = self.guns.to_payload()
+        if self.sprays is not None:
+            payload['Sprays'] = self.sprays.to_payload()
         return payload
 
 

@@ -84,12 +84,12 @@ class Mission(TypedDict):
     ID: str
     Objectives: Dict[str, int]
     Complete: bool
-    ExpirationTime: str
+    ExpirationTime: NotRequired[str]
 
 
 class MissionMetadata(TypedDict):
-    NPECompleted: bool
-    WeeklyCheckpoint: str  # Date in ISO 8601 format
+    NPECompleted: NotRequired[bool]
+    WeeklyCheckpoint: NotRequired[str]  # Date in ISO 8601 format
     WeeklyRefillTime: NotRequired[str]  # maybe not required i guess
 
 
