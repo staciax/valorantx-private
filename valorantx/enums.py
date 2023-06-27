@@ -222,9 +222,9 @@ class MapURL(Enum):
     split = '/Game/Maps/Bonsai/Bonsai'
     pearl = '/Game/Maps/Pitt/Pitt'
     the_range = '/Game/Maps/Poveglia/Range'
-    district = ''
-    kasbah = ''
-    piazza = ''
+    district = '/Game/Maps/HURM/HURM_Alley/HURM_Alley'
+    kasbah = '/Game/Maps/HURM/HURM_Bowl/HURM_Bowl'
+    piazza = '/Game/Maps/HURM/HURM_Yard/HURM_Yard'
 
     @property
     def id(self) -> str:
