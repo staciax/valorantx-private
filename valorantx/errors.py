@@ -72,10 +72,12 @@ class HTTPException(ValorantXError):
         self.status: int = response.status  # This attribute is filled by the library even if using requests # noqa: E501
         self.code: int
         self.text: str
+        self.error_code: str
         if isinstance(message, dict):
             self.code = message.get('code', 0)
             base = message.get('message', '')
             errors = message.get('errors')
+            self.error_code = message.get('errorCode', '')
             if errors:
                 errors = _flatten_error_dict(errors)
                 helpful = '\n'.join('In %s: %s' % t for t in errors.items())
@@ -84,6 +86,7 @@ class HTTPException(ValorantXError):
                 self.text = base
         else:
             self.text = message or ''
+            self.error_code = ''
             self.code = 0
 
         fmt = '{0.status} {0.reason} (error code: {1})'
@@ -100,40 +103,38 @@ class InGameAPIError(HTTPException):
 
 
 class BadRequest(InGameAPIError):
-    """Exception that's raised for when status code 400 occurs.
-    Subclass of :exc:`HTTPException`
-    """
+    """Exception that's raised for when status code 400 occurs."""
 
     pass
 
 
 class Forbidden(InGameAPIError):
-    """Exception that's raised for when status code 403 occurs.
-    Subclass of :exc:`HTTPException`
-    """
+    """Exception that's raised for when status code 403 occurs."""
 
     pass
 
 
 class NotFound(InGameAPIError):
-    """Exception that's raised for when status code 404 occurs.
-    Subclass of :exc:`HTTPException`
-    """
+    """Exception that's raised for when status code 404 occurs."""
 
     pass
 
 
 class InternalServerError(InGameAPIError):
-    """Exception that's raised for when status code 500 occurs.
-    Subclass of :exc:`HTTPException`
-    """
+    """Exception that's raised for when status code 500 occurs."""
+
+    pass
+
+
+class RiotScheduledDowntime(InGameAPIError):
+    """Exception that's raised for when status code 503 occurs."""
 
     pass
 
 
 class RateLimited(InGameAPIError):
     """Exception that's raised for when a 429 status code occurs.
-    Subclass of :exc:`HTTPException`.
+    .
     """
 
     pass
