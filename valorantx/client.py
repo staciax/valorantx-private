@@ -352,7 +352,7 @@ class Client:
     @_authorize_required
     async def fetch_entitlements(self) -> Entitlements:
         data = await self.http.get_store_entitlements()
-        return Entitlements(self.valorant_api.cache, data)
+        return Entitlements(self, data)
 
     @_authorize_required
     async def fetch_offers(self) -> Offers:

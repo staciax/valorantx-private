@@ -4,17 +4,19 @@ import datetime
 import logging
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
-from ..enums import KINGDOM_POINT_UUID, RADIANITE_POINT_UUID, VALORANT_POINT_UUID, CurrencyType, ItemType, try_enum
+from ..enums import KINGDOM_POINT_UUID, RADIANITE_POINT_UUID, VALORANT_POINT_UUID, CurrencyType, ItemTypeID, try_enum
 from ..valorant_api_cache import CacheState
 from .bundles import FeaturedBundle
 from .weapons import SkinLevelBonus, SkinLevelOffer
 
 if TYPE_CHECKING:
+    from ..client import Client
     from ..types.store import (
         AccessoryStore as AccessoryStorePayload,
         AccessoryStoreOffer as AccessoryStoreOfferPayload,
         BonusStore as BonusStorePayload,
         Entitlements as EntitlementsPayload,
+        EntitlementsByType as EntitlementsByTypePayload,
         Offer as OfferPayload,
         Offers as OffersPayload,
         Reward as RewardPayload,
@@ -172,7 +174,7 @@ class Wallet:
 class Reward:
     def __init__(self, state: CacheState, data: RewardPayload) -> None:
         self._state = state
-        self.type: ItemType = try_enum(ItemType, data['ItemTypeID'])
+        self.type: ItemTypeID = try_enum(ItemTypeID, data['ItemTypeID'])
         self.id: str = data['ItemID']
         self.quantity: int = data['Quantity']
 
@@ -187,25 +189,25 @@ class Reward:
 
     @property
     def item(self) -> Optional[RewardItem]:
-        if self.type == ItemType.agent:
+        if self.type == ItemTypeID.agent:
             return self._state.get_agent(self.id)
-        elif self.type == ItemType.buddy_level:
+        elif self.type == ItemTypeID.buddy_level:
             return self._state.get_buddy_level(self.id)
-        elif self.type == ItemType.contract:
+        elif self.type == ItemTypeID.contract:
             return self._state.get_contract(self.id)
-        elif self.type == ItemType.skin_level:
+        elif self.type == ItemTypeID.skin_level:
             return self._state.get_skin_level(self.id)
-        elif self.type == ItemType.skin_chroma:
+        elif self.type == ItemTypeID.skin_chroma:
             return self._state.get_skin_chroma(self.id)
-        elif self.type == ItemType.spray:
+        elif self.type == ItemTypeID.spray:
             return self._state.get_spray(self.id)
-        elif self.type == ItemType.spray_level:
+        elif self.type == ItemTypeID.spray_level:
             return self._state.get_spray_level(self.id)
-        elif self.type == ItemType.player_card:
+        elif self.type == ItemTypeID.player_card:
             return self._state.get_player_card(self.id)
-        elif self.type == ItemType.player_title:
+        elif self.type == ItemTypeID.player_title:
             return self._state.get_player_title(self.id)
-        elif self.type == ItemType.currency:
+        elif self.type == ItemTypeID.currency:
             return self._state.get_currency(self.id)
         else:
             _log.warning(f'Unknown reward type {self.type}')
@@ -254,122 +256,124 @@ class Offers:
 
 
 class Entitlements:
-    def __init__(self, state: CacheState, data: EntitlementsPayload) -> None:
-        self._state = state
-        # self._data = data.get('EntitlementsByTypes', [])
-        # self._agents: List[Agent] = []
-        # self._skin_levels: List[Skin] = []
-        # self._skin_chromas: List[Skin] = []
-        # self._buddy_levels: List[Buddy] = []
-        # self._sprays: List[Buddy] = []
-        # self._player_cards: List[PlayerCard] = []
-        # self._player_titles: List[PlayerTitle] = []
-        # self._contracts: List[Contract] = []
+    def __init__(self, client: Client, data: EntitlementsPayload) -> None:
+        self._client = client
+        self._agents: List[Agent] = []
+        self._skin_levels: List[SkinLevel] = []
+        self._skin_chromas: List[SkinChroma] = []
+        self._buddy_levels: List[BuddyLevel] = []
+        self._sprays: List[Spray] = []
+        self._player_cards: List[PlayerCard] = []
+        self._player_titles: List[PlayerTitle] = []
+        self._contracts: List[ContractValorantAPI] = []
+        self.fill_items(data['EntitlementsByTypes'])
 
     # def __repr__(self) -> str:
     #     return f'<Entitlements> agents={len(self.agents)} skin_levels={len(self.skin_levels)} skin_chromas={len(self.skin_chromas)} buddy_levels={len(self.buddy_levels)} sprays={len(self.sprays)} player_cards={len(self.player_cards)} player_titles={len(self.player_titles)} contracts={len(self.contracts)}>'
 
-    # def get_by_type(self, item_type: ItemType) -> List[EntitlementPayload]:
-    #     """Returns the entitlements by type"""
-    #     for entitlement in self._data:
-    #         if entitlement['ItemTypeID'].lower() == str(item_type).lower():
-    #             return entitlement['Entitlements']
-    #     return []
+    @property
+    def agents(self) -> List[Agent]:
+        return self._agents.copy()
 
-    # @property
-    # def agents(self) -> List[Agent]:
-    #     """:class:`.models.Agent`: Returns a list of agents."""
-    #     items = self.get_by_type(ItemType.agent)
-    #     agents = []
-    #     for item in items:
-    #         agent = self._client.get_agent(uuid=item.get('ItemID'))
-    #         if agent is not None:
-    #             agents.append(agent)
-    #     return agents
+    @property
+    def skin_levels(self) -> List[SkinLevel]:
+        return self._skin_levels.copy()
 
-    # @property
-    # def skin_levels(self, level_one: bool = True) -> List[SkinLevel]:
-    #     """:class:`.models.SkinLevel`: Returns a list of skin levels."""
-    #     items = self.get_by_type(ItemType.skin_level)
-    #     skins = []
-    #     for item in items:
-    #         skin = self._client.get_skin_level(uuid=item.get('ItemID'))
-    #         if level_one:
-    #             if skin is not None:
-    #                 if skin.is_level_one():
-    #                     skins.append(skin)
-    #         else:
-    #             skins.append(skin)
-    #     return skins
+    @property
+    def skin_chromas(self) -> List[SkinChroma]:
+        return self._skin_chromas.copy()
 
-    # @property
-    # def skin_chromas(self) -> List[SkinChroma]:
-    #     """:class:`.models.SkinChroma`: Returns a list of skin chromas."""
-    #     items = self.get_by_type(ItemType.skin_chroma)
-    #     chromas = []
-    #     for item in items:
-    #         chroma = self._client.get_skin_chroma(uuid=item.get('ItemID'))
-    #         if chroma is not None:
-    #             chromas.append(chroma)
+    @property
+    def buddy_levels(self) -> List[BuddyLevel]:
+        return self._buddy_levels.copy()
 
-    #     return chromas
+    @property
+    def sprays(self) -> List[Spray]:
+        return self._sprays.copy()
 
-    # @property
-    # def buddy_levels(self) -> List[BuddyLevel]:
-    #     """:class:`.models.BuddyLevel`: Returns a list of buddy levels."""
-    #     items = self.get_by_type(ItemType.buddy_level)
-    #     # instance_id = item.get('InstanceID')  # What is this?
-    #     # TODO: amount buddy levels owned
-    #     buddy_levels = []
-    #     for item in items:
-    #         buddy = self._client.get_buddy_level(uuid=item.get('ItemID'))
-    #         if buddy is not None:
-    #             buddy_levels.append(buddy)
-    #     return buddy_levels
+    @property
+    def player_cards(self) -> List[PlayerCard]:
+        return self._player_cards.copy()
 
-    # @property
-    # def sprays(self) -> List[Spray]:
-    #     """:class:`.models.Spray`: Returns a list of sprays."""
-    #     items = self.get_by_type(ItemType.spray)
-    #     sprays = []
-    #     for item in items:
-    #         spray = self._client.get_spray(uuid=item.get('ItemID'))
-    #         if spray is not None:
-    #             sprays.append(spray)
-    #     return sprays
+    @property
+    def player_titles(self) -> List[PlayerTitle]:
+        return self._player_titles.copy()
 
-    # @property
-    # def player_cards(self) -> List[PlayerCard]:
-    #     """:class:`.models.PlayerCard`: Returns a list of player cards."""
-    #     items = self.get_by_type(ItemType.player_card)
-    #     player_cards = []
-    #     for item in items:
-    #         player_card = self._client.get_player_card(uuid=item.get('ItemID'))
-    #         if player_card is not None:
-    #             player_cards.append(player_card)
-    #     return player_cards
+    @property
+    def contracts(self) -> List[ContractValorantAPI]:
+        return self._contracts.copy()
 
-    # @property
-    # def player_titles(self) -> List[PlayerTitle]:
-    #     """:class:`.models.PlayerTitle`: Returns a list of player titles."""
-    #     items = self.get_by_type(ItemType.player_title)
-    #     player_titles = []
-    #     for item in items:
-    #         player_title = self._client.get_player_title(uuid=item.get('ItemID'))
-    #         if player_title is not None:
-    #             player_titles.append(player_title)
-    #     return player_titles
+    def fill_items(self, data: List[EntitlementsByTypePayload]) -> None:
+        for entitlement in data:
+            item_type = try_enum(ItemTypeID, entitlement['ItemTypeID'])
+            if item_type == ItemTypeID.agent:
+                for item in entitlement['Entitlements']:
+                    agent = self._client.valorant_api.get_agent(item['ItemID'])
+                    if agent is None:
+                        _log.warning(f'Unknown agent {item["ItemID"]}')
+                        continue
+                    self._agents.append(agent)
+            elif item_type == ItemTypeID.buddy_level:
+                for item in entitlement['Entitlements']:
+                    buddy_level = self._client.valorant_api.get_buddy_level(item['ItemID'])
+                    if buddy_level is None:
+                        _log.warning(f'Unknown buddy level {item["ItemID"]}')
+                        continue
+                    self._buddy_levels.append(buddy_level)
 
-    # @property
-    # def contracts(self) -> List[Contract]:
-    #     """:class:`.models.Contract`: Returns a list of contracts."""
-    #     items = self.get_by_type(ItemType.contract)
-    #     contracts = []
-    #     for item in items:
-    #         contract = self._client.get_contract(uuid=item.get('ItemID'))
-    #         if contract is not None:
-    #             contracts.append(contract)
-    #     return contracts
+            elif item_type == ItemTypeID.contract:
+                for item in entitlement['Entitlements']:
+                    contract = self._client.valorant_api.get_contract(item['ItemID'])
+                    if contract is None:
+                        _log.warning(f'Unknown contract {item["ItemID"]}')
+                        continue
+                    self._contracts.append(contract)
+
+            elif item_type == ItemTypeID.skin_level:
+                for item in entitlement['Entitlements']:
+                    skin_level = self._client.valorant_api.get_skin_level(item['ItemID'])
+                    if skin_level is None:
+                        _log.warning(f'Unknown skin level {item["ItemID"]}')
+                        continue
+                    self._skin_levels.append(skin_level)
+
+            elif item_type == ItemTypeID.skin_chroma:
+                for item in entitlement['Entitlements']:
+                    skin_chroma = self._client.valorant_api.get_skin_chroma(item['ItemID'])
+                    if skin_chroma is None:
+                        _log.warning(f'Unknown skin chroma {item["ItemID"]}')
+                        continue
+                    self._skin_chromas.append(skin_chroma)
+
+            elif item_type == ItemTypeID.spray:
+                for item in entitlement['Entitlements']:
+                    spray = self._client.valorant_api.get_spray(item['ItemID'])
+                    if spray is None:
+                        _log.warning(f'Unknown spray {item["ItemID"]}')
+                        continue
+                    self._sprays.append(spray)
+
+            elif item_type == ItemTypeID.player_card:
+                for item in entitlement['Entitlements']:
+                    player_card = self._client.valorant_api.get_player_card(item['ItemID'])
+                    if player_card is None:
+                        _log.warning(f'Unknown player card {item["ItemID"]}')
+                        continue
+                    self._player_cards.append(player_card)
+
+            elif item_type == ItemTypeID.player_title:
+                for item in entitlement['Entitlements']:
+                    player_title = self._client.valorant_api.get_player_title(item['ItemID'])
+                    if player_title is None:
+                        _log.warning(f'Unknown player title {item["ItemID"]}')
+                        continue
+                    self._player_titles.append(player_title)
+            else:
+                _log.warning(f'Unknown item type {item_type}')
+
+    async def refresh(self) -> None:
+        data = await self._client.http.get_store_entitlements()
+        self.fill_items(data['EntitlementsByTypes'])
 
 
 class AccessoryStoreOffer:
