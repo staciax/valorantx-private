@@ -146,7 +146,6 @@ class HTTPClient:
         method = route.method
         url = route.url
         exceptions: Optional[Dict[int, str]] = kwargs.pop('exceptions', None)
-
         if 'headers' not in kwargs:
             kwargs['headers'] = self._headers
 

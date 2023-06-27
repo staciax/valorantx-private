@@ -172,6 +172,7 @@ class Client:
 
         # valorant-api
         await self.valorant_api.init()
+
         try:
             await asyncio.wait_for(self.valorant_api.wait_until_ready(), timeout=30)
         except asyncio.TimeoutError:
@@ -190,9 +191,11 @@ class Client:
     async def _init_after_authorize(self) -> None:
         await self.wait_until_authorized()
 
+        # fetch offers and insert into items
         offers = await self.fetch_offers()
         self.valorant_api.insert_cost(offers)
 
+        # fetch current season and act
         content = await self.fetch_content()
         for season_content in reversed(content.seasons):
             if not season_content.is_active():

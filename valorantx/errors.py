@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 if TYPE_CHECKING:
     from aiohttp import ClientResponse
@@ -25,24 +25,6 @@ __all__ = (
     'RiotUnknownResponseTypeError',
     'ValorantXError',
 )
-
-
-def _flatten_error_dict(d: Dict[str, Any], key: str = '') -> Dict[str, str]:
-    items: List[Tuple[str, str]] = []
-    for k, v in d.items():
-        new_key = key + '.' + k if key else k
-
-        if isinstance(v, dict):
-            try:
-                _errors: List[Dict[str, Any]] = v['_errors']
-            except KeyError:
-                items.extend(_flatten_error_dict(v, new_key).items())
-            else:
-                items.append((new_key, ' '.join(x.get('message', '') for x in _errors)))
-        else:
-            items.append((new_key, v))
-
-    return dict(items)
 
 
 class ValorantXError(Exception):
@@ -70,24 +52,15 @@ class HTTPException(ValorantXError):
     def __init__(self, response: ClientResponse, message: Optional[Union[str, Dict[str, Any]]]):
         self.response: ClientResponse = response
         self.status: int = response.status  # This attribute is filled by the library even if using requests # noqa: E501
-        self.code: int
         self.text: str
-        self.error_code: str
+        self.code: str
         if isinstance(message, dict):
-            self.code = message.get('code', 0)
             base = message.get('message', '')
-            errors = message.get('errors')
-            self.error_code = message.get('errorCode', '')
-            if errors:
-                errors = _flatten_error_dict(errors)
-                helpful = '\n'.join('In %s: %s' % t for t in errors.items())
-                self.text = base + '\n' + helpful
-            else:
-                self.text = base
+            self.code = message.get('errorCode', '')
+            self.text = base
         else:
             self.text = message or ''
-            self.error_code = ''
-            self.code = 0
+            self.code = ''
 
         fmt = '{0.status} {0.reason} (error code: {1})'
         if len(self.text):
