@@ -70,6 +70,13 @@ class ContractDelta(TypedDict):
 # end - not sure
 
 
+class RecruitmentProgressUpdate(TypedDict):
+    GroupID: str
+    ProgressBefore: int
+    ProgressAfter: int
+    MilestoneThreshold: int
+
+
 class ProcessedMatch(TypedDict):
     ID: str
     StartTime: int
@@ -77,6 +84,7 @@ class ProcessedMatch(TypedDict):
     RewardGrants: Optional[Dict[Any, Any]]  # unknown type
     MissionDeltas: Optional[Dict[str, MissionDelta]]
     ContractDeltas: Optional[Dict[str, ContractDelta]]
+    RecruitmentProgressUpdate: NotRequired[RecruitmentProgressUpdate]
     CouldProgressMissions: bool
 
 

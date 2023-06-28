@@ -381,7 +381,7 @@ class Client:
             The contracts for the current user.
         """
         data = await self.http.get_contracts()
-        return Contracts(state=self.valorant_api.cache, data=data)
+        return Contracts(client=self, data=data)
 
     # favorite endpoints
 

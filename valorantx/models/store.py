@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     )
     from .agents import Agent
     from .buddies import BuddyLevel
-    from .contracts import ContractValorantAPI
+    from .contracts import ContractValorantAPI, RecruitmentProgressUpdate
     from .currencies import Currency
     from .player_cards import PlayerCard
     from .player_titles import PlayerTitle
@@ -444,3 +444,16 @@ class AgentStore:
     @property
     def featured_agent(self) -> Optional[Agent]:
         return self._client.valorant_api.get_agent(self.featured_agent_id)
+
+    async def fetch_featured_agent_recruitment_progress(self) -> Optional[RecruitmentProgressUpdate]:
+        contracts = await self._client.fetch_contracts()
+        for processed_match in sorted(
+            contracts.processed_matches,
+            key=lambda x: x.recruitment_progress_update.progress_after if x.recruitment_progress_update else -1,
+            reverse=True,
+        ):
+            if processed_match.recruitment_progress_update is None:
+                continue
+            if processed_match.recruitment_progress_update.group_id == self.featured_agent_id:
+                return processed_match.recruitment_progress_update
+        return None

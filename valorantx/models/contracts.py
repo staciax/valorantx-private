@@ -30,33 +30,25 @@ if TYPE_CHECKING:
     from valorantx.valorant_api.types.contracts import Contract as ContractValorantAPIPayload
     from valorantx.valorant_api_cache import CacheState
 
+    from ..client import Client
     from ..types.contracts import (
         Contract as ContractPayload,
         ContractProgression as ContractProgressionPayload,
         Contracts as ContractsPayload,
         ProcessedMatch as ProcessedMatchPayload,
+        RecruitmentProgressUpdate as RecruitmentProgressUpdatePayload,
         Reward as RewardPayload,
     )
-
-    # from typing_extensions import Self
-    # from ..client import Client
-    # from ..types import (
-    #     Contract as ContractUPayload,
-    #     Contracts as ContractsPayload,
-    #     ProcessedMatch as ProcessedMatchPayload,
-    # )
     from .agents import Agent
     from .buddies import BuddyLevel
     from .currencies import Currency
-
-    # from .event import Event
     from .player_cards import PlayerCard
     from .player_titles import PlayerTitle
-
-    # from .season import Season
     from .sprays import Spray
     from .weapons import SkinLevel
 
+    # from .event import Event
+    # from .season import Season
     # Item = Union[Agent, SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]
 
 
@@ -227,14 +219,49 @@ class Contract(ContractValorantAPI):
         return cls(state=state, data=contract._data, data_contract=data)
 
 
+class RecruitmentProgressUpdate:
+    def __init__(self, client: Client, data: RecruitmentProgressUpdatePayload) -> None:
+        self._client: Client = client
+        self.group_id: str = data['GroupID']
+        self.progress_before: int = data['ProgressBefore']
+        self.progress_after: int = data['ProgressAfter']
+        self.milestone_threshold: int = data['MilestoneThreshold']
+
+    def __repr__(self) -> str:
+        return f'<RecruitmentProgressUpdate group={self.group!r}>'
+
+    def __eq__(self, other: Any) -> bool:
+        return (
+            isinstance(other, RecruitmentProgressUpdate)
+            and self.group_id == other.group_id
+            and self.progress_before == other.progress_before
+            and self.progress_after == other.progress_after
+            and self.milestone_threshold == other.milestone_threshold
+        )
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash((self.group_id, self.progress_before, self.progress_after, self.milestone_threshold))
+
+    @property
+    def group(self) -> Optional[Agent]:
+        return self._client.valorant_api.get_agent(self.group_id)
+
+
 class ProcessedMatch:
-    def __init__(self, data: ProcessedMatchPayload) -> None:
+    def __init__(self, client: Client, data: ProcessedMatchPayload) -> None:
+        self._client: Client = client
         self.id: str = data['ID']
         self._start_time: int = data['StartTime']
         self.xp_grants: Optional[Any] = data['XPGrants']
         self.reward_grants: Optional[Any] = data['RewardGrants']
         self.mission_deltas: Optional[Any] = data['MissionDeltas']
         self.contract_deltas: Optional[Any] = data['ContractDeltas']
+        self.recruitment_progress_update: Optional[RecruitmentProgressUpdate] = None
+        if 'RecruitmentProgressUpdate' in data:
+            self.recruitment_progress_update = RecruitmentProgressUpdate(client, data['RecruitmentProgressUpdate'])
         self.could_progress_missions: bool = data['CouldProgressMissions']
 
     def __repr__(self) -> str:
@@ -265,8 +292,8 @@ class Contracts:
     missions: List[Mission]
     mission_metadata: Optional[MissionMetadata]
 
-    def __init__(self, state: CacheState, data: ContractsPayload) -> None:
-        self._state: CacheState = state
+    def __init__(self, client: Client, data: ContractsPayload) -> None:
+        self._client: Client = client
         self._update(data)
 
     def __repr__(self) -> str:
@@ -276,16 +303,19 @@ class Contracts:
         self.version: int = data['Version']
         self.subject: str = data['Subject']
         self._contracts: Dict[str, Contract] = {
-            contract['ContractDefinitionID']: Contract.from_contract(self._state, contract) for contract in data['Contracts']
+            contract['ContractDefinitionID']: Contract.from_contract(self._client.valorant_api.cache, contract)
+            for contract in data['Contracts']
         }
-        self.processed_matches: List[ProcessedMatch] = [ProcessedMatch(match) for match in data['ProcessedMatches']]
+        self.processed_matches: List[ProcessedMatch] = [
+            ProcessedMatch(self._client, match) for match in data['ProcessedMatches']
+        ]
         self.active_special_contract_id: Optional[str] = data['ActiveSpecialContract']  # data.get('ActiveSpecialContract')
         self.missions: List[Mission] = []
         self.mission_metadata: Optional[MissionMetadata] = None
         if data['MissionMetadata'] is not None:
             self.mission_metadata = MissionMetadata(data['MissionMetadata'])
         for m in data['Missions']:
-            mission = Mission.from_contract(self._state, m)
+            mission = Mission.from_contract(self._client.valorant_api.cache, m)
             if mission is not None:
                 self.missions.append(mission)
 
