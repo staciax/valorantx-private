@@ -55,9 +55,8 @@ class HTTPException(ValorantXError):
         self.text: str
         self.code: str
         if isinstance(message, dict):
-            base = message.get('message', '')
+            self.text = message.get('message', '')
             self.code = message.get('errorCode', '')
-            self.text = base
         else:
             self.text = message or ''
             self.code = ''
