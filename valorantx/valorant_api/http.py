@@ -123,7 +123,8 @@ class HTTPClient:
                             # Banned by Cloudflare more than likely.
                             raise HTTPException(response, data)
                         raise RateLimited(response, data)
-
+                    elif response.status == 403:
+                        raise Forbidden(response, data)
                     elif response.status == 404:
                         raise NotFound(response, data)
                     elif response.status >= 500:
@@ -159,10 +160,10 @@ class HTTPClient:
         async with self.__session.get(url) as resp:
             if resp.status == 200:
                 return await resp.read()
-            elif resp.status == 404:
-                raise NotFound(resp, 'asset not found')
             elif resp.status == 403:
                 raise Forbidden(resp, 'cannot retrieve asset')
+            elif resp.status == 404:
+                raise NotFound(resp, 'asset not found')
             else:
                 raise HTTPException(resp, 'failed to get asset')
 

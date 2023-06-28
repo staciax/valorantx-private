@@ -4,7 +4,7 @@ Exception handler functions: https://github.com/Rapptz/discord.py/blob/master/di
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 if TYPE_CHECKING:
     from aiohttp import ClientResponse
@@ -18,24 +18,6 @@ __all__ = (
     'RateLimited',
     'ValorantAPIError',
 )
-
-
-def _flatten_error_dict(d: Dict[str, Any], key: str = '') -> Dict[str, str]:
-    items: List[Tuple[str, str]] = []
-    for k, v in d.items():
-        new_key = key + '.' + k if key else k
-
-        if isinstance(v, dict):
-            try:
-                _errors: List[Dict[str, Any]] = v['_errors']
-            except KeyError:
-                items.extend(_flatten_error_dict(v, new_key).items())
-            else:
-                items.append((new_key, ' '.join(x.get('message', '') for x in _errors)))
-        else:
-            items.append((new_key, v))
-
-    return dict(items)
 
 
 class ValorantAPIError(Exception):
@@ -63,27 +45,17 @@ class HTTPException(ValorantAPIError):
     def __init__(self, response: ClientResponse, message: Optional[Union[str, Dict[str, Any]]]):
         self.response: ClientResponse = response
         self.status: int = response.status  # This attribute is filled by the library even if using requests # noqa: E501
-        self.code: int
         self.text: str
         if isinstance(message, dict):
-            self.code = message.get('code', 0)
-            base = message.get('message', '')
-            errors = message.get('errors')
-            if errors:
-                errors = _flatten_error_dict(errors)
-                helpful = '\n'.join('In %s: %s' % t for t in errors.items())
-                self.text = base + '\n' + helpful
-            else:
-                self.text = base
+            self.text = message.get('message') or message.get('error', '')
         else:
             self.text = message or ''
-            self.code = 0
 
-        fmt = '{0.status} {0.reason} (error code: {1})'
+        fmt = '{0.status} {0.reason}'
         if len(self.text):
             fmt += ': {2}'
 
-        super().__init__(fmt.format(self.response, self.code, self.text))
+        super().__init__(fmt.format(self.response, self.text))
 
 
 class BadRequest(HTTPException):
