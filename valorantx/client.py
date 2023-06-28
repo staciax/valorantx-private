@@ -192,7 +192,7 @@ class Client:
         await self.wait_until_authorized()
 
         # fetch offers and insert into items
-        offers = await self.fetch_offers()
+        offers = await self.fetch_store_offers()
         self.valorant_api.insert_cost(offers)
 
         # fetch current season and act
@@ -358,7 +358,7 @@ class Client:
         return Entitlements(self, data)
 
     @_authorize_required
-    async def fetch_offers(self) -> Offers:
+    async def fetch_store_offers(self) -> Offers:
         data = await self.http.get_store_offers()
         return Offers(self.valorant_api.cache, data)
 
