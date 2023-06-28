@@ -148,6 +148,7 @@ class QueueType(Enum):
     replication = 'onefa'
     newmap = 'newmap'
     swiftplay = 'swiftplay'
+    team_deathmatch = 'hurm'
 
     def __str__(self) -> str:
         return str(self.value)
