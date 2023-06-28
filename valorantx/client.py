@@ -515,6 +515,35 @@ class Client:
         end: int = 15,
         with_details: bool = True,
     ) -> MatchHistory:
+        """|coro|
+
+        Fetches the match history for the current user or a given user.
+
+        Parameters
+        ----------
+        puuid: Optional[:class:`str`]
+            The puuid of the user to fetch the match history for.
+        queue: Optional[Union[:class:`str`, :class:`QueueType`]]
+            The queue to fetch the match history for.
+        start: :class:`int`
+            The start index of the match history.
+        end: :class:`int`
+            The end index of the match history.
+        with_details: :class:`bool`
+            Whether to fetch the match details for the match history.
+
+        Returns
+        -------
+        :class:`MatchHistory`
+            The match history for the current user or a given user.
+
+        Raises
+        ------
+        HTTPException
+            Fetching the match history failed.
+        NotFound
+            The match history for the given user could not be found.
+        """
         if isinstance(queue, QueueType):
             queue = queue.value
         data = await self.http.get_match_history(puuid, start, end, queue)
@@ -524,7 +553,7 @@ class Client:
         return history
 
     @_authorize_required
-    async def fetch_match_details(self, match_id: str) -> MatchDetails:
+    async def fetch_match_details(self, match_id: str, /) -> MatchDetails:
         """|coro|
 
         Fetches the match details for a given match.
@@ -538,6 +567,12 @@ class Client:
         -------
         Optional[:class:`MatchDetails`]
             The match details for a given match.
+        raises
+        ------
+        HTTPException
+            Fetching the match details failed.
+        NotFound
+            The match details for the given match could not be found.
         """
         data = await self.http.get_match_details(match_id)
         return MatchDetails(client=self, data=data)
