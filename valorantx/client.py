@@ -14,6 +14,7 @@ from .http import HTTPClient
 from .models.account_xp import AccountXP
 from .models.content import Content
 from .models.contracts import Contracts
+from .models.coregame import CoreGameMatch, CoreGamePlayer
 from .models.favorites import Favorites
 from .models.loadout import Loadout
 from .models.match import MatchDetails, MatchHistory
@@ -21,6 +22,7 @@ from .models.mmr import MatchmakingRating
 from .models.name_service import NameService
 from .models.party import Party, PartyPlayer
 from .models.patchnotes import PatchNotes
+from .models.pregame import PreGameMatch, PreGamePlayer
 from .models.premiers import Conference, Eligibility, PremierPleyer, PremierSeason, Roster
 from .models.store import AgentStore, Entitlements, Offers, StoreFront, Wallet
 from .models.user import ClientUser
@@ -601,15 +603,27 @@ class Client:
 
     # pre game
 
-    # @_authorize_required
-    # async def fetch_pregame_match(self, match: Optional[str] = None) -> Any:
-    #     if match is None:
-    #         match = await self.fetch_pregame_player()
-    #     data = await self.http.pregame_fetch_match(match_id=match)
+    @_authorize_required
+    async def fetch_pregame_player(self) -> PreGamePlayer:
+        data = await self.http.get_pregame_player()
+        return PreGamePlayer(client=self, data=data)
 
-    # @_authorize_required
-    # async def fetch_pregame_player(self) -> Any:
-    #     data = await self.http.pregame_fetch_player()
+    @_authorize_required
+    async def fetch_pregame_match(self, match_id: str, /) -> PreGameMatch:
+        data = await self.http.get_pregame_match(match_id)
+        return PreGameMatch(client=self, data=data)
+
+    # core game
+
+    @_authorize_required
+    async def fetch_coregame_player(self) -> CoreGamePlayer:
+        data = await self.http.get_coregame_player()
+        return CoreGamePlayer(client=self, data=data)
+
+    @_authorize_required
+    async def fetch_coregame_match(self, match_id: str, /) -> CoreGameMatch:
+        data = await self.http.get_coregame_match(match_id)
+        return CoreGameMatch(client=self, data=data)
 
     # premier
 
