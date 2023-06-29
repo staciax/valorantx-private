@@ -64,6 +64,7 @@ __all__ = (
     'Progression',
     'Reward',
     'RewardValorantAPI',
+    'RecruitmentProgressUpdate'
 )
 # fmt: on
 
