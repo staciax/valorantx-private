@@ -6,7 +6,6 @@ from .response import Response
 
 class Reward(Object):
     type: str
-    uuid: str
     amount: int
     isHighlighted: bool
 
