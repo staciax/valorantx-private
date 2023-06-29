@@ -31,6 +31,7 @@ class Spray(BaseModel):
         self._display_name: Union[str, Dict[str, str]] = data['displayName']
         self._category: Optional[str] = data['category']
         self._theme_uuid: Optional[str] = data['themeUuid']
+        self._is_null_spray: bool = data['isNullSpray']
         self._display_icon: str = data['displayIcon']
         self._full_icon: Optional[str] = data['fullIcon']
         self._full_transparent_icon: Optional[str] = data['fullTransparentIcon']
@@ -100,6 +101,10 @@ class Spray(BaseModel):
             return None
         return Asset._from_url(state=self._state, url=self._animation_gif)
 
+    def is_null_spray(self) -> bool:
+        """:class: `bool` Returns a boolean representing whether the skin is a null spray."""
+        return self._is_null_spray
+
     @classmethod
     def _copy(cls, spray: Self) -> Self:
         self = cls.__new__(cls)  # bypass __init__
@@ -109,6 +114,7 @@ class Spray(BaseModel):
         self._display_name = spray._display_name
         self._category = spray._category
         self._theme_uuid = spray._theme_uuid
+        self._is_null_spray = spray._is_null_spray
         self._display_icon = spray._display_icon
         self._full_icon = spray._full_icon
         self._full_transparent_icon = spray._full_transparent_icon

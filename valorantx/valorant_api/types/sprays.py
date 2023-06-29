@@ -15,6 +15,7 @@ class Spray(Object):
     displayName: Union[str, Dict[str, str]]
     category: Optional[str]
     themeUuid: Optional[str]
+    isNullSpray: bool
     displayIcon: str
     fullIcon: Optional[str]
     fullTransparentIcon: Optional[str]
