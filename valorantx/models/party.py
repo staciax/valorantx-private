@@ -64,6 +64,12 @@ class PartyPlayer:
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
+    def __hash__(self) -> int:
+        return hash(self.subject)
+
+    async def fetch_party(self) -> Party:
+        return await self._client.fetch_party(self.current_party_id)
+
 
 class PlayerIdentity:
     def __init__(self, client: Client, data: PlayerIdentityPayload) -> None:
