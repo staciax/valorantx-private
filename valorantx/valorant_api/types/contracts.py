@@ -6,6 +6,7 @@ from .response import Response
 
 class Reward(Object):
     type: str
+    uuid: str
     amount: int
     isHighlighted: bool
 
@@ -15,6 +16,8 @@ class Level(TypedDict):
     xp: int
     vpCost: int
     isPurchasableWithVP: bool
+    doughCost: int
+    isPurchasableWithDough: bool
 
 
 class Chapter(TypedDict):

@@ -78,10 +78,15 @@ class Level:
         self.xp: int = data['xp']
         self.vp_cost: int = data['vpCost']
         self._is_purchasable_with_vp: bool = data['isPurchasableWithVP']
+        self.dough_cost: int = data['doughCost']
+        self._is_purchasable_with_dough: bool = data['isPurchasableWithDough']
         self.chapter: Chapter = chapter
 
     def is_purchasable_with_vp(self) -> bool:
         return self._is_purchasable_with_vp
+
+    def is_purchasable_with_dough(self) -> bool:
+        return self._is_purchasable_with_dough
 
 
 class Chapter:
