@@ -8,6 +8,7 @@ from .competitive_tiers import *
 from .content import *
 from .content_tiers import *
 from .contracts import *
+from .coregame import *
 from .currencies import *
 from .events import *
 from .gamemodes import *
@@ -22,6 +23,7 @@ from .party import *
 from .patchnotes import *
 from .player_cards import *
 from .player_titles import *
+from .pregame import *
 from .premiers import *
 from .seasons import *
 from .sprays import *
