@@ -64,6 +64,17 @@ class PreGamePlayer:
     async def fetch_match(self) -> PreGameMatch:
         return await self._client.fetch_pregame_match(self.match_id)
 
+    async def select_character(self, character_id: str, /) -> PreGameMatch:
+        data = await self._client.http.post_pregame_select_character(self.match_id, character_id)
+        return PreGameMatch(self._client, data)
+
+    async def lock_character(self, character_id: str, /) -> PreGameMatch:
+        data = await self._client.http.post_pregame_lock_character(self.match_id, character_id)
+        return PreGameMatch(self._client, data)
+
+    async def quit(self) -> None:
+        await self._client.http.post_pregame_quit_match(self.match_id)
+
 
 class SeasonalBadgeInfo:
     def __init__(self, client: Client, data: SeasonalBadgeInfoPayload) -> None:
