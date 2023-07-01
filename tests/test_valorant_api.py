@@ -210,7 +210,9 @@ class TestValorantAPI(BaseTest):
                     assert item is not None  # if item is None, maybe game is updated new reward type
                     assert isinstance(level.xp, int)
                     assert isinstance(level.vp_cost, int)
+                    assert isinstance(level.dough_cost, int)
                     assert isinstance(level.is_purchasable_with_vp(), bool)
+                    assert isinstance(level.is_purchasable_with_dough(), bool)
 
                 if chapter.free_rewards is not None:
                     assert len(chapter.free_rewards) > 0
@@ -452,6 +454,7 @@ class TestValorantAPI(BaseTest):
                 assert spray.category is not None
             if spray._theme_uuid is not None:
                 assert spray.theme is not None
+            assert isinstance(spray.is_null_spray(), bool)
             assert spray.display_icon is not None
             if spray.full_icon:
                 assert spray.full_icon is not None
