@@ -386,9 +386,9 @@ class Agent(BaseModel):
         self._is_available_for_test: bool = data['isAvailableForTest']
         self._is_base_content: bool = data['isBaseContent']
         self._roles: Role = Role(state=self._state, data=data['role'])
-        self._abilities: List[Ability] = [
-            Ability(state=self._state, data=ability, agent=self) for ability in data['abilities']
-        ]
+        self._abilities: Dict[str, Ability] = {
+            ability['slot'].lower(): Ability(state=self._state, data=ability, agent=self) for ability in data['abilities']
+        }
         self._voice_line: Union[VoiceLinePayload, Dict[str, Optional[VoiceLinePayload]]] = data['voiceLine']
         self._display_name_localized: Localization = Localization(self._display_name, locale=self._state.locale)
         self._description_localized: Localization = Localization(self._description, locale=self._state.locale)
@@ -458,7 +458,7 @@ class Agent(BaseModel):
     @property
     def abilities(self) -> List[Ability]:
         """:class: `List[AgentAbility]` Returns the agent's abilities."""
-        return self._abilities
+        return list(self._abilities.values())
 
     @property
     def voice_line(self) -> Optional[VoiceLine]:
@@ -469,6 +469,10 @@ class Agent(BaseModel):
     def voice_line_localization(self) -> VoiceLineLocalization:
         """:class: `AgentVoiceLineLocalization` Returns the agent's voice line."""
         return VoiceLineLocalization(self._voice_line)
+
+    def get_ability(self, ability_type: AbilityType) -> Optional[Ability]:
+        """:class: `AgentAbility` Returns the agent's ability from the slot."""
+        return self._abilities.get(ability_type.value.lower())
 
     def is_full_portrait_right_facing(self) -> bool:
         """:class: `bool` Returns whether the agent's full portrait is right facing."""

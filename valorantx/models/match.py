@@ -946,36 +946,30 @@ class AbilityCasts:
         """:class:`int`: Returns the number of X ability casts."""
         return self._ultimate_casts
 
-    def get_ability(self, slot: AbilityType) -> Optional[AgentAbility]:
-        """:class:`AgentAbility`: Returns the ability for the given slot."""
-        for skill in self.agent.abilities:
-            if skill.slot == slot:
-                return skill
-
     @property
     def e(self) -> Optional[AgentAbility]:
         """:class:`AgentAbility`: Returns the E ability."""
-        return self.get_ability(AbilityType.ability_2)
+        return self.agent.get_ability(AbilityType.ability_2)
 
     @property
     def q(self) -> Optional[AgentAbility]:
         """:class:`AgentAbility`: Returns the Q ability."""
-        return self.get_ability(AbilityType.ability_1)
+        return self.agent.get_ability(AbilityType.ability_1)
 
     @property
     def c(self) -> Optional[AgentAbility]:
         """:class:`AgentAbility`: Returns the C ability."""
-        return self.get_ability(AbilityType.grenade)
+        return self.agent.get_ability(AbilityType.grenade)
 
     @property
     def x(self) -> Optional[AgentAbility]:
         """:class:`AgentAbility`: Returns the X ability."""
-        return self.get_ability(AbilityType.ultimate)
+        return self.agent.get_ability(AbilityType.ultimate)
 
     @property
     def p(self) -> Optional[AgentAbility]:
         """:class:`AgentAbility`: Returns the passive ability."""
-        return self.get_ability(AbilityType.passive)
+        return self.agent.get_ability(AbilityType.passive)
 
 
 class PlayerStats:
@@ -988,7 +982,7 @@ class PlayerStats:
         self.assists: int = data['assists']
         self.playtime_millis: int = data['playtimeMillis']
         self.ability_casts: Optional[AbilityCasts] = None
-        if data.get('abilityCasts') and self.agent:
+        if data.get('abilityCasts') is not None and self.agent is not None:
             self.ability_casts = AbilityCasts(self.agent, data['abilityCasts'])
         self.first_kills: int = 0
         self.first_deaths: int = 0
