@@ -63,7 +63,7 @@ class Mission(MissionValorantAPI):
     @classmethod
     def from_contract(cls, state: CacheState, data: MissionPayload) -> Optional[Self]:
         """Returns the mission with the given UUID."""
-        mission = state.get_mission(uuid=data['ID'])
+        mission = state.get_mission(data['ID'])
         if mission is None:
             return None
         return cls(state=state, data=mission._data, data_mission=data)

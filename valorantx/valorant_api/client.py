@@ -94,10 +94,10 @@ class Client:
     def agents(self) -> List[Agent]:
         return self.cache.agents
 
-    def get_agent(self, uuid: str) -> Optional[Agent]:
+    def get_agent(self, uuid: str, /) -> Optional[Agent]:
         return self.cache.get_agent(uuid)
 
-    async def fetch_agent(self, uuid: str) -> Optional[Agent]:
+    async def fetch_agent(self, uuid: str, /) -> Optional[Agent]:
         await self.cache.fetch_agents()
         return self.get_agent(uuid)
 
@@ -111,17 +111,17 @@ class Client:
     def buddy_levels(self) -> List[BuddyLevel]:
         return self.cache.buddy_levels
 
-    def get_buddy(self, uuid: str) -> Optional[Buddy]:
+    def get_buddy(self, uuid: str, /) -> Optional[Buddy]:
         return self.cache.get_buddy(uuid)
 
-    def get_buddy_level(self, uuid: str) -> Optional[BuddyLevel]:
+    def get_buddy_level(self, uuid: str, /) -> Optional[BuddyLevel]:
         return self.cache.get_buddy_level(uuid)
 
-    async def fetch_buddy(self, uuid: str) -> Optional[Buddy]:
+    async def fetch_buddy(self, uuid: str, /) -> Optional[Buddy]:
         await self.cache.fetch_buddies()
         return self.get_buddy(uuid)
 
-    async def fetch_buddy_level(self, uuid: str) -> Optional[BuddyLevel]:
+    async def fetch_buddy_level(self, uuid: str, /) -> Optional[BuddyLevel]:
         await self.cache.fetch_buddies()
         return self.get_buddy_level(uuid)
 
@@ -131,10 +131,10 @@ class Client:
     def bundles(self) -> List[Bundle]:
         return self.cache.bundles
 
-    def get_bundle(self, uuid: str) -> Optional[Bundle]:
+    def get_bundle(self, uuid: str, /) -> Optional[Bundle]:
         return self.cache.get_bundle(uuid)
 
-    async def fetch_bundle(self, uuid: str) -> Optional[Bundle]:
+    async def fetch_bundle(self, uuid: str, /) -> Optional[Bundle]:
         await self.cache.fetch_bundles()
         return self.get_bundle(uuid)
 
@@ -144,10 +144,10 @@ class Client:
     def ceremonies(self) -> List[Ceremony]:
         return self.cache.ceremonies
 
-    def get_ceremony(self, uuid: str) -> Optional[Ceremony]:
+    def get_ceremony(self, uuid: str, /) -> Optional[Ceremony]:
         return self.cache.get_ceremony(uuid)
 
-    async def fetch_ceremony(self, uuid: str) -> Optional[Ceremony]:
+    async def fetch_ceremony(self, uuid: str, /) -> Optional[Ceremony]:
         await self.cache.fetch_ceremonies()
         return self.get_ceremony(uuid)
 
@@ -157,10 +157,10 @@ class Client:
     def competitive_tiers(self) -> List[CompetitiveTier]:
         return self.cache.competitive_tiers
 
-    def get_competitive_tier(self, uuid: str) -> Optional[CompetitiveTier]:
+    def get_competitive_tier(self, uuid: str, /) -> Optional[CompetitiveTier]:
         return self.cache.get_competitive_tier(uuid)
 
-    async def fetch_competitive_tier(self, uuid: str) -> Optional[CompetitiveTier]:
+    async def fetch_competitive_tier(self, uuid: str, /) -> Optional[CompetitiveTier]:
         await self.cache.fetch_competitive_tiers()
         return self.get_competitive_tier(uuid)
 
@@ -170,10 +170,10 @@ class Client:
     def content_tiers(self) -> List[ContentTier]:
         return self.cache.content_tiers
 
-    def get_content_tier(self, uuid: str) -> Optional[ContentTier]:
+    def get_content_tier(self, uuid: str, /) -> Optional[ContentTier]:
         return self.cache.get_content_tier(uuid)
 
-    async def fetch_content_tier(self, uuid: str) -> Optional[ContentTier]:
+    async def fetch_content_tier(self, uuid: str, /) -> Optional[ContentTier]:
         await self.cache.fetch_content_tiers()
         return self.get_content_tier(uuid)
 
@@ -183,10 +183,10 @@ class Client:
     def contracts(self) -> List[Contract]:
         return self.cache.contracts
 
-    def get_contract(self, uuid: str) -> Optional[Contract]:
+    def get_contract(self, uuid: str, /) -> Optional[Contract]:
         return self.cache.get_contract(uuid)
 
-    async def fetch_contract(self, uuid: str) -> Optional[Contract]:
+    async def fetch_contract(self, uuid: str, /) -> Optional[Contract]:
         await self.cache.fetch_contracts()
         return self.get_contract(uuid)
 
@@ -196,10 +196,10 @@ class Client:
     def currencies(self) -> List[Currency]:
         return self.cache.currencies
 
-    def get_currency(self, uuid: str) -> Optional[Currency]:
+    def get_currency(self, uuid: str, /) -> Optional[Currency]:
         return self.cache.get_currency(uuid)
 
-    async def fetch_currency(self, uuid: str) -> Optional[Currency]:
+    async def fetch_currency(self, uuid: str, /) -> Optional[Currency]:
         await self.cache.fetch_currencies()
         return self.get_currency(uuid)
 
@@ -209,10 +209,10 @@ class Client:
     def events(self) -> List[Event]:
         return self.cache.events
 
-    def get_event(self, uuid: str) -> Optional[Event]:
+    def get_event(self, uuid: str, /) -> Optional[Event]:
         return self.cache.get_event(uuid)
 
-    async def fetch_event(self, uuid: str) -> Optional[Event]:
+    async def fetch_event(self, uuid: str, /) -> Optional[Event]:
         await self.cache.fetch_events()
         return self.get_event(uuid)
 
@@ -226,17 +226,17 @@ class Client:
     def game_mode_equippables(self) -> List[GameModeEquippable]:
         return self.cache.game_mode_equippables
 
-    def get_game_mode(self, uuid: str) -> Optional[GameMode]:
+    def get_game_mode(self, uuid: str, /) -> Optional[GameMode]:
         return self.cache.get_game_mode(uuid)
 
-    def get_game_mode_equippable(self, uuid: str) -> Optional[GameModeEquippable]:
+    def get_game_mode_equippable(self, uuid: str, /) -> Optional[GameModeEquippable]:
         return self.cache.get_game_mode_equippable(uuid)
 
-    async def fetch_game_mode(self, uuid: str) -> Optional[GameMode]:
+    async def fetch_game_mode(self, uuid: str, /) -> Optional[GameMode]:
         await self.cache.fetch_game_modes()
         return self.get_game_mode(uuid)
 
-    async def fetch_game_mode_equippable(self, uuid: str) -> Optional[GameModeEquippable]:
+    async def fetch_game_mode_equippable(self, uuid: str, /) -> Optional[GameModeEquippable]:
         await self.cache.fetch_game_modes()
         return self.get_game_mode_equippable(uuid)
 
@@ -246,10 +246,10 @@ class Client:
     def gear(self) -> List[Gear]:
         return self.cache.gear
 
-    def get_gear(self, uuid: str) -> Optional[Gear]:
+    def get_gear(self, uuid: str, /) -> Optional[Gear]:
         return self.cache.get_gear(uuid)
 
-    async def fetch_gear(self, uuid: str) -> Optional[Gear]:
+    async def fetch_gear(self, uuid: str, /) -> Optional[Gear]:
         await self.cache.fetch_gear()
         return self.get_gear(uuid)
 
@@ -259,10 +259,10 @@ class Client:
     def level_borders(self) -> List[LevelBorder]:
         return self.cache.level_borders
 
-    def get_level_border(self, uuid: str) -> Optional[LevelBorder]:
+    def get_level_border(self, uuid: str, /) -> Optional[LevelBorder]:
         return self.cache.get_level_border(uuid)
 
-    async def fetch_level_border(self, uuid: str) -> Optional[LevelBorder]:
+    async def fetch_level_border(self, uuid: str, /) -> Optional[LevelBorder]:
         await self.cache.fetch_level_borders()
         return self.get_level_border(uuid)
 
@@ -272,10 +272,10 @@ class Client:
     def maps(self) -> List[Map]:
         return self.cache.maps
 
-    def get_map(self, uuid: str) -> Optional[Map]:
+    def get_map(self, uuid: str, /) -> Optional[Map]:
         return self.cache.get_map(uuid)
 
-    async def fetch_map(self, uuid: str) -> Optional[Map]:
+    async def fetch_map(self, uuid: str, /) -> Optional[Map]:
         await self.cache.fetch_maps()
         return self.get_map(uuid)
 
@@ -285,10 +285,10 @@ class Client:
     def missions(self) -> List[Mission]:
         return self.cache.missions
 
-    def get_mission(self, uuid: str) -> Optional[Mission]:
+    def get_mission(self, uuid: str, /) -> Optional[Mission]:
         return self.cache.get_mission(uuid)
 
-    async def fetch_mission(self, uuid: str) -> Optional[Mission]:
+    async def fetch_mission(self, uuid: str, /) -> Optional[Mission]:
         await self.cache.fetch_missions()
         return self.get_mission(uuid)
 
@@ -311,10 +311,10 @@ class Client:
     def player_titles(self) -> List[PlayerTitle]:
         return self.cache.player_titles
 
-    def get_player_title(self, uuid: str) -> Optional[PlayerTitle]:
+    def get_player_title(self, uuid: str, /) -> Optional[PlayerTitle]:
         return self.cache.get_player_title(uuid)
 
-    async def fetch_player_title(self, uuid: str) -> Optional[PlayerTitle]:
+    async def fetch_player_title(self, uuid: str, /) -> Optional[PlayerTitle]:
         await self.cache.fetch_player_titles()
         return self.get_player_title(uuid)
 
@@ -324,10 +324,10 @@ class Client:
     def seasons(self) -> List[Season]:
         return self.cache.seasons
 
-    def get_season(self, uuid: str) -> Optional[Season]:
+    def get_season(self, uuid: str, /) -> Optional[Season]:
         return self.cache.get_season(uuid)
 
-    async def fetch_season(self, uuid: str) -> Optional[Season]:
+    async def fetch_season(self, uuid: str, /) -> Optional[Season]:
         await self.cache.fetch_seasons()
         return self.get_season(uuid)
 
@@ -335,16 +335,16 @@ class Client:
     def competitive_seasons(self) -> List[CompetitiveSeason]:
         return list(self.cache.competitive_seasons)
 
-    def get_competitive_season(self, uuid: str) -> Optional[CompetitiveSeason]:
+    def get_competitive_season(self, uuid: str, /) -> Optional[CompetitiveSeason]:
         return self.cache.get_competitive_season(uuid)
 
-    def get_competitive_season_season_id(self, season_id: str) -> Optional[CompetitiveSeason]:
+    def get_competitive_season_season_id(self, season_id: str, /) -> Optional[CompetitiveSeason]:
         for season in self.competitive_seasons:
             if season.season_uuid == season_id:
                 return season
         return None
 
-    async def fetch_competitive_season(self, uuid: str) -> Optional[CompetitiveSeason]:
+    async def fetch_competitive_season(self, uuid: str, /) -> Optional[CompetitiveSeason]:
         await self.cache.fetch_competitive_seasons()
         return self.get_competitive_season(uuid)
 
@@ -354,10 +354,10 @@ class Client:
     def sprays(self) -> List[Spray]:
         return self.cache.sprays
 
-    def get_spray(self, uuid: str) -> Optional[Spray]:
+    def get_spray(self, uuid: str, /) -> Optional[Spray]:
         return self.cache.get_spray(uuid)
 
-    async def fetch_spray(self, uuid: str) -> Optional[Spray]:
+    async def fetch_spray(self, uuid: str, /) -> Optional[Spray]:
         await self.cache.fetch_sprays()
         return self.get_spray(uuid)
 
@@ -365,10 +365,10 @@ class Client:
     def spray_levels(self) -> List[SprayLevel]:
         return self.cache.spray_levels
 
-    def get_spray_level(self, uuid: str) -> Optional[SprayLevel]:
+    def get_spray_level(self, uuid: str, /) -> Optional[SprayLevel]:
         return self.cache.get_spray_level(uuid)
 
-    async def fetch_spray_level(self, uuid: str) -> Optional[SprayLevel]:
+    async def fetch_spray_level(self, uuid: str, /) -> Optional[SprayLevel]:
         await self.cache.fetch_sprays()
         return self.get_spray_level(uuid)
 
@@ -401,10 +401,10 @@ class Client:
     def weapons(self) -> List[Weapon]:
         return self.cache.weapons
 
-    def get_weapon(self, uuid: str) -> Optional[Weapon]:
+    def get_weapon(self, uuid: str, /) -> Optional[Weapon]:
         return self.cache.get_weapon(uuid)
 
-    async def fetch_weapon(self, uuid: str) -> Optional[Weapon]:
+    async def fetch_weapon(self, uuid: str, /) -> Optional[Weapon]:
         await self.cache.fetch_weapons()
         return self.get_weapon(uuid)
 
@@ -416,10 +416,10 @@ class Client:
     def skins(self) -> List[Skin]:
         return self.cache.skins
 
-    def get_skin(self, uuid: str) -> Optional[Skin]:
+    def get_skin(self, uuid: str, /) -> Optional[Skin]:
         return self.cache.get_skin(uuid)
 
-    async def fetch_skin(self, uuid: str) -> Optional[Skin]:
+    async def fetch_skin(self, uuid: str, /) -> Optional[Skin]:
         await self.cache.fetch_weapons()
         return self.get_skin(uuid)
 
@@ -427,10 +427,10 @@ class Client:
     def skin_chromas(self) -> List[SkinChroma]:
         return self.cache.skin_chromas
 
-    def get_skin_chroma(self, uuid: str) -> Optional[SkinChroma]:
+    def get_skin_chroma(self, uuid: str, /) -> Optional[SkinChroma]:
         return self.cache.get_skin_chroma(uuid)
 
-    async def fetch_skin_chroma(self, uuid: str) -> Optional[SkinChroma]:
+    async def fetch_skin_chroma(self, uuid: str, /) -> Optional[SkinChroma]:
         await self.cache.fetch_weapons()
         return self.get_skin_chroma(uuid)
 
@@ -438,9 +438,9 @@ class Client:
     def skin_levels(self) -> List[SkinLevel]:
         return self.cache.skin_levels
 
-    def get_skin_level(self, uuid: str) -> Optional[SkinLevel]:
+    def get_skin_level(self, uuid: str, /) -> Optional[SkinLevel]:
         return self.cache.get_skin_level(uuid)
 
-    async def fetch_skin_level(self, uuid: str) -> Optional[SkinLevel]:
+    async def fetch_skin_level(self, uuid: str, /) -> Optional[SkinLevel]:
         await self.cache.fetch_weapons()
         return self.get_skin_level(uuid)

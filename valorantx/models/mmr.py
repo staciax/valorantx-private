@@ -93,7 +93,7 @@ class SeasonalInfo:
     @property
     def season(self) -> Optional[Season]:
         """:class: `Season` Returns the season."""
-        return self._client.valorant_api.get_season(uuid=self.season_id)
+        return self._client.valorant_api.get_season(self.season_id)
 
     def get_tier(self) -> Optional[Tier]:
         """:class: `Tier` Returns the tier."""

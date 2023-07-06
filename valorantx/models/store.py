@@ -390,7 +390,7 @@ class AccessoryStoreOffer:
         self._state: CacheState = state
         self.offer: Offer = Offer(state, data['Offer'])
         self.contract_id: str = data['ContractID']
-        self._contract: Optional[ContractValorantAPI] = self._state.get_contract(uuid=self.contract_id)
+        self._contract: Optional[ContractValorantAPI] = self._state.get_contract(self.contract_id)
 
     @property
     def contract(self) -> Optional[ContractValorantAPI]:

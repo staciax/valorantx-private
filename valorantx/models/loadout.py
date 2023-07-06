@@ -85,7 +85,7 @@ class Gun(Weapon):
 
         # buddy loadout
         if data_loadout.get('CharmID'):
-            buddy = state.get_buddy(uuid=self.data_loadout.get('CharmID'))
+            buddy = state.get_buddy(self.data_loadout.get('CharmID'))
             if buddy is not None:
                 self._buddy_loadout = buddy.__class__.from_loadout(
                     buddy=buddy, favorite=buddy.uuid in favorites.favorited_content
@@ -94,7 +94,7 @@ class Gun(Weapon):
                 _log.warning('could not find buddy for gun %r', self.uuid)
 
         if data_loadout.get('CharmLevelID'):
-            buddy_level = state.get_buddy_level(uuid=self.data_loadout.get('CharmLevelID'))
+            buddy_level = state.get_buddy_level(self.data_loadout.get('CharmLevelID'))
             if buddy_level is not None:
                 self._buddy_level_loadout = buddy_level._copy(buddy_level=buddy_level)
             else:
@@ -266,7 +266,7 @@ class GunsLoadout:
         self.odin: Optional[Gun] = None
 
         for data in guns:
-            weapon = state.get_weapon(uuid=data['ID'])
+            weapon = state.get_weapon(data['ID'])
             if weapon is None:
                 _log.warning('could not find weapon for loadout %r', data)
                 continue

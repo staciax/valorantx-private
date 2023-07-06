@@ -104,37 +104,37 @@ class CacheState(CacheStateValorantAPI):
 
     if TYPE_CHECKING:
 
-        def get_skin(self, uuid: Optional[str]) -> Optional[Skin]:
+        def get_skin(self, uuid: Optional[str], /) -> Optional[Skin]:
             ...
 
-        def get_skin_level(self, uuid: Optional[str]) -> Optional[SkinLevel]:
+        def get_skin_level(self, uuid: Optional[str], /) -> Optional[SkinLevel]:
             ...
 
-        def get_skin_chroma(self, uuid: Optional[str]) -> Optional[SkinChroma]:
+        def get_skin_chroma(self, uuid: Optional[str], /) -> Optional[SkinChroma]:
             ...
 
-        def get_player_card(self, uuid: Optional[str]) -> Optional[PlayerCard]:
+        def get_player_card(self, uuid: Optional[str], /) -> Optional[PlayerCard]:
             ...
 
-        def get_player_title(self, uuid: Optional[str]) -> Optional[PlayerTitle]:
+        def get_player_title(self, uuid: Optional[str], /) -> Optional[PlayerTitle]:
             ...
 
-        def get_buddy_level(self, uuid: Optional[str]) -> Optional[BuddyLevel]:
+        def get_buddy_level(self, uuid: Optional[str], /) -> Optional[BuddyLevel]:
             ...
 
-        def get_spray(self, uuid: Optional[str]) -> Optional[Spray]:
+        def get_spray(self, uuid: Optional[str], /) -> Optional[Spray]:
             ...
 
-        def get_spray_level(self, uuid: Optional[str]) -> Optional[SprayLevel]:
+        def get_spray_level(self, uuid: Optional[str], /) -> Optional[SprayLevel]:
             ...
 
-        def get_buddy(self, uuid: Optional[str]) -> Optional[Buddy]:
+        def get_buddy(self, uuid: Optional[str], /) -> Optional[Buddy]:
             ...
 
-        def get_weapon(self, uuid: Optional[str]) -> Optional[Weapon]:
+        def get_weapon(self, uuid: Optional[str], /) -> Optional[Weapon]:
             ...
 
-        def get_level_border(self, uuid: Optional[str]) -> Optional[LevelBorder]:
+        def get_level_border(self, uuid: Optional[str], /) -> Optional[LevelBorder]:
             ...
 
     def insert_cost(self, uuid: str, type: ItemTypeID, cost: int) -> None:

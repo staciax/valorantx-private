@@ -192,7 +192,7 @@ class CacheState:
     def agents(self) -> List[Agent]:
         return list(self._agents.values())
 
-    def get_agent(self, uuid: Optional[str]) -> Optional[Agent]:
+    def get_agent(self, uuid: Optional[str], /) -> Optional[Agent]:
         return self._agents.get(uuid)  # type: ignore
 
     def store_agent(self, data: agents.Agent) -> Agent:
@@ -222,10 +222,10 @@ class CacheState:
     def buddy_levels(self) -> List[BuddyLevel]:
         return list(self._buddy_levels.values())
 
-    def get_buddy(self, uuid: Optional[str]) -> Optional[Buddy]:
+    def get_buddy(self, uuid: Optional[str], /) -> Optional[Buddy]:
         return self._buddies.get(uuid)  # type: ignore
 
-    def get_buddy_level(self, uuid: Optional[str]) -> Optional[BuddyLevel]:
+    def get_buddy_level(self, uuid: Optional[str], /) -> Optional[BuddyLevel]:
         return self._buddy_levels.get(uuid)  # type: ignore
 
     def store_buddy(self, data: buddies.Buddy) -> Buddy:
@@ -253,7 +253,7 @@ class CacheState:
     def bundles(self) -> List[Bundle]:
         return list(self._bundles.values())
 
-    def get_bundle(self, uuid: Optional[str]) -> Optional[Bundle]:
+    def get_bundle(self, uuid: Optional[str], /) -> Optional[Bundle]:
         return self._bundles.get(uuid)  # type: ignore
 
     def store_bundle(self, data: bundles.Bundle) -> Bundle:
@@ -279,7 +279,7 @@ class CacheState:
     def ceremonies(self) -> List[Ceremony]:
         return list(self._ceremonies.values())
 
-    def get_ceremony(self, uuid: Optional[str]) -> Optional[Ceremony]:
+    def get_ceremony(self, uuid: Optional[str], /) -> Optional[Ceremony]:
         return self._ceremonies.get(uuid)  # type: ignore
 
     def store_ceremony(self, data: ceremonies.Ceremony) -> Ceremony:
@@ -305,7 +305,7 @@ class CacheState:
     def competitive_tiers(self) -> List[CompetitiveTier]:
         return list(self._competitive_tiers.values())
 
-    def get_competitive_tier(self, uuid: Optional[str]) -> Optional[CompetitiveTier]:
+    def get_competitive_tier(self, uuid: Optional[str], /) -> Optional[CompetitiveTier]:
         return self._competitive_tiers.get(uuid)  # type: ignore
 
     def store_competitive_tier(self, data: competitive_tiers.CompetitiveTier) -> CompetitiveTier:
@@ -331,7 +331,7 @@ class CacheState:
     def content_tiers(self) -> List[ContentTier]:
         return list(self._content_tiers.values())
 
-    def get_content_tier(self, uuid: Optional[str]) -> Optional[ContentTier]:
+    def get_content_tier(self, uuid: Optional[str], /) -> Optional[ContentTier]:
         return self._content_tiers.get(uuid)  # type: ignore
 
     def store_content_tier(self, data: content_tiers.ContentTier) -> ContentTier:
@@ -357,7 +357,7 @@ class CacheState:
     def contracts(self) -> List[Contract]:
         return list(self._contracts.values())
 
-    def get_contract(self, uuid: Optional[str]) -> Optional[Contract]:
+    def get_contract(self, uuid: Optional[str], /) -> Optional[Contract]:
         return self._contracts.get(uuid)  # type: ignore
 
     def store_contract(self, data: contracts.Contract) -> Contract:
@@ -383,7 +383,7 @@ class CacheState:
     def currencies(self) -> List[Currency]:
         return list(self._currencies.values())
 
-    def get_currency(self, uuid: Optional[str]) -> Optional[Currency]:
+    def get_currency(self, uuid: Optional[str], /) -> Optional[Currency]:
         return self._currencies.get(uuid)  # type: ignore
 
     def store_currency(self, data: currencies.Currency) -> Currency:
@@ -409,7 +409,7 @@ class CacheState:
     def events(self) -> List[Event]:
         return list(self._events.values())
 
-    def get_event(self, uuid: Optional[str]) -> Optional[Event]:
+    def get_event(self, uuid: Optional[str], /) -> Optional[Event]:
         return self._events.get(uuid)  # type: ignore
 
     def store_event(self, data: events.Event) -> Event:
@@ -439,10 +439,10 @@ class CacheState:
     def game_mode_equippables(self) -> List[GameModeEquippable]:
         return list(self._game_mode_equippables.values())
 
-    def get_game_mode(self, uuid: Optional[str]) -> Optional[GameMode]:
+    def get_game_mode(self, uuid: Optional[str], /) -> Optional[GameMode]:
         return self._game_modes.get(uuid)  # type: ignore
 
-    def get_game_mode_equippable(self, uuid: Optional[str]) -> Optional[GameModeEquippable]:
+    def get_game_mode_equippable(self, uuid: Optional[str], /) -> Optional[GameModeEquippable]:
         return self._game_mode_equippables.get(uuid)  # type: ignore
 
     def store_game_mode(self, data: gamemodes.GameMode) -> GameMode:
@@ -487,7 +487,7 @@ class CacheState:
     def gear(self) -> List[Gear]:
         return list(self._gear.values())
 
-    def get_gear(self, uuid: Optional[str]) -> Optional[Gear]:
+    def get_gear(self, uuid: Optional[str], /) -> Optional[Gear]:
         return self._gear.get(uuid)  # type: ignore
 
     def store_gear(self, data: gear.Gear_) -> Gear:
@@ -513,7 +513,7 @@ class CacheState:
     def level_borders(self) -> List[LevelBorder]:
         return list(self._level_borders.values())
 
-    def get_level_border(self, uuid: Optional[str]) -> Optional[LevelBorder]:
+    def get_level_border(self, uuid: Optional[str], /) -> Optional[LevelBorder]:
         return self._level_borders.get(uuid)  # type: ignore
 
     def store_level_border(self, data: level_borders.LevelBorder) -> LevelBorder:
@@ -539,7 +539,7 @@ class CacheState:
     def maps(self) -> List[Map]:
         return list(self._maps.values())
 
-    def get_map(self, uuid: Optional[str]) -> Optional[Map]:
+    def get_map(self, uuid: Optional[str], /) -> Optional[Map]:
         return self._maps.get(uuid)  # type: ignore
 
     def store_map(self, data: maps.Map) -> Map:
@@ -565,7 +565,7 @@ class CacheState:
     def missions(self) -> List[Mission]:
         return list(self._missions.values())
 
-    def get_mission(self, uuid: Optional[str]) -> Optional[Mission]:
+    def get_mission(self, uuid: Optional[str], /) -> Optional[Mission]:
         return self._missions.get(uuid)  # type: ignore
 
     def store_mission(self, data: missions.Mission) -> Mission:
@@ -591,7 +591,7 @@ class CacheState:
     def player_cards(self) -> List[PlayerCard]:
         return list(self._player_cards.values())
 
-    def get_player_card(self, uuid: Optional[str]) -> Optional[PlayerCard]:
+    def get_player_card(self, uuid: Optional[str], /) -> Optional[PlayerCard]:
         return self._player_cards.get(uuid)  # type: ignore
 
     def store_player_card(self, data: player_cards.PlayerCard) -> PlayerCard:
@@ -617,7 +617,7 @@ class CacheState:
     def player_titles(self) -> List[PlayerTitle]:
         return list(self._player_titles.values())
 
-    def get_player_title(self, uuid: Optional[str]) -> Optional[PlayerTitle]:
+    def get_player_title(self, uuid: Optional[str], /) -> Optional[PlayerTitle]:
         return self._player_titles.get(uuid)  # type: ignore
 
     def store_player_title(self, data: player_titles.PlayerTitle) -> PlayerTitle:
@@ -643,7 +643,7 @@ class CacheState:
     def seasons(self) -> List[Season]:
         return list(self._seasons.values())
 
-    def get_season(self, uuid: Optional[str]) -> Optional[Season]:
+    def get_season(self, uuid: Optional[str], /) -> Optional[Season]:
         return self._seasons.get(uuid)  # type: ignore
 
     def store_season(self, data: seasons.Season) -> Season:
@@ -667,7 +667,7 @@ class CacheState:
     def competitive_seasons(self) -> List[CompetitiveSeason]:
         return list(self._competitive_seasons.values())
 
-    def get_competitive_season(self, uuid: Optional[str]) -> Optional[CompetitiveSeason]:
+    def get_competitive_season(self, uuid: Optional[str], /) -> Optional[CompetitiveSeason]:
         return self._competitive_seasons.get(uuid)  # type: ignore
 
     def store_competitive_season(self, data: seasons.CompetitiveSeason) -> CompetitiveSeason:
@@ -693,14 +693,14 @@ class CacheState:
     def sprays(self) -> List[Spray]:
         return list(self._sprays.values())
 
-    def get_spray(self, uuid: Optional[str]) -> Optional[Spray]:
+    def get_spray(self, uuid: Optional[str], /) -> Optional[Spray]:
         return self._sprays.get(uuid)  # type: ignore
 
     @property
     def spray_levels(self) -> List[SprayLevel]:
         return list(self._spray_levels.values())
 
-    def get_spray_level(self, uuid: Optional[str]) -> Optional[SprayLevel]:
+    def get_spray_level(self, uuid: Optional[str], /) -> Optional[SprayLevel]:
         return self._spray_levels.get(uuid)  # type: ignore
 
     def store_spray(self, data: sprays.Spray) -> Spray:
@@ -728,7 +728,7 @@ class CacheState:
     def themes(self) -> List[Theme]:
         return list(self._themes.values())
 
-    def get_theme(self, uuid: Optional[str]) -> Optional[Theme]:
+    def get_theme(self, uuid: Optional[str], /) -> Optional[Theme]:
         return self._themes.get(uuid)  # type: ignore
 
     def store_theme(self, data: themes.Theme) -> Theme:
@@ -768,28 +768,28 @@ class CacheState:
     def weapons(self) -> List[Weapon]:
         return list(self._weapons.values())
 
-    def get_weapon(self, uuid: Optional[str]) -> Optional[Weapon]:
+    def get_weapon(self, uuid: Optional[str], /) -> Optional[Weapon]:
         return self._weapons.get(uuid)  # type: ignore
 
     @property
     def skins(self) -> List[Skin]:
         return list(self._skins.values())
 
-    def get_skin(self, uuid: Optional[str]) -> Optional[Skin]:
+    def get_skin(self, uuid: Optional[str], /) -> Optional[Skin]:
         return self._skins.get(uuid)  # type: ignore
 
     @property
     def skin_chromas(self) -> List[SkinChroma]:
         return list(self._skin_chromas.values())
 
-    def get_skin_chroma(self, uuid: Optional[str]) -> Optional[SkinChroma]:
+    def get_skin_chroma(self, uuid: Optional[str], /) -> Optional[SkinChroma]:
         return self._skin_chromas.get(uuid)  # type: ignore
 
     @property
     def skin_levels(self) -> List[SkinLevel]:
         return list(self._skin_levels.values())
 
-    def get_skin_level(self, uuid: Optional[str]) -> Optional[SkinLevel]:
+    def get_skin_level(self, uuid: Optional[str], /) -> Optional[SkinLevel]:
         return self._skin_levels.get(uuid)  # type: ignore
 
     def store_weapon(self, data: weapons.Weapon) -> Weapon:

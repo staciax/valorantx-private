@@ -172,7 +172,7 @@ class GameModeEquippable(BaseModel):
     def weapon(self) -> Optional[Weapon]:
         """:class: `Weapon` Returns the game mode's weapon."""
         # special weapon for game mode
-        return self._state.get_weapon(uuid=self._uuid)
+        return self._state.get_weapon(self._uuid)
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:

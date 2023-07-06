@@ -82,7 +82,7 @@ class PlayerCard(BaseModel):
     @property
     def theme(self) -> Optional[Theme]:
         """:class: `Theme` Returns the player card's theme."""
-        return self._state.get_theme(uuid=self._theme_uuid)
+        return self._state.get_theme(self._theme_uuid)
 
     def is_hidden_if_not_owned(self) -> bool:
         """:class: `bool` Returns whether the player card is hidden if not owned."""

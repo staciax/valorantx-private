@@ -304,14 +304,14 @@ class Skin(BaseModel, Generic[WeaponT]):
     @property
     def theme(self) -> Optional[Theme]:
         """:class: `Theme` Returns the skin's theme uuid."""
-        return self._state.get_theme(uuid=self._theme_uuid)
+        return self._state.get_theme(self._theme_uuid)
 
     @property
     def content_tier(self) -> Optional[ContentTier]:
         """:class: `ContentTier` Returns the skin's rarity."""
         if self._content_tier_uuid is None:
             return None
-        return self._state.get_content_tier(uuid=self._content_tier_uuid)
+        return self._state.get_content_tier(self._content_tier_uuid)
 
     @property
     def rarity(self) -> Optional[ContentTier]:

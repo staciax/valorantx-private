@@ -203,7 +203,7 @@ class Client:
             if not season_content.is_active():
                 continue
 
-            season = self.valorant_api.get_season(uuid=season_content.id)
+            season = self.valorant_api.get_season(season_content.id)
             if season is not None:
                 if season_content.type == SeasonType.episode:
                     self._season = season

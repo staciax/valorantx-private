@@ -52,7 +52,7 @@ class Buddy(BaseModel):
     def theme(self) -> Optional[Theme]:
         """:class: `Theme` Returns the buddy's theme."""
         # Avoid circular import
-        return self._state.get_theme(uuid=self._theme_uuid)
+        return self._state.get_theme(self._theme_uuid)
 
     @property
     def display_icon(self) -> Asset:

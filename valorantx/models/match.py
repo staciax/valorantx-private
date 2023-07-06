@@ -147,7 +147,7 @@ class MatchInfo:
         self._is_ranked: bool = data['isRanked']
         self._is_match_sampled: bool = data['isMatchSampled']
         self.season_id: str = data['seasonId']
-        self._season: Optional[Season] = self._client.valorant_api.get_season(uuid=self.season_id)
+        self._season: Optional[Season] = self._client.valorant_api.get_season(self.season_id)
         self.completion_state: str = data['completionState']
         self.platform_type: str = data['platformType']
         self.premier_match_info: Any = data['premierMatchInfo']
@@ -543,7 +543,7 @@ class FinishingDamage:
     @property
     def item(self) -> Optional[Any]:
         """:class:`Weapon` Returns the weapon used to kill the player."""
-        return self.match._client.valorant_api.get_weapon(uuid=self._item_uuid.lower())
+        return self.match._client.valorant_api.get_weapon(self._item_uuid.lower())
 
     def is_secondary_fire_mode(self) -> bool:
         """:class:`bool`: Whether the item was used in secondary fire mode."""
@@ -661,14 +661,14 @@ class Economy:
         """:class:`Weapon`: The weapon used by the player."""
         if self._weapon is None:
             return None
-        return self.match._client.valorant_api.get_weapon(uuid=self._weapon.lower())
+        return self.match._client.valorant_api.get_weapon(self._weapon.lower())
 
     @property
     def armor(self) -> Optional[Gear]:
         """:class:`Gear`: The armor used by the player."""
         if self._armor is None:
             return None
-        return self.match._client.valorant_api.get_gear(uuid=self._armor.lower())
+        return self.match._client.valorant_api.get_gear(self._armor.lower())
 
 
 class RoundDamage:
@@ -1067,7 +1067,7 @@ class MatchPlayer(User):  # Player
         self.party_id: str = data['partyId']
         self.party: Party = Party(data['partyId'], match)
         self._character_id = data['characterId']
-        self.agent: Optional[Agent] = match._client.valorant_api.get_agent(uuid=self._character_id)
+        self.agent: Optional[Agent] = match._client.valorant_api.get_agent(self._character_id)
         self.stats: PlayerStats = PlayerStats(self.agent, data['stats'])
         self.round_damage: List[RoundDamage] = []
         if data['roundDamage'] is not None:
@@ -1076,10 +1076,10 @@ class MatchPlayer(User):  # Player
             season_id=match.match_info.season_id, tier=data['competitiveTier']
         )
         self._is_observer: bool = data['isObserver']
-        self.player_card: Optional[PlayerCard] = match._client.valorant_api.get_player_card(uuid=data['playerCard'])
-        self.player_title: Optional[PlayerTitle] = match._client.valorant_api.get_player_title(uuid=data['playerTitle'])
+        self.player_card: Optional[PlayerCard] = match._client.valorant_api.get_player_card(data['playerCard'])
+        self.player_title: Optional[PlayerTitle] = match._client.valorant_api.get_player_title(data['playerTitle'])
         self.preferred_level_border: Optional[LevelBorder] = match._client.valorant_api.get_level_border(
-            uuid=data.get('preferredLevelBorder', None)
+            data.get('preferredLevelBorder', None)
         )
         self.account_level: int = data['accountLevel']
         self.session_playtime_minutes: int = data.get('sessionPlaytimeMinutes', 0)

@@ -89,7 +89,7 @@ class Season(BaseModel):
     @property
     def parent(self) -> Optional[Season]:
         """:class: `Season` Returns the season's parent."""
-        return self._state.get_season(uuid=self._parent_uuid)
+        return self._state.get_season(self._parent_uuid)
 
     # @classmethod
     # def _from_uuid(cls, client: Client, uuid: str) -> Optional[Self]:
@@ -140,9 +140,9 @@ class CompetitiveSeason(BaseModel):
         if data['borders'] is not None:
             self.borders = [Border(state=self._state, data=border) for border in data['borders']]
         self.asset_path: str = data['assetPath']
-        self._season: Optional[Season] = self._state.get_season(uuid=self.season_uuid)
+        self._season: Optional[Season] = self._state.get_season(self.season_uuid)
         self._competitive_tiers: Optional[CompetitiveTier] = self._state.get_competitive_tier(
-            uuid=self.competitive_tiers_uuid
+            self.competitive_tiers_uuid
         )
 
     def __repr__(self) -> str:

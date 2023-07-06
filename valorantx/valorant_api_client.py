@@ -60,58 +60,58 @@ class Client(ClientValorantAPI):
 
     if TYPE_CHECKING:
 
-        def get_buddy(self, uuid: str) -> Optional[Buddy]:
+        def get_buddy(self, uuid: str, /) -> Optional[Buddy]:
             ...
 
-        def get_buddy_level(self, uuid: str) -> Optional[BuddyLevel]:
+        def get_buddy_level(self, uuid: str, /) -> Optional[BuddyLevel]:
             ...
 
         # weapons
 
-        def get_weapon(self, uuid: str) -> Optional[Weapon]:
+        def get_weapon(self, uuid: str, /) -> Optional[Weapon]:
             ...
 
-        def get_skin(self, uuid: str) -> Optional[Skin]:
+        def get_skin(self, uuid: str, /) -> Optional[Skin]:
             ...
 
-        def get_skin_level(self, uuid: str) -> Optional[SkinLevel]:
+        def get_skin_level(self, uuid: str, /) -> Optional[SkinLevel]:
             ...
 
-        def get_skin_chroma(self, uuid: str) -> Optional[SkinChroma]:
+        def get_skin_chroma(self, uuid: str, /) -> Optional[SkinChroma]:
             ...
 
         # sprays
 
-        def get_spray(self, uuid: str) -> Optional[Spray]:
+        def get_spray(self, uuid: str, /) -> Optional[Spray]:
             ...
 
-        def get_spray_level(self, uuid: str) -> Optional[SprayLevel]:
+        def get_spray_level(self, uuid: str, /) -> Optional[SprayLevel]:
             ...
 
         # player cards
 
-        def get_player_card(self, uuid: str) -> Optional[PlayerCard]:
+        def get_player_card(self, uuid: str, /) -> Optional[PlayerCard]:
             ...
 
         # player titles
 
-        def get_player_title(self, uuid: str) -> Optional[PlayerTitle]:
+        def get_player_title(self, uuid: str, /) -> Optional[PlayerTitle]:
             ...
 
         # level borders
 
-        def get_level_border(self, uuid: str) -> Optional[LevelBorder]:
+        def get_level_border(self, uuid: str, /) -> Optional[LevelBorder]:
             ...
 
     # custom
 
-    def get_map_by_url(self, url: str) -> Optional[Map]:
+    def get_map_by_url(self, url: str, /) -> Optional[Map]:
         for map in self.cache.maps:
             if map.url == url:
                 return map
         return None
 
-    def get_game_mode_by_url(self, url: str) -> Optional[GameMode]:
+    def get_game_mode_by_url(self, url: str, /) -> Optional[GameMode]:
         if url == '/Game/GameModes/Bomb/BombGameMode.BombGameMode_C':
             return self.get_game_mode('96bd3920-4f36-d026-2b28-c683eb0bcac5')
         elif url == '/Game/GameModes/Deathmatch/DeathmatchGameMode.DeathmatchGameMode_C':
@@ -135,7 +135,7 @@ class Client(ClientValorantAPI):
             return self.get_game_mode('5d0f264b-4ebe-cc63-c147-809e1374484b')
         return None
 
-    def get_competitive_season_by_season_id(self, season_id: str) -> Optional[CompetitiveSeason]:
+    def get_competitive_season_by_season_id(self, season_id: str, /) -> Optional[CompetitiveSeason]:
         for ss_com in self.competitive_seasons:
             if ss_com.season is None:
                 continue
