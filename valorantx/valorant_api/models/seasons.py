@@ -141,9 +141,7 @@ class CompetitiveSeason(BaseModel):
             self.borders = [Border(state=self._state, data=border) for border in data['borders']]
         self.asset_path: str = data['assetPath']
         self._season: Optional[Season] = self._state.get_season(self.season_uuid)
-        self._competitive_tiers: Optional[CompetitiveTier] = self._state.get_competitive_tier(
-            self.competitive_tiers_uuid
-        )
+        self._competitive_tiers: Optional[CompetitiveTier] = self._state.get_competitive_tier(self.competitive_tiers_uuid)
 
     def __repr__(self) -> str:
         attrs = [
