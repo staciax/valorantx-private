@@ -113,16 +113,10 @@ class MatchHistory:
 
     async def fetch_details(self) -> None:
         """:class:`List[MatchDetails]`: Fetches the match details for each match in the history."""
-
-        future_tasks = []
-        for match in self._history:
-            match_id = match['MatchID']
-            # queue_id = match['QueueID']
-            # start_time = match['GameStartTime']
-            future_tasks.append(asyncio.ensure_future(self._client.fetch_match_details(match_id)))
-        future_tasks = await asyncio.gather(*future_tasks)
-        for future in future_tasks:
-            self._match_details[future.id] = future
+        future_tasks = [asyncio.ensure_future(self._client.fetch_match_details(match['MatchID'])) for match in self._history]
+        results = asyncio.gather(*future_tasks)
+        for match in results:
+            self._match_details[match.id] = match
 
 
 class MatchInfo:
