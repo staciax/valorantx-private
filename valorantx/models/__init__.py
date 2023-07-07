@@ -10,6 +10,7 @@ from .content_tiers import *
 from .contracts import *
 from .coregame import *
 from .currencies import *
+from .daily_ticket import *
 from .events import *
 from .gamemodes import *
 from .gear import *

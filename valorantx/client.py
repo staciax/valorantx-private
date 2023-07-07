@@ -15,6 +15,7 @@ from .models.account_xp import AccountXP
 from .models.content import Content
 from .models.contracts import Contracts
 from .models.coregame import CoreGameMatch, CoreGamePlayer
+from .models.daily_ticket import DailyTicket
 from .models.favorites import Favorites
 from .models.loadout import Loadout
 from .models.match import MatchDetails, MatchHistory
@@ -658,3 +659,13 @@ class Client:
             roster_id = (await self.fetch_premier_player()).roster_id
         data = await self.http.get_premier_roster_v2(roster_id)
         return Roster(self, data)
+
+    # daily ticket
+
+    @_authorize_required
+    async def fetch_daily_ticket(self, *, renew: bool = False) -> DailyTicket:
+        if renew:
+            data = await self.http.post_daily_ticket()
+        else:
+            data = await self.http.get_daily_ticket()
+        return DailyTicket(self, data)

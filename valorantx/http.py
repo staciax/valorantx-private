@@ -52,6 +52,7 @@ if TYPE_CHECKING:
         content,
         contracts,
         coregame,
+        daily_ticket,
         favorites,
         loadout,
         match,
@@ -1408,6 +1409,16 @@ class HTTPClient:
             'https://euc1-red.pp.sgp.pvp.net/tournaments-query/v1/product/VALORANT/tournaments/{tournament_id}/overview',
             tournament_id=tournament_id,
         )
+        return self.request(r)
+
+    # daily checkin endpoints
+
+    def get_daily_ticket(self) -> Response[daily_ticket.DailyTicket]:
+        r = Route('GET', '/daily-ticket/v1/{puuid}', self.region, EndpointType.pd, puuid=self.puuid)
+        return self.request(r)
+
+    def post_daily_ticket(self) -> Response[daily_ticket.DailyTicket]:
+        r = Route('POST', '/daily-ticket/v1/{puuid}/renew', self.region, EndpointType.pd, puuid=self.puuid)
         return self.request(r)
 
     # local endpoints
