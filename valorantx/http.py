@@ -141,13 +141,14 @@ class HTTPClient:
         ).encode()
     ).decode()
 
-    def __init__(self, loop: asyncio.AbstractEventLoop, *, region: Region) -> None:
+    def __init__(self, loop: asyncio.AbstractEventLoop, *, region: Region, re_authorize: bool) -> None:
         self.loop: asyncio.AbstractEventLoop = loop
         self._session: aiohttp.ClientSession = MISSING
         self._headers: Dict[str, Any] = {}
         self.riot_auth: RiotAuth = RiotAuth()
         self._puuid: Optional[str] = None
         self.region: Region = region
+        self.re_authorize: bool = re_authorize
 
     @property
     def puuid(self) -> Optional[str]:
@@ -183,14 +184,15 @@ class HTTPClient:
                         return data
 
                     if response.status == 400:
-                        if tries < 4:
-                            try:
-                                await self.riot_auth.reauthorize()
-                            except RiotAuthenticationError:
-                                ...
-                            else:
-                                await self.__build_headers()
-                                continue
+                        if tries < 4 and self.re_authorize:
+                            if isinstance(data, dict) and data.get('errorCode') == 'BAD_CLAIMS':
+                                try:
+                                    await self.riot_auth.reauthorize()
+                                except RiotAuthenticationError:
+                                    ...
+                                else:
+                                    await self.__build_headers()
+                                    continue
                         raise BadRequest(response, data)
 
                     # we are being rate limited

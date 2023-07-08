@@ -93,6 +93,7 @@ class Client:
         *,
         region: Region = MISSING,
         locale: Locale = Locale.american_english,
+        re_authorize: bool = True,
     ) -> None:
         if region is MISSING:
             _log.warning(
@@ -104,8 +105,9 @@ class Client:
             _log.info('You are using the Public Beta Environment (PBE) server. Are you sure?')
         self.region: Region = region
         self.locale: Locale = locale
+        self.re_authorize: bool = re_authorize
         self.loop: asyncio.AbstractEventLoop = _loop
-        self.http: HTTPClient = HTTPClient(self.loop, region=region)
+        self.http: HTTPClient = HTTPClient(self.loop, region=region, re_authorize=re_authorize)
         self.valorant_api: ValorantAPIClient = ValorantAPIClient(self.http._session, self.locale)
         self.me: ClientUser = MISSING
         self._closed: bool = False
