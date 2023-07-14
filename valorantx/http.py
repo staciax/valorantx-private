@@ -810,7 +810,7 @@ class HTTPClient:
         Changes the party accessibility to be open or closed
         """
         r = Route('POST', '/parties/v1/parties/{party_id}/accessibility', self.region, EndpointType.glz, party_id=party_id)
-        payload = {"accessibility": ("OPEN" if open_join else "CLOSED")}
+        payload = {'accessibility': ('OPEN' if open_join else 'CLOSED')}
         return self.request(r, json=payload)
 
     def post_party_custom_game_settings(self, party_id: str, settings: Mapping) -> Response[Mapping[str, Any]]:
