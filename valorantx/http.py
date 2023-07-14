@@ -144,7 +144,6 @@ class HTTPClient:
     def __init__(self, loop: asyncio.AbstractEventLoop, *, region: Region, re_authorize: bool) -> None:
         self.loop: asyncio.AbstractEventLoop = loop
         self._session: aiohttp.ClientSession = MISSING
-        self._headers: Dict[str, Any] = {}
         self.riot_auth: RiotAuth = RiotAuth()
         self._puuid: Optional[str] = None
         self.region: Region = region
@@ -162,8 +161,14 @@ class HTTPClient:
         method = route.method
         url = route.url
         exceptions: Optional[Dict[int, str]] = kwargs.pop('exceptions', None)
-        if 'headers' not in kwargs:
-            kwargs['headers'] = self._headers
+
+        headers = await self.__build_headers()
+
+        if 'json' in kwargs:
+            headers['Content-Type'] = 'application/json'
+            kwargs['data'] = utils._to_json(kwargs.pop('json'))
+
+        kwargs['headers'] = headers
 
         response: Optional[aiohttp.ClientResponse] = None
         data: Optional[Union[Dict[str, Any], str]] = None
@@ -191,7 +196,8 @@ class HTTPClient:
                                 except RiotAuthenticationError:
                                     ...
                                 else:
-                                    await self.__build_headers()
+                                    if 'headers' in kwargs:
+                                        kwargs['headers'].update(await self.__build_headers())
                                     continue
                         raise BadRequest(response, data)
 
@@ -1431,14 +1437,15 @@ class HTTPClient:
         """if puuid passed into method is None make it current user's puuid"""
         return self._puuid if puuid is None else puuid  # type: ignore
 
-    async def __build_headers(self) -> None:
+    async def __build_headers(self) -> Dict[str, Any]:
         # if self.riot_client_version is None:
         # self.riot_client_version = await self._get_current_version()
-
-        self._headers['Authorization'] = 'Bearer %s' % self.riot_auth.access_token
-        self._headers['X-Riot-Entitlements-JWT'] = self.riot_auth.entitlements_token
-        self._headers['X-Riot-ClientPlatform'] = HTTPClient.RIOT_CLIENT_PLATFORM
-        self._headers['X-Riot-ClientVersion'] = HTTPClient.RIOT_CLIENT_VERSION
+        return {
+            'Authorization': 'Bearer %s' % self.riot_auth.access_token,
+            'X-Riot-Entitlements-JWT': self.riot_auth.entitlements_token,
+            'X-Riot-ClientPlatform': HTTPClient.RIOT_CLIENT_PLATFORM,
+            'X-Riot-ClientVersion': HTTPClient.RIOT_CLIENT_VERSION,
+        }
 
     async def _get_current_version(self) -> str:
         ...

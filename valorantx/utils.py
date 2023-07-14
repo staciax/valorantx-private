@@ -8,6 +8,7 @@ from typing import List, Union
 
 from valorantx.valorant_api.utils import (
     MISSING as MISSING,
+    _to_json as _to_json,
     json_or_text as json_or_text,
     parse_iso_datetime as parse_iso_datetime,
 )
@@ -17,6 +18,7 @@ __all__ = (
     'calculate_level_xp',
     'is_uuid',
     'json_or_text',
+    '_to_json',
     'parse_iso_datetime',
     'percent',
 )
