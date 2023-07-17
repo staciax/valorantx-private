@@ -114,7 +114,7 @@ class MatchHistory:
     async def fetch_details(self) -> None:
         """:class:`List[MatchDetails]`: Fetches the match details for each match in the history."""
         future_tasks = [asyncio.ensure_future(self._client.fetch_match_details(match['MatchID'])) for match in self._history]
-        results = asyncio.gather(*future_tasks)
+        results = await asyncio.gather(*future_tasks)
         for match in results:
             self._match_details[match.id] = match
 
