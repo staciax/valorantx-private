@@ -44,7 +44,7 @@ class RiotAuth(_RiotAuth):
         return self.user_id or ''
 
     @property
-    def display_name(self) -> str:
+    def riot_id(self) -> str:
         if self.game_name is None or self.tag_line is None:
             return ''
         return f'{self.game_name}#{self.tag_line}'
