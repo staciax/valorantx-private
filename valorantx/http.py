@@ -160,8 +160,6 @@ class HTTPClient:
     async def request(self, route: Route, **kwargs: Any) -> Any:
         method = route.method
         url = route.url
-        exceptions: Optional[Dict[int, str]] = kwargs.pop('exceptions', None)
-
         headers = await self.__build_headers()
 
         if 'json' in kwargs:
@@ -212,9 +210,6 @@ class HTTPClient:
                     if response.status in {500, 502, 504, 524}:
                         await asyncio.sleep(1 + tries * 2)
                         continue
-
-                    if exceptions is not None and response.status in exceptions:
-                        raise HTTPException(response, data)
 
                     if response.status == 403:
                         raise Forbidden(response, data)
@@ -1024,7 +1019,7 @@ class HTTPClient:
         Get the ID of a game in the pre-game stage
         """
         r = Route('GET', '/pregame/v1/players/{puuid}', self.region, EndpointType.glz, puuid=self.puuid)
-        return self.request(r, exceptions={404: "You are not in a pre-game"})
+        return self.request(r)
 
     def get_pregame_match(self, match_id: str) -> Response[pregame.Match]:
         """
@@ -1032,7 +1027,7 @@ class HTTPClient:
         Get info for a game in the pre-game stage
         """
         r = Route('GET', '/pregame/v1/matches/{match_id}', self.region, EndpointType.glz, match_id=match_id)
-        return self.request(r, exceptions={404: "You are not in a pre-game"})
+        return self.request(r)
 
     def get_pregame_match_loadouts(self, match_id: str) -> Response[pregame.Loadouts]:
         """
@@ -1040,7 +1035,7 @@ class HTTPClient:
         Get player skins and sprays for a game in the pre-game stage
         """
         r = Route('GET', '/pregame/v1/matches/{match_id}/loadouts', self.region, EndpointType.glz, match_id=match_id)
-        return self.request(r, exceptions={404: "You are not in a pre-game"})
+        return self.request(r)
 
     def get_pregame_chat_token(self, match_id: str) -> Response[Mapping[str, Any]]:
         """
@@ -1048,7 +1043,7 @@ class HTTPClient:
         Get a chat token
         """
         r = Route('GET', '/pregame/v1/matches/{match_id}/chattoken', self.region, EndpointType.glz, match_id=match_id)
-        return self.request(r, exceptions={404: "You are not in a pre-game"})
+        return self.request(r)
 
     def get_pregame_voice_token(self, match_id: str) -> Response[Mapping[str, Any]]:
         """
@@ -1056,7 +1051,7 @@ class HTTPClient:
         Get a voice token
         """
         r = Route('GET', '/pregame/v1/matches/{match_id}/voicetoken', self.region, EndpointType.glz, match_id=match_id)
-        return self.request(r, exceptions={404: "You are not in a pre-game"})
+        return self.request(r)
 
     def post_pregame_select_character(self, match_id: str, agent_id: str) -> Response[pregame.Match]:
         """
@@ -1072,7 +1067,7 @@ class HTTPClient:
             match_id=match_id,
             agent_id=agent_id,
         )
-        return self.request(r, exceptions={404: "You are not in a pre-game"})
+        return self.request(r)
 
     def post_pregame_lock_character(self, match_id: str, agent_id: str) -> Response[pregame.Match]:
         """
@@ -1088,7 +1083,7 @@ class HTTPClient:
             match_id=match_id,
             agent_id=agent_id,
         )
-        return self.request(r, exceptions={404: "You are not in a pre-game"})
+        return self.request(r)
 
     def post_pregame_quit_match(self, match_id: str) -> Response[NoReturn]:
         """
@@ -1096,7 +1091,7 @@ class HTTPClient:
         Quit a match in the pre-game stage
         """
         r = Route('POST', '/pregame/v1/matches/{match_id}/quit', self.region, EndpointType.glz, match_id=match_id)
-        return self.request(r, exceptions={404: "You are not in a pre-game"})
+        return self.request(r)
 
     # live game endpoints
 
@@ -1106,7 +1101,7 @@ class HTTPClient:
         Get the game ID for an ongoing game the player is in
         """
         r = Route('GET', '/core-game/v1/players/{puuid}', self.region, EndpointType.glz, puuid=self.puuid)
-        return self.request(r, exceptions={404: "You are not in a core-game"})
+        return self.request(r)
 
     def get_coregame_match(self, match_id: str) -> Response[coregame.Match]:
         """
@@ -1114,7 +1109,7 @@ class HTTPClient:
         Get information about an ongoing game
         """
         r = Route('GET', '/core-game/v1/matches/{match_id}', self.region, EndpointType.glz, match_id=match_id)
-        return self.request(r, exceptions={404: "You are not in a core-game"})
+        return self.request(r)
 
     def get_coregame_match_loadouts(self, match_id: str) -> Response[coregame.Loaouts]:
         """
@@ -1122,7 +1117,7 @@ class HTTPClient:
         Get player skins and sprays for an ongoing game
         """
         r = Route('GET', '/core-game/v1/matches/{match_id}/loadouts', self.region, EndpointType.glz, match_id=match_id)
-        return self.request(r, exceptions={404: "You are not in a core-game"})
+        return self.request(r)
 
     def get_coregame_team_chat_muc_token(self, match_id: str) -> Response[Mapping[str, Any]]:
         """
@@ -1132,7 +1127,7 @@ class HTTPClient:
         r = Route(
             'GET', '/core-game/v1/matches/{match_id}/teamchatmuctoken', self.region, EndpointType.glz, match_id=match_id
         )
-        return self.request(r, exceptions={404: "You are not in a core-game"})
+        return self.request(r)
 
     def get_coregame_all_chat_muc_token(self, match_id: str) -> Response[Mapping[str, Any]]:
         """
@@ -1142,7 +1137,7 @@ class HTTPClient:
         r = Route(
             'GET', '/core-game/v1/matches/{match_id}/allchatmuctoken', self.region, EndpointType.glz, match_id=match_id
         )
-        return self.request(r, exceptions={404: "You are not in a core-game"})
+        return self.request(r)
 
     def get_coregame_disassociate_player(self, match_id: str) -> Response[Mapping[str, Any]]:
         """
@@ -1157,7 +1152,7 @@ class HTTPClient:
             puuid=self.puuid,
             match_id=match_id,
         )
-        return self.request(r, exceptions={404: "You are not in a core-game"})
+        return self.request(r)
 
     # premier endpoints
 
