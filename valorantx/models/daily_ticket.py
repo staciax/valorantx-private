@@ -57,7 +57,7 @@ class ProcessedMatch:
         self.was_penalized: bool = data['WasPenalized']
         self.bonuses_applied: int = data['BonusesApplied']
         self.daily_bonus_state: List[bool] = data['DailyBonusState']
-        self.reward_grants: Optional[Any] = data['RewardGrants']
+        self.reward_grants: Optional[Any] = data.get('RewardGrants')
 
     def __repr__(self) -> str:
         return f'<ProcessedMatch id={self.id} progress_before={self.progress_before} progress_after={self.progress_after} xp={self.xp} soft_currency={self.soft_currency} was_penalized={self.was_penalized} bonuses_applied={self.bonuses_applied} daily_bonus_state={self.daily_bonus_state} reward_grants={self.reward_grants}>'

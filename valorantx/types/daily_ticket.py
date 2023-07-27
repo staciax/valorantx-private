@@ -1,4 +1,9 @@
-from typing import Any, List, Optional, TypedDict
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, List, Optional, TypedDict
+
+if TYPE_CHECKING:
+    from typing_extensions import NotRequired
 
 
 class Milestone(TypedDict):
@@ -21,7 +26,7 @@ class ProcessedMatch(TypedDict):
     WasPenalized: bool
     BonusesApplied: int
     DailyBonusState: List[bool]
-    RewardGrants: Optional[Any]
+    RewardGrants: NotRequired[Optional[Any]]  # not sure
 
 
 class DailyTicket(TypedDict):
