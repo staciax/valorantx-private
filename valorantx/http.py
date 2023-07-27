@@ -160,7 +160,8 @@ class HTTPClient:
     async def request(self, route: Route, **kwargs: Any) -> Any:
         method = route.method
         url = route.url
-        headers = await self.__build_headers()
+
+        headers = kwargs.pop('headers', await self.__build_headers())
 
         if 'json' in kwargs:
             headers['Content-Type'] = 'application/json'
