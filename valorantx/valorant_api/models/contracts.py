@@ -112,7 +112,10 @@ class Chapter:
 class Content:
     def __init__(self, state: CacheState, data: ContentPayload) -> None:
         self._state: CacheState = state
-        self.relation_type: RelationType = try_enum(RelationType, data['relationType'])
+        if data['relationType'] is None:
+            self.relation_type: RelationType = RelationType.none
+        else:
+            self.relation_type = try_enum(RelationType, data['relationType'])
         self._relation_uuid: Optional[str] = data['relationUuid']
         self._chapters: List[Chapter] = [
             Chapter(self._state, chapter, index) for index, chapter in enumerate(data['chapters'])

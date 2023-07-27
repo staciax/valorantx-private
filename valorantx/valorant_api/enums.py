@@ -190,6 +190,7 @@ class RelationType(Enum):
     agent = 'Agent'
     event = 'Event'
     season = 'Season'
+    none = 'None'
 
     def __str__(self) -> str:
         return str(self.value)
