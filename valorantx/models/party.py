@@ -69,7 +69,11 @@ class PartyPlayer:
 
     async def fetch_party(self) -> Party:
         return await self._client.fetch_party(self.current_party_id)
-
+    
+    def get_party(self) -> Party:
+        party = Party(self._client, {'Version': 0})  # type: ignore
+        party.id = self.current_party_id
+        return party
 
 class PlayerIdentity:
     def __init__(self, client: Client, data: PlayerIdentityPayload) -> None:
@@ -110,15 +114,16 @@ class Ping:
 
 
 class PartyMember:
-    def __init__(self, client: Client, data: MemberPayload) -> None:
-        self._client = client
+    def __init__(self, party: Party, data: MemberPayload) -> None:
+        self._client = party._client
+        self._party = party
         self._game_name: Optional[str] = None
         self._tag_line: Optional[str] = None
         self.subject: str = data['Subject']
         self._competitive_tier: int = data['CompetitiveTier']
-        self.identity: PlayerIdentity = PlayerIdentity(client, data['PlayerIdentity'])
+        self.identity: PlayerIdentity = PlayerIdentity(self._client, data['PlayerIdentity'])
         self.seasonal_badge_info: Optional[Any] = data['SeasonalBadgeInfo']
-        self._is_owner: bool = data['IsOwner']
+        self._is_owner: bool = data.get('IsOwner', False)
         self.queue_eligible_remaining_account_levels: int = data['QueueEligibleRemainingAccountLevels']
         self.pings: List[Ping] = [Ping(ping) for ping in data['Pings']]
         self._is_ready: bool = data['IsReady']
@@ -180,7 +185,9 @@ class PartyMember:
         if tag_line is not None:
             self._tag_line = tag_line
 
-
+    async def kick(self) -> None:
+        await self._party.kick_member(self.id)
+        
 class CustomGameRules:
     def __init__(self, data: CustomGameRulesPayload) -> None:
         self.allow_game_modifiers: Optional[str] = data.get('AllowGameModifiers')
@@ -314,6 +321,8 @@ class Party:
         self._update(data)
 
     def _update(self, data: PartyPayload) -> None:
+        if data['Version'] == 0:
+            return
         self.id: str = data['ID']
         self.muc_name: str = data['MUCName']
         self.voice_room_id: str = data['VoiceRoomID']
@@ -342,7 +351,7 @@ class Party:
         members: Dict[str, PartyMember] = {}
         if data['Members'] is not None:
             for m in data['Members']:
-                member = PartyMember(self._client, m)
+                member = PartyMember(self, m)
                 if member_cache := self.get_member(member.id):
                     member.update_riot_id(member_cache.game_name, member_cache.tag_line)
                 members[member.id] = member
@@ -352,6 +361,10 @@ class Party:
     def members(self) -> List[PartyMember]:
         """List[:class:`PartyMember`]: A list of the party's members."""
         return list(self._members.values())
+    
+    def is_closed(self) -> bool:
+        """:class:`bool`: Whether the party is closed."""
+        return self._closed
 
     async def refresh(self) -> Self:
         """|coro|
@@ -391,8 +404,7 @@ class Party:
             The player's tag line.
         """
         data = await self._client.http.post_party_invite_by_display_name(party_id=self.id, name=game_name, tag=tag_line)
-        if data['Version'] != 0:
-            self._update(data)
+        self._update(data)
 
     async def remove_member(self, member: PartyMember, /) -> None:
         """|coro|
@@ -415,6 +427,10 @@ class Party:
         if queue_id not in self.eligible_queues:
             raise ValueError(f'Queue ID {queue_id} is not eligible for this party.')
         data = await self._client.http.post_party_queue(party_id=self.id, queue_id=queue_id)
+        self._update(data)
+        
+    async def set_ready(self, ready: bool) -> None:
+        data = await self._client.http.post_party_member_set_ready(self.id, ready)
         self._update(data)
 
     async def enter_matchmaking(self) -> None:
@@ -448,10 +464,43 @@ class Party:
         """
         data = await self._client.http.post_party_refresh_pings(party_id=self.id)
         self._update(data)
+    
+    async def refresh_competitive_tier(self) -> None:
+        data = await self._client.http.post_party_refresh_competitive_tier(self.id)
+        self._update(data)
 
-    def is_closed(self) -> bool:
-        """:class:`bool`: Whether the party is closed."""
-        return self._closed
+    async def kick_member(self, puuid: str, /) -> None:
+        """|coro|
+
+        Kick a member from the party.
+
+        Parameters
+        ----------
+        member: :class:`PartyMember`
+            The member to kick.
+
+        Raises
+        ------
+        :exc:`HTTPException`
+            Failed to kick the member.
+        :exc:`Forbidden`
+            You do not have permission to kick the member.
+        """
+        data = await self._client.http.delete_party_leave_from_party(party_id=self.id, puuid=puuid)
+        self._update(data)
+    
+    async def transfer_owner(self, member: PartyMember, /) -> None:
+        """|coro|
+        
+        Transfer the ownership of the party to a member.
+
+        Parameters
+        ----------
+        member: :class:`PartyMember`
+            The member to transfer ownership to.
+        """
+        data = await self._client.http.post_party_transfer_owner(party_id=self.id, puuid=member.id)
+        self._update(data)
 
     async def refresh_member_riot_id(self) -> None:
         """|coro|
