@@ -117,6 +117,7 @@ class Client:
         self._version: Version = MISSING
         self._season: Season = MISSING
         self._act: Season = MISSING
+        self._configs: Dict[Region, Config] = {}
         self._tasks: Dict[str, asyncio.Task[Any]] = {}
 
     async def __aenter__(self) -> Self:
@@ -142,6 +143,31 @@ class Client:
     @property
     def act(self) -> Season:
         return self._act
+
+    @property
+    def is_pbe(self) -> bool:
+        return self.region is Region.PBE
+
+    @property
+    def configs(self) -> Dict[Region, Config]:
+        return self._configs
+
+    def get_config(self, region: Optional[Region] = None) -> Optional[Config]:
+        """Gets the config for the given region.
+
+        Parameters
+        ----------
+        region: Optional[:class:`Region`]
+            The region to get the config for.
+
+        Returns
+        -------
+        Optional[:class:`Config`]
+            The config for the given region.
+        """
+        if region is None:
+            region = self.region
+        return self._configs.get(region)
 
     async def wait_until_ready(self) -> None:
         """|coro|
@@ -213,6 +239,15 @@ class Client:
                     self._season = season
                 elif season_content.type == SeasonType.act:
                     self._act = season
+
+        # fetch configs
+        for region in Region:
+            if region is Region.PBE:
+                continue
+            if region is self._configs:
+                continue
+            config = await self.fetch_config(region)
+            self._configs[region] = config
 
         self._ready.set()
 
