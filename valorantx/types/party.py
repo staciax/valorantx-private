@@ -42,7 +42,7 @@ class Member(TypedDict):
     CompetitiveTier: int
     PlayerIdentity: PlayerIdentity
     SeasonalBadgeInfo: Optional[Any]
-    IsOwner: bool
+    IsOwner: NotRequired[bool]
     QueueEligibleRemainingAccountLevels: int
     Pings: List[Ping]
     IsReady: bool

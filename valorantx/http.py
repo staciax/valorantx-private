@@ -698,7 +698,7 @@ class HTTPClient:
         r = Route('GET', '/parties/v1/parties/{party_id}', self.region, EndpointType.glz, party_id=party_id)
         return self.request(r)
 
-    def post_party_member_set_ready(self, party_id: str, ready: bool) -> Response[Mapping[str, Any]]:
+    def post_party_member_set_ready(self, party_id: str, ready: bool) -> Response[party.Party]:
         """
         Party_SetMemberReady
         Sets whether a party member is ready for queueing or not
@@ -714,7 +714,7 @@ class HTTPClient:
         payload = {'ready': ready}
         return self.request(r, json=payload)
 
-    def post_party_refresh_competitive_tier(self, party_id: str) -> Response[Mapping[str, Any]]:
+    def post_party_refresh_competitive_tier(self, party_id: str) -> Response[party.Party]:
         """
         Party_RefreshCompetitiveTier
         Refreshes the competitive tier for a player
@@ -862,7 +862,7 @@ class HTTPClient:
         payload = {'Subjects': [other_puuid]}
         return self.request(r, json=payload)
 
-    def post_party_decline_request(self, party_id: str, request_id: str) -> Response[Mapping[str, Any]]:
+    def post_party_decline_request(self, party_id: str, request_id: str) -> Response[party.Party]:
         """
         Party_DeclineRequest
         Declines a party request
@@ -932,7 +932,7 @@ class HTTPClient:
         r = Route('GET', '/parties/v1/parties/{party_id}/voicetoken', self.region, EndpointType.glz, party_id=party_id)
         return self.request(r)
 
-    def post_party_transfer_owner(self, party_id: str, puuid: str) -> Response[Mapping[str, Any]]:
+    def post_party_transfer_owner(self, party_id: str, puuid: str) -> Response[party.Party]: # TODO: not sure
         """
         Party_TransferOwner
         Transfer party ownership
@@ -947,7 +947,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def delete_party_leave_from_party(self, party_id: str, puuid: str) -> Response[Mapping[str, Any]]:
+    def delete_party_leave_from_party(self, party_id: str, puuid: str) -> Response[party.Party]:  # TODO: not sure
         """
         Party_LeaveFromParty
         Kick a player from the party
