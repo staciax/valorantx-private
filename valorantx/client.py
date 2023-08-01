@@ -145,10 +145,6 @@ class Client:
         return self._act
 
     @property
-    def is_pbe(self) -> bool:
-        return self.region is Region.PBE
-
-    @property
     def configs(self) -> Dict[Region, Config]:
         return self._configs
 
