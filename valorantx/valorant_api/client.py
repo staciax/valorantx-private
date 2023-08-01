@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from typing import TYPE_CHECKING, List, Optional, Type
 
 import aiohttp
@@ -36,6 +37,8 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
 
+_log = logging.getLogger(__name__)
+
 
 class Client:
     def __init__(self, session: aiohttp.ClientSession = MISSING, locale: Locale = Locale.american_english) -> None:
@@ -62,6 +65,12 @@ class Client:
         await self.http.init()
         await self.cache.init()
         self._ready.set()
+        _log.info('client initialized')
+
+    async def reload(self) -> None:
+        self.cache.clear()
+        await self.cache.init()
+        _log.info('client reloaded')
 
     def is_closed(self) -> bool:
         return self._closed
@@ -73,7 +82,12 @@ class Client:
         if self._closed:
             return
         self._closed = True
+        if self._ready is not MISSING:
+            self._ready.clear()
+
+        self.cache.clear()
         await self.http.close()
+        _log.info('client closed')
 
     def clear(self) -> None:
         self._closed = False

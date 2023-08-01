@@ -225,8 +225,8 @@ class Client:
             return
         self._closed = True
 
-        await self.http.close()
         await self.valorant_api.close()
+        await self.http.close()
         if self._ready is not MISSING:
             self._ready.clear()
 
