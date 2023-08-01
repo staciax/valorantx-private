@@ -12,6 +12,7 @@ from .enums import Locale, QueueType, Region, SeasonType, try_enum
 from .errors import RiotAuthRequired
 from .http import HTTPClient
 from .models.account_xp import AccountXP
+from .models.config import Config
 from .models.content import Content
 from .models.contracts import Contracts
 from .models.coregame import CoreGameMatch, CoreGamePlayer
@@ -337,6 +338,22 @@ class Client:
         data = await self.http.get_patch_notes(locale)
 
         return PatchNotes(state=self.valorant_api.cache, data=data, locale=locale)
+
+    # config
+
+    @_authorize_required
+    async def fetch_config(self, region: Optional[Region] = None) -> Config:
+        """|coro|
+
+        Fetches the config for the current user.
+
+        Returns
+        -------
+        :class:`Config`
+            The config for the current user.
+        """
+        data = await self.http.get_config(region)
+        return Config(data)
 
     # name service endpoints
 

@@ -49,6 +49,7 @@ if TYPE_CHECKING:
 
     from .types import (
         account_xp,
+        config,
         content,
         contracts,
         coregame,
@@ -509,12 +510,15 @@ class HTTPClient:
         """
         return self.request(Route('GET', '/contract-definitions/v2/item-upgrades', self.region, EndpointType.pd))
 
-    def get_config(self) -> Response[Mapping[str, Any]]:
+    def get_config(self, region: Optional[Region]) -> Response[config.Config]:
         """
         Config_FetchConfig
         Get various internal game configuration settings set by Riot
         """
-        return self.request(Route('GET', '/v1/config/{region}', self.region, EndpointType.shard))
+        region = region or self.region
+        return self.request(
+            Route('GET', '/v1/config/{config_region}', region, EndpointType.shard, config_region=region.value),
+        )
 
     def get_name_service_players(self, puuid: Union[List[str], str]) -> Response[List[name_service.NameServive]]:
         """

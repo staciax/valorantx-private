@@ -5,6 +5,7 @@ from .buddies import *
 from .bundles import *
 from .ceremonies import *
 from .competitive_tiers import *
+from .config import *
 from .content import *
 from .content_tiers import *
 from .contracts import *
