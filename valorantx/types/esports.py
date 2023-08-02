@@ -66,7 +66,7 @@ class Match(TypedDict):
     Streams: Optional[Any]
 
 
-class ScheduleForLeague(TypedDict):
+class ScheduleLeague(TypedDict):
     LeagueID: str
     LeagueName: str
     TournamentID: str

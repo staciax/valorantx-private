@@ -17,7 +17,7 @@ from .models.content import Content
 from .models.contracts import Contracts
 from .models.coregame import CoreGameMatch, CoreGamePlayer
 from .models.daily_ticket import DailyTicket
-from .models.esports import ScheduleForLeague, TournamentStanding
+from .models.esports import ScheduleLeague, TournamentStanding
 from .models.favorites import Favorites
 from .models.loadout import Loadout
 from .models.match import MatchDetails, MatchHistory
@@ -730,9 +730,9 @@ class Client:
         tournament_id: str,
         *,
         locale: Locale = Locale.american_english,
-    ) -> ScheduleForLeague:
+    ) -> ScheduleLeague:
         data = await self.http.get_epsport_schedule(league_id, tournament_id, locale=locale.value)
-        schedule = ScheduleForLeague(self, data)
+        schedule = ScheduleLeague(self, data)
         await schedule.refresh_teams()
         return schedule
 

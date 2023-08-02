@@ -1437,7 +1437,7 @@ class HTTPClient:
         league_id: str,
         tournament_id: str,
         locale: Optional[str] = None,
-    ) -> Response[esports.ScheduleForLeague]:
+    ) -> Response[esports.ScheduleLeague]:
         r = Route(
             'GET',
             '/esports-service/v1/league/{league_id}/tournament/{tournament_id}/schedule'

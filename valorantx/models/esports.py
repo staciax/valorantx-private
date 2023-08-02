@@ -14,13 +14,28 @@ if TYPE_CHECKING:
         Match as MatchPayload,
         Player as PlayerPayload,
         Record as RecordPayload,
-        ScheduleForLeague as ScheduleForLeaguePayload,
+        ScheduleLeague as ScheduleLeaguePayload,
         Standing as StandingPayload,
         StandingBracket as StandingBracketPayload,
         Team as TeamPayload,
         TournamentSection as TournamentSectionPayload,
         TournamentStanding as TournamentStandingPayload,
     )
+
+__all__ = (
+    'Bracket',
+    'Game',
+    'HomeLeague',
+    'MatchEsport',
+    'PlayerEsport',
+    'Record',
+    'ScheduleLeague',
+    'Standing',
+    'StandingBracket',
+    'TeamEsport',
+    'TournamentSection',
+    'TournamentStanding',
+)
 
 
 class Player:
@@ -147,9 +162,9 @@ class Game:
 
 
 class Match:
-    def __init__(self, client: Client, data: MatchPayload, schedule: Optional[ScheduleForLeague] = None) -> None:
+    def __init__(self, client: Client, data: MatchPayload, schedule: Optional[ScheduleLeague] = None) -> None:
         self._client: Client = client
-        self._schedule: Optional[ScheduleForLeague] = schedule
+        self._schedule: Optional[ScheduleLeague] = schedule
         self.id: str = data['ID']
         self.start_time_iso: str = data['StartTime']
         self.stage_name: str = data['StageName']
@@ -172,8 +187,8 @@ class Match:
         return self._teams.get(team_id)
 
 
-class ScheduleForLeague:
-    def __init__(self, client: Client, data: ScheduleForLeaguePayload) -> None:
+class ScheduleLeague:
+    def __init__(self, client: Client, data: ScheduleLeaguePayload) -> None:
         self._client: Client = client
         self.league_id: str = data['LeagueID']
         self.league_name: str = data['LeagueName']
@@ -301,3 +316,8 @@ class TournamentStanding:
     @property
     def end_time(self) -> datetime.datetime:
         return datetime.datetime.fromisoformat(self.end_time_iso)
+
+
+MatchEsport = Match
+PlayerEsport = Player
+TeamEsport = Team
