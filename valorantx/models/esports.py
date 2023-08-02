@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 __all__ = (
     'Bracket',
-    'Game',
+    'GameEsport',
     'HomeLeague',
     'MatchEsport',
     'PlayerEsport',
@@ -321,3 +321,4 @@ class TournamentStanding:
 MatchEsport = Match
 PlayerEsport = Player
 TeamEsport = Team
+GameEsport = Game
