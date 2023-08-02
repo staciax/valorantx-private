@@ -31,6 +31,7 @@ class Player:
         self.first_name: str = data['FirstName']
         self.last_name: str = data['LastName']
         self._image: str = data['Image']
+        self._default_image: str = 'https://static.lolesports.com/players/download.png'
         self.status: str = data['Status']
 
     def __repr__(self) -> str:
@@ -50,8 +51,14 @@ class Player:
         return self._team
 
     @property
-    def image(self) -> Asset:
+    def image(self) -> Optional[Asset]:
+        if self._image == self._default_image:
+            return None
         return Asset._from_url(self._team._client, self._image)
+
+    @property
+    def default_image(self) -> Asset:
+        return Asset._from_url(self._team._client, self._default_image)
 
 
 class Record:
