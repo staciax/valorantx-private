@@ -243,12 +243,12 @@ class HTTPClient:
         if self._session:
             await self._session.close()
 
-    async def static_login(self, username: str, password: str, *, remember: bool) -> user.PartialUser:
+    async def static_login(self, username: str, password: str) -> user.PartialUser:
         """Riot Auth login."""
         if self._session is MISSING:
             self._session = aiohttp.ClientSession()
 
-        await self.riot_auth.authorize(username.strip(), password.strip(), remember=remember)
+        await self.riot_auth.authorize(username.strip(), password.strip())
         try:
             await self.riot_auth.fetch_userinfo()  # fetch user info
         except TypeError:

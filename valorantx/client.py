@@ -293,7 +293,7 @@ class Client:
         """:class:`bool`: Whether the client is authorized."""
         return self._authorized is not MISSING and self._authorized.is_set()
 
-    async def authorize(self, username: str, password: str, *, remember: bool = False) -> None:
+    async def authorize(self, username: str, password: str) -> None:
         """|coro|
 
         Authorize the client with the given username and password.
@@ -313,7 +313,7 @@ class Client:
             await self._init()
 
         _log.info('logging using username and password')
-        data = await self.http.static_login(username, password, remember=remember)
+        data = await self.http.static_login(username, password)
         self.me = me = ClientUser(data=data)
         self._authorized.set()
         _log.info('logged as %s', me.riot_id)
