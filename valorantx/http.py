@@ -54,6 +54,7 @@ if TYPE_CHECKING:
         contracts,
         coregame,
         daily_ticket,
+        esports,
         favorites,
         loadout,
         match,
@@ -932,7 +933,7 @@ class HTTPClient:
         r = Route('GET', '/parties/v1/parties/{party_id}/voicetoken', self.region, EndpointType.glz, party_id=party_id)
         return self.request(r)
 
-    def post_party_transfer_owner(self, party_id: str, puuid: str) -> Response[party.Party]: # TODO: not sure
+    def post_party_transfer_owner(self, party_id: str, puuid: str) -> Response[party.Party]:  # TODO: not sure
         """
         Party_TransferOwner
         Transfer party ownership
@@ -1427,6 +1428,61 @@ class HTTPClient:
 
     def post_daily_ticket(self) -> Response[daily_ticket.DailyTicket]:
         r = Route('POST', '/daily-ticket/v1/{puuid}/renew', self.region, EndpointType.pd, puuid=self.puuid)
+        return self.request(r)
+
+    # esports endpoints
+
+    def get_epsport_schedule(
+        self,
+        league_id: str,
+        tournament_id: str,
+        locale: Optional[str] = None,
+    ) -> Response[esports.ScheduleForLeague]:
+        r = Route(
+            'GET',
+            '/esports-service/v1/league/{league_id}/tournament/{tournament_id}/schedule'
+            + ('?locale={locale}' if locale is not None else ''),
+            self.region,
+            EndpointType.pd,
+            league_id=league_id,
+            tournament_id=tournament_id,
+            locale=locale,
+        )
+        return self.request(r)
+
+    def get_esport_tournament_standings(
+        self,
+        tournament_id: str,
+        locale: Optional[str] = None,
+    ) -> Response[esports.TournamentStandings]:
+        # url = 'https://pd.ap.a.pvp.net/esports-service/v1/tournament/110551570691955817/standings?locale=en-US'
+
+        r = Route(
+            'GET',
+            '/esports-service/v1/tournament/{tournament_id}/standings' + ('?locale={locale}' if locale is not None else ''),
+            self.region,
+            EndpointType.pd,
+            tournament_id=tournament_id,
+            locale=locale,
+        )
+        return self.request(r)
+
+    def get_esport_teams_for_league(
+        self,
+        league_id: str,
+        tournament_id: str,
+        locale: Optional[str] = None,
+    ) -> Response[esports.Teams]:
+        r = Route(
+            'GET',
+            '/esports-service/v1/league/{league_id}/tournament/{tournament_id}/teams'
+            + ('?locale={locale}' if locale is not None else ''),
+            self.region,
+            EndpointType.pd,
+            league_id=league_id,
+            tournament_id=tournament_id,
+            locale=locale,
+        )
         return self.request(r)
 
     # local endpoints

@@ -12,6 +12,7 @@ from .contracts import *
 from .coregame import *
 from .currencies import *
 from .daily_ticket import *
+from .esports import *
 from .events import *
 from .gamemodes import *
 from .gear import *

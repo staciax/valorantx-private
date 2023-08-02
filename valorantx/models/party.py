@@ -69,11 +69,12 @@ class PartyPlayer:
 
     async def fetch_party(self) -> Party:
         return await self._client.fetch_party(self.current_party_id)
-    
+
     def get_party(self) -> Party:
         party = Party(self._client, {'Version': 0})  # type: ignore
         party.id = self.current_party_id
         return party
+
 
 class PlayerIdentity:
     def __init__(self, client: Client, data: PlayerIdentityPayload) -> None:
@@ -187,7 +188,8 @@ class PartyMember:
 
     async def kick(self) -> None:
         await self._party.kick_member(self.id)
-        
+
+
 class CustomGameRules:
     def __init__(self, data: CustomGameRulesPayload) -> None:
         self.allow_game_modifiers: Optional[str] = data.get('AllowGameModifiers')
@@ -361,7 +363,7 @@ class Party:
     def members(self) -> List[PartyMember]:
         """List[:class:`PartyMember`]: A list of the party's members."""
         return list(self._members.values())
-    
+
     def is_closed(self) -> bool:
         """:class:`bool`: Whether the party is closed."""
         return self._closed
@@ -428,7 +430,7 @@ class Party:
             raise ValueError(f'Queue ID {queue_id} is not eligible for this party.')
         data = await self._client.http.post_party_queue(party_id=self.id, queue_id=queue_id)
         self._update(data)
-        
+
     async def set_ready(self, ready: bool) -> None:
         data = await self._client.http.post_party_member_set_ready(self.id, ready)
         self._update(data)
@@ -464,7 +466,7 @@ class Party:
         """
         data = await self._client.http.post_party_refresh_pings(party_id=self.id)
         self._update(data)
-    
+
     async def refresh_competitive_tier(self) -> None:
         data = await self._client.http.post_party_refresh_competitive_tier(self.id)
         self._update(data)
@@ -488,10 +490,10 @@ class Party:
         """
         data = await self._client.http.delete_party_leave_from_party(party_id=self.id, puuid=puuid)
         self._update(data)
-    
+
     async def transfer_owner(self, member: PartyMember, /) -> None:
         """|coro|
-        
+
         Transfer the ownership of the party to a member.
 
         Parameters
