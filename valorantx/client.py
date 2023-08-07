@@ -137,13 +137,25 @@ class Client:
     def version(self) -> Version:
         return self._version
 
+    @version.setter
+    def version(self, value: Version) -> None:
+        self._version = value
+
     @property
     def season(self) -> Season:
         return self._season
 
+    @season.setter
+    def season(self, value: Season) -> None:
+        self._season = value
+
     @property
     def act(self) -> Season:
         return self._act
+
+    @act.setter
+    def act(self, value: Season) -> None:
+        self._act = value
 
     @property
     def configs(self) -> Dict[Region, Config]:
