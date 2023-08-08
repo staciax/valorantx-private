@@ -4,6 +4,12 @@ from typing import TYPE_CHECKING, Optional
 
 from valorantx.valorant_api.asset import Asset as _Asset
 
+# fmt: off
+__all__ = (
+    'Asset',
+)
+# fmt: on
+
 if TYPE_CHECKING:
     from typing_extensions import Self
 
