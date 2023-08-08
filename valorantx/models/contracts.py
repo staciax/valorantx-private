@@ -5,7 +5,7 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from valorantx.valorant_api.models.contracts import (
+from valorant.models.contracts import (
     Chapter as Chapter,
     Content as ContentValorantAPI,
     Contract as ContractValorantAPI,
@@ -26,9 +26,7 @@ from .missions import Mission, MissionMetadata
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-
-    from valorantx.valorant_api.types.contracts import Contract as ContractValorantAPIPayload
-    from valorantx.valorant_api_cache import CacheState
+    from valorant.types.contracts import Contract as ContractValorantAPIPayload
 
     from ..client import Client
     from ..types.contracts import (
@@ -39,6 +37,7 @@ if TYPE_CHECKING:
         RecruitmentProgressUpdate as RecruitmentProgressUpdatePayload,
         Reward as RewardPayload,
     )
+    from ..valorant_api_cache import CacheState
     from .agents import Agent
     from .buddies import BuddyLevel
     from .currencies import Currency

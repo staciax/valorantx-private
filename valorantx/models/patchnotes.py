@@ -4,13 +4,12 @@ import datetime
 import json
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
-from valorantx.valorant_api.asset import Asset
-
 from .. import utils
+from ..asset import Asset
 from ..enums import Locale
 
 if TYPE_CHECKING:
-    from ..valorant_api_cache import CacheState
+    from ..client import Client
 
 # fmt: off
 __all__ = (
@@ -65,8 +64,8 @@ class PageContext:
 
 
 class PatchNotes:
-    def __init__(self, *, state: CacheState, data: Any, locale: Locale) -> None:
-        self._state: CacheState = state
+    def __init__(self, *, client: Client, data: Any, locale: Locale) -> None:
+        self._client: Client = client
         self.locale: Locale = locale
         self.component_chunk_name: str = data['componentChunkName']
         self.path: str = data['path']
@@ -78,7 +77,7 @@ class PatchNotes:
 
     def __iter__(self) -> Iterator[PatchNote]:
         for node in self.result.page_data.article_nodes:
-            yield PatchNote(state=self._state, data=node, locale=self.locale)
+            yield PatchNote(state=self._client, data=node, locale=self.locale)
 
     def __len__(self) -> int:
         return len(self.patch_notes)
@@ -115,19 +114,19 @@ class PatchNotes:
     @property
     def patch_notes(self) -> List[PatchNote]:
         """:class:`List[:class:`PatchNote`]: Returns a list of patch notes."""
-        return [PatchNote(state=self._state, data=node, locale=self.locale) for node in self.result.page_data.article_nodes]
+        return [PatchNote(state=self._client, data=node, locale=self.locale) for node in self.result.page_data.article_nodes]
 
     def get_latest_patch_note(self) -> Optional[PatchNote]:
         """:class:`Optional[:class:`PatchNote`]: Returns the latest patch note."""
         if len(self.result.page_data.article_nodes) > 0:
-            return PatchNote(state=self._state, data=self.result.page_data.article_nodes[0], locale=self.locale)
+            return PatchNote(state=self._client, data=self.result.page_data.article_nodes[0], locale=self.locale)
         return None
 
 
 class PatchNote:
     BASE_URL = 'https://playvalorant.com'
 
-    def __init__(self, *, state: CacheState, data: Any, locale: Union[str, Locale]) -> None:
+    def __init__(self, *, state: Client, data: Any, locale: Union[str, Locale]) -> None:
         self._state = state
         self.locale: str = str(locale)
         self.id: str = data['id']

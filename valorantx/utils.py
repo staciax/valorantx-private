@@ -6,7 +6,7 @@ from __future__ import annotations
 import uuid
 from typing import List, Union
 
-from valorantx.valorant_api.utils import (
+from valorant.utils import (
     MISSING as MISSING,
     _to_json as _to_json,
     json_or_text as json_or_text,

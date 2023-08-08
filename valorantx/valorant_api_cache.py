@@ -4,9 +4,9 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from valorantx.valorant_api.cache import CacheState as CacheStateValorantAPI
+from valorant.cache import CacheState as CacheStateValorantAPI
 
 from .enums import ItemTypeID, Locale
 from .models.buddies import Buddy
@@ -17,12 +17,12 @@ from .models.sprays import Spray
 from .models.weapons import Weapon
 
 if TYPE_CHECKING:
-    from valorantx.valorant_api.http import HTTPClient as HTTPClientValorantAPI
-    from valorantx.valorant_api.types import buddies, level_borders, player_cards, player_titles, sprays, weapons
+    from valorant.types import buddies, level_borders, player_cards, player_titles, sprays, weapons
 
     from .models.buddies import BuddyLevel
     from .models.sprays import SprayLevel
     from .models.weapons import Skin, SkinChroma, SkinLevel
+    from .valorant_api_client import HTTPClient
 
 _log = logging.getLogger(__name__)
 
@@ -34,6 +34,8 @@ __all__ = (
 
 
 class CacheState(CacheStateValorantAPI):
+    http: HTTPClient
+
     if TYPE_CHECKING:
         _buddies: Dict[str, Buddy]
         _buddy_levels: Dict[str, BuddyLevel]
@@ -47,8 +49,49 @@ class CacheState(CacheStateValorantAPI):
         _player_titles: Dict[str, PlayerTitle]
         _level_borders: Dict[str, LevelBorder]
 
-    def __init__(self, *, locale: Locale, http: HTTPClientValorantAPI, to_file: bool = False) -> None:
+    def __init__(self, *, locale: Locale, http: HTTPClient, to_file: bool = False) -> None:
         super().__init__(locale=locale, http=http, to_file=to_file)
+
+    async def init(self) -> None:
+        await super().init()
+        # valorant valtracker
+        data = await self.http.get_bundles_valtracker()
+        self._add_bundles_valtracker(data)
+
+    def _add_bundles_valtracker(self, data: Any) -> None:
+        bundle_data = data['data']
+        for bundle in bundle_data:
+            bd = self.get_bundle(bundle['uuid'])
+            if bd is not None:
+                for buddy in bundle['buddies']:
+                    b = self.get_buddy(buddy['uuid'])
+                    if b is not None:
+                        bd._add_item(b)
+                    else:
+                        _log.warning('bundles valtracker missing buddy %s', buddy['uuid'])
+
+                for card in bundle['cards']:
+                    c = self.get_player_card(card['uuid'])
+                    if c is not None:
+                        bd._add_item(c)
+                    else:
+                        _log.warning('bundles valtracker missing card %s', card['uuid'])
+
+                for spray in bundle['sprays']:
+                    sp = self.get_spray(spray['uuid'])
+                    if sp is not None:
+                        bd._add_item(sp)
+                    else:
+                        _log.warning('bundles valtracker missing spray %s', spray['uuid'])
+
+                for weapon in bundle['weapons']:
+                    sk = self.get_skin(weapon['uuid'])
+                    if sk is not None:
+                        bd._add_item(sk)
+                        # if sk.display_name.default.lower() != weapon['name'].lower():
+                        #     _log.warning(f"{sk.display_name.default!r} ({sk.uuid}) != {weapon['name']!r} ({weapon['uuid']}) in bundle {bd.uuid!r}\n")
+                    else:
+                        _log.warning('bundles valtracker missing skin %s', weapon['uuid'])
 
     # buddies
 

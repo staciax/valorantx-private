@@ -3,14 +3,13 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, Optional
 
-from valorantx.valorant_api.models.missions import Mission as MissionValorantAPI
+from valorant.models.missions import Mission as MissionValorantAPI
 
 from .. import utils
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-
-    from valorantx.valorant_api.types.missions import Mission as MissionPayloadValorantAPI
+    from valorant.types.missions import Mission as MissionPayloadValorantAPI
 
     from ..types.contracts import Mission as MissionPayload, MissionMetadata as MissionMetadataPayload
     from ..valorant_api_cache import CacheState

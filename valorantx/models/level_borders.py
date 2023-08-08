@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from valorantx.valorant_api.models.level_borders import LevelBorder as LevelBorderValorantAPI
+from valorant.models.level_borders import LevelBorder as LevelBorderValorantAPI
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-
-    from valorantx.valorant_api.types.level_borders import LevelBorder as LevelBorderPayloadValorantAPI
+    from valorant.types.level_borders import LevelBorder as LevelBorderPayloadValorantAPI
 
     from ..valorant_api_cache import CacheState
 

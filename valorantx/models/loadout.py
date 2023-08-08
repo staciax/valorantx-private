@@ -3,16 +3,12 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 
-from valorantx.models.weapons import Weapon
-from valorantx.valorant_api_cache import CacheState
-
 from ..enums import LevelBorderID, SpraySlotID
 from .weapons import Weapon
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-
-    from valorantx.valorant_api.types.weapons import Weapon as ValorantAPIWeaponPayload
+    from valorant.types.weapons import Weapon as ValorantAPIWeaponPayload
 
     from ..client import Client
     from ..types.loadout import (

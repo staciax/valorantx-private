@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from valorantx.valorant_api.asset import Asset as _Asset
+from valorant.asset import Asset as _Asset
 
 # fmt: off
 __all__ = (

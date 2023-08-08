@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, List
 
-from valorantx.valorant_api.models.abc import GridPosition as GridPosition, ShopData as ShopData
+from valorant.models.abc import GridPosition as GridPosition, ShopData as ShopData
 
 from ..enums import VALORANT_POINT_UUID
 

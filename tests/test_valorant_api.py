@@ -1,8 +1,7 @@
 import datetime
 
 import pytest
-
-from valorantx.valorant_api import MISSING, AbilityType, Agent, Event, RelationType, RewardType, Season
+from valorant import MISSING, AbilityType, Agent, Event, RelationType, RewardType, Season
 
 from .conftest import BaseTest  # BaseAuthTest
 

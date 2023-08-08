@@ -1,4 +1,4 @@
-from valorantx.valorant_api.models.events import Event as Event
+from valorant.models.events import Event as Event
 
 # fmt: off
 __all__ = (

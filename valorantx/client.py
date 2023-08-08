@@ -381,7 +381,7 @@ class Client:
 
         data = await self.http.get_patch_notes(locale)
 
-        return PatchNotes(state=self.valorant_api.cache, data=data, locale=locale)
+        return PatchNotes(client=self, data=data, locale=locale)
 
     # config
 

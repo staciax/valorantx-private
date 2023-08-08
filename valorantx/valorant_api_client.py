@@ -2,20 +2,22 @@
 # Licensed under the MIT license. Refer to the LICENSE file in the project root for more information.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 
 from aiohttp import ClientSession
-
-from valorantx.valorant_api.client import Client as ClientValorantAPI
-from valorantx.valorant_api.http import HTTPClient
-from valorantx.valorant_api.models.maps import Map
-from valorantx.valorant_api.models.seasons import CompetitiveSeason
+from valorant.client import Client as ClientValorantAPI
+from valorant.http import HTTPClient as HTTPClientValorantAPI
+from valorant.models.maps import Map
+from valorant.models.seasons import CompetitiveSeason
 
 from .enums import ItemTypeID, Locale
+from .http import Route
 from .models.store import Offers
 from .valorant_api_cache import CacheState
 
 if TYPE_CHECKING:
+    from valorant.http import Response
+
     from .models.buddies import Buddy, BuddyLevel
     from .models.competitive_tiers import Tier
     from .models.gamemodes import GameMode
@@ -32,6 +34,14 @@ __all__ = (
 # fmt: on
 
 
+class HTTPClient(HTTPClientValorantAPI):
+    # valtracker endpoint
+
+    def get_bundles_valtracker(self) -> Response[Any]:
+        r = Route.from_url('GET', 'https://api.valtracker.gg/v1/bundles')
+        return self.request(r)  # type: ignore
+
+
 class Client(ClientValorantAPI):
     if TYPE_CHECKING:
         buddies: List[Buddy]
@@ -46,7 +56,7 @@ class Client(ClientValorantAPI):
         weapons: List[Weapon]
 
     def __init__(self, session: ClientSession, locale: Locale) -> None:
-        super().__init__(session, locale)
+        super().__init__(locale)
         self.http: HTTPClient = HTTPClient(session)
         self.cache: CacheState = CacheState(locale=locale, http=self.http)
 

@@ -9,12 +9,12 @@ from typing import TYPE_CHECKING, AsyncGenerator
 import pytest
 import pytest_asyncio
 from dotenv import load_dotenv
+from valorant import Client as ValorantAPIClient
 
 import valorantx as valorantx
-from valorantx.valorant_api import Client as ValorantAPIClient
 
 try:
-    import uvloop
+    import uvloop  # type: ignore
 except ImportError:
     pass
 else:

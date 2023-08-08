@@ -2,17 +2,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from valorantx.valorant_api.models.player_cards import PlayerCard as PlayerCardValorantAPI
+from valorant.models.player_cards import PlayerCard as PlayerCardValorantAPI
 
 from .abc import BundleItemOffer, Item
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-
-    from valorantx.valorant_api.types.player_cards import PlayerCard as PlayerCardPayloadValorantAPI
-    from valorantx.valorant_api_cache import CacheState
+    from valorant.types.player_cards import PlayerCard as PlayerCardPayloadValorantAPI
 
     from ..types.store import BundleItemOffer as BundleItemOfferPayload
+    from ..valorant_api_cache import CacheState
 
 __all__ = (
     'PlayerCard',

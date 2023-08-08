@@ -4,7 +4,7 @@ import datetime
 import logging
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from valorantx.valorant_api.models.bundles import Bundle as BundleValorantAPI
+from valorant.models.bundles import Bundle as BundleValorantAPI
 
 from ..enums import VALORANT_POINT_UUID, ItemTypeID, try_enum
 from .abc import Item
@@ -16,8 +16,7 @@ from .weapons import SkinLevelBundle
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-
-    from valorantx.valorant_api.types.bundles import Bundle as BundleValorantAPIPayload
+    from valorant.types.bundles import Bundle as BundleValorantAPIPayload
 
     from ..types.store import Bundle_ as BundlePayload
     from ..valorant_api_cache import CacheState

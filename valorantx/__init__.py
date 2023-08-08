@@ -12,7 +12,7 @@ __license__ = 'MIT'
 __copyright__ = 'Copyright 2022-present xStacia'
 __version__ = '2.0.0a'
 
-from . import utils as utils, valorant_api as valorant_api
+from . import utils as utils
 from .auth import *
 from .client import *
 from .enums import *

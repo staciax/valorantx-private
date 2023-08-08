@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from valorantx.valorant_api.models.buddies import Buddy as BuddyValorantAPI, BuddyLevel as BuddyLevelValorantAPI
+from valorant.models.buddies import Buddy as BuddyValorantAPI, BuddyLevel as BuddyLevelValorantAPI
 
 from .abc import BundleItemOffer, Item
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+    from valorant.types.buddies import Buddy as BuddyPayload, BuddyLevel as BuddyLevelPayloadValorantAPI
 
     from ..types.store import BundleItemOffer as BundleItemOfferPayload
-    from ..valorant_api.types.buddies import Buddy as BuddyPayload, BuddyLevel as BuddyLevelPayloadValorantAPI
     from ..valorant_api_cache import CacheState
 
 __all__ = (

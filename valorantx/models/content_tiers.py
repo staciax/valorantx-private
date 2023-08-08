@@ -1,4 +1,4 @@
-from valorantx.valorant_api.models.content_tiers import ContentTier as ContentTier
+from valorant.models.content_tiers import ContentTier as ContentTier
 
 # fmt: off
 __all__ = (

@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from valorantx.valorant_api.models.player_titles import PlayerTitle as PlayerTitleValorantAPI
+from valorant.models.player_titles import PlayerTitle as PlayerTitleValorantAPI
 
 from .abc import BundleItemOffer, Item
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-
-    from valorantx.valorant_api.types.player_titles import PlayerTitle as PlayerTitlePayloadValorantAPI
+    from valorant.types.player_titles import PlayerTitle as PlayerTitlePayloadValorantAPI
 
     from ..types.store import BundleItemOffer as BundleItemOfferPayload
     from ..valorant_api_cache import CacheState

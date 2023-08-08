@@ -1,4 +1,4 @@
-from valorantx.valorant_api.models.competitive_tiers import CompetitiveTier as CompetitiveTier, Tier as Tier
+from valorant.models.competitive_tiers import CompetitiveTier as CompetitiveTier, Tier as Tier
 
 # fmt: off
 __all__ = (

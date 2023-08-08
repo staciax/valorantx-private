@@ -9,9 +9,7 @@ from .sprays import Spray
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-
-    from valorantx.valorant_api.types.sprays import Spray as SprayPayloadValorantAPI
-    from valorantx.valorant_api_cache import CacheState
+    from valorant.types.sprays import Spray as SprayPayloadValorantAPI
 
     from ..client import Client
     from ..types.coregame import (
@@ -24,6 +22,7 @@ if TYPE_CHECKING:
         SeasonalBadgeInfo as SeasonalBadgeInfoPayload,
         SpraySelection as SpraySelectionPayload,
     )
+    from ..valorant_api_cache import CacheState
     from .agents import Agent
     from .competitive_tiers import Tier
     from .gamemodes import GameMode

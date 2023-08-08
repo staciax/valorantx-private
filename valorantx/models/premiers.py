@@ -6,9 +6,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from ..enums import PremierEventType, PremierMapSelectionStrategy, try_enum
 from ..models.user import User
 
-# from valorantx2.types.user import PartialUser as PartialUserPayload
-
-
 if TYPE_CHECKING:
     from ..client import Client
     from ..types.premiers import (
