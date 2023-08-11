@@ -25,9 +25,6 @@ packages = [
     'valorantx',
     'valorantx.models',
     'valorantx.types',
-    'valorantx.valorant_api',
-    'valorantx.valorant_api.models',
-    'valorantx.valorant_api.types',
 ]
 
 setup(
