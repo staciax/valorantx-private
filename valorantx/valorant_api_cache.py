@@ -49,8 +49,8 @@ class CacheState(CacheStateValorantAPI):
         _player_titles: Dict[str, PlayerTitle]
         _level_borders: Dict[str, LevelBorder]
 
-    def __init__(self, *, locale: Locale, http: HTTPClient, to_file: bool = False) -> None:
-        super().__init__(locale=locale, http=http, to_file=to_file)
+    def __init__(self, *, locale: Locale, http: HTTPClient) -> None:
+        super().__init__(locale=locale, http=http)
 
     async def init(self) -> None:
         await super().init()
@@ -98,8 +98,6 @@ class CacheState(CacheStateValorantAPI):
     def store_buddy(self, data: buddies.Buddy) -> Buddy:
         buddy_id = data['uuid']
         self._buddies[buddy_id] = buddy = Buddy(state=self, data=data)
-        for level in buddy.levels:
-            self._buddy_levels[level.uuid] = level
         return buddy
 
     # player cards
@@ -121,8 +119,6 @@ class CacheState(CacheStateValorantAPI):
     def store_spray(self, data: sprays.Spray) -> Spray:
         spray_id = data['uuid']
         self._sprays[spray_id] = spray = Spray(state=self, data=data)
-        for level in spray.levels:
-            self._spray_levels[level.uuid] = level
         return spray
 
     # weapons
@@ -130,12 +126,6 @@ class CacheState(CacheStateValorantAPI):
     def store_weapon(self, data: weapons.Weapon) -> Weapon:
         weapon_id = data['uuid']
         self._weapons[weapon_id] = weapon = Weapon(state=self, data=data)
-        for skin in weapon.skins:
-            self._skins[skin.uuid] = skin
-            for chroma in skin.chromas:
-                self._skin_chromas[chroma.uuid] = chroma
-            for level in skin.levels:
-                self._skin_levels[level.uuid] = level
         return weapon
 
     # level borders

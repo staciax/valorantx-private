@@ -154,7 +154,7 @@ class PartyMember:
         if season_act is MISSING:
             return None
 
-        competitive_season = self._client.valorant_api.get_competitive_season_season_id(season_act.id)
+        competitive_season = self._client.valorant_api.get_competitive_season_season_id(str(season_act.id))
         if competitive_season is None:
             return None
 

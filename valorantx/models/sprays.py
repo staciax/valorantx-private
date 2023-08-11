@@ -47,7 +47,9 @@ class Spray(SprayValorantAPI, Item):
         return self
 
 
-class SprayLevel(SprayLevelValorantAPI['Spray']):
+class SprayLevel(SprayLevelValorantAPI):
+    parent: Spray
+
     def __init__(self, *, state: CacheState, data: SprayLevelPayloadValorantAPI, parent: Spray) -> None:
         super().__init__(state=state, data=data, parent=parent)
 

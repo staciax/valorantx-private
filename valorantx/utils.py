@@ -3,25 +3,40 @@
 
 from __future__ import annotations
 
+import json
 import uuid
-from typing import List, Union
+from typing import Any, List, Union
 
-from valorant.utils import (
-    MISSING as MISSING,
-    _to_json as _to_json,
-    json_or_text as json_or_text,
-    parse_iso_datetime as parse_iso_datetime,
-)
+from valorant.utils import MISSING as MISSING, parse_iso_datetime as parse_iso_datetime
+
+try:
+    import orjson  # type: ignore
+except ImportError:
+    HAS_ORJSON = False
+else:
+    HAS_ORJSON = True
 
 __all__ = (
     'MISSING',
     'calculate_level_xp',
     'is_uuid',
-    'json_or_text',
-    '_to_json',
     'parse_iso_datetime',
     'percent',
 )
+
+if HAS_ORJSON:
+
+    def _to_json(obj: Any) -> str:
+        return orjson.dumps(obj).decode('utf-8')  # type: ignore
+
+    _from_json = orjson.loads  # type: ignore
+
+else:
+
+    def _to_json(obj: Any) -> str:
+        return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
+
+    _from_json = json.loads
 
 
 def is_uuid(value: str) -> bool:

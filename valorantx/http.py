@@ -73,6 +73,26 @@ if TYPE_CHECKING:
 _log = logging.getLogger(__name__)
 
 
+async def json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any], str]:
+    text = await response.text(encoding='utf-8')
+
+    try:
+        if 'application/json' in response.headers['content-type']:
+            return utils._from_json(text)
+    except KeyError:
+        pass
+
+    # try to parse it as json anyway
+    # some endpoints return plain text but it's actually json
+    if isinstance(text, str):
+        try:
+            return utils._from_json(text)
+        except json.JSONDecodeError:
+            pass
+
+    return text
+
+
 class EndpointType(enum.Enum):
     pd = 0
     glz = 1
@@ -184,7 +204,7 @@ class HTTPClient:
             try:
                 async with self._session.request(method, url, **kwargs) as response:
                     _log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), response.status)
-                    data = await utils.json_or_text(response)
+                    data = await json_or_text(response)
                     if 300 > response.status >= 200:
                         _log.debug('%s %s has received %s', method, url, data)
                         return data

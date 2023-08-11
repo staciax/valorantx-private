@@ -159,7 +159,7 @@ class QueueSkill:
         if self._client.act is MISSING:
             return None
 
-        return self.get_seasonal_info(self._client.act.id)
+        return self.get_seasonal_info(str(self._client.act.id))
 
 
 class QueueSkills:
@@ -271,7 +271,7 @@ class MatchmakingRating:
         if competitive.seasonal_info is None:
             return None
 
-        season_info = competitive.get_seasonal_info(season_act.id)
+        season_info = competitive.get_seasonal_info(str(season_act.id))
         if season_info is None:
             return None
         return season_info.get_tier()

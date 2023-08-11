@@ -48,7 +48,6 @@ if TYPE_CHECKING:
 
     # from .event import Event
     # from .season import Season
-    # Item = Union[Agent, SkinLevel, BuddyLevel, PlayerCard, PlayerTitle, Spray, Currency]
 
 
 # _log = logging.getLogger(__name__)

@@ -46,9 +46,9 @@ class Buddy(BuddyValorantAPI, Item):
         return self
 
 
-class BuddyLevel(BuddyLevelValorantAPI['Buddy'], Item):
-    if TYPE_CHECKING:
-        _state: CacheState
+class BuddyLevel(BuddyLevelValorantAPI, Item):
+    parent: Buddy
+    _state: CacheState
 
     def __init__(self, *, state: CacheState, data: BuddyLevelPayloadValorantAPI, parent: Buddy) -> None:
         super().__init__(state=state, data=data, parent=parent)

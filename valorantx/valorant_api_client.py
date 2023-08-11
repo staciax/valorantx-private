@@ -18,14 +18,21 @@ from .valorant_api_cache import CacheState
 if TYPE_CHECKING:
     from valorant.http import Response
 
-    from .models.buddies import Buddy, BuddyLevel
-    from .models.competitive_tiers import Tier
-    from .models.gamemodes import GameMode
-    from .models.level_borders import LevelBorder
-    from .models.player_cards import PlayerCard
-    from .models.player_titles import PlayerTitle
-    from .models.sprays import Spray, SprayLevel
-    from .models.weapons import Skin, SkinChroma, SkinLevel, Weapon
+    from .models import (
+        Buddy,
+        BuddyLevel,
+        GameMode,
+        LevelBorder,
+        PlayerCard,
+        PlayerTitle,
+        Skin,
+        SkinChroma,
+        SkinLevel,
+        Spray,
+        SprayLevel,
+        Tier,
+        Weapon,
+    )
 
 # fmt: off
 __all__ = (
@@ -63,8 +70,9 @@ class Client(ClientValorantAPI):
     def insert_cost(self, offers: Offers) -> None:
         for offer in offers.offers:
             for reward in offer.rewards:
-                if not reward.type is ItemTypeID.currency:
-                    self.cache.insert_cost(reward.id, reward.type, offer.cost)
+                if reward.type is ItemTypeID.currency:
+                    continue
+                self.cache.insert_cost(reward.id, reward.type, offer.cost)
 
     # buddies
 

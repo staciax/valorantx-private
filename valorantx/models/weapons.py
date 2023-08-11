@@ -69,10 +69,9 @@ class Weapon(WeaponValorantAPI, Item):
         return self
 
 
-class Skin(SkinValorantAPI['Weapon'], Item):
-    if TYPE_CHECKING:
-        _state: CacheState
-        parent: Weapon
+class Skin(SkinValorantAPI, Item):
+    _state: CacheState
+    parent: Weapon
 
     def __init__(self, *, state: CacheState, data: ValorantAPISkinPayload, parent: Weapon, favorite: bool = False) -> None:
         super().__init__(state=state, data=data, parent=parent)
@@ -100,9 +99,9 @@ class Skin(SkinValorantAPI['Weapon'], Item):
         return self
 
 
-class SkinLevel(SkinLevelValorantAPI['Skin'], Item):
-    if TYPE_CHECKING:
-        _state: CacheState
+class SkinLevel(SkinLevelValorantAPI, Item):
+    _state: CacheState
+    parent: Skin
 
     def __init__(
         self,
@@ -134,9 +133,9 @@ class SkinLevel(SkinLevelValorantAPI['Skin'], Item):
         return self
 
 
-class SkinChroma(SkinChromaValorantAPI['Skin'], Item):
-    if TYPE_CHECKING:
-        _state: CacheState
+class SkinChroma(SkinChromaValorantAPI, Item):
+    _state: CacheState
+    parent: Skin
 
     def __init__(
         self, *, state: CacheState, data: ValorantAPISkinChromaPayload, parent: Skin, favorite: bool = False
