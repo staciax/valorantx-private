@@ -228,10 +228,10 @@ class Identity:
 
     def to_payload(self) -> IdentityPayload:
         payload: IdentityPayload = {
-            'PlayerCardID': self.player_card.uuid if self.player_card is not None else self._player_card_id,
-            'PlayerTitleID': self.player_title.uuid if self.player_title is not None else self._player_title_id,
+            'PlayerCardID': str(self.player_card.uuid) if self.player_card is not None else self._player_card_id,
+            'PlayerTitleID': str(self.player_title.uuid) if self.player_title is not None else self._player_title_id,
             'AccountLevel': self.account_level,
-            'PreferredLevelBorderID': self.preferred_level_border.uuid
+            'PreferredLevelBorderID': str(self.preferred_level_border.uuid)
             if self.preferred_level_border is not None
             else self._preferred_level_border_id,
             'HideAccountLevel': self.hide_account_level,
