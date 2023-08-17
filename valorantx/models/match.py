@@ -7,7 +7,7 @@ import logging
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
 
 from .. import utils
-from ..enums import AbilityType
+from ..enums import AbilitySlot
 from .user import User
 
 if TYPE_CHECKING:
@@ -943,27 +943,27 @@ class AbilityCasts:
     @property
     def e(self) -> Optional[AgentAbility]:
         """:class:`AgentAbility`: Returns the E ability."""
-        return self.agent.get_ability(AbilityType.ability_2)
+        return self.agent.get_ability(AbilitySlot.ability_2)
 
     @property
     def q(self) -> Optional[AgentAbility]:
         """:class:`AgentAbility`: Returns the Q ability."""
-        return self.agent.get_ability(AbilityType.ability_1)
+        return self.agent.get_ability(AbilitySlot.ability_1)
 
     @property
     def c(self) -> Optional[AgentAbility]:
         """:class:`AgentAbility`: Returns the C ability."""
-        return self.agent.get_ability(AbilityType.grenade)
+        return self.agent.get_ability(AbilitySlot.grenade)
 
     @property
     def x(self) -> Optional[AgentAbility]:
         """:class:`AgentAbility`: Returns the X ability."""
-        return self.agent.get_ability(AbilityType.ultimate)
+        return self.agent.get_ability(AbilitySlot.ultimate)
 
     @property
     def p(self) -> Optional[AgentAbility]:
         """:class:`AgentAbility`: Returns the passive ability."""
-        return self.agent.get_ability(AbilityType.passive)
+        return self.agent.get_ability(AbilitySlot.passive)
 
 
 class PlayerStats:

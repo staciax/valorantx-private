@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Final, List, Optional, Tuple, Type, TypeVar
 
 from valorant.enums import (
-    AbilityType as AbilityType,
+    AbilitySlot as AbilitySlot,
     Enum as Enum,
     Locale as Locale,
     MissionType as MissionType,
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 __all__ = (
-    'AbilityType',
+    'AbilitySlot',
     'AgentID',
     'CurrencyType',
     'GameModeID',
