@@ -1,3 +1,3 @@
-valorant.py==1.0.4
+valorant.py==1.0.6
 aiohttp>=3.8.5,<4
 riot-auth @ git+https://github.com/floxay/python-riot-auth.git

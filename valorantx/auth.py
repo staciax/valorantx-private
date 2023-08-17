@@ -21,6 +21,8 @@ __all__ = (
 )
 # fmt: on
 
+_RiotAuth.RIOT_CLIENT_USER_AGENT = 'RiotClient/69.0.3.228.1352 %s (Windows;10;;Professional, x64)'  # type: ignore
+
 
 class RiotAuth(_RiotAuth):
     def __init__(self) -> None:
