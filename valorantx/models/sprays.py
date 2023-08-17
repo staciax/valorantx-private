@@ -26,6 +26,7 @@ class Spray(SprayValorantAPI, Item):
         _state: CacheState
 
     def __init__(self, *, state: CacheState, data: SprayPayloadValorantAPI, favorite: bool = False) -> None:
+        self._data = data
         super().__init__(state=state, data=data)
         Item.__init__(self)
         self.levels: List[SprayLevel] = [SprayLevel(state=state, data=level, parent=self) for level in data['levels']]
@@ -36,7 +37,22 @@ class Spray(SprayValorantAPI, Item):
 
     @classmethod
     def _copy(cls, spray: Self) -> Self:
-        self = super()._copy(spray)
+        self = cls.__new__(cls)  # bypass __init__
+        self._uuid = spray._uuid
+        self._state = spray._state
+        self._data = spray._data.copy()
+        self._display_name = spray._display_name
+        self.category = spray.category
+        self.theme_uuid = spray.theme_uuid
+        self._is_null_spray = spray._is_null_spray
+        self._display_icon = spray._display_icon
+        self._full_icon = spray._full_icon
+        self._full_transparent_icon = spray._full_transparent_icon
+        self._animation_png = spray._animation_png
+        self._animation_gif = spray._animation_gif
+        self.asset_path = spray.asset_path
+        self.levels = spray.levels.copy()
+        self._display_name_localized = spray._display_name_localized
         self._cost = spray._cost
         return self
 
@@ -51,6 +67,7 @@ class SprayLevel(SprayLevelValorantAPI):
     parent: Spray
 
     def __init__(self, *, state: CacheState, data: SprayLevelPayloadValorantAPI, parent: Spray) -> None:
+        self._data = data
         super().__init__(state=state, data=data, parent=parent)
 
     # helpers
@@ -64,8 +81,17 @@ class SprayLevel(SprayLevelValorantAPI):
         return self.cost
 
     @classmethod
-    def _copy(cls, spray: Self) -> Self:
-        self = super()._copy(spray)
+    def _copy(cls, spray_level: Self) -> Self:
+        self = cls.__new__(cls)  # bypass __init__
+        self._uuid = spray_level._uuid
+        self._state = spray_level._state
+        self._data = spray_level._data.copy()
+        self.spray_level = spray_level.spray_level
+        self._display_name = spray_level._display_name
+        self._display_icon = spray_level._display_icon
+        self.asset_path = spray_level.asset_path
+        self.parent = spray_level.parent._copy(spray_level.parent)
+        self._display_name_localized = spray_level._display_name_localized
         return self
 
 

@@ -103,6 +103,7 @@ class Progression:
 
 class Contract(ContractValorantAPI):
     def __init__(self, state: CacheState, data: ContractValorantAPIPayload, data_contract: ContractPayload) -> None:
+        self._data = data
         super().__init__(state=state, data=data)
         self.definition_id: str = data_contract['ContractDefinitionID']
         self.progression_level_reached: int = data_contract['ProgressionLevelReached']
@@ -215,7 +216,7 @@ class Contract(ContractValorantAPI):
         # TODO: fix this
         if contract is None:
             raise ValueError(f'Contract with uuid {data["ContractDefinitionID"]!r} not found.')
-        return cls(state=state, data=contract._data, data_contract=data)
+        return cls(state=state, data=contract._data, data_contract=data)  # type: ignore
 
 
 class RecruitmentProgressUpdate:

@@ -5,11 +5,9 @@ from valorant.models.gamemodes import (
     GameRuleBoolOverride as GameRuleBoolOverride,
 )
 
-# fmt: off
 __all__ = (
     'GameFeatureOverride',
     'GameMode',
     'GameModeEquippable',
     'GameRuleBoolOverride',
 )
-# fmt: on

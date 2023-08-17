@@ -42,6 +42,7 @@ __all__ = (
 
 class Bundle(BundleValorantAPI, Item):
     def __init__(self, state: CacheState, data: BundleValorantAPIPayload) -> None:
+        self._data = data
         super().__init__(state=state, data=data)
 
     if TYPE_CHECKING:
@@ -119,4 +120,4 @@ class FeaturedBundle(Bundle):
         bundle = state.get_bundle(data['DataAssetID'])
         if bundle is None:
             return None
-        return cls(state=state, data=bundle._data, data_bundle=data)
+        return cls(state=state, data=bundle._data, data_bundle=data)  # type: ignore

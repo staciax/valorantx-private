@@ -24,6 +24,7 @@ __all__ = (
 
 class Mission(MissionValorantAPI):
     def __init__(self, *, state: CacheState, data: MissionPayloadValorantAPI, data_mission: MissionPayload) -> None:
+        self._data = data
         super().__init__(state=state, data=data)
         self.id: str = data_mission['ID']
         self._is_complete: bool = data_mission['Complete']
@@ -65,7 +66,7 @@ class Mission(MissionValorantAPI):
         mission = state.get_mission(data['ID'])
         if mission is None:
             return None
-        return cls(state=state, data=mission._data, data_mission=data)
+        return cls(state=state, data=mission._data, data_mission=data)  # type: ignore
 
 
 class MissionMetadata:

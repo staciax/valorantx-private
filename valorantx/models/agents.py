@@ -17,15 +17,3 @@ __all__ = (
     'VoiceLine',
     'VoiceLineLocalization',
 )
-
-# from typing import TYPE_CHECKING
-
-
-# AgentValorantAPI
-
-# if TYPE_CHECKING:
-#     from ..valorant_api.types.agents import Agent as AgentValorantAPIPayload
-
-
-# class Agent(AgentValorantAPI):
-#     pass
