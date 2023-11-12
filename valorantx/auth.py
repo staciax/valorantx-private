@@ -21,8 +21,6 @@ __all__ = (
 )
 # fmt: on
 
-_RiotAuth.RIOT_CLIENT_USER_AGENT = 'RiotClient/69.0.3.228.1352 %s (Windows;10;;Professional, x64)'  # type: ignore
-
 
 class RiotAuth(_RiotAuth):
     def __init__(self) -> None:
@@ -42,6 +40,15 @@ class RiotAuth(_RiotAuth):
             return ''
         return f'{self.game_name}#{self.tag_line}'
 
+    async def authorize(self, username: str, password: str, use_query_response_mode: bool = False) -> bool:
+        auth = await super().authorize(username, password, use_query_response_mode)
+        await self.__fetch_userinfo()
+        return auth
+    
+    async def authorize_mfa(self, code: str) -> None:
+        await super().authorize_mfa(code)
+        await self.__fetch_userinfo()
+
     async def fetch_region(self) -> Optional[str]:
         # Get regions
         body = {'id_token': self.id_token}
@@ -54,7 +61,7 @@ class RiotAuth(_RiotAuth):
                 self.region = data['affinities']['live']
         return self.region
 
-    async def fetch_userinfo(self) -> None:
+    async def __fetch_userinfo(self) -> None:
         # Get user info
         headers = {'Authorization': f'{self.token_type} {self.access_token}'}
         async with aiohttp.ClientSession(cookie_jar=self._cookie_jar) as session:

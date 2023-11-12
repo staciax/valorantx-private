@@ -269,11 +269,7 @@ class HTTPClient:
             self._session = aiohttp.ClientSession()
 
         await self.riot_auth.authorize(username.strip(), password.strip())
-        try:
-            await self.riot_auth.fetch_userinfo()  # fetch user info
-        except TypeError:
-            _log.warning('Could not find user info for Riot Auth')
-
+       
         if self.region is MISSING:
             try:
                 region = await self.riot_auth.fetch_region()  # fetch region
