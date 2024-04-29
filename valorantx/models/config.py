@@ -14,7 +14,7 @@ class Config:
         self.collapsed: Dict[str, str] = data['Collapsed']
 
     def __repr__(self) -> str:
-        return f'<Config>'
+        return '<Config>'
 
     @property
     def region(self) -> Region:

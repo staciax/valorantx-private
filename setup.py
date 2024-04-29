@@ -32,7 +32,7 @@ setup(
     author='xStacia',
     url='https://github.com/staciax/valorantx',
     project_urls={
-        "Issue tracker": "https://github.com/staciax/valorantx/issues",
+        'Issue tracker': 'https://github.com/staciax/valorantx/issues',
     },
     version=version,
     packages=packages,

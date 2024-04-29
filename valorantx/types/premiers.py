@@ -17,12 +17,12 @@ class ScheduleConference(TypedDict):
 
 class Event(TypedDict):
     ID: str
-    Type: Literal["LEAGUE", "TOURNAMENT"]
+    Type: Literal['LEAGUE', 'TOURNAMENT']
     StartDateTime: str
     EndDateTime: str
     SchedulePerDivision: List[ScheduleDivision]
     SchedulePerConference: Dict[str, ScheduleConference]
-    MapSelectionStrategy: Literal["RANDOM", "PICKBAN"]
+    MapSelectionStrategy: Literal['RANDOM', 'PICKBAN']
     MapPoolMapIDs: List[str]
     PointsRequiredToParticipate: int
 

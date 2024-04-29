@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import datetime
 import logging
-from typing import TYPE_CHECKING, List,  Union
+from typing import TYPE_CHECKING, List, Union
 
 from valorant.models.bundles import Bundle as BundleValorantAPI
 
-from ..enums import VALORANT_POINT_UUID #, ItemTypeID, try_enum
+from ..enums import VALORANT_POINT_UUID  # , ItemTypeID, try_enum
 from .abc import Item
 from .buddies import BuddyLevelBundle
 from .player_cards import PlayerCardBundle
@@ -41,17 +41,17 @@ __all__ = (
 
 class Bundle(BundleValorantAPI, Item):
     _items: List[BundleItem] = []
+
     def __init__(self, state: CacheState, data: BundleValorantAPIPayload) -> None:
         super().__init__(state=state, data=data)
 
     if TYPE_CHECKING:
+
         @property
-        def items(self) -> List[BundleItem]:
-            ...
+        def items(self) -> List[BundleItem]: ...
 
 
 class FeaturedBundle:
-
     def __init__(self, bundle: Bundle, data: BundlePayload) -> None:
         self._bundle = bundle
         self._items: List[FeaturedBundleItem] = []
@@ -112,5 +112,3 @@ class FeaturedBundle:
     def items(self) -> List[FeaturedBundleItem]:
         """:class:`List[Union[BuddyLevelBundle, PlayerCardBundle, SkinLevelBundle, SprayBundle]]`: List of items in the bundle."""
         return self._items
-    
-     

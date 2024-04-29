@@ -69,14 +69,10 @@ class PlayerStats(TypedDict):
     abilityCasts: AbilityCasts
 
 
-# fmt: off
-RoundDamage = TypedDict(
-    'RoundDamage', {
-        'round': int,
-        'receiver': str,
-        'damage': int}
-)
-# fmt: on
+class RoundDamage(TypedDict):
+    round: int
+    receiver: str
+    damage: int
 
 
 class BehaviorFactors(TypedDict):
@@ -272,20 +268,16 @@ class RoundResult(TypedDict):
     playerScores: Optional[List[RoundPlayerScore]]  # optional for deathmatch
 
 
-Kill = TypedDict(
-    'MatchKill',
-    {
-        'gameTime': int,
-        'roundTime': int,
-        'round': int,
-        'killer': str,
-        'victim': str,
-        'victimLocation': Location,
-        'assistants': List[str],
-        'playerLocations': List[PlayerLocation],
-        'finishingDamage': FinishingDamage,
-    },
-)
+class Kill(TypedDict):
+    gameTime: int
+    roundTime: int
+    round: int
+    killer: str
+    victim: str
+    victimLocation: Location
+    assistants: List[str]
+    playerLocations: List[PlayerLocation]
+    finishingDamage: FinishingDamage
 
 
 class MatchDetails(TypedDict):

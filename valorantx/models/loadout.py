@@ -301,7 +301,15 @@ class GunsLoadout:
         return f'<{self.__class__.__name__} {joined}>'
 
     def __iter__(self) -> Iterator[Optional[Gun]]:
-        skin_l = [self.melee, *self.sidearms, *self.smgs, *self.shotguns, *self.rifles, *self.snipers, *self.machine_guns]
+        skin_l = [
+            self.melee,
+            *self.sidearms,
+            *self.smgs,
+            *self.shotguns,
+            *self.rifles,
+            *self.snipers,
+            *self.machine_guns,
+        ]
         return iter(skin_l)
 
     @property

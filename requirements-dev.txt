@@ -1,13 +1,9 @@
-# unit test
+pytest
 pytest-asyncio
 # flake8
 
 # formatter
-black
-isort
-
-# env
-python-dotenv
+ruff
 
 # docs
 # sphinx

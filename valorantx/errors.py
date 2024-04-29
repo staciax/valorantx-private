@@ -51,7 +51,9 @@ class HTTPException(ValorantXError):
 
     def __init__(self, response: ClientResponse, message: Optional[Union[str, Dict[str, Any]]]):
         self.response: ClientResponse = response
-        self.status: int = response.status  # This attribute is filled by the library even if using requests # noqa: E501
+        self.status: int = (
+            response.status
+        )  # This attribute is filled by the library even if using requests # noqa: E501
         self.text: str
         self.code: str
         if isinstance(message, dict):

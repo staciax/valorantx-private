@@ -36,7 +36,9 @@ class PreGamePlayer:
         self._update(data)
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} subject={self.subject!r} match_id={self.match_id!r} version={self.version!r}>'
+        return (
+            f'<{self.__class__.__name__} subject={self.subject!r} match_id={self.match_id!r} version={self.version!r}>'
+        )
 
     def __eq__(self, other: object) -> bool:
         return (

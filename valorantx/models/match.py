@@ -113,7 +113,9 @@ class MatchHistory:
 
     async def fetch_details(self) -> None:
         """:class:`List[MatchDetails]`: Fetches the match details for each match in the history."""
-        future_tasks = [asyncio.ensure_future(self._client.fetch_match_details(match['MatchID'])) for match in self._history]
+        future_tasks = [
+            asyncio.ensure_future(self._client.fetch_match_details(match['MatchID'])) for match in self._history
+        ]
         results = await asyncio.gather(*future_tasks)
         for match in results:
             self._match_details[match.id] = match
@@ -221,7 +223,7 @@ class Team:
         self._match: MatchDetails = match
 
     def __repr__(self) -> str:
-        return f"<Team id={self.id!r} is_won={self._is_won!r}>"
+        return f'<Team id={self.id!r} is_won={self._is_won!r}>'
 
     def __bool__(self) -> bool:
         return self._is_won
@@ -309,14 +311,12 @@ class OpponentStats:
     @property
     def kda_opponent(self) -> str:
         """:class:`str`: Returns the opponent's KDA."""
-        return '{kills}/{deaths}/{assists}'.format(
-            kills=self.opponent_kills, deaths=self.opponent_deaths, assists=self.opponent_assists
-        )
+        return f'{self.opponent_kills}/{self.opponent_deaths}/{self.opponent_assists}'
 
     @property
     def kda(self) -> str:
         """:class:`str`: Returns the player's KDA."""
-        return '{kills}/{deaths}/{assists}'.format(kills=self.kills, deaths=self.deaths, assists=self.assists)
+        return f'{self.kills}/{self.deaths}/{self.assists}'
 
     def __fill_stats(self) -> None:
         for kill in self.match.kills:
@@ -501,11 +501,15 @@ class PlayerLocation:
         self.location: Location = Location(data['location'])
 
     def __repr__(self) -> str:
-        return f"<PlayerLocation subject={self.subject!r} view_radians={self.view_radians!r} location={self.location!r}>"
+        return (
+            f'<PlayerLocation subject={self.subject!r} view_radians={self.view_radians!r} location={self.location!r}>'
+        )
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, PlayerLocation) and (
-            self.subject == other.subject and self.view_radians == other.view_radians and self.location == other.location
+            self.subject == other.subject
+            and self.view_radians == other.view_radians
+            and self.location == other.location
         )
 
     def __ne__(self, other: object) -> bool:
@@ -1119,11 +1123,15 @@ class MatchDetails:
     def __init__(self, client: Client, data: MatchDetailsPayload) -> None:
         self._client = client
         self.match_info: MatchInfo = MatchInfo(client, data['matchInfo'])
-        self._players: Dict[str, MatchPlayer] = {player['subject']: MatchPlayer(self, player) for player in data['players']}
+        self._players: Dict[str, MatchPlayer] = {
+            player['subject']: MatchPlayer(self, player) for player in data['players']
+        }
         self.bots: List[Any] = data['bots']
         self.coaches: Dict[str, Coach] = {coach['subject']: Coach(self, coach) for coach in data['coaches']}
         self._teams: Dict[str, Team] = {team['teamId']: Team(team, self) for team in data['teams']}
-        self.round_results: List[RoundResult] = [RoundResult(self, round_result) for round_result in data['roundResults']]
+        self.round_results: List[RoundResult] = [
+            RoundResult(self, round_result) for round_result in data['roundResults']
+        ]
         self.kills: List[Kill] = []
         for round_result in self.round_results:
             for player in round_result.player_stats:

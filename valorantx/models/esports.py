@@ -249,7 +249,7 @@ class StandingBracket:
         self.final: Optional[Any] = data['Final']
 
     def __repr__(self) -> str:
-        return f'<StandingBracket>'
+        return '<StandingBracket>'
 
 
 class Standing:
@@ -259,7 +259,7 @@ class Standing:
         self.bracket: StandingBracket = StandingBracket(client, data['Bracket'])
 
     def __repr__(self) -> str:
-        return f'<Standing>'
+        return '<Standing>'
 
 
 class TournamentSection:

@@ -70,15 +70,15 @@ __all__ = (
 class RewardValorantAPI(RewardValorantAPI_):
     if TYPE_CHECKING:
 
-        def get_item(self) -> Optional[Union[Agent, SkinLevel, BuddyLevel, Currency, PlayerCard, PlayerTitle, Spray]]:
-            ...
+        def get_item(
+            self,
+        ) -> Optional[Union[Agent, SkinLevel, BuddyLevel, Currency, PlayerCard, PlayerTitle, Spray]]: ...
 
 
 class Content(ContentValorantAPI):
     if TYPE_CHECKING:
 
-        def get_all_rewards(self) -> List[RewardValorantAPI]:
-            ...
+        def get_all_rewards(self) -> List[RewardValorantAPI]: ...
 
 
 class Reward:
@@ -309,7 +309,9 @@ class Contracts:
         self.processed_matches: List[ProcessedMatch] = [
             ProcessedMatch(self._client, match) for match in data['ProcessedMatches']
         ]
-        self.active_special_contract_id: Optional[str] = data['ActiveSpecialContract']  # data.get('ActiveSpecialContract')
+        self.active_special_contract_id: Optional[str] = data[
+            'ActiveSpecialContract'
+        ]  # data.get('ActiveSpecialContract')
         self.missions: List[Mission] = []
         self.mission_metadata: Optional[MissionMetadata] = None
         if data['MissionMetadata'] is not None:

@@ -82,7 +82,7 @@ def _authorize_required(fn: Callable[P, Coro[T]]) -> Callable[P, Coro[T]]:
             if isinstance(arg, Client):
                 if not arg.is_authorized():
                     func = f'{arg.__class__.__name__}.{fn.__name__}'
-                    raise RiotAuthRequired(f"{func!r} requires authorization")
+                    raise RiotAuthRequired(f'{func!r} requires authorization')
                 break
         return await fn(*args, **kwargs)
 
@@ -216,8 +216,8 @@ class Client:
 
         try:
             await asyncio.wait_for(self.valorant_api.wait_until_ready(), timeout=30)
-        except asyncio.TimeoutError:
-            raise RuntimeError('Valorant API did not become ready in time')
+        except asyncio.TimeoutError as e:
+            raise RuntimeError('Valorant API did not become ready in time') from e
         else:
             self._version = self.valorant_api.version
             HTTPClient.RIOT_CLIENT_VERSION = self._version.riot_client_version

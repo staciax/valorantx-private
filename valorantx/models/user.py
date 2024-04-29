@@ -32,7 +32,7 @@ class ClientUser(_BaseUser):
         return f'{self.game_name}#{self.tag_line}'
 
     def __repr__(self) -> str:
-        return f"<ClientUser puuid={self.puuid!r} game_name={self.game_name!r} tag_line={self.tag_line!r} region={self.region!r}>"
+        return f'<ClientUser puuid={self.puuid!r} game_name={self.game_name!r} tag_line={self.tag_line!r} region={self.region!r}>'
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, ClientUser) and other.puuid == self.puuid

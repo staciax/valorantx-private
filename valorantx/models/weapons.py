@@ -88,12 +88,17 @@ class Skin(SkinValorantAPI, Item):
     _state: CacheState
     parent: Weapon
 
-    def __init__(self, *, state: CacheState, data: ValorantAPISkinPayload, parent: Weapon, favorite: bool = False) -> None:
+    def __init__(
+        self, *, state: CacheState, data: ValorantAPISkinPayload, parent: Weapon, favorite: bool = False
+    ) -> None:
         self._data = data
         super().__init__(state=state, data=data, parent=parent)
-        self.chromas: List[SkinChroma] = [SkinChroma(state=state, data=chroma, parent=self) for chroma in data['chromas']]
+        self.chromas: List[SkinChroma] = [
+            SkinChroma(state=state, data=chroma, parent=self) for chroma in data['chromas']
+        ]
         self.levels: List[SkinLevel] = [
-            SkinLevel(state=state, data=level, parent=self, level_number=index) for index, level in enumerate(data['levels'])
+            SkinLevel(state=state, data=level, parent=self, level_number=index)
+            for index, level in enumerate(data['levels'])
         ]
         self._is_favorite: bool = favorite
         Item.__init__(self)

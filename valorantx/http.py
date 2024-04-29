@@ -28,10 +28,18 @@ from urllib.parse import quote as _uriquote
 
 import aiohttp
 
-from . import __version__, utils
+from . import utils
 from .auth import RiotAuth
 from .enums import Locale, QueueType, Region, try_enum
-from .errors import BadRequest, Forbidden, HTTPException, InternalServerError, NotFound, RateLimited, RiotAuthenticationError
+from .errors import (
+    BadRequest,
+    Forbidden,
+    HTTPException,
+    InternalServerError,
+    NotFound,
+    RateLimited,
+    RiotAuthenticationError,
+)
 
 # try:
 #     import urllib3
@@ -145,7 +153,9 @@ class Route:
         self.url = url
         self.parameters = parameters
         if parameters:
-            self.url = self.url.format_map({k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
+            self.url = self.url.format_map({
+                k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()
+            })
         return self
 
 
@@ -269,7 +279,7 @@ class HTTPClient:
             self._session = aiohttp.ClientSession()
 
         await self.riot_auth.authorize(username.strip(), password.strip())
-       
+
         if self.region is MISSING:
             try:
                 region = await self.riot_auth.fetch_region()  # fetch region
@@ -282,12 +292,12 @@ class HTTPClient:
         self._puuid = self.riot_auth.puuid
         await self.__build_headers()
 
-        data = dict(
-            puuid=self.riot_auth.puuid,
-            game_name=self.riot_auth.game_name,
-            tag_line=self.riot_auth.tag_line,
-            region=self.riot_auth.region,
-        )
+        data = {
+            'puuid': self.riot_auth.puuid,
+            'game_name': self.riot_auth.game_name,
+            'tag_line': self.riot_auth.tag_line,
+            'region': self.riot_auth.region,
+        }
         return data  # type: ignore
 
     async def cookie_login(self, data: Dict[str, Any]) -> user.PartialUser:
@@ -298,12 +308,12 @@ class HTTPClient:
         self._puuid = self.riot_auth.puuid
         self.region = try_enum(Region, self.riot_auth.region)
         await self.__build_headers()
-        data = dict(
-            puuid=self.riot_auth.puuid,
-            game_name=self.riot_auth.game_name,
-            tag_line=self.riot_auth.tag_line,
-            region=self.riot_auth.region,
-        )
+        data = {
+            'puuid': self.riot_auth.puuid,
+            'game_name': self.riot_auth.game_name,
+            'tag_line': self.riot_auth.tag_line,
+            'region': self.riot_auth.region,
+        }
         return data  # type: ignore
 
     async def token_login(self, data: Dict[str, Any]) -> RiotAuth:
@@ -372,7 +382,9 @@ class HTTPClient:
         AccountXP_GetPlayer
         Get the account level, XP, and XP history for the active player
         """
-        return self.request(Route('GET', '/account-xp/v1/players/{puuid}', self.region, EndpointType.pd, puuid=self.puuid))
+        return self.request(
+            Route('GET', '/account-xp/v1/players/{puuid}', self.region, EndpointType.pd, puuid=self.puuid)
+        )
 
     def get_personal_player_loadout(self) -> Response[loadout.Loadout]:
         """
@@ -564,7 +576,9 @@ class HTTPClient:
         Contracts_Fetch
         Get a list of contracts and completion status including match history
         """
-        return self.request(Route('GET', '/contracts/v1/contracts/{puuid}', self.region, EndpointType.pd, puuid=self.puuid))
+        return self.request(
+            Route('GET', '/contracts/v1/contracts/{puuid}', self.region, EndpointType.pd, puuid=self.puuid)
+        )
 
     def post_contracts_special(self, contract_id: str) -> Response[contracts.Contracts]:
         """
@@ -627,7 +641,9 @@ class HTTPClient:
         Store_GetStorefrontV2
         Get the currently available items in the store
         """
-        return self.request(Route('GET', '/store/v2/storefront/{puuid}', self.region, EndpointType.pd, puuid=self.puuid))
+        return self.request(
+            Route('GET', '/store/v2/storefront/{puuid}', self.region, EndpointType.pd, puuid=self.puuid)
+        )
 
     def post_store_storefront(self) -> Response[store.StoreFront]:
         """
@@ -664,7 +680,8 @@ class HTTPClient:
         return self.request(Route('GET', '/store/v1/order/{order}', self.region, EndpointType.pd, order=order_id))
 
     def get_store_entitlements(
-        self, item_type: Optional[str] = None  # TODO: Union[str, ItemType]
+        self,
+        item_type: Optional[str] = None,  # TODO: Union[str, ItemType]
     ) -> Response[store.Entitlements]:
         """
         Store_GetEntitlements
@@ -683,7 +700,7 @@ class HTTPClient:
 
         r = Route(
             'GET',
-            '/store/v1/entitlements/{puuid}' + ('/{item_type}'.format(item_type=item_type) if item_type is not None else ''),
+            '/store/v1/entitlements/{puuid}' + (f'/{item_type}' if item_type is not None else ''),
             self.region,
             EndpointType.pd,
             puuid=self.puuid,
@@ -697,7 +714,9 @@ class HTTPClient:
         Party_FetchPlayer
         Get the Party ID that a given player belongs to
         """
-        return self.request(Route('GET', '/parties/v1/players/{puuid}', self.region, EndpointType.glz, puuid=self.puuid))
+        return self.request(
+            Route('GET', '/parties/v1/players/{puuid}', self.region, EndpointType.glz, puuid=self.puuid)
+        )
 
     def delete_party_remove_player(self, puuid: str) -> Response[NoReturn]:
         """
@@ -790,7 +809,9 @@ class HTTPClient:
         Party_StartCustomGame
         Starts a custom game
         """
-        r = Route('POST', '/parties/v1/parties/{party_id}/startcustomgame', self.region, EndpointType.glz, party_id=party_id)
+        r = Route(
+            'POST', '/parties/v1/parties/{party_id}/startcustomgame', self.region, EndpointType.glz, party_id=party_id
+        )
         return self.request(r)
 
     def post_party_matchmaking_join(self, party_id: str) -> Response[party.Party]:
@@ -826,7 +847,9 @@ class HTTPClient:
         Party_SetAccessibility
         Changes the party accessibility to be open or closed
         """
-        r = Route('POST', '/parties/v1/parties/{party_id}/accessibility', self.region, EndpointType.glz, party_id=party_id)
+        r = Route(
+            'POST', '/parties/v1/parties/{party_id}/accessibility', self.region, EndpointType.glz, party_id=party_id
+        )
         payload = {'accessibility': ('OPEN' if open_join else 'CLOSED')}
         return self.request(r, json=payload)
 
@@ -1029,7 +1052,9 @@ class HTTPClient:
         PostModifyFavorites
         Add a player to the favorite list of the authenticated user
         """
-        r = Route('POST', '/favorites/v1/players/{puuid}/favorites-batch', self.region, EndpointType.pd, puuid=self.puuid)
+        r = Route(
+            'POST', '/favorites/v1/players/{puuid}/favorites-batch', self.region, EndpointType.pd, puuid=self.puuid
+        )
         payload = {}
         return self.request(r, json=payload)
 
@@ -1204,16 +1229,13 @@ class HTTPClient:
         )
 
     @overload
-    def get_premier_seasons(self, active_season: Literal[True]) -> Response[premiers.Season]:
-        ...
+    def get_premier_seasons(self, active_season: Literal[True]) -> Response[premiers.Season]: ...
 
     @overload
-    def get_premier_seasons(self, active_season: Literal[False]) -> Response[premiers.Seasons]:
-        ...
+    def get_premier_seasons(self, active_season: Literal[False]) -> Response[premiers.Seasons]: ...
 
     @overload
-    def get_premier_seasons(self, active_season: bool) -> Response[premiers.Season]:
-        ...
+    def get_premier_seasons(self, active_season: bool) -> Response[premiers.Season]: ...
 
     def get_premier_seasons(self, active_season: bool) -> Response[Any]:
         r = Route(
@@ -1287,7 +1309,9 @@ class HTTPClient:
             payload['secondaryColor'] = secondary_color
         if tertiary_color is not None:
             payload['tertiaryColor'] = tertiary_color
-        r = Route('PUT', '/premier/v1/rosters/{roster_id}/customization', self.region, EndpointType.pd, roster_id=roster_id)
+        r = Route(
+            'PUT', '/premier/v1/rosters/{roster_id}/customization', self.region, EndpointType.pd, roster_id=roster_id
+        )
         return self.request(r, json=payload)
 
     def delete_premier_roster_proxy(self, realm: str, roster_id: str) -> Response[Any]:
@@ -1302,7 +1326,7 @@ class HTTPClient:
         return self.request(r)
 
     def put_premier_roster_enroll(self, roster_id: str, conference_id: str) -> Response[Any]:
-        payload = {"id": conference_id}
+        payload = {'id': conference_id}
         r = Route('PUT', '/premier/v1/rosters/{roster_id}/enroll', self.region, EndpointType.pd, roster_id=roster_id)
         return self.request(r, json=payload)
 
@@ -1318,7 +1342,9 @@ class HTTPClient:
         return self.request(r)
 
     def get_premier_roster_match_history(self, roster_id: str) -> Response[Any]:
-        r = Route('GET', '/premier/v1/rosters/{roster_id}/matchhistory', self.region, EndpointType.pd, roster_id=roster_id)
+        r = Route(
+            'GET', '/premier/v1/rosters/{roster_id}/matchhistory', self.region, EndpointType.pd, roster_id=roster_id
+        )
         return self.request(r)
 
     def post_premier_roster_match_history(self, roster_id: str, puuid: str) -> Response[Any]:
@@ -1475,7 +1501,8 @@ class HTTPClient:
 
         r = Route(
             'GET',
-            '/esports-service/v1/tournament/{tournament_id}/standings' + ('?locale={locale}' if locale is not None else ''),
+            '/esports-service/v1/tournament/{tournament_id}/standings'
+            + ('?locale={locale}' if locale is not None else ''),
             self.region,
             EndpointType.pd,
             tournament_id=tournament_id,

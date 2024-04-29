@@ -44,7 +44,7 @@ class RiotAuth(_RiotAuth):
         auth = await super().authorize(username, password, use_query_response_mode)
         await self.__fetch_userinfo()
         return auth
-    
+
     async def authorize_mfa(self, code: str) -> None:
         await super().authorize_mfa(code)
         await self.__fetch_userinfo()

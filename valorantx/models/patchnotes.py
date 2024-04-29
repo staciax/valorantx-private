@@ -114,7 +114,9 @@ class PatchNotes:
     @property
     def patch_notes(self) -> List[PatchNote]:
         """:class:`List[:class:`PatchNote`]: Returns a list of patch notes."""
-        return [PatchNote(state=self._client, data=node, locale=self.locale) for node in self.result.page_data.article_nodes]
+        return [
+            PatchNote(state=self._client, data=node, locale=self.locale) for node in self.result.page_data.article_nodes
+        ]
 
     def get_latest_patch_note(self) -> Optional[PatchNote]:
         """:class:`Optional[:class:`PatchNote`]: Returns the latest patch note."""

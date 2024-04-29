@@ -46,7 +46,9 @@ class CoreGamePlayer:
         self._update(data)
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} subject={self.subject!r} match_id={self.match_id!r} version={self.version!r}>'
+        return (
+            f'<{self.__class__.__name__} subject={self.subject!r} match_id={self.match_id!r} version={self.version!r}>'
+        )
 
     def __eq__(self, other: object) -> bool:
         return (
@@ -85,7 +87,9 @@ class MatchmakingData:
 
     def __eq__(self, other: object) -> bool:
         return (
-            isinstance(other, MatchmakingData) and other.queue_id == self.queue_id and other.is_ranked() == self.is_ranked()
+            isinstance(other, MatchmakingData)
+            and other.queue_id == self.queue_id
+            and other.is_ranked() == self.is_ranked()
         )
 
     def __ne__(self, other: object) -> bool:
