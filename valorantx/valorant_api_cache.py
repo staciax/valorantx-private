@@ -55,43 +55,6 @@ class CacheState(CacheStateValorantAPI):
     async def init(self) -> None:
         await super().init()
         # valorant valtracker
-        data = await self.http.get_bundles_valtracker()
-        self._add_bundles_valtracker(data)
-
-    def _add_bundles_valtracker(self, data: Any) -> None:
-        bundle_data = data['data']
-        for bundle in bundle_data:
-            bd = self.get_bundle(bundle['uuid'])
-            if bd is not None:
-                for buddy in bundle['buddies']:
-                    b = self.get_buddy(buddy['uuid'])
-                    if b is not None:
-                        bd._add_item(b)
-                    else:
-                        _log.warning('bundles valtracker missing buddy %s', buddy['uuid'])
-
-                for card in bundle['cards']:
-                    c = self.get_player_card(card['uuid'])
-                    if c is not None:
-                        bd._add_item(c)
-                    else:
-                        _log.warning('bundles valtracker missing card %s', card['uuid'])
-
-                for spray in bundle['sprays']:
-                    sp = self.get_spray(spray['uuid'])
-                    if sp is not None:
-                        bd._add_item(sp)
-                    else:
-                        _log.warning('bundles valtracker missing spray %s', spray['uuid'])
-
-                for weapon in bundle['weapons']:
-                    sk = self.get_skin(weapon['uuid'])
-                    if sk is not None:
-                        bd._add_item(sk)
-                        # if sk.display_name.default.lower() != weapon['name'].lower():
-                        #     _log.warning(f"{sk.display_name.default!r} ({sk.uuid}) != {weapon['name']!r} ({weapon['uuid']}) in bundle {bd.uuid!r}\n")
-                    else:
-                        _log.warning('bundles valtracker missing skin %s', weapon['uuid'])
 
     # buddies
 

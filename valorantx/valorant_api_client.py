@@ -2,22 +2,19 @@
 # Licensed under the MIT license. Refer to the LICENSE file in the project root for more information.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from aiohttp import ClientSession
 from valorant.client import Client as ClientValorantAPI
-from valorant.http import HTTPClient as HTTPClientValorantAPI
+from valorant.http import HTTPClient
 from valorant.models.maps import Map
 from valorant.models.seasons import CompetitiveSeason
 
 from .enums import ItemTypeID, Locale
-from .http import Route
 from .models.store import Offers
 from .valorant_api_cache import CacheState
 
 if TYPE_CHECKING:
-    from valorant.http import Response
-
     from .models import (
         Buddy,
         BuddyLevel,
@@ -39,14 +36,6 @@ __all__ = (
     'Client',
 )
 # fmt: on
-
-
-class HTTPClient(HTTPClientValorantAPI):
-    # valtracker endpoint
-
-    def get_bundles_valtracker(self) -> Response[Any]:
-        r = Route.from_url('GET', 'https://api.valtracker.gg/v1/bundles')
-        return self.request(r)  # type: ignore
 
 
 class Client(ClientValorantAPI):
